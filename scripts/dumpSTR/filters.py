@@ -2,6 +2,7 @@
 Locus-level VCF filters
 """
 
+import utils
 import vcf.filters
 
 class Filter_MinLocusCallrate(vcf.filters.Base):
@@ -13,7 +14,8 @@ class Filter_MinLocusCallrate(vcf.filters.Base):
         self.threshold = min_locus_callrate
 
     def __call__(self, record):
-        return None # TODO
+        if record.call_rate < self.threshold: return record.call_rate
+        else: return None
 
 class Filter_MinLocusHWEP(vcf.filters.Base):
     'Filter site by HWE'
@@ -25,7 +27,9 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        return None # TODO
+        hwep = utils.GetSTRHWE(record, uselength=self.uselength)
+        if hwep < self.threshold: return hwep
+        else: return None
 
 class Filter_MinLocusHet(vcf.filters.Base):
     'Filter sites with low heterozygosity'
@@ -37,7 +41,12 @@ class Filter_MinLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        return None # TODO
+        if self.uselength:
+            het = utils.GetLengthHet(record)
+        else: het = record.heterozygosity
+        if het < self.threshold:
+            return het
+        return None
 
 class Filter_MaxLocusHet(vcf.filters.Base):
     'Filter sites with high heterozygosity'
@@ -49,7 +58,12 @@ class Filter_MaxLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        return None # TODO
+        if self.uselength:
+            het = utils.GetLengthHet(record)
+        else: het = record.heterozygosity
+        if het > self.threshold:
+            return het
+        return None
 
 class Filter_LocusHrun(vcf.filters.Base):
     'Filter penta/hexa sites with long homopolymer runs'
@@ -57,10 +71,13 @@ class Filter_LocusHrun(vcf.filters.Base):
     name = 'HRUN'
 
     def __init__(self):
-        self.threshold = 1 # e.g. pentamers with hruns of 5+1, hexa with 6+1
+        self.threshold = 0 # e.g. pentamers with hruns of 5+threshold, hexa with 6+threshold
 
     def __call__(self, record):
-        return None # TODO
+        hrun = utils.GetHomopolymerRun(record.REF)
+        if record.INFO["PERIOD"] in [5,6] and hrun >= self.threshold+record.INFO["PERIOD"]:
+            return hrun
+        return None
 
 def create_region_filter(name, filename):
     class Filter_Regions(vcf.filters.Base):

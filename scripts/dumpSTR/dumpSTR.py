@@ -25,8 +25,8 @@ Example command:
 
 # TODO:
 # - Implement locus-level fitlers in filters.py
-# - Add new INFO fields with updated info (allele counts
-# - Info for log files
+# - Add new INFO fields with updated info (e.g. AC, REFAC, HET, HWEP)
+# - Info for log files (how many call-level, locus-level filters, sample info)
 # - better checking of user input
 
 # Load external libraries
