@@ -18,16 +18,17 @@ Example command:
 --min-locus-het 0 \
 --max-locus-het 1 \
 --use-length \
---filter-regions /storage/resources/dbase/human/hg19/hg19_segmentalduplications.bed \
+--filter-regions /storage/resources/dbase/human/hg19/hg19_segmentalduplications.bed.gz \
 --filter-regions-names SEGDUP \
 --filter-hrun
 """
 
 # TODO:
-# - Implement locus-level fitlers in filters.py
 # - Add new INFO fields with updated info (e.g. AC, REFAC, HET, HWEP)
 # - Info for log files (how many call-level, locus-level filters, sample info)
 # - better checking of user input
+# - put standard filter files (e.g. segdup)
+# - add GangSTR filters
 
 # Load external libraries
 import argparse
@@ -148,7 +149,7 @@ def main():
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
 
-    call_group = parser.add_argument_group("Call-level filters") # TODO add GangSTR filters
+    call_group = parser.add_argument_group("Call-level filters")
     call_group.add_argument("--min-call-DP", help="Minimum call coverage", type=int)
     call_group.add_argument("--max-call-DP", help="Maximum call coverage", type=int)
     call_group.add_argument("--min-call-Q", help="Minimum call quality score", type=float)

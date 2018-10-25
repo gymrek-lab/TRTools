@@ -2,6 +2,8 @@
 Locus-level VCF filters
 """
 
+from pybedtools import BedTool
+import sys
 import utils
 import vcf.filters
 
@@ -85,8 +87,25 @@ def create_region_filter(name, filename):
         def __init__(self, name, filename):
             self.threshold = ""
             self.name = name
-            self.filename = filename
+            self.LoadRegions(filename)
+        def LoadRegions(self, filename):
+            self.regions = BedTool(filename)
+            if not self.regions._tabixed():
+                sys.stderr.write("Creating tabix index for %s\n"%filename)
+                regions.tabix(force=True)
         def __call__(self, record):
-            return None # TODO
+            interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
+            if "chr" in interval:
+                interval2 = interval.replace("chr","")
+            else: interval2 = "chr"+interval
+            try:
+                tb1 = self.regions.tabix_intervals(interval)
+                if tb1.count() > 0: return self.name
+            except ValueError: pass
+            try:
+                tb2 = self.regions.tabix_intervals(interval2)
+                if tb2.count() > 0: return self.name
+            except ValueError: pass
+            return None
     f = Filter_Regions(name, filename)
     return Filter_Regions(name, filename)
