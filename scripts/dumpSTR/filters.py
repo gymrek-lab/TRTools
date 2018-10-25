@@ -60,7 +60,16 @@ class Filter_LocusHrun(vcf.filters.Base):
         self.threshold = 1 # e.g. pentamers with hruns of 5+1, hexa with 6+1
 
     def __call__(self, record):
-        return None
+        return None # TODO
 
-def create_region_filter(name):
-    return None # TODO for list of region files/names
+def create_region_filter(name, filename):
+    class Filter_Regions(vcf.filters.Base):
+        'Filter regions from file'
+        def __init__(self, name, filename):
+            self.threshold = ""
+            self.name = name
+            self.filename = filename
+        def __call__(self, record):
+            return None # TODO
+    f = Filter_Regions(name, filename)
+    return Filter_Regions(name, filename)
