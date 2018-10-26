@@ -93,6 +93,8 @@ def create_region_filter(name, filename):
             self.name = name
             self.LoadRegions(filename)
         def LoadRegions(self, filename):
+            if not os.path.exists(filename):
+                utils.ERROR("%s not found"%filename)
             self.regions = BedTool(filename)
             if not self.regions._tabixed():
                 sys.stderr.write("Creating tabix index for %s\n"%filename)
