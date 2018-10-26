@@ -1,5 +1,5 @@
 """
-Locus-level VCF filters
+Locus-level and Call-level VCF filters
 """
 
 from pybedtools import BedTool
@@ -109,3 +109,35 @@ def create_region_filter(name, filename):
             return None
     f = Filter_Regions(name, filename)
     return Filter_Regions(name, filename)
+
+class Reason:
+    name = ""
+    def __init__(self):
+        pass
+    def GetReason(self):
+        return self.name
+
+class LowCallDepth(Reason):
+    name = "LowCallDepth"
+    def __init__(self):
+        pass
+
+class HighCallDepth(Reason):
+    name = "HighCallDpeth"
+    def __init__(self):
+        pass
+
+class LowCallQ(Reason):
+    name = "LowCallQ"
+    def __init__(self):
+        pass
+
+class CallFlankIndels(Reason):
+    name = "CallFlankIndels"
+    def __init__(self):
+        pass
+
+class CallStutter(Reason):
+    name = "CallStutter"
+    def __init__(self):
+        pass

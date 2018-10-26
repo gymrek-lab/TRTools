@@ -24,57 +24,92 @@ Example command:
 """
 
 # TODO:
-# - Add new INFO fields with updated info (e.g. AC, REFAC, HET, HWEP)
-# - Info for log files (how many call-level, locus-level filters, sample info)
+# - document each function
 # - better checking of user input
-# - put standard filter files (e.g. segdup)
 # - add GangSTR filters
+# - add README info
 
 # Load external libraries
 import argparse
+import inspect
+import sys
+import utils
 import vcf
 from vcf.parser import _Filter
 from vcf.parser import _Format
+from vcf.parser import _Info
 
 # Load custom libraries
 import filters
 
+def WriteLocLog(loc_info, fname):
+    f = open(fname, "w")
+    keys = list(loc_info.keys())
+    keys.remove("totalcalls")
+    if loc_info["PASS"] == 0: callrate = 0
+    else: callrate = loc_info["totalcalls"]*1.0/loc_info["PASS"]
+    f.write("MeanSamplesPerPassingSTR\t%s\n"%callrate)
+    for k in keys:
+        f.write("FILTER:%s\t%s\n"%(k, loc_info[k]))
+    f.close()
+
+def WriteSampLog(sample_info, reasons, fname):
+    header = ["sample", "numcalls","meanDP"] + reasons
+    f = open(fname, "w")
+    f.write("\t".join(header)+"\n")
+    for s in sample_info:
+        numcalls = sample_info[s]["numcalls"]
+        if numcalls > 0:
+            meancov = sample_info[s]["totaldp"]*1.0/numcalls
+        else: meancov = 0
+        items = [s, numcalls, meancov]
+        for r in reasons: items.append(sample_info[s][r])
+        f.write("\t".join([str(item) for item in items])+"\n")
+    f.close()
+
+def GetAllCallFilters():
+    reasons = []
+    for name, obj in inspect.getmembers(filters):
+        if inspect.isclass(obj) and issubclass(obj, filters.Reason) and not obj is filters.Reason:
+            reasons.append(obj.name)
+    return reasons
+
 def FilterCall(sample, args):
     if args.min_call_DP is not None:
         try:
-            if sample["DP"] < args.min_call_DP: return "LowCallDepth"
+            if sample["DP"] < args.min_call_DP: return filters.LowCallDepth()
         except KeyError:
             sys.stderr.write("ERROR: No DP field found\n")
             sys.exit(1)
     if args.max_call_DP is not None:
         try:
-            if sample["DP"] > args.max_call_DP: return "HighCallDepth"
+            if sample["DP"] > args.max_call_DP: return filters.HighCallDepth()
         except KeyError:
             sys.stderr.write("ERROR: No DP field found\n")
             sys.exit(1)
     if args.min_call_Q is not None:
         try:
-            if sample["Q"] < args.min_call_Q: return "LowCallQ"
+            if sample["Q"] < args.min_call_Q: return filters.LowCallQ()
         except KeyError:
             sys.stderr.write("ERROR: No Q field found\n")
             sys.exit(1)
     if args.max_call_flank_indel is not None:
         try:
             if 1.0*sample['DFLANKINDEL']/sample['DP'] > args.max_call_flank_indel:
-                return "CallFlankIndels"
+                return filters.CallFlankIndels()
         except KeyError:
             sys.stderr.write("ERROR: No DP or DFLANKINDEL field found\n")
             sys.exit(1)
     if args.max_call_stutter is not None:
         try:
             if 1.0*sample['DSTUTTER']/sample['DP'] > args.max_call_stutter:
-                return "CallStutter"
+                return filters.CallStutter()
         except KeyError:
             sys.stderr.write("ERROR: No DP or DSTUTTER field found\n")
             sys.exit(1)
     return None
 
-def ApplyCallFilters(record, reader, args):
+def ApplyCallFilters(record, reader, args, sample_info):
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
     else: samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
@@ -102,14 +137,17 @@ def ApplyCallFilters(record, reader, args):
             continue
         filter_reason = FilterCall(sample, args)
         if filter_reason is not None:
+            sample_info[sample.sample][filter_reason.GetReason()] += 1
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "GT":
                     sampdat.append("./.")
                 else:
-                    if key == "FILTER": sampdat.append(filter_reason.replace(" ", "_").upper())
+                    if key == "FILTER": sampdat.append(filter_reason.GetReason())
                     else: sampdat.append(None)
         else:
+            sample_info[sample.sample]["numcalls"] += 1
+            sample_info[sample.sample]["totaldp"] += sample["DP"]
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "FILTER": sampdat.append("PASS")
@@ -167,6 +205,9 @@ def main():
     locus_group.add_argument("--filter-hrun", help="Filter STRs with long homopolymer runs.", action="store_true")
     locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
 
+    debug_group = parser.add_argument_group("Debugging")
+    debug_group.add_argument("--num-records", help="Only process this many records", type=int)
+
     args = parser.parse_args()
 
     # Load VCF file
@@ -184,20 +225,34 @@ def main():
     if "FILTER" not in invcf.formats:
         invcf.formats["FILTER"] = _Format("FILTER", 1, "String", "Call-level filter")
 
-    # Add new INFO fields - TODO
+    # Add new INFO fields
+    invcf.infos["AC"] = _Info("AC", -1, "Integer", "Alternate allele counts", source=None, version=None)
+    invcf.infos["REFAC"] = _Info("REFAC", 1, "Integer", "Reference allele count", source=None, version=None)
+    invcf.infos["HET"] = _Info("HET", 1, "Float", "Heterozygosity", source=None, version=None)
+    invcf.infos["HWEP"] = _Info("HWEP", 1, "Float", "HWE p-value for obs. vs. exp het rate", source=None, version=None)
+    invcf.infos["HRUN"] = _Info("HRUN", 1, "Integer", "Length of longest homopolymer run", source=None, version=None)
 
     # Set up output files
     outvcf = vcf.Writer(open(args.out + ".vcf", "w"), invcf)
 
-    # Open again to get rid of any changes
-    invcf = vcf.Reader(open(args.vcf, "rb"))
-    loclog = open(args.out + ".loclog.tab", "w")
-    samplog = open(args.out + ".samplog.tab", "w")
+    # Set up sample info
+    all_reasons = GetAllCallFilters()
+    sample_info = {}
+    for s in invcf.samples:
+        sample_info[s] = {"numcalls": 0, "totaldp": 0}
+        for r in all_reasons: sample_info[s][r]  = 0
+
+    # Set up locus info
+    loc_info = {"totalcalls": 0, "PASS": 0} 
+    for filt in filter_list: loc_info[filt.filter_name()] = 0
 
     # Go through each record
+    record_counter = 0
     for record in invcf:
+        record_counter += 1
+        if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
-        record = ApplyCallFilters(record, invcf, args)
+        record = ApplyCallFilters(record, invcf, args, sample_info)
 
         # Locus-level filters
         record.FILTER = None
@@ -208,9 +263,33 @@ def main():
                 output_record = False
                 break
             record.add_filter(filt.filter_name())
+            loc_info[filt.filter_name()] += 1
         if output_record:
-            if record.FILTER is None and not args.drop_filtered: record.FILTER = "PASS"
+            # Recalculate locus-level INFO fields
+            record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
+            if record.num_called > 0:
+                if args.use_length:
+                    record.INFO["HET"] = utils.GetLengthHet(record)
+                else: record.INFO["HET"] = record.heterozygosity
+                record.INFO["HWEP"] = utils.GetSTRHWE(record, uselength=args.use_length)
+                record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
+                record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
+            else:
+                record.INFO["HET"] = -1
+                record.INFO["HWEP"] = -1
+                record.INFO["AC"] = [0]*len(record.ALT)
+                record.INFO["REFAC"] = 0
+            # Recalc filter
+            if record.FILTER is None and not args.drop_filtered:
+                record.FILTER = "PASS"
+                loc_info["PASS"] += 1
+                loc_info["totalcalls"] += record.num_called
+            # Output the record
             outvcf.write_record(record)
+
+    # Output log info
+    WriteSampLog(sample_info, all_reasons, args.out + ".samplog.tab")
+    WriteLocLog(loc_info, args.out+".loclog.tab")
 
 if __name__ == "__main__":
     main()
