@@ -25,7 +25,6 @@ Example command:
 """
 
 # TODO:
-# - document each function
 # - better checking of user input
 # - add GangSTR filters
 # - add README info
@@ -44,6 +43,13 @@ from vcf.parser import _Info
 import filters
 
 def WriteLocLog(loc_info, fname):
+    """
+    Write locus-level features to log file
+
+    Input:
+    - loc_info (dict): dictionary with locus-level stats
+    - fname (str): output filename
+    """
     f = open(fname, "w")
     keys = list(loc_info.keys())
     keys.remove("totalcalls")
@@ -55,6 +61,14 @@ def WriteLocLog(loc_info, fname):
     f.close()
 
 def WriteSampLog(sample_info, reasons, fname):
+    """
+    Write sample-level features to log file
+
+    Input:
+    - sample_info (dict): dictionary of stats for each sample
+    - reasons (list<str>): list of possible feature reasons
+    - fname (str): output filename
+    """
     header = ["sample", "numcalls","meanDP"] + reasons
     f = open(fname, "w")
     f.write("\t".join(header)+"\n")
@@ -69,48 +83,50 @@ def WriteSampLog(sample_info, reasons, fname):
     f.close()
 
 def GetAllCallFilters():
+    """
+    List all possible call filters by
+    extracting from filters module
+
+    Output:
+    - reasons (list<str>): list of call-level filter reasons
+    """
     reasons = []
     for name, obj in inspect.getmembers(filters):
         if inspect.isclass(obj) and issubclass(obj, filters.Reason) and not obj is filters.Reason:
             reasons.append(obj.name)
     return reasons
 
-def FilterCall(sample, args):
-    if args.min_call_DP is not None:
-        try:
-            if sample["DP"] < args.min_call_DP: return filters.LowCallDepth()
-        except KeyError:
-            sys.stderr.write("ERROR: No DP field found\n")
-            sys.exit(1)
-    if args.max_call_DP is not None:
-        try:
-            if sample["DP"] > args.max_call_DP: return filters.HighCallDepth()
-        except KeyError:
-            sys.stderr.write("ERROR: No DP field found\n")
-            sys.exit(1)
-    if args.min_call_Q is not None:
-        try:
-            if sample["Q"] < args.min_call_Q: return filters.LowCallQ()
-        except KeyError:
-            sys.stderr.write("ERROR: No Q field found\n")
-            sys.exit(1)
-    if args.max_call_flank_indel is not None:
-        try:
-            if 1.0*sample['DFLANKINDEL']/sample['DP'] > args.max_call_flank_indel:
-                return filters.CallFlankIndels()
-        except KeyError:
-            sys.stderr.write("ERROR: No DP or DFLANKINDEL field found\n")
-            sys.exit(1)
-    if args.max_call_stutter is not None:
-        try:
-            if 1.0*sample['DSTUTTER']/sample['DP'] > args.max_call_stutter:
-                return filters.CallStutter()
-        except KeyError:
-            sys.stderr.write("ERROR: No DP or DSTUTTER field found\n")
-            sys.exit(1)
-    return None
+def FilterCall(sample, call_filters):
+    """
+    Apply call-level filters and return filter reason.
 
-def ApplyCallFilters(record, reader, args, sample_info):
+    Input:
+    - sample (vcf._Call)
+    - call_filters (list<filters.Reason>): list of call level filters
+
+    Return:
+    - reason (list<str>): list of string description of filter reasons
+    """
+    reasons = []
+    for cfilt in call_filters:
+        if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
+    return reasons
+
+def ApplyCallFilters(record, reader, call_filters, sample_info):
+    """
+    Apply call level filters to a record
+    Return a new record with FILTER populated for each sample
+    Update sample_info with sample level stats
+
+    Input:
+    - record (vcf._Record)
+    - reader (vcf.Reader)
+    - call_filters (list<filters.Reason>): list of call filters
+    - sample_info (dict): dictionary of sample stats
+
+    Output:
+    - modified record (vcf._Record). 
+    """
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
     else: samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
@@ -136,15 +152,16 @@ def ApplyCallFilters(record, reader, args, sample_info):
             call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
             new_samples.append(call)
             continue
-        filter_reason = FilterCall(sample, args)
-        if filter_reason is not None:
-            sample_info[sample.sample][filter_reason.GetReason()] += 1
+        filter_reasons = FilterCall(sample, call_filters)
+        if len(filter_reasons) > 0:
+            for r in filter_reasons:
+                sample_info[sample.sample][r] += 1
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "GT":
                     sampdat.append("./.")
                 else:
-                    if key == "FILTER": sampdat.append(filter_reason.GetReason())
+                    if key == "FILTER": sampdat.append(",".join(filter_reasons))
                     else: sampdat.append(None)
         else:
             sample_info[sample.sample]["numcalls"] += 1
@@ -158,7 +175,39 @@ def ApplyCallFilters(record, reader, args, sample_info):
     record.samples = new_samples
     return record
 
-def BuildFilters(args):
+def BuildCallFilters(args):
+    """
+    Build list of locus-level filters to include
+
+    Input:
+    - args (namespace from parser.parse_args)
+    
+    Output:
+    - cdict (list<filters.Filter>): list of call-level filters
+    """
+    cdict = []
+    if args.min_call_DP is not None:
+        cdict.append(filters.LowCallDepth(args.min_call_DP))
+    if args.max_call_DP is not None:
+        cdict.append(filters.HighCallDepth(args.max_call_DP))
+    if args.min_call_Q is not None:
+        cdict.append(filters.LowCallQ(args.min_call_Q))
+    if args.max_call_flank_indel is not None:
+        cdict.append(filters.CallFlankIndels(args.max_call_flank_indel))
+    if args.max_call_stutter is not None:
+        cdict.append(filters.CallStutter(args.max_call_stutter))
+    return cdict
+
+def BuildLocusFilters(args):
+    """
+    Build list of locus-level filters to include
+
+    Input:
+    - args (namespace from parser.parse_args)
+    
+    Output:
+    - fdict (list<filters.Filter>): list of locus-level filters
+    """
     fdict = []
     if args.min_locus_callrate is not None:
         fdict.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
@@ -216,11 +265,12 @@ def main():
 
     # Set up filter list
     invcf.filters = {}
-    filter_list = BuildFilters(args)
+    filter_list = BuildLocusFilters(args)
     for f in filter_list:
         short_doc = f.__doc__ or ''
         short_doc = short_doc.split('\n')[0].lstrip()
         invcf.filters[f.filter_name()] = _Filter(f.filter_name(), short_doc)
+    call_filters = BuildCallFilters(args)
 
     # Add new FORMAT fields
     if "FILTER" not in invcf.formats:
@@ -253,7 +303,7 @@ def main():
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
-        record = ApplyCallFilters(record, invcf, args, sample_info)
+        record = ApplyCallFilters(record, invcf, call_filters, sample_info)
 
         # Locus-level filters
         record.FILTER = None

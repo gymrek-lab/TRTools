@@ -7,6 +7,10 @@ import sys
 import utils
 import vcf.filters
 
+###################################
+# Locus level filters
+###################################
+
 class Filter_MinLocusCallrate(vcf.filters.Base):
     'Filter site by call rate'
 
@@ -110,6 +114,10 @@ def create_region_filter(name, filename):
     f = Filter_Regions(name, filename)
     return Filter_Regions(name, filename)
 
+###################################
+# Call level filters
+###################################
+
 class Reason:
     name = ""
     def __init__(self):
@@ -119,25 +127,42 @@ class Reason:
 
 class LowCallDepth(Reason):
     name = "LowCallDepth"
-    def __init__(self):
-        pass
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] < self.threshold: return sample["DP"]
+        else: return None
 
 class HighCallDepth(Reason):
     name = "HighCallDpeth"
-    def __init__(self):
-        pass
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] > self.threshold: return sample["DP"]
+        else: return None
 
 class LowCallQ(Reason):
     name = "LowCallQ"
-    def __init__(self):
-        pass
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["Q"] < self.threshold: return sample["Q"]
+        else: return None
 
 class CallFlankIndels(Reason):
     name = "CallFlankIndels"
-    def __init__(self):
-        pass
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if 1.0*sample['DFLANKINDEL']/sample['DP'] > self.threshold:
+            return 1.0*sample['DFLANKINDEL']/sample['DP']
+        else: return None
 
 class CallStutter(Reason):
     name = "CallStutter"
-    def __init__(self):
-        pass
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if 1.0*sample['DSTUTTER']/sample['DP'] > self.threshold:
+            return 1.0*sample['DSTUTTER']/sample['DP']
+        else: return None
