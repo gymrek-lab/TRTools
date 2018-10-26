@@ -18,9 +18,10 @@ Example command:
 --min-locus-het 0 \
 --max-locus-het 1 \
 --use-length \
---filter-regions /storage/resources/dbase/human/hg19/hg19_segmentalduplications.bed.gz \
+--filter-regions filter_files/hg19_segmentalduplications.bed.gz \
 --filter-regions-names SEGDUP \
---filter-hrun
+--filter-hrun \
+--num-records 10
 """
 
 # TODO:
