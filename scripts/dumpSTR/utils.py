@@ -9,10 +9,6 @@ import itertools
 import scipy.stats
 import sys
 
-def ERROR(msg):
-    sys.stderr.write(msg.strip()+"\n")
-    sys.exit(1)
-
 def GetLengthHet(record):
     len_to_count = {}
     for sample in record:

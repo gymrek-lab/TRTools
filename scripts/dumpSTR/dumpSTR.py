@@ -28,8 +28,12 @@ Example command:
 # - add GangSTR filters
 # - add README info
 
+import sys
+sys.path.append("../utils")
+
 # Load external libraries
 import argparse
+import common
 import inspect
 import sys
 import utils
@@ -53,31 +57,31 @@ def CheckFilters(invcf, args):
     """
     if args.min_call_DP is not None:
         if args.min_call_DP < 0:
-            utils.ERROR("Invalid min_call_DP <0")
+            common.ERROR("Invalid min_call_DP <0")
         if "DP" not in invcf.formats:
-            utils.ERROR("No DP FORMAT found")
+            common.ERROR("No DP FORMAT found")
     if args.max_call_DP is not None:
         if args.max_call_DP < 0:
-            utils.ERROR("Invalid min_call_DP <0")
+            common.ERROR("Invalid min_call_DP <0")
         if args.min_call_DP is not None and args.max_call_DP <= args.min_call_DP:
-            utils.ERROR("--max-call-DP must be > --min-call-DP")
+            common.ERROR("--max-call-DP must be > --min-call-DP")
         if "DP" not in invcf.formats:
-            utils.ERROR("No DP FORMAT found")
+            common.ERROR("No DP FORMAT found")
     if args.min_call_Q is not None:
         if args.min_call_Q < 0 or args.min_call_Q > 1:
-            utils.ERROR("--min-call-Q must be between 0 and 1")
+            common.ERROR("--min-call-Q must be between 0 and 1")
         if "Q" not in invcf.formats:
-            utils.ERROR("No Q FORMAT found")
+            common.ERROR("No Q FORMAT found")
     if args.max_call_flank_indel is not None:
         if args.max_call_flank_indel < 0 or args.max_call_flank_indel > 1:
-            utils.ERROR("--max-call-flank-indel must be between 0 and 1")
+            common.ERROR("--max-call-flank-indel must be between 0 and 1")
         if "DP" not in invcf.formats or "DFLANKINDEL" not in invcf.formats:
-            utils.ERROR("No DP or DFLANKINDEL FORMAT found")
+            common.ERROR("No DP or DFLANKINDEL FORMAT found")
     if args.max_call_stutter is not None:
         if args.max_call_stutter < 0 or args.max_call_stutter > 1:
-            utils.ERROR("--max-call-stutter must be between 0 and 1")
+            common.ERROR("--max-call-stutter must be between 0 and 1")
         if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
-            utils.ERROR("No DP or DSTUTTER FORMAT found")        
+            common.ERROR("No DP or DSTUTTER FORMAT found")        
 
 def WriteLocLog(loc_info, fname):
     """
@@ -261,7 +265,7 @@ def BuildLocusFilters(args):
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
             if len(filter_region_names) != len(filter_region_files):
-                utils.ERROR("ERROR: length of --filter-regions-names must match --filter-regions\n")
+                common.ERROR("ERROR: length of --filter-regions-names must match --filter-regions\n")
         else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
             fdict.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
