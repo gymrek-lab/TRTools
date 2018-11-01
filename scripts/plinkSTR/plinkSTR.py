@@ -2,22 +2,29 @@
 """
 Perform STR association tests
 
-Example:
+Example - KD:
 ./plinkSTR.py --vcf /storage/mgymrek/KD/imputed/KD.chr22.imputed.vcf.gz --out stdout --fam /storage/mgymrek/KD/pheno/KD.fam --sex --logistic --infer-snpstr --allele-tests --allele-tests-length  --remove-rare-str-alleles 0.05 --region 22:17655257-17655258
 
+Example - PGC:
+./plinkSTR.py \
+--vcf /home/gymrek/ssaini/per_locus/11.57523883/PGC.11.57523883.imputed.noAF.vcf.gz \
+--out stdout \
+--fam /home/gymrek/pgc_imputation/PGC_eur.fam \
+--sex --logistic --infer-snpstr --allele-tests --allele-tests-length \
+--remove-rare-str-alleles 0.05
 """
 
 # TODO
+# - categorical variables (e.g. PGC cohort)
 # - check for VIF
-# - categorical variables
-# - option to skip snps
+# - linear regression
 
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
 
 # Imports
 import sys
-sys.path.append("../utils")
+sys.path.append("..//utils")
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -166,7 +173,7 @@ def AddCovars(data, fname, covar_name, covar_number):
     """
     Add covariates to phenotype data frame and return names of covar columns
     """
-    default_cols = ["FID", "IID", "Father_ID", "Mother_ID"]
+    default_cols = ["FID", "IID"]
     if covar_name:
         colnames = default_cols+covar_name.split(",")
         cov = pd.read_csv(fname, delim_whitespace=True, \
@@ -175,7 +182,7 @@ def AddCovars(data, fname, covar_name, covar_number):
         colnames = default_cols+["C"+item for item in covar_number.split(",")]
         cov = pd.read_csv(fname, delim_whitespace=True, \
                           names=colnames, \
-                          usecols = list(range(4))+[int(item)-1 for item in covar_number.split(",")])
+                          usecols = list(range(2))+[1+int(item) for item in covar_number.split(",")])
     else:
         cov = pd.read_csv(fname, delim_whitespace=True)
         if "FID" not in cov.columns: cov.columns = default_cols+cov.columns[len(default_cols):]
@@ -280,7 +287,6 @@ def main():
     for record in reader:
         # Check MAF 
         aaf = sum(record.aaf)
-        aaf = sum(record.INFO["AF"])
         aaf = min([aaf, 1-aaf])
         if aaf < args.minmaf: continue
         # Infer whether we should treat as a SNP or STR
