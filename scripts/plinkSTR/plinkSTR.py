@@ -30,7 +30,82 @@ import numpy as np
 import pandas as pd
 import vcf
 
+def GetAssocType(is_str, alt=-1, alt_len=-1):
+    """
+    Return string describing association type
+    """
+    if not is_str: return "SNP"
+    else:
+        if alt >= 0: return "STR-alt-%s"%alt
+        elif alt_len >= 0: return "STR-length-%s"%alt_len
+        else: return "STR"
+
+def PrintHeader(outf, case_control=False, quant=True):
+    """
+    Print header info for association output
+
+    Input:
+    - outf (file handle): output file handle
+    - case_control (bool): specific logistic regression output
+    - quant (bool): specify linear regression output
+    """
+    return # TODO
+
+def OutputAssoc(assoc, outf, assoc_type="STR"):
+    """
+    Write association output
+
+    Input:
+    - assoc (dict): contains association results
+    - outf (file handle): output file handle
+    - assoc_type (str): type of association
+    """
+    return # TODO
+
+def PerformAssociation(data, covarcols, case_control=False, quant=True):
+    """
+    Perform association tests
+
+    Input:
+    - data (pd.DataFrame): has columns GT, phenotype, and covarcols
+    - covarcols (list<str>): names of columns to use as covars
+    - case_control (bool): indicate to perform logistic regression
+    - quant (bool): indicate to perform linear regression
+
+    Output:
+    - assoc (dict). Returns association results
+    """
+    return {} # TODO
+
+def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1):
+    """
+    Load genotypes from a record and return values in the sample order
+
+    Input:
+    - record (vcf._Record): input record
+    - sample_order (list<str>): list of sample ids. Return genotypes in this order
+    - is_str (bool): If false, treat as a SNP and use GT field. 
+                     If true, treat as STR and by default use length
+    - use_alt_num (int): If >=0, treat as bi-allelic using this allele number as the reference
+    - use_alt_length (int): If >=0, treat as bi-allelic using this allele length as the reference
+
+    Output:
+    - genotypes (list<int>): list of genotype values using given sample order
+    """
+    return [] # TODO
+
 def RestrictSamples(data, samplefile, include=True):
+    """
+    Include or exclude specific samples
+
+    Input:
+    - data (pd.DataFrame): data frame. must have columns FID, IID
+    - samplefile (str): filename of samples. Must have two columns (FID, IID)
+    - include (bool): If true, include these samples. Else exclude them
+
+    Output:
+    - data (pd.DataFrame): modified dataframe
+    """
     samples = pd.read_csv(samplefile, names=["FID", "IID"])
     if include:
         data = pd.merge(data, samples, on=["FID", "IID"])
@@ -84,6 +159,9 @@ def LoadPhenoData(fname, fam=True, missing=-9, mpheno=1, sex=False):
     data["phenotype"] = data["phenotype"].apply(int)
     return data
 
+# TODO
+# - check for VIF
+
 def main():
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
@@ -111,6 +189,8 @@ def main():
     fm_group = parser.add_argument_group("Fine mapping")
     fm_group.add_argument("--condition", help="Comma-separated list of positions (chrom:start) to condition on", type=str)
     args = parser.parse_args()
+    # Some initial checks
+    if int(args.linear) + int(args.logistic) != 1: ERROR("Must choose one of --linear or --logistic")
 
     # Load phenotype information
     if args.fam is not None:
@@ -122,10 +202,10 @@ def main():
         common.ERROR("Must specify phenotype using either --fam or --pheno")
 
     # Load covariate information
+    covarcols = []
     if args.covar is not None:
         pdata, covarcols = AddCovars(pdata, args.covar, args.covar_name, args.covar_number)
-    elif args.sex is not None: covarcols = ["sex"]
-    else: covarcols = []
+    if args.sex is not None: covarcols.append("sex")
 
     # Include/exclude samples
     if args.samples is not None:
@@ -137,6 +217,10 @@ def main():
     pdata["sample"] = pdata.apply(lambda x: x["FID"]+"_"+x["IID"], 1)
     sample_order = list(pdata["sample"])
 
+    # Prepare output file
+    outf = open(args.out, "w")
+    PrintHeader(outf, case_control=args.logistic, quant=args.linear)
+
     # Perform association test for each record
     reader = vcf.Reader(open(args.vcf, "rb"))
     if args.region: reader = reader.fetch(args.region)
@@ -147,10 +231,21 @@ def main():
             if len(record.REF)==1 and len(record.ALT)==1 and len(record.ALT[0])==1:
                 is_str = False
             if len(record.REF) < MIN_STR_LENGTH: continue # probably an indel
-        # Extract genotypes in sample order - TODO
-        # Perform regression - TODO
-        # Output results - TODO
-        print(record)
+        # Extract genotypes in sample order, perform regression, and output
+        pdata["GT"] = LoadGT(record, sample_order, is_str=is_str)
+        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
+        OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str))
+        # Allele based tests
+        if is_str and args.allele_tests:
+            for i in range(len(record.ALT)):
+                pdata["GT"] = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
+                OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str, alt=i+1))
+        if is_str and args.allele_tests_length:
+            for length in set([len(alt) for alt in record.ALT]):
+                pdata["GT"] = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
+                OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
         
 if __name__ == "__main__":
     main()
