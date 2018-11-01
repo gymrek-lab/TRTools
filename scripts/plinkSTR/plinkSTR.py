@@ -17,6 +17,7 @@ Example:
 # TODO
 # - check for VIF
 # - categorical variables
+# - option to skip snps
 
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
@@ -55,7 +56,8 @@ def PrintHeader(outf, case_control=False, quant=True):
     - quant (bool): specify linear regression output
     """
     header = ["chrom", "start", "type", "p-val", "coef", "maf", "N"]
-    outf.write("\t".join(header))
+    outf.write("\t".join(header)+"\n")
+    outf.flush()
 
 def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     """
@@ -70,7 +72,8 @@ def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     """
     if assoc is None: return
     items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["maf"], assoc["N"]]
-    outf.write("\t".join([str(item) for item in items]))
+    outf.write("\t".join([str(item) for item in items])+"\n")
+    outf.flush()
 
 def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05):
     """
@@ -91,10 +94,11 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
     maf = sum(data["GT"])*1.0/(2*data.shape[0])
     assoc["maf"] = maf
     assoc["N"] = data.shape[0]
-    if maf <= minmaf or (1-maf <= minmaf): return None
+    if maf <= minmaf or (maf >= 1-minmaf): return None
     if case_control:
+        print data["GT"]
         try:
-            pgclogit = logit(formula=formula, data=data[["phenotype", "GT"]+covarcols]).fit(disp=0)
+            pgclogit = logit(formula=formula, data=data[["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=1000, method='nm')
         except: return None
         assoc["coef"] = pgclogit.params["GT"]
         assoc["pval"] = pgclogit.pvalues["GT"]
@@ -192,7 +196,7 @@ def LoadPhenoData(fname, fam=True, missing=-9, mpheno=1, sex=False):
     else:
         data = pd.read_csv(fname, delim_whitespace=True, names=["FID", "IID","phenotype"], usecols=[0,1,1+mpheno])
     data = data[data["phenotype"].apply(str) != missing]
-    data["phenotype"] = data["phenotype"].apply(int)
+    data["phenotype"] = data["phenotype"].apply(int)-1 # convert to 0/1
     return data
 
 def main():
