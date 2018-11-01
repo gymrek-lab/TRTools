@@ -3,14 +3,7 @@
 Perform STR association tests
 
 Example:
-./plinkSTR.py \
---vcf /storage/mgymrek/KD/imputed/KD.chr22.imputed.vcf.gz \
---out /storage/mgymrek/KD/assoc/KD.chr22.assoc.tab \
---fam /storage/mgymrek/KD/pheno/KD.fam \
---sex \
---logistic \
---infer-snpstr \
---allele-tests
+./plinkSTR.py --vcf /storage/mgymrek/KD/imputed/KD.chr22.imputed.vcf.gz --out stdout --fam /storage/mgymrek/KD/pheno/KD.fam --sex --logistic --infer-snpstr --allele-tests --allele-tests-length  --remove-rare-str-alleles 0.05 --region 22:17655257-17655258
 
 """
 
@@ -46,7 +39,7 @@ def GetAssocType(is_str, alt=-1, alt_len=-1):
         elif alt_len >= 0: return "STR-length-%s"%alt_len
         else: return "STR"
 
-def PrintHeader(outf, case_control=False, quant=True):
+def PrintHeader(outf, case_control=False, quant=True, comment_lines=[]):
     """
     Print header info for association output
 
@@ -56,6 +49,8 @@ def PrintHeader(outf, case_control=False, quant=True):
     - quant (bool): specify linear regression output
     """
     header = ["chrom", "start", "type", "p-val", "coef", "maf", "N"]
+    for cl in comment_lines:
+        outf.write("#"+cl.strip()+"\n")
     outf.write("\t".join(header)+"\n")
     outf.flush()
 
@@ -270,11 +265,15 @@ def main():
 
     # Set sample ID to FID_IID to match vcf
     pdata["sample"] = pdata.apply(lambda x: x["FID"]+"_"+x["IID"], 1)
-    sample_order = list(set(pdata["sample"]).intersection(set(reader.samples)))
+    pdata = pdata[pdata["sample"].apply(lambda x: x in reader.samples)]
+    sample_order = list(pdata["sample"])
+
 
     # Prepare output file
-    outf = sys.stdout # TODO #open(args.out, "w")
-    PrintHeader(outf, case_control=args.logistic, quant=args.linear)
+    if args.out == "stdout":
+        outf = sys.stdout
+    else: outf = open(args.out, "w")
+    PrintHeader(outf, case_control=args.logistic, quant=args.linear, comment_lines=[" ".join(sys.argv)])
 
     # Perform association test for each record
     if args.region: reader = reader.fetch(args.region)
@@ -292,7 +291,8 @@ def main():
             if is_str and len(record.REF) < MIN_STR_LENGTH: continue # probably an indel
             if not is_str and args.str_only: continue
         # Extract genotypes in sample order, perform regression, and output
-        pdata["GT"], exclude_samples = LoadGT(record, sample_order, is_str=is_str, rmrare=args.remove_rare_str_alleles)
+        gts, exclude_samples = LoadGT(record, sample_order, is_str=is_str, rmrare=args.remove_rare_str_alleles)
+        pdata["GT"] = gts
         if is_str: minmaf = 1
         else: minmaf = args.minmaf
         assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, minmaf=minmaf, exclude_samples=exclude_samples)
@@ -300,12 +300,14 @@ def main():
         # Allele based tests
         if is_str and args.allele_tests:
             for i in range(len(record.ALT)):
-                pdata["GT"], exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
+                gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
+                pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=record.ALT[i]))
         if is_str and args.allele_tests_length:
             for length in set([len(alt) for alt in record.ALT]):
-                pdata["GT"], exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
+                gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
+                pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
         

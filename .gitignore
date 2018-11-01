@@ -1,0 +1,9 @@
+# Python files
+*~
+*.pyc
+
+# Extras
+nohup.out
+
+# Testing
+test.*
