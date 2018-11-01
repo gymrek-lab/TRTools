@@ -14,6 +14,10 @@ Example:
 
 """
 
+# TODO
+# - check for VIF
+# - categorical variables
+
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
 
@@ -28,6 +32,7 @@ import argparse
 import common
 import numpy as np
 import pandas as pd
+from statsmodels.formula.api import logit
 import vcf
 
 def GetAssocType(is_str, alt=-1, alt_len=-1):
@@ -49,20 +54,25 @@ def PrintHeader(outf, case_control=False, quant=True):
     - case_control (bool): specific logistic regression output
     - quant (bool): specify linear regression output
     """
-    return # TODO
+    header = ["chrom", "start", "type", "p-val", "coef", "maf", "N"]
+    outf.write("\t".join(header))
 
-def OutputAssoc(assoc, outf, assoc_type="STR"):
+def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     """
     Write association output
 
     Input:
+    - chrom (str)
+    - start (int)
     - assoc (dict): contains association results
     - outf (file handle): output file handle
     - assoc_type (str): type of association
     """
-    return # TODO
+    if assoc is None: return
+    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["maf"], assoc["N"]]
+    outf.write("\t".join([str(item) for item in items]))
 
-def PerformAssociation(data, covarcols, case_control=False, quant=True):
+def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05):
     """
     Perform association tests
 
@@ -71,11 +81,26 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True):
     - covarcols (list<str>): names of columns to use as covars
     - case_control (bool): indicate to perform logistic regression
     - quant (bool): indicate to perform linear regression
+    - minmaf (float): don't attempt regression below this MAF
 
     Output:
-    - assoc (dict). Returns association results
+    - assoc (dict). Returns association results. Return None on error
     """
-    return {} # TODO
+    assoc = {}
+    formula = "phenotype ~ GT+"+"+".join(covarcols)
+    maf = sum(data["GT"])*1.0/(2*data.shape[0])
+    assoc["maf"] = maf
+    assoc["N"] = data.shape[0]
+    if maf <= minmaf or (1-maf <= minmaf): return None
+    if case_control:
+        try:
+            pgclogit = logit(formula=formula, data=data[["phenotype", "GT"]+covarcols]).fit(disp=0)
+        except: return None
+        assoc["coef"] = pgclogit.params["GT"]
+        assoc["pval"] = pgclogit.pvalues["GT"]
+    else:
+        return None # TODO implement linear
+    return assoc
 
 def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1):
     """
@@ -92,7 +117,18 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1)
     Output:
     - genotypes (list<int>): list of genotype values using given sample order
     """
-    return [] # TODO
+    gtdata = {}
+    for sample in record:
+        if not is_str:
+            gtdata[sample.sample] = sum([int(item) for item in sample.gt_alleles])
+        else:
+            if use_alt_num:
+                gtdata[sample.sample] = sum([int(item==use_alt_num) for item in sample.gt_alleles])
+            elif use_alt_length:
+                gtdata[sample.sample] = sum([int(len(record.ALT[item])==use_alt_length) for item in sample.gt_alleles])
+            else:
+                gtdata[sample.sample] = sum([len(record.ALT[item]) for item in smaple.gt_alleles])
+    return [gtdata[s] for s in sample_order]
 
 def RestrictSamples(data, samplefile, include=True):
     """
@@ -159,9 +195,6 @@ def LoadPhenoData(fname, fam=True, missing=-9, mpheno=1, sex=False):
     data["phenotype"] = data["phenotype"].apply(int)
     return data
 
-# TODO
-# - check for VIF
-
 def main():
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
@@ -186,6 +219,7 @@ def main():
     assoc_group.add_argument("--infer-snpstr", help="Infer which positions are SNPs vs. STRs", action="store_true")
     assoc_group.add_argument("--allele-tests", help="Also perform allele-based tests using each separate allele", action="store_true")
     assoc_group.add_argument("--allele-tests-length", help="Also perform allele-based tests using allele length", action="store_true")
+    assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF", type=float, default=0.05)
     fm_group = parser.add_argument_group("Fine mapping")
     fm_group.add_argument("--condition", help="Comma-separated list of positions (chrom:start) to condition on", type=str)
     args = parser.parse_args()
@@ -213,16 +247,18 @@ def main():
     if args.exclude_samples is not None:
         pdata = RestrictSamples(pdata, args.exclude_samples, include=False)
 
+    # Setup VCF reader
+    reader = vcf.Reader(open(args.vcf, "rb"))
+
     # Set sample ID to FID_IID to match vcf
     pdata["sample"] = pdata.apply(lambda x: x["FID"]+"_"+x["IID"], 1)
-    sample_order = list(pdata["sample"])
+    sample_order = list(set(pdata["sample"]).intersection(set(reader.samples)))
 
     # Prepare output file
-    outf = open(args.out, "w")
+    outf = sys.stdout # TODO #open(args.out, "w")
     PrintHeader(outf, case_control=args.logistic, quant=args.linear)
 
     # Perform association test for each record
-    reader = vcf.Reader(open(args.vcf, "rb"))
     if args.region: reader = reader.fetch(args.region)
     for record in reader:
         # Infer whether we should treat as a SNP or STR
@@ -230,22 +266,24 @@ def main():
         if args.infer_snpstr:
             if len(record.REF)==1 and len(record.ALT)==1 and len(record.ALT[0])==1:
                 is_str = False
-            if len(record.REF) < MIN_STR_LENGTH: continue # probably an indel
+            if is_str and len(record.REF) < MIN_STR_LENGTH: continue # probably an indel
         # Extract genotypes in sample order, perform regression, and output
         pdata["GT"] = LoadGT(record, sample_order, is_str=is_str)
-        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
-        OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str))
+        if is_str: minmaf = 1
+        else: minmaf = args.minmaf
+        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, minmaf=minmaf)
+        OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str))
         # Allele based tests
         if is_str and args.allele_tests:
             for i in range(len(record.ALT)):
                 pdata["GT"] = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
-                OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str, alt=i+1))
+                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=i+1))
         if is_str and args.allele_tests_length:
             for length in set([len(alt) for alt in record.ALT]):
                 pdata["GT"] = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear)
-                OutputAssoc(assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
+                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
         
 if __name__ == "__main__":
     main()
