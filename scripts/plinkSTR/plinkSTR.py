@@ -8,6 +8,8 @@ Example - KD:
 Example - PGC:
 ./plinkSTR.py \
 --vcf /home/gymrek/ssaini/per_locus/11.57523883/PGC.11.57523883.imputed.noAF.vcf.gz \
+--covar /home/pgcdac/DWFV2CJb8Piv_0116_pgc_data/scz/wave2/v1/prune.bfile.cobg.PGC_SCZ49.sh2.menv.mds_cov \
+--covar-name C1,C2,C3,C4,C5,C6,C7,C9,C15,C18 \
 --out stdout \
 --fam /home/gymrek/pgc_imputation/PGC_eur.fam \
 --sex --logistic --infer-snpstr --allele-tests --allele-tests-length \
@@ -16,8 +18,10 @@ Example - PGC:
 
 # TODO
 # - categorical variables (e.g. PGC cohort)
-# - check for VIF
 # - linear regression
+# - add standard errors
+# - make it faster...
+# - check for VIF
 
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
@@ -36,10 +40,11 @@ import pandas as pd
 from statsmodels.formula.api import logit
 import vcf
 
-def GetAssocType(is_str, alt=-1, alt_len=-1):
+def GetAssocType(is_str, alt=-1, alt_len=-1, name=None):
     """
     Return string describing association type
     """
+    if not name is None: return name
     if not is_str: return "SNP"
     else:
         if alt >= 0: return "STR-alt-%s"%alt
@@ -55,7 +60,7 @@ def PrintHeader(outf, case_control=False, quant=True, comment_lines=[]):
     - case_control (bool): specific logistic regression output
     - quant (bool): specify linear regression output
     """
-    header = ["chrom", "start", "type", "p-val", "coef", "maf", "N"]
+    header = ["chrom", "start", "type", "p-val", "coef", "stderr", "maf", "N"]
     for cl in comment_lines:
         outf.write("#"+cl.strip()+"\n")
     outf.write("\t".join(header)+"\n")
@@ -73,11 +78,11 @@ def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     - assoc_type (str): type of association
     """
     if assoc is None: return
-    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["maf"], assoc["N"]]
+    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["stderr"], assoc["maf"], assoc["N"]]
     outf.write("\t".join([str(item) for item in items])+"\n")
     outf.flush()
 
-def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05, exclude_samples=[]):
+def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05, exclude_samples=[], maxiter=100):
     """
     Perform association tests
 
@@ -100,15 +105,19 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
         return None # don't attempt regression
     if case_control:
         try:
-            pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=1000, method='nm')
+            pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter, method='nm')
         except:
             assoc["coef"] = "NA"
             assoc["pval"] = "NA"
+            assoc["stderr"] = "NA"
             return assoc
         assoc["coef"] = pgclogit.params["GT"]
         try:
             assoc["pval"] = pgclogit.pvalues["GT"]
-        except: assoc["pval"] = "NA"
+            assoc["stderr"] = pgclogit.bse["GT"]
+        except:
+            assoc["pval"] = "NA"
+            assoc["stderr"] = "NA"
     else:
         return None # TODO implement linear
     return assoc
@@ -174,10 +183,11 @@ def AddCovars(data, fname, covar_name, covar_number):
     Add covariates to phenotype data frame and return names of covar columns
     """
     default_cols = ["FID", "IID"]
+    other_defaults = ["Father_ID", "Mother_ID", "sex","phenotype"]
     if covar_name:
         colnames = default_cols+covar_name.split(",")
         cov = pd.read_csv(fname, delim_whitespace=True, \
-                          names=colnames, usecols=colnames)
+                          usecols=colnames)
     elif covar_number:
         colnames = default_cols+["C"+item for item in covar_number.split(",")]
         cov = pd.read_csv(fname, delim_whitespace=True, \
@@ -187,7 +197,7 @@ def AddCovars(data, fname, covar_name, covar_number):
         cov = pd.read_csv(fname, delim_whitespace=True)
         if "FID" not in cov.columns: cov.columns = default_cols+cov.columns[len(default_cols):]
     data = pd.merge(data, cov, on=["FID","IID"])
-    covarcols = [item for item in data.columns if item not in default_cols]
+    covarcols = [item for item in data.columns if item not in default_cols and item not in other_defaults]
     return data, covarcols
 
 def LoadPhenoData(fname, fam=True, missing=-9, mpheno=1, sex=False):
@@ -230,6 +240,7 @@ def main():
     covar_group.add_argument("--covar-name", help="Names of covariates to load. Comma-separated", type=str)
     covar_group.add_argument("--covar-number", help="Column number of covariates to load. Comma-separated", type=str)
     covar_group.add_argument("--sex", help="Include sex from fam file as covariate", action="store_true")
+    covar_group.add_argument("--cohort-pgc", help="Use cohort from PGC FIDs as a covariate", action="store_true")
     assoc_group = parser.add_argument_group("Association testing")
     assoc_group.add_argument("--linear", help="Perform linear regression", action="store_true")
     assoc_group.add_argument("--logistic", help="Perform logistic regression", action="store_true")
@@ -240,6 +251,7 @@ def main():
     assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF", type=float, default=0.05)
     assoc_group.add_argument("--str-only", help="Used with --infer-snptr, only analyze STRs", action="store_true")
     assoc_group.add_argument("--remove-rare-str-alleles", help="Remove genotypes with alleles less than this freq", default=0.0, type=float)
+    assoc_group.add_argument("--max-iter", help="Maximum number of iterations for logistic regression", default=100, type=int)
     fm_group = parser.add_argument_group("Fine mapping")
     fm_group.add_argument("--condition", help="Comma-separated list of positions (chrom:start) to condition on", type=str)
     args = parser.parse_args()
@@ -247,6 +259,7 @@ def main():
     if int(args.linear) + int(args.logistic) != 1: ERROR("Must choose one of --linear or --logistic")
 
     # Load phenotype information
+    common.MSG("Loading phenotype information...")
     if args.fam is not None:
         pdata = LoadPhenoData(args.fam, fam=True, missing=args.missing_phenotype, sex=args.sex)
     elif args.pheno is not None:
@@ -256,25 +269,32 @@ def main():
         common.ERROR("Must specify phenotype using either --fam or --pheno")
 
     # Load covariate information
+    common.MSG("Loading covariate information...")
     covarcols = []
     if args.covar is not None:
         pdata, covarcols = AddCovars(pdata, args.covar, args.covar_name, args.covar_number)
     if args.sex is not None: covarcols.append("sex")
+    if args.cohort_pgc:
+        pdata["cohort"] = pdata["FID"].apply(lambda x: x.split("*")[0])
+        covarcols.append("cohort")
 
     # Include/exclude samples
+    common.MSG("Loading sample information...")
     if args.samples is not None:
         pdata = RestrictSamples(pdata, args.samples, include=True)
     if args.exclude_samples is not None:
         pdata = RestrictSamples(pdata, args.exclude_samples, include=False)
 
     # Setup VCF reader
+    common.MSG("Set up VCF reader")
     reader = vcf.Reader(open(args.vcf, "rb"))
 
     # Set sample ID to FID_IID to match vcf
+    common.MSG("Set up sample info")
     pdata["sample"] = pdata.apply(lambda x: x["FID"]+"_"+x["IID"], 1)
     pdata = pdata[pdata["sample"].apply(lambda x: x in reader.samples)]
     sample_order = list(pdata["sample"])
-
+    pdata = pdata[["phenotype","sample"]+covarcols]
 
     # Prepare output file
     if args.out == "stdout":
@@ -283,6 +303,7 @@ def main():
     PrintHeader(outf, case_control=args.logistic, quant=args.linear, comment_lines=[" ".join(sys.argv)])
 
     # Perform association test for each record
+    common.MSG("Perform associations...")
     if args.region: reader = reader.fetch(args.region)
     for record in reader:
         # Check MAF 
@@ -297,24 +318,28 @@ def main():
             if is_str and len(record.REF) < MIN_STR_LENGTH: continue # probably an indel
             if not is_str and args.str_only: continue
         # Extract genotypes in sample order, perform regression, and output
+        common.MSG("   Load genotypes...")
         gts, exclude_samples = LoadGT(record, sample_order, is_str=is_str, rmrare=args.remove_rare_str_alleles)
         pdata["GT"] = gts
         if is_str: minmaf = 1
         else: minmaf = args.minmaf
-        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, minmaf=minmaf, exclude_samples=exclude_samples)
-        OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str))
+        common.MSG("   Perform association...")
+        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, minmaf=minmaf, exclude_samples=exclude_samples, maxiter=args.max_iter)
+        common.MSG("   Output association...")
+        OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, name=record.ID))
         # Allele based tests
+        common.MSG("   Allele based tests...")
         if is_str and args.allele_tests:
             for i in range(len(record.ALT)):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
                 pdata["GT"] = gts
-                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=record.ALT[i]))
         if is_str and args.allele_tests_length:
-            for length in set([len(alt) for alt in record.ALT]):
+            for length in set([len(record.REF)] + [len(alt) for alt in record.ALT]):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
                 pdata["GT"] = gts
-                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
         
 if __name__ == "__main__":
