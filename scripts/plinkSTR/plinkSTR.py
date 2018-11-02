@@ -40,6 +40,17 @@ import pandas as pd
 from statsmodels.formula.api import logit
 import vcf
 
+def LoadCondition(vcffile, condition, sample_order):
+    reader2 = vcf.Reader(open(vcffile, "rb"))
+    chrom, start = condition.split(":")
+    region = "%s:%s-%s"%(chrom, start, int(start)+1)
+    reader2.fetch(region)
+    for record in reader2:
+        print record.start, int(start), record.ID
+        if record.start==int(start):
+            return LoadGT(record, sample_order, is_str=False)
+    common.ERROR("Could not find SNP to condition on")
+
 def GetAssocType(is_str, alt=-1, alt_len=-1, name=None):
     """
     Return string describing association type
@@ -253,7 +264,7 @@ def main():
     assoc_group.add_argument("--remove-rare-str-alleles", help="Remove genotypes with alleles less than this freq", default=0.0, type=float)
     assoc_group.add_argument("--max-iter", help="Maximum number of iterations for logistic regression", default=100, type=int)
     fm_group = parser.add_argument_group("Fine mapping")
-    fm_group.add_argument("--condition", help="Comma-separated list of positions (chrom:start) to condition on", type=str)
+    fm_group.add_argument("--condition", help="Condition on this position chrom:start", type=str)
     args = parser.parse_args()
     # Some initial checks
     if int(args.linear) + int(args.logistic) != 1: ERROR("Must choose one of --linear or --logistic")
@@ -296,6 +307,12 @@ def main():
     sample_order = list(pdata["sample"])
     pdata = pdata[["phenotype","sample"]+covarcols]
 
+    # Get data to condition on
+    if args.condition is not None:
+        cond_gt = LoadCondition(args.vcf, args.condition, sample_order)
+        pdata[args.condition] = cond_gt[0]
+        covarcols.append(args.condition)
+
     # Prepare output file
     if args.out == "stdout":
         outf = sys.stdout
@@ -330,11 +347,12 @@ def main():
         # Allele based tests
         common.MSG("   Allele based tests...")
         if is_str and args.allele_tests:
-            for i in range(len(record.ALT)):
-                gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i+1)
+            alleles = [record.REF]+record.ALT
+            for i in range(len(record.ALT)+1):
+                gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i)
                 pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
-                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=record.ALT[i]))
+                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=alleles[i]))
         if is_str and args.allele_tests_length:
             for length in set([len(record.REF)] + [len(alt) for alt in record.ALT]):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
