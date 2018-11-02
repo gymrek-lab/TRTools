@@ -310,8 +310,8 @@ def main():
     # Get data to condition on
     if args.condition is not None:
         cond_gt = LoadCondition(args.vcf, args.condition, sample_order)
-        pdata[args.condition] = cond_gt[0]
-        covarcols.append(args.condition)
+        pdata["condition"] = cond_gt[0]
+        covarcols.append("condition")
 
     # Prepare output file
     if args.out == "stdout":
