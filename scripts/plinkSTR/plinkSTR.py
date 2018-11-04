@@ -28,7 +28,7 @@ MIN_STR_LENGTH = 8 # min ref length for an STR
 
 # Imports
 import sys
-sys.path.append("..//utils")
+sys.path.append("/home/gymrek/workspace/STRTools/scripts/utils")
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -116,7 +116,8 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
         return None # don't attempt regression
     if case_control:
         try:
-            pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter, method='nm')
+            pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter)
+            #print pgclogit.summary() # TODO remove after debug
         except:
             assoc["coef"] = "NA"
             assoc["pval"] = "NA"
@@ -166,7 +167,8 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
                 if f1 < rmrare or f2 < rmrare: 
                     exclude_samples.append(sample.sample)
                 gtdata[sample.sample] = sum([len(alleles[int(item)]) for item in sample.gt_alleles])
-    return [gtdata[s] for s in sample_order], exclude_samples
+    d = [gtdata[s] for s in sample_order]
+    return d, exclude_samples
 
 def RestrictSamples(data, samplefile, include=True):
     """
@@ -278,16 +280,18 @@ def main():
         pdata = LoadPhenoData(args.pheno, fam=False, missing=args.missing_phenotype, mpheno=args.mpheno)
     else:
         common.ERROR("Must specify phenotype using either --fam or --pheno")
+    common.MSG("Loaded %s samples..."%pdata.shape[0])
 
     # Load covariate information
     common.MSG("Loading covariate information...")
     covarcols = []
     if args.covar is not None:
         pdata, covarcols = AddCovars(pdata, args.covar, args.covar_name, args.covar_number)
-    if args.sex is not None: covarcols.append("sex")
+    if args.sex: covarcols.append("sex")
     if args.cohort_pgc:
         pdata["cohort"] = pdata["FID"].apply(lambda x: x.split("*")[0])
         covarcols.append("cohort")
+    common.MSG("Loaded %s samples..."%pdata.shape[0])
 
     # Include/exclude samples
     common.MSG("Loading sample information...")
@@ -295,6 +299,7 @@ def main():
         pdata = RestrictSamples(pdata, args.samples, include=True)
     if args.exclude_samples is not None:
         pdata = RestrictSamples(pdata, args.exclude_samples, include=False)
+    common.MSG("Left with %s samples..."%pdata.shape[0])
 
     # Setup VCF reader
     common.MSG("Set up VCF reader")
@@ -306,6 +311,7 @@ def main():
     pdata = pdata[pdata["sample"].apply(lambda x: x in reader.samples)]
     sample_order = list(pdata["sample"])
     pdata = pdata[["phenotype","sample"]+covarcols]
+    common.MSG("Left with %s samples..."%pdata.shape[0])
 
     # Get data to condition on
     if args.condition is not None:
@@ -320,7 +326,7 @@ def main():
     PrintHeader(outf, case_control=args.logistic, quant=args.linear, comment_lines=[" ".join(sys.argv)])
 
     # Perform association test for each record
-    common.MSG("Perform associations...")
+    common.MSG("Perform associations... with covars %s"%str(covarcols))
     if args.region: reader = reader.fetch(args.region)
     for record in reader:
         # Check MAF 
