@@ -127,14 +127,14 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
             assoc["CI"] = "NA"
             return assoc
         assoc["coef"] = "%.3f"%np.exp(pgclogit.params["GT"])
-#        try:
-        assoc["pval"] = "%.2E"%pgclogit.pvalues["GT"]
-        assoc["stderr"] = "%.3f"%(np.exp(pgclogit.params["GT"])*pgclogit.bse["GT"])
-        assoc["CI"] = "-".join(["%.3f"%(np.exp(pgclogit.conf_int().loc["GT",cind])) for cind in [0, 1]])
-#        except:
-#            assoc["pval"] = "NA"
-#            assoc["stderr"] = "NA"
-#            assoc["CI"] = "NA"
+        try:
+            assoc["pval"] = "%.2E"%pgclogit.pvalues["GT"]
+            assoc["stderr"] = "%.3f"%(np.exp(pgclogit.params["GT"])*pgclogit.bse["GT"])
+            assoc["CI"] = "-".join(["%.3f"%(np.exp(pgclogit.conf_int().loc["GT",cind])) for cind in [0, 1]])
+        except:
+            assoc["pval"] = "NA"
+            assoc["stderr"] = "NA"
+            assoc["CI"] = "NA"
     else:
         return None # TODO implement linear
     return assoc
@@ -266,7 +266,7 @@ def main():
     assoc_group.add_argument("--infer-snpstr", help="Infer which positions are SNPs vs. STRs", action="store_true")
     assoc_group.add_argument("--allele-tests", help="Also perform allele-based tests using each separate allele", action="store_true")
     assoc_group.add_argument("--allele-tests-length", help="Also perform allele-based tests using allele length", action="store_true")
-    assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF", type=float, default=0.05)
+    assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF", type=float, default=0.01)
     assoc_group.add_argument("--str-only", help="Used with --infer-snptr, only analyze STRs", action="store_true")
     assoc_group.add_argument("--remove-rare-str-alleles", help="Remove genotypes with alleles less than this freq", default=0.0, type=float)
     assoc_group.add_argument("--max-iter", help="Maximum number of iterations for logistic regression", default=100, type=int)
