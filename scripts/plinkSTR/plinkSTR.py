@@ -71,7 +71,9 @@ def PrintHeader(outf, case_control=False, quant=True, comment_lines=[]):
     - case_control (bool): specific logistic regression output
     - quant (bool): specify linear regression output
     """
-    header = ["chrom", "start", "type", "p-val", "coef", "stderr", "maf", "N"]
+    if case_control:
+        header = ["chrom", "start", "type", "p-val", "OR", "se(OR)", "CI95", "maf", "N"]
+    else: header = ["chrom", "start", "type", "p-val", "coef", "stderr", "CI95", "maf", "N"]
     for cl in comment_lines:
         outf.write("#"+cl.strip()+"\n")
     outf.write("\t".join(header)+"\n")
@@ -89,7 +91,7 @@ def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     - assoc_type (str): type of association
     """
     if assoc is None: return
-    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["stderr"], assoc["maf"], assoc["N"]]
+    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["stderr"], assoc["CI"], assoc["maf"], assoc["N"]]
     outf.write("\t".join([str(item) for item in items])+"\n")
     outf.flush()
 
@@ -110,7 +112,7 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
     assoc = {}
     formula = "phenotype ~ GT+"+"+".join(covarcols)
     maf = sum(data["GT"])*1.0/(2*data.shape[0])
-    assoc["maf"] = maf
+    assoc["maf"] = "%.3f"%maf
     assoc["N"] = data.shape[0]
     if minmaf != 1 and (maf <= minmaf or (maf >= 1-minmaf)):
         return None # don't attempt regression
@@ -122,14 +124,17 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
             assoc["coef"] = "NA"
             assoc["pval"] = "NA"
             assoc["stderr"] = "NA"
+            assoc["CI"] = "NA"
             return assoc
-        assoc["coef"] = pgclogit.params["GT"]
-        try:
-            assoc["pval"] = pgclogit.pvalues["GT"]
-            assoc["stderr"] = pgclogit.bse["GT"]
-        except:
-            assoc["pval"] = "NA"
-            assoc["stderr"] = "NA"
+        assoc["coef"] = "%.3f"%np.exp(pgclogit.params["GT"])
+#        try:
+        assoc["pval"] = "%.2E"%pgclogit.pvalues["GT"]
+        assoc["stderr"] = "%.3f"%(np.exp(pgclogit.params["GT"])*pgclogit.bse["GT"])
+        assoc["CI"] = "-".join(["%.3f"%(np.exp(pgclogit.conf_int().loc["GT",cind])) for cind in [0, 1]])
+#        except:
+#            assoc["pval"] = "NA"
+#            assoc["stderr"] = "NA"
+#            assoc["CI"] = "NA"
     else:
         return None # TODO implement linear
     return assoc
@@ -155,8 +160,8 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
     alleles = [record.REF]+record.ALT
     afreqs = [(1-sum(record.aaf))]+record.aaf
     for sample in record:
-        if not is_str:
-            gtdata[sample.sample] = sum([int(item) for item in sample.gt_alleles])
+        if not is_str: # Note, code opposite to match plink results
+            gtdata[sample.sample] = sum([1-int(item) for item in sample.gt_alleles])
         else:
             if use_alt_num > -1:
                 gtdata[sample.sample] = sum([int(int(item)==use_alt_num) for item in sample.gt_alleles])
@@ -308,7 +313,8 @@ def main():
     # Set sample ID to FID_IID to match vcf
     common.MSG("Set up sample info")
     pdata["sample"] = pdata.apply(lambda x: x["FID"]+"_"+x["IID"], 1)
-    pdata = pdata[pdata["sample"].apply(lambda x: x in reader.samples)]
+    reader_samples = set(reader.samples)
+    pdata = pdata[pdata["sample"].apply(lambda x: x in reader_samples)]
     sample_order = list(pdata["sample"])
     pdata = pdata[["phenotype","sample"]+covarcols]
     common.MSG("Left with %s samples..."%pdata.shape[0])
