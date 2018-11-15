@@ -3,6 +3,7 @@ Locus-level and Call-level VCF filters
 """
 
 from pybedtools import BedTool
+import os
 import sys
 import utils
 import vcf.filters
