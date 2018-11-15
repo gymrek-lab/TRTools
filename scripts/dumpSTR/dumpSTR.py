@@ -28,7 +28,7 @@ Example command:
 # - add GangSTR filters
 # - add README info
 
-# Imports - TODO make this more robust
+# Imports
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
