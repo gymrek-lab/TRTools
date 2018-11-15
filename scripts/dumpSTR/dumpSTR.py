@@ -172,7 +172,9 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
     """
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
-    else: samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
+    else:
+        samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
+        record.FORMAT = record.FORMAT+":FILTER"
     for fmt in samp_fmt._fields:
         if fmt == "FILTER" and "FILTER" not in record.FORMAT:
             samp_fmt._types.append("String")
