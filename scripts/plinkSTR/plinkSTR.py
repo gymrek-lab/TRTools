@@ -26,9 +26,10 @@ Example - PGC:
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
 
-# Imports
+# Imports - TODO make this more robust
 import sys
-sys.path.append("/home/gymrek/workspace/STRTools/scripts/utils")
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
 
 import warnings
 warnings.filterwarnings("ignore")
