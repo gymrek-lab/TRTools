@@ -241,6 +241,8 @@ def BuildCallFilters(args):
         cdict.append(filters.CallFlankIndels(args.max_call_flank_indel))
     if args.max_call_stutter is not None:
         cdict.append(filters.CallStutter(args.max_call_stutter))
+    if args.min_supp_reads > 0:
+        cdict.append(filters.CallMinSuppReads(args.min_supp_reads))
     return cdict
 
 def BuildLocusFilters(args):
@@ -287,6 +289,7 @@ def main():
     call_group.add_argument("--min-call-Q", help="Minimum call quality score", type=float)
     call_group.add_argument("--max-call-flank-indel", help="Maximum call flank indel rate", type=float)
     call_group.add_argument("--max-call-stutter", help="Maximum call stutter rate", type=float)
+    call_group.add_argument("--min-supp-reads", help="Minimum supporting reads for each allele", default=0, type=int)
 
     locus_group = parser.add_argument_group("Locus-level filters")
     locus_group.add_argument("--min-locus-callrate", help="Minimum locus call rate", type=float)

@@ -169,3 +169,23 @@ class CallStutter(Reason):
         if 1.0*sample['DSTUTTER']/sample['DP'] > self.threshold:
             return 1.0*sample['DSTUTTER']/sample['DP']
         else: return None
+
+class CallMinSuppReads(Reason):
+    name = "MinSuppReads"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["ALLREADS"] is None: return 0
+        delim = "|"
+        if "/" in sample["GB"]: delim = "/"
+        gb = map(int, sample["GB"].split(delim))
+        allreads = sample["ALLREADS"].split(";")
+        r1 = 0
+        r2 = 0
+        for item in allreads:
+            allele, readcount = map(int, item.split("|"))
+            if allele == gb[0]: r1 += readcount
+            if allele == gb[1]: r2 += readcount
+        min_read_count = min([r1, r2])
+        if min_read_count < self.threshold: return min_read_count
+        else: return None
