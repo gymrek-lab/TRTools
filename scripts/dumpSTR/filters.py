@@ -189,3 +189,62 @@ class CallMinSuppReads(Reason):
         min_read_count = min([r1, r2])
         if min_read_count < self.threshold: return min_read_count
         else: return None
+
+###############################
+# GangSTR filters
+###############################
+
+class ProbHom(Reason):
+    name = "ProbHom"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob hom expansion
+        if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
+        else: return None
+
+class ProbHet(Reason):
+    name = "ProbHet"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob het expansion
+        if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
+        else: return None
+
+
+class ProbTotal(Reason):
+    name = "ProbTotal"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob het and hom expansion
+        if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
+        else: return None
+
+class MinRead(Reason):
+    name = "MinRead"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Min reads 
+        if sample["DP"] < self.threshold: return sample["DP"]
+        else: return None
+
+class SpanOnly(Reason):
+    name = "SpanOnly"
+    def __init__(self):
+        pass
+    def __call__(self, sample):
+        #### Only spanning reads
+        if sample["DP"] == sample["RC"][1] : return sample["RC"][1]
+        else: return None
+
+class SpanBoundOnly(Reason):
+    name = "SpanBoundOnly"
+    def __init__(self):
+        pass
+    def __call__(self, sample):
+        #### Only spanning and bounded
+        if sample["DP"] == sample["RC"][1]+sample["RC"][3] : return sample["RC"][1]+sample["RC"][3]
+        else: return None
