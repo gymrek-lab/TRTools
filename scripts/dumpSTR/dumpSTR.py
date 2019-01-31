@@ -6,6 +6,14 @@ Tool for filtering and QC of STR genotypes
 Example command:
 
 ./dumpSTR.py \
+  --vcf /storage/nmmsv/analysis/GangSTR-analyses/genome_wide/results/20190129T1710_NA12878_whole_hg19_ver10_exper8_rescue0_strinfo_parallel/NA12878_whole_exper8_rescue0_strinfo_parallel_merged.vcf.gz \
+  --out test \
+  --filter-span-only \
+  --min-total-reads 50 \
+  --num-records 100
+
+
+./dumpSTR.py \
 --vcf /storage/mgymrek/ssc-imputation/filtered_vcfs/hipstr.chr22.allfilters.vcf.gz \
 --out test \
 --min-call-DP 10 \
@@ -84,6 +92,7 @@ def CheckFilters(invcf, args):
             common.ERROR("--max-call-stutter must be between 0 and 1")
         if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
             common.ERROR("No DP or DSTUTTER FORMAT found")        
+    # TODO add here to check gangstr filters
 
 def WriteLocLog(loc_info, fname):
     """
@@ -253,6 +262,8 @@ def BuildCallFilters(args):
         cdict.append(filters.MinRead(args.min_total_reads))
     if args.filter_span_only is not None:
         cdict.append(filters.SpanOnly())
+    if args.filter_spanbound_only is not None:
+        cdict.append(filters.SpanBoundOnly())
     return cdict
 
 def BuildLocusFilters(args):
@@ -319,7 +330,7 @@ def main():
     gangstr_call_group.add_argument("--expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     gangstr_call_group.add_argument("--min-total-reads", help="Filter based minimum total reads", type=int)
     gangstr_call_group.add_argument("--filter-span-only", help="Filter out all reads except spanning", action="store_true")
-    gangstr_call_group.add_argument("--filter-spanibound-only", help="Filter out all reads except spanning and bounding", action="store_true")
+    gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
 
     debug_group = parser.add_argument_group("Debugging")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
