@@ -243,6 +243,16 @@ def BuildCallFilters(args):
         cdict.append(filters.CallStutter(args.max_call_stutter))
     if args.min_supp_reads > 0:
         cdict.append(filters.CallMinSuppReads(args.min_supp_reads))
+    if args.expansion_prob_het is not None:
+        cdict.append(filters.ProbHet(args.expansion_prob_het))
+    if args.expansion_prob_hom is not None:
+        cdict.append(filters.ProbHom(args.expansion_prob_hom))
+    if args.expansion_prob_total is not None:
+        cdict.append(filters.ProbTot(args.expansion_prob_total))
+    if args.min_total_reads is not None:
+        cdict.append(filters.MinRead(args.min_total_reads))
+    if args.filter_span_only is not None:
+        cdict.append(filters.SpanOnly())
     return cdict
 
 def BuildLocusFilters(args):
@@ -301,12 +311,20 @@ def main():
     locus_group.add_argument("--filter-regions-names", help="Comma-separated list of filter names for each BED filter file", type=str)
     locus_group.add_argument("--filter-hrun", help="Filter STRs with long homopolymer runs.", action="store_true")
     locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
+    
+    #### GangSTR
+    gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
+    gangstr_call_group.add_argument("--expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
+    gangstr_call_group.add_argument("--expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
+    gangstr_call_group.add_argument("--expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
+    gangstr_call_group.add_argument("--min-total-reads", help="Filter based minimum total reads", type=int)
+    gangstr_call_group.add_argument("--filter-span-only", help="Filter out all reads except spanning", action="store_true")
+    gangstr_call_group.add_argument("--filter-spanibound-only", help="Filter out all reads except spanning and bounding", action="store_true")
 
     debug_group = parser.add_argument_group("Debugging")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
 
     args = parser.parse_args()
-
     # Load VCF file
     invcf = vcf.Reader(open(args.vcf, "rb"))
 
@@ -319,7 +337,6 @@ def main():
         short_doc = short_doc.split('\n')[0].lstrip()
         invcf.filters[f.filter_name()] = _Filter(f.filter_name(), short_doc)
     call_filters = BuildCallFilters(args)
-
     # Add new FORMAT fields
     if "FILTER" not in invcf.formats:
         invcf.formats["FILTER"] = _Format("FILTER", 1, "String", "Call-level filter")
@@ -392,3 +409,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
