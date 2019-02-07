@@ -237,7 +237,8 @@ class SpanOnly(Reason):
         pass
     def __call__(self, sample):
         #### Only spanning reads
-        if sample["DP"] == sample["RC"][1] : return sample["RC"][1]
+        rcvals = [int(item) for item in sample["RC"].split(",")]
+        if sample["DP"] == rcvals[1] : return rcvals[1]
         else: return None
 
 class SpanBoundOnly(Reason):
@@ -246,5 +247,6 @@ class SpanBoundOnly(Reason):
         pass
     def __call__(self, sample):
         #### Only spanning and bounded
-        if sample["DP"] == sample["RC"][1]+sample["RC"][3] : return sample["RC"][1]+sample["RC"][3]
+        rcvals = [int(item) for item in sample["RC"].split(",")]
+        if sample["DP"] == rcvals[1]+rcvals[3] : return rcvals[1]+rcvals[3]
         else: return None
