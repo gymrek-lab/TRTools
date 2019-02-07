@@ -33,7 +33,6 @@ Example command:
 """
 
 # TODO:
-# - add GangSTR filters
 # - add README info
 
 # Imports
@@ -92,7 +91,18 @@ def CheckFilters(invcf, args):
             common.ERROR("--max-call-stutter must be between 0 and 1")
         if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
             common.ERROR("No DP or DSTUTTER FORMAT found")        
-    # TODO add here to check gangstr filters
+    if args.expansion_prob_het is not None:
+        if args.expansion_prob_het < 0 or args.expansion_prob_het > 1:
+           common.ERROR("--expansion-prob-het must be between 0 and 1")
+    if args.expansion_prob_hom is not None:
+        if args.expansion_prob_hom < 0 or args.expansion_prob_hom > 1:
+           common.ERROR("--expansion-prob-hom must be between 0 and 1")
+    if args.expansion_prob_total is not None:
+        if args.expansion_prob_total < 0 or args.expansion_prob_total > 1:
+           common.ERROR("--expansion-prob-total must be between 0 and 1")
+    if args.min_total_reads is not None:
+        if args.min_total_reads < 0: 
+           common.ERROR("--min-total-reads must be betweenter than 0")
 
 def WriteLocLog(loc_info, fname):
     """
@@ -257,7 +267,7 @@ def BuildCallFilters(args):
     if args.expansion_prob_hom is not None:
         cdict.append(filters.ProbHom(args.expansion_prob_hom))
     if args.expansion_prob_total is not None:
-        cdict.append(filters.ProbTot(args.expansion_prob_total))
+        cdict.append(filters.ProbTotal(args.expansion_prob_total))
     if args.min_total_reads is not None:
         cdict.append(filters.MinRead(args.min_total_reads))
     if args.filter_span_only is not None:
