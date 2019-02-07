@@ -33,7 +33,6 @@ Example command:
 """
 
 # TODO:
-# - add GangSTR filters
 # - add README info
 
 # Imports
@@ -92,7 +91,6 @@ def CheckFilters(invcf, args):
             common.ERROR("--max-call-stutter must be between 0 and 1")
         if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
             common.ERROR("No DP or DSTUTTER FORMAT found")        
-    # TODO add here to check gangstr filters
     if args.expansion_prob_het is not None:
         if args.expansion_prob_het < 0 or args.expansion_prob_het > 1:
            common.ERROR("--expansion-prob-het must be between 0 and 1")
