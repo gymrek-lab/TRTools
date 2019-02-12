@@ -2,6 +2,7 @@
 Locus-level and Call-level VCF filters
 """
 
+import common
 from pybedtools import BedTool
 import os
 import sys
@@ -95,7 +96,7 @@ def create_region_filter(name, filename):
             self.LoadRegions(filename)
         def LoadRegions(self, filename):
             if not os.path.exists(filename):
-                utils.ERROR("%s not found"%filename)
+                common.ERROR("%s not found"%filename)
             self.regions = BedTool(filename)
             if not self.regions._tabixed():
                 sys.stderr.write("Creating tabix index for %s\n"%filename)
