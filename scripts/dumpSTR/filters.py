@@ -100,7 +100,7 @@ def create_region_filter(name, filename):
             self.regions = BedTool(filename)
             if not self.regions._tabixed():
                 sys.stderr.write("Creating tabix index for %s\n"%filename)
-                regions.tabix(force=True)
+                self.regions.tabix(force=True)
         def __call__(self, record):
             interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
             if "chr" in interval:
