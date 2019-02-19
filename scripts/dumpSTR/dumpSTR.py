@@ -38,6 +38,7 @@ Example command:
 # Imports
 import sys
 import os
+import tempfile
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
 
 # Load external libraries
@@ -53,6 +54,12 @@ from vcf.parser import _Info
 
 # Load custom libraries
 import filters
+
+def MakeWriter(outfile, invcf, command):
+    invcf.metadata["command-DumpSTR"] = [command]
+    print invcf.metadata
+    writer = vcf.Writer(open(outfile, "w"), invcf)
+    return writer
 
 def CheckFilters(invcf, args):
     """
@@ -370,7 +377,7 @@ def main():
     invcf.infos["HRUN"] = _Info("HRUN", 1, "Integer", "Length of longest homopolymer run", source=None, version=None)
 
     # Set up output files
-    outvcf = vcf.Writer(open(args.out + ".vcf", "w"), invcf)
+    outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
 
     # Set up sample info
     all_reasons = GetAllCallFilters()
