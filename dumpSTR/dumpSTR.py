@@ -38,12 +38,15 @@ Example command:
 import sys
 import os
 
+# Load local libraries
+import strtools.utils.common as common
+import strtools.utils.utils as utils
+#import dumpSTR.utils as utils
+
 # Load external libraries
 import argparse
-import common
 import inspect
 import sys
-import utils
 import vcf
 from vcf.parser import _Filter
 from vcf.parser import _Format
@@ -174,6 +177,7 @@ def FilterCall(sample, call_filters):
     """
     reasons = []
     for cfilt in call_filters:
+        print(cfilt)
         if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
     return reasons
 

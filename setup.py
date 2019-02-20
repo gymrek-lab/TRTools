@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
-NAME = "STRTools"
+NAME = "strtools"
 AUTHOR = "Melissa Gymrek"
 AUTHOR_EMAIL = "mgymrek@ucsd.edu"
 MAINTAINER = "Melissa Gymrek"
@@ -23,11 +23,11 @@ setup(name=NAME,
       url=DOWNLOAD_URL,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
-      packages=['utils','dumpSTR','plinkSTR'],
+      packages=['strtools.utils','dumpSTR','plinkSTR'],
       entry_points={
           'console_scripts': [
-              'plinkSTR=plinkSTR:main',
-              'dumpSTR=dumpSTR:main'
+              'plinkSTR=plinkSTR.plinkSTR:main',
+              'dumpSTR=dumpSTR.dumpSTR:main'
           ],
       },
       install_requires=['argparse', 'pybedtools', 'pyvcf'],

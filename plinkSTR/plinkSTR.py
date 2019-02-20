@@ -26,11 +26,10 @@ Example - PGC:
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
 
-# Imports - TODO make this more robust
+import strtools.utils.common as common
+
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
-
 import warnings
 warnings.filterwarnings("ignore")
 

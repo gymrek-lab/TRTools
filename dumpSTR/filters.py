@@ -2,11 +2,12 @@
 Locus-level and Call-level VCF filters
 """
 
-import common
+import strtools.utils.common as common
+import strtools.utils.utils as utils
+
 from pybedtools import BedTool
 import os
 import sys
-import utils
 import vcf.filters
 
 ###################################
