@@ -251,3 +251,18 @@ class SpanBoundOnly(Reason):
         rcvals = [int(item) for item in sample["RC"].split(",")]
         if sample["DP"] == rcvals[1]+rcvals[3] : return rcvals[1]+rcvals[3]
         else: return None
+
+class BadCI(Reason):
+    name = "BadCI"
+    def __init__(self):
+        pass
+    def __call__(self, sample):
+        #### If ML estimate outside of CI
+        ml = [int(item) for item in sample["REPCN"]]
+        ci = sample["REPCI"].split(",")
+        for i in range(len(ml)):
+            ml_est = ml[i]
+            ci_low = int(ci[i].split("-")[0])
+            ci_high = int(ci[i].split("-")[1])
+            if ml_est<ci_low or ml_est>ci_high: return ml_est
+        return None

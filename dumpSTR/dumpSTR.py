@@ -12,7 +12,6 @@ Example command:
   --min-total-reads 50 \
   --num-records 100
 
-
 ./dumpSTR.py \
 --vcf /storage/mgymrek/ssc-imputation/filtered_vcfs/hipstr.chr22.allfilters.vcf.gz \
 --out test \
@@ -38,8 +37,6 @@ Example command:
 # Imports
 import sys
 import os
-import tempfile
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
 
 # Load external libraries
 import argparse
@@ -57,7 +54,6 @@ import filters
 
 def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-DumpSTR"] = [command]
-    print invcf.metadata
     writer = vcf.Writer(open(outfile, "w"), invcf)
     return writer
 
@@ -100,16 +96,16 @@ def CheckFilters(invcf, args):
             common.ERROR("No DP or DSTUTTER FORMAT found")        
     if args.expansion_prob_het is not None:
         if args.expansion_prob_het < 0 or args.expansion_prob_het > 1:
-           common.ERROR("--expansion-prob-het must be between 0 and 1")
+            common.ERROR("--expansion-prob-het must be between 0 and 1")
     if args.expansion_prob_hom is not None:
         if args.expansion_prob_hom < 0 or args.expansion_prob_hom > 1:
-           common.ERROR("--expansion-prob-hom must be between 0 and 1")
+            common.ERROR("--expansion-prob-hom must be between 0 and 1")
     if args.expansion_prob_total is not None:
         if args.expansion_prob_total < 0 or args.expansion_prob_total > 1:
-           common.ERROR("--expansion-prob-total must be between 0 and 1")
+            common.ERROR("--expansion-prob-total must be between 0 and 1")
     if args.min_total_reads is not None:
         if args.min_total_reads < 0: 
-           common.ERROR("--min-total-reads must be betweenter than 0")
+            common.ERROR("--min-total-reads must be greater than 0")
 
 def WriteLocLog(loc_info, fname):
     """
@@ -277,10 +273,12 @@ def BuildCallFilters(args):
         cdict.append(filters.ProbTotal(args.expansion_prob_total))
     if args.min_total_reads is not None:
         cdict.append(filters.MinRead(args.min_total_reads))
-    if args.filter_span_only is not None:
+    if args.filter_span_only:
         cdict.append(filters.SpanOnly())
-    if args.filter_spanbound_only is not None:
+    if args.filter_spanbound_only:
         cdict.append(filters.SpanBoundOnly())
+    if args.filter_badCI:
+        cdict.append(filters.BadCI())
     return cdict
 
 def BuildLocusFilters(args):
@@ -321,14 +319,6 @@ def main():
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
 
-    call_group = parser.add_argument_group("Call-level filters")
-    call_group.add_argument("--min-call-DP", help="Minimum call coverage", type=int)
-    call_group.add_argument("--max-call-DP", help="Maximum call coverage", type=int)
-    call_group.add_argument("--min-call-Q", help="Minimum call quality score", type=float)
-    call_group.add_argument("--max-call-flank-indel", help="Maximum call flank indel rate", type=float)
-    call_group.add_argument("--max-call-stutter", help="Maximum call stutter rate", type=float)
-    call_group.add_argument("--min-supp-reads", help="Minimum supporting reads for each allele", default=0, type=int)
-
     locus_group = parser.add_argument_group("Locus-level filters")
     locus_group.add_argument("--min-locus-callrate", help="Minimum locus call rate", type=float)
     locus_group.add_argument("--min-locus-hwep", help="Filter loci failing HWE at this p-value threshold", type=float)
@@ -339,6 +329,18 @@ def main():
     locus_group.add_argument("--filter-regions-names", help="Comma-separated list of filter names for each BED filter file", type=str)
     locus_group.add_argument("--filter-hrun", help="Filter STRs with long homopolymer runs.", action="store_true")
     locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
+
+    #### General call-level filters (HipSTR or GangSTR)
+    call_group = parser.add_argument_group("General call-level filters")
+    call_group.add_argument("--min-call-DP", help="Minimum call coverage", type=int)
+    call_group.add_argument("--max-call-DP", help="Maximum call coverage", type=int)
+    call_group.add_argument("--min-call-Q", help="Minimum call quality score", type=float)    
+
+    #### HipSTR
+    hipstr_call_group = parser.add_argument_group("Call-level filters specific to HipSTR output")
+    hipstr_call_group.add_argument("--max-call-flank-indel", help="Maximum call flank indel rate", type=float)
+    hipstr_call_group.add_argument("--max-call-stutter", help="Maximum call stutter rate", type=float)
+    hipstr_call_group.add_argument("--min-supp-reads", help="Minimum supporting reads for each allele", default=0, type=int)
     
     #### GangSTR
     gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
@@ -348,8 +350,9 @@ def main():
     gangstr_call_group.add_argument("--min-total-reads", help="Filter based minimum total reads", type=int)
     gangstr_call_group.add_argument("--filter-span-only", help="Filter out all reads except spanning", action="store_true")
     gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
+    gangstr_call_group.add_argument("--filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
 
-    debug_group = parser.add_argument_group("Debugging")
+    debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
 
     args = parser.parse_args()
