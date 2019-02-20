@@ -177,7 +177,6 @@ def FilterCall(sample, call_filters):
     """
     reasons = []
     for cfilt in call_filters:
-        print(cfilt)
         if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
     return reasons
 
