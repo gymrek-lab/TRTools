@@ -9,6 +9,6 @@ nohup.out
 test.*
 
 # Build files
-STRTools.egg-info/
+*egg-info*
 build/
 dist/
