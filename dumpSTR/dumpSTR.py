@@ -31,9 +31,6 @@ Example command:
 --num-records 10
 """
 
-# TODO:
-# - add README info
-
 # Imports
 import sys
 import os
@@ -106,9 +103,6 @@ def CheckFilters(invcf, args):
     if args.expansion_prob_total is not None:
         if args.expansion_prob_total < 0 or args.expansion_prob_total > 1:
             common.ERROR("--expansion-prob-total must be between 0 and 1")
-    if args.min_total_reads is not None:
-        if args.min_total_reads < 0: 
-            common.ERROR("--min-total-reads must be greater than 0")
 
 def WriteLocLog(loc_info, fname):
     """
@@ -274,8 +268,6 @@ def BuildCallFilters(args):
         cdict.append(filters.ProbHom(args.expansion_prob_hom))
     if args.expansion_prob_total is not None:
         cdict.append(filters.ProbTotal(args.expansion_prob_total))
-    if args.min_total_reads is not None:
-        cdict.append(filters.MinRead(args.min_total_reads))
     if args.filter_span_only:
         cdict.append(filters.SpanOnly())
     if args.filter_spanbound_only:
@@ -350,7 +342,6 @@ def main():
     gangstr_call_group.add_argument("--expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
-    gangstr_call_group.add_argument("--min-total-reads", help="Filter based minimum total reads", type=int)
     gangstr_call_group.add_argument("--filter-span-only", help="Filter out all reads except spanning", action="store_true")
     gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
     gangstr_call_group.add_argument("--filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
@@ -414,6 +405,8 @@ def main():
                 break
             record.add_filter(filt.filter_name())
             loc_info[filt.filter_name()] += 1
+        if args.drop_filtered:
+            if record.call_rate == 0: output_record = False
         if output_record:
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)

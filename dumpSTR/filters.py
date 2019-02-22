@@ -224,15 +224,6 @@ class ProbTotal(Reason):
         if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
         else: return None
 
-class MinRead(Reason):
-    name = "MinRead"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        #### Min reads 
-        if sample["DP"] < self.threshold: return sample["DP"]
-        else: return None
-
 class SpanOnly(Reason):
     name = "SpanOnly"
     def __init__(self):

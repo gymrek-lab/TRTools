@@ -18,3 +18,5 @@ STRTools includes the following tools.
 
 Type `<command> --help` to see a full set of options.
 
+## Usage
+See the README in each subidrectory for usage details.
