@@ -39,8 +39,8 @@ General parameters for call-level filtering (apply to both HipSTR or GangSTR):
 
 HipSTR-specific call-level filters:
 * **`--max-call-flank-indel <float>`**: Maximum rate of indels in flanking regions
-* **`--max-call-stutter <float>**`: Maximum call stutter rate
-* **`--min-supp-reads <int>**`: Require this many supporting reads for each allele length called.
+* **`--max-call-stutter <float>`**: Maximum call stutter rate
+* **`--min-supp-reads <int>`**: Require this many supporting reads for each allele length called.
 
 GangSTR-specific call-level filters:
 * **`--expansion-prob-het <float>`**: Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this
