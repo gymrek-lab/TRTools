@@ -20,3 +20,6 @@ Type `<command> --help` to see a full set of options.
 
 ## Usage
 See the README in each subidrectory for usage details.
+
+## Docker
+The Dockerfile in this container sets up a Docker with GangSTR and STRTools installed. See https://hub.docker.com/r/gymreklab/str-toolkit.
