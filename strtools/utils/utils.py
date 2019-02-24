@@ -60,3 +60,53 @@ def GetSTRHWE(record, samples=[], uselength=False):
     # Binomial test for HWE
     hwe_p = scipy.stats.binom_test(obs_het, n=obs_het+obs_hom, p=1-exp_hom_frac)
     return hwe_p
+
+nucToNumber={"A":0,"C":1,"G":2,"T":3}
+
+def CheckMotif(motif):
+    # If all consist of the same nucleotide, error
+    if len(motif) > 1 and len(''.join(set(motif))) == 1: return False
+    return True
+
+def GetCanonicalMotif(repseq):
+    """ Get canonical STR sequence, considering both strands """
+    repseq = repseq.upper()
+    repseq_f = getCanonicalMS(repseq)
+    repseq_r = getCanonicalMS(reverseComplement(repseq))
+    repseq = compareString(repseq_f, repseq_r)
+    return repseq
+
+def getCanonicalMS(repseq):
+    """ Get canonical STR sequence """
+    size = len(repseq)
+    canonical = repseq
+    for i in range(size):
+        newseq = repseq[size-i:]+repseq[0:size-i]
+        for j in range(size):
+            if nucToNumber[newseq[j]] < nucToNumber[canonical[j]]:
+                canonical = newseq
+            elif nucToNumber[newseq[j]] > nucToNumber[canonical[j]]:
+                break
+    return canonical
+
+def compareString(seq1,seq2):
+    """ Compare two strings alphabetically """
+    size = len(seq1)
+    for i in range(size):
+        if nucToNumber[seq1[i]] < nucToNumber[seq2[i]]:
+            return seq1
+        if nucToNumber[seq1[i]] > nucToNumber[seq2[i]]:
+            return seq2
+    return seq1
+
+def reverseComplement(seq):
+    """ Get the reverse complement of a nucleotide string """
+    newseq = ""
+    size = len(seq)
+    for i in range(len(seq)):
+        char = seq[len(seq)-i-1]
+        if char == "A": newseq += "T"
+        if char == "G": newseq += "C"
+        if char == "C": newseq += "G"
+        if char == "T": newseq += "A"
+    return newseq
