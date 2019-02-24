@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION

@@ -3,32 +3,6 @@
 """
 Tool for filtering and QC of STR genotypes
 
-Example command:
-
-./dumpSTR.py \
-  --vcf /storage/nmmsv/analysis/GangSTR-analyses/genome_wide/results/20190129T1710_NA12878_whole_hg19_ver10_exper8_rescue0_strinfo_parallel/NA12878_whole_exper8_rescue0_strinfo_parallel_merged.vcf.gz \
-  --out test \
-  --filter-span-only \
-  --min-total-reads 50 \
-  --num-records 100
-
-./dumpSTR.py \
---vcf /storage/mgymrek/ssc-imputation/filtered_vcfs/hipstr.chr22.allfilters.vcf.gz \
---out test \
---min-call-DP 10 \
---max-call-DP 1000 \
---min-call-Q 0.9 \
---max-call-flank-indel 0.15 \
---max-call-stutter 0.15 \
---min-locus-callrate 0.8 \
---min-locus-hwep 0.01 \
---min-locus-het 0 \
---max-locus-het 1 \
---use-length \
---filter-regions filter_files/hg19_segmentalduplications.bed.gz \
---filter-regions-names SEGDUP \
---filter-hrun \
---num-records 10
 """
 
 # Imports
@@ -50,7 +24,7 @@ from vcf.parser import _Format
 from vcf.parser import _Info
 
 # Load custom libraries
-import filters
+import dumpSTR.filters as filters
 
 def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-DumpSTR"] = [command]
