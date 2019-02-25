@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
@@ -23,7 +23,7 @@ setup(name=NAME,
       url=DOWNLOAD_URL,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
-      packages=['strtools.utils','dumpSTR','plinkSTR'],
+      packages=find_packages(),
       entry_points={
           'console_scripts': [
               'plinkSTR=plinkSTR.plinkSTR:main',

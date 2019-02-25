@@ -12,7 +12,7 @@ import os
 # Load local libraries
 import strtools.utils.common as common
 import strtools.utils.utils as utils
-#import dumpSTR.utils as utils
+import dumpSTR.filters as filters
 
 # Load external libraries
 import argparse
@@ -22,9 +22,6 @@ import vcf
 from vcf.parser import _Filter
 from vcf.parser import _Format
 from vcf.parser import _Info
-
-# Load custom libraries
-import dumpSTR.filters as filters
 
 def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-DumpSTR"] = [command]
