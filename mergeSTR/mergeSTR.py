@@ -65,6 +65,18 @@ def DoneReading(records):
     """
     return True # TODO
 
+def GetNextRecords(readers, current_records, increment):
+    """
+    Increment readers[i] if increment[i] set to true
+    Else keep current_records[i]
+    """
+    new_records = []
+    for i in range(len(readers)):
+        if increment[i]:
+            new_records.append(next(readers[i]))
+        else: new_records.append(current_records[i])
+    return new_records
+
 def main():
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
@@ -95,7 +107,7 @@ def main():
     done = DoneReading(current_records)
     while not done:
         MergeRecords(current_records, is_min, vcfw, args)
-        current_records = [next(reader) for reader in vcfreaders]
+        current_records = GetNextRecords(vcfreaders, current_records, is_min)
         is_min = GetMinRecords(current_records)
         done = DoneReading(current_records)
 
