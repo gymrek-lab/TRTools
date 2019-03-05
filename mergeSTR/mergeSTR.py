@@ -130,6 +130,21 @@ def GetID(idval):
     if idval is None: return "."
     else: return idval
 
+def GetInfoItem(current_records, mergelist, info_field, fail=True):
+    """
+    Get info item. Make sure it's the same across merged records
+    if fail=True, die if items not the same
+    """
+    vals = set()
+    for i in range(len(mergelist)):
+        if mergelist[i]:
+            vals.add(current_records[i].INFO[info_field])
+    if len(vals)==1: return "%s=%s"%(info_field, vals.pop())
+    else:
+        if fail: common.ERROR("More than one value found for %s"%info_field)
+        sys.stderr.write("WARNING more than one value found for %s"%info_field)
+        return None
+
 def MergeRecords(readers, current_records, mergelist, vcfw, args):
     """
     Merge all records with indicator set to True in mergelist
@@ -148,7 +163,18 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
     output_items.append(",".join(alt_alleles)) # ALT
     output_items.append(".") # QUAL
     output_items.append(".") # FILTER
-    # Set INFO - TODO
+    # Set INFO
+    info_items = []
+    for info_field in ["END", "PERIOD", "RU", "REF"]:
+        info_items.append(GetInfoItem(current_records, mergelist, info_field))
+    for info_field in ["STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
+        info_items.append(GetInfoItem(current_records, mergelist, info_field, fail=False))
+    if args.merge_ggl:
+        common.ERROR("merge-ggl not implemented yet") # TODO deal with merging GRID
+    info_items = [item for item in info_items if item is not None]
+    output_items.append(";".join(info_items))
+    # should we use qexp?
+    use_qexp = ("EXPTHRESH" in [item.split("=")[0] for item in info_items])
     # Set FORMAT - TODO
     vcfw.write("\t".join(output_items)+"\n")
 
