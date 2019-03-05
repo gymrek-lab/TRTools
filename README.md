@@ -1,6 +1,9 @@
 # STRTools
 Toolkit for genome-wide analysis of STRs
 
+## Docker
+The Dockerfile in this container sets up a Docker with GangSTR and STRTools installed. You can pull this image from https://hub.docker.com/r/gymreklab/str-toolkit.
+
 ## Install
 
 Run the following command to install:
@@ -21,5 +24,3 @@ Type `<command> --help` to see a full set of options.
 ## Usage
 See the README in each subidrectory for usage details.
 
-## Docker
-The Dockerfile in this container sets up a Docker with GangSTR and STRTools installed. See https://hub.docker.com/r/gymreklab/str-toolkit.
