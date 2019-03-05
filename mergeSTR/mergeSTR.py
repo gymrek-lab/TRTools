@@ -23,27 +23,64 @@ Tool for merging STR VCF files from GangSTR
 
 # Load external libraries
 import argparse
+import sys
 import vcf
 
 # Load local libraries
 import strtools.utils.common as common
 import strtools.utils.utils as utils
 
-def WriteMergedHeader(vcfw, args):
+def GetInfoString(info):
+    return '##INFO=<ID=%s,Number=%s,Type=%s,Description="%s">'%(info.id, info.num, info.type, info.desc)
+
+
+def WriteMergedHeader(vcfw, args, readers, cmd):
     """
     Write merged header for VCFs in args.vcfs
     Also do some checks on the VCFs to make sure merging
     is appropriate
     """
-    # TODO
-    pass
+    # Check contigs the same for all readers
+    contigs = readers[0].contigs
+    for i in range(1, len(readers)):
+        if readers[i].contigs != contigs:
+            common.ERROR("Different contigs found across VCF files. Make sure all files used the same reference")
+    # Write VCF format, commands, and contigs
+    vcfw.write("##fileformat=VCFv4.1\n")
+    for r in readers: vcfw.write("##command="+r.metadata["command"][0]+"\n")
+    vcfw.write("##command="+cmd+"\n")
+    for key,val in contigs.items():
+        vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
+    # Write GangSTR specific INFO fields
+    for field in ["END", "PERIOD", "RU", "REF","STUTTERP","STUTTERDOWN","STUTTERP","QEXP"]:
+        vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
+    if args.merge_ggl: vcfw.write(GetInfoString(readers[0].infos["GRID"])+"\n")
+    # Write GangSTR specific FORMAT fields - TODO
+    # Write sample list - TODO
 
-def GetMinRecords(record_list):
+def GetChromOrder(r, chroms):
+    if r is None: return -1
+    else: return chroms.index(r.CHROM)
+
+def GetPos(r):
+    if r is None: return -1
+    else: return r.POS
+
+def CheckPos(record, chrom, pos):
+    if record is None: return False
+    return record.CHROM==chrom and record.POS==pos
+
+def GetMinRecords(record_list, chroms):
     """
     Return a vector of boolean set to true if 
     the record is in lowest sort order of all the records
+    Use order in chroms to determine sort order of chromosomes
     """
-    return [False]*len(record_list) # TODO
+    chrom_order = [GetChromOrder(r, chroms) for r in record_list]
+    pos = [GetPos(r) for r in record_list]
+    min_chrom = min(chrom_order)
+    min_pos = min([pos[i] for i in range(len(pos)) if chrom_order[i]==min_chrom])
+    return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 def MergeRecords(current_records, mergelist, vcfw, args):
     """
@@ -56,14 +93,15 @@ def LoadReaders(vcffiles):
     """
     Return list of VCF readers
     """
-    return []
-    # TODO
+    if len(vcffiles) == 0:
+        common.ERROR("No VCF files found")
+    return [vcf.Reader(open(f, "rb")) for f in vcffiles]
 
 def DoneReading(records):
     """
     Check if all records are at the end of the file
     """
-    return True # TODO
+    return all([item is None for item in records])
 
 def GetNextRecords(readers, current_records, increment):
     """
@@ -73,7 +111,9 @@ def GetNextRecords(readers, current_records, increment):
     new_records = []
     for i in range(len(readers)):
         if increment[i]:
-            new_records.append(next(readers[i]))
+            try:
+                new_records.append(next(readers[i]))
+            except: new_records.append(None)
         else: new_records.append(current_records[i])
     return new_records
 
@@ -94,21 +134,23 @@ def main():
     ### Parser args ###
     args = parser.parse_args()
 
-    ### Set up VCF writer ###
-    vcfw = open(args.out + ".vcf", "w")
-    WriteMergedHeader(vcfw, args)
-
     ### Load readers ###
     vcfreaders = LoadReaders(args.vcfs.split(","))
+    contigs = vcfreaders[0].contigs
+    chroms = list(contigs)
+
+    ### Set up VCF writer ###
+    vcfw = open(args.out + ".vcf", "w")
+    WriteMergedHeader(vcfw, args, vcfreaders, " ".join(sys.argv))
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
-    is_min = GetMinRecords(current_records)
+    is_min = GetMinRecords(current_records, chroms)
     done = DoneReading(current_records)
     while not done:
         MergeRecords(current_records, is_min, vcfw, args)
         current_records = GetNextRecords(vcfreaders, current_records, is_min)
-        is_min = GetMinRecords(current_records)
+        is_min = GetMinRecords(current_records, chroms)
         done = DoneReading(current_records)
 
 if __name__ == "__main__":
