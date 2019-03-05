@@ -103,12 +103,54 @@ def GetMinRecords(record_list, chroms):
     min_pos = min([pos[i] for i in range(len(pos)) if chrom_order[i]==min_chrom])
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
-def MergeRecords(current_records, mergelist, vcfw, args):
+def GetRefAllele(current_records, mergelist):
+    refs = []
+    chrom = ""
+    pos = -1
+    for i in range(len(mergelist)):
+        if mergelist[i]:
+            chrom = current_records[i].CHROM
+            pos = current_records[i].POS
+            refs.append(current_records[i].REF.upper())
+    if len(set(refs)) != 1:
+        common.ERROR("Conflicting refs found at %s:%s"%(chrom, pos))
+    return refs[0]
+
+def GetAltAlleles(current_records, mergelist):
+    alts = set()
+    for i in range(len(mergelist)):
+        if mergelist[i]:
+            ralts = current_records[i].ALT
+            for item in ralts:
+                if item is not None and item:
+                    alts.add(item.sequence.upper())
+    return sorted(list(alts), key=len)
+
+def GetID(idval):
+    if idval is None: return "."
+    else: return idval
+
+def MergeRecords(readers, current_records, mergelist, vcfw, args):
     """
     Merge all records with indicator set to True in mergelist
     Output merged record to vcfw
     """
-    pass # TODO
+    output_items = []
+    use_ind = [i for i in range(len(mergelist)) if mergelist[i]]
+    if len(use_ind)==0: return
+    alt_alleles = GetAltAlleles(current_records, mergelist)
+    ref_allele = GetRefAllele(current_records, mergelist)
+    # Set common fields
+    output_items.append(current_records[use_ind[0]].CHROM) # CHROM
+    output_items.append(str(current_records[use_ind[0]].POS)) # POS
+    output_items.append(GetID(current_records[use_ind[0]].ID)) # ID
+    output_items.append(ref_allele) # REF
+    output_items.append(",".join(alt_alleles)) # ALT
+    output_items.append(".") # QUAL
+    output_items.append(".") # FILTER
+    # Set INFO - TODO
+    # Set FORMAT - TODO
+    vcfw.write("\t".join(output_items)+"\n")
 
 def LoadReaders(vcffiles):
     """
@@ -176,7 +218,7 @@ def main():
     is_min = GetMinRecords(current_records, chroms)
     done = DoneReading(current_records)
     while not done:
-        MergeRecords(current_records, is_min, vcfw, args)
+        MergeRecords(vcfreaders, current_records, is_min, vcfw, args)
         current_records = GetNextRecords(vcfreaders, current_records, is_min)
         is_min = GetMinRecords(current_records, chroms)
         done = DoneReading(current_records)
