@@ -25,6 +25,7 @@ Tool for merging STR VCF files from GangSTR
 
 # Load external libraries
 import argparse
+import os
 import sys
 import vcf
 
