@@ -21,6 +21,8 @@ Tool for merging STR VCF files from GangSTR
 # Special options required for:
 #- Merging GGL (affects INFO:GRID and FORMAT:GGL)
 
+# Ignores filters. For now this should be done before filtering with DumpSTR
+
 # Load external libraries
 import argparse
 import sys
@@ -33,6 +35,18 @@ import strtools.utils.utils as utils
 def GetInfoString(info):
     return '##INFO=<ID=%s,Number=%s,Type=%s,Description="%s">'%(info.id, info.num, info.type, info.desc)
 
+def GetFormatString(fmt):
+    return '##FORMAT=<ID=%s,Number=%s,Type=%s,Description="%s">'%(fmt.id, fmt.num, fmt.type, fmt.desc)
+
+def GetSamples(readers, usefilenames=False):
+    samples = []
+    for r in readers:
+        if usefilenames:
+            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
+        else: samples = samples + r.samples
+    if len(set(samples))!=len(samples):
+        common.ERROR("Duplicate samples found. Quitting")
+    return samples
 
 def WriteMergedHeader(vcfw, args, readers, cmd):
     """
@@ -52,11 +66,17 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
     for key,val in contigs.items():
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
     # Write GangSTR specific INFO fields
-    for field in ["END", "PERIOD", "RU", "REF","STUTTERP","STUTTERDOWN","STUTTERP","QEXP"]:
+    for field in ["END", "PERIOD", "RU", "REF","STUTTERP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
         vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
     if args.merge_ggl: vcfw.write(GetInfoString(readers[0].infos["GRID"])+"\n")
-    # Write GangSTR specific FORMAT fields - TODO
-    # Write sample list - TODO
+    # Write GangSTR specific FORMAT fields
+    for field in ["GT", "DP", "Q", "REPCN", "REPCI", "RC", "ML", "INS", "STDERR", "QEXP"]:
+        vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
+    if args.merge_ggl: vcfw.write(GetFormatString(readers[0].formats["GGL"])+"\n")
+    # Write sample list
+    samples=GetSamples(readers, usefilenames=args.update_sample_from_file)
+    header_fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"]
+    vcfw.write("#"+"\t".join(header_fields+samples)+"\n")
 
 def GetChromOrder(r, chroms):
     if r is None: return -1
@@ -95,6 +115,13 @@ def LoadReaders(vcffiles):
     """
     if len(vcffiles) == 0:
         common.ERROR("No VCF files found")
+    for f in vcffiles:
+        if not f.endswith(".vcf.gz"):
+            common.ERROR("Make sure %s is bgzipped and indexed"%f)
+        if not os.path.isfile(f):
+            common.ERROR("Could not find VCF file %s"%f)
+        if not os.path.isfile(f+".tbi"):
+            common.ERROR("Could not find VCF index %s.tbi"%f)
     return [vcf.Reader(open(f, "rb")) for f in vcffiles]
 
 def DoneReading(records):
