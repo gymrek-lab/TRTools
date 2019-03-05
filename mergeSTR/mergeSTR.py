@@ -33,6 +33,8 @@ import vcf
 import strtools.utils.common as common
 import strtools.utils.utils as utils
 
+NOCALLSTRING = "."
+
 def GetInfoString(info):
     return '##INFO=<ID=%s,Number=%s,Type=%s,Description="%s">'%(info.id, info.num, info.type, info.desc)
 
@@ -49,6 +51,12 @@ def GetSamples(readers, usefilenames=False):
         common.ERROR("Duplicate samples found. Quitting")
     return samples
 
+def MergeGRID(current_records, mergelist):
+    """
+    Merge the INFO/GRID field
+    """
+    return (-1, -1) # TODO
+    
 def WriteMergedHeader(vcfw, args, readers, cmd):
     """
     Write merged header for VCFs in args.vcfs
@@ -145,6 +153,38 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
         sys.stderr.write("WARNING more than one value found for %s"%info_field)
         return None
 
+def GetGT(gt_alleles, alleles):
+    """
+    Update GT field based on ref/alt alleles
+    """
+    newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
+    return "/".join([str(item) for item in newgt])
+
+def GetSampleInfo(record, alleles, formats, use_qexp, args):
+    """
+    Output sample info
+    """
+    easy_fmts = ["DP","Q","REPCN","REPCI","RC","ML","INS","STDERR"]
+    if use_qexp: easy_fmts.append("QEXP")
+    record_items = []
+    for sample in record:
+        sample_items = []
+        if not sample.called:
+            record_items.append(".")
+            continue
+        for fmt in formats:
+            if fmt == "GT":
+                sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
+            if fmt == "GGL":
+                if args.merge_ggl:
+                    sample_items.append(".") # TODO merge this for real
+            if fmt in easy_fmts:
+                val = sample[fmt]
+                if type(val)==list: val = ",".join([str(item) for item in val])
+                sample_items.append(val)
+        record_items.append(":".join([str(item) for item in sample_items]))
+    return record_items
+
 def MergeRecords(readers, current_records, mergelist, vcfw, args):
     """
     Merge all records with indicator set to True in mergelist
@@ -170,12 +210,23 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
     for info_field in ["STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
         info_items.append(GetInfoItem(current_records, mergelist, info_field, fail=False))
     if args.merge_ggl:
-        common.ERROR("merge-ggl not implemented yet") # TODO deal with merging GRID
+        info_items.append("GRID=%s,%s"%MergeGRID(current_records, mergelist))
     info_items = [item for item in info_items if item is not None]
     output_items.append(";".join(info_items))
     # should we use qexp?
     use_qexp = ("EXPTHRESH" in [item.split("=")[0] for item in info_items])
-    # Set FORMAT - TODO
+    # Set FORMAT
+    formats = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR"]
+    if use_qexp: formats.append("QEXP")
+    if args.merge_ggl: formats.append("GGL")
+    output_items.append(":".join(formats))
+    # Set sample info
+    alleles = [ref_allele]+alt_alleles
+    for i in range(len(mergelist)):
+        if mergelist[i]:
+            output_items.extend(GetSampleInfo(current_records[i], alleles, formats, use_qexp, args))
+        else:
+            output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
 
 def LoadReaders(vcffiles):
@@ -229,6 +280,7 @@ def main():
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
     ### Parser args ###
     args = parser.parse_args()
+    if args.merge_ggl: common.ERROR("--merge-ggl not implemented yet") # TODO remove
 
     ### Load readers ###
     vcfreaders = LoadReaders(args.vcfs.split(","))

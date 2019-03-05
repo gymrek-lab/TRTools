@@ -27,7 +27,8 @@ setup(name=NAME,
       entry_points={
           'console_scripts': [
               'plinkSTR=plinkSTR.plinkSTR:main',
-              'dumpSTR=dumpSTR.dumpSTR:main'
+              'dumpSTR=dumpSTR.dumpSTR:main',
+              'mergeSTR=mergeSTR.mergeSTR:main'
           ],
       },
       install_requires=['argparse', 'pybedtools', 'pyvcf'],
