@@ -6,7 +6,7 @@ Tool for merging STR VCF files from GangSTR
 """
 
 # Test command:
-# ./mergeSTR/mergeSTR.py --vcfs test1.vcf.gz,test2.vcf.gz --out test
+# ./mergeSTR/mergeSTR.py --vcfs ERR1955393.17.sorted.vcf.gz,ERR1955394.17.sorted.vcf.gz --out test
 
 ### GangSTR merging ###
 # By default, merge the following FORMAT fields in the logical way:
