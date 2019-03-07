@@ -360,7 +360,11 @@ def main():
 
     # Go through each record
     record_counter = 0
-    for record in invcf:
+    while True:
+        try:
+            record = next(invcf)
+        except IndexError: continue
+        except StopIteration: break
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
