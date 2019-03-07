@@ -363,7 +363,9 @@ def main():
     while True:
         try:
             record = next(invcf)
-        except IndexError: continue
+        except IndexError:
+            common.WARNING("Skipping TR that couldn't be parsed by PyVCF. Check VCF format")
+            continue
         except StopIteration: break
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
