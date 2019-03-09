@@ -322,7 +322,7 @@ def main():
 
     args = parser.parse_args()
     # Load VCF file
-    invcf = vcf.Reader(open(args.vcf, "rb"))
+    invcf = vcf.Reader(filename=args.vcf)
 
     # Set up filter list
     CheckFilters(invcf, args)
