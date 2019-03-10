@@ -26,6 +26,7 @@ Tool for merging STR VCF files from GangSTR
 # Load external libraries
 import argparse
 import os
+import numpy as np
 import sys
 import vcf
 
@@ -88,11 +89,11 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
     vcfw.write("#"+"\t".join(header_fields+samples)+"\n")
 
 def GetChromOrder(r, chroms):
-    if r is None: return -1
+    if r is None: return np.inf
     else: return chroms.index(r.CHROM)
 
 def GetPos(r):
-    if r is None: return -1
+    if r is None: return np.inf
     else: return r.POS
 
 def CheckPos(record, chrom, pos):
@@ -266,6 +267,22 @@ def GetNextRecords(readers, current_records, increment):
         else: new_records.append(current_records[i])
     return new_records
 
+def PrintCurrentRecords(current_records, is_min):
+    info = []
+    for i in range(len(is_min)):
+        try:
+            chrom = current_records[i].CHROM
+            pos = current_records[i].POS
+        except:
+            chrom = None
+            pos = None
+        info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
+    sys.stderr.write("\t".join(info)+"\n")
+
+def CheckMin(is_min):
+    if sum(is_min)==0:
+        common.ERROR("Unexpected error. Stuck in infinite loop and exiting.")
+
 def main():
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
@@ -280,7 +297,7 @@ def main():
     opt_group = parser.add_argument_group("Optional arguments")
     opt_group.add_argument("--verbose", help="Print out extra info", action="store_true")
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
-    ### Parser args ###
+    ### Parse args ###
     args = parser.parse_args()
     if args.merge_ggl: common.ERROR("--merge-ggl not implemented yet") # TODO remove
 
@@ -298,6 +315,8 @@ def main():
     is_min = GetMinRecords(current_records, chroms)
     done = DoneReading(current_records)
     while not done:
+        if args.verbose: PrintCurrentRecords(current_records, is_min)
+        CheckMin(is_min)
         MergeRecords(vcfreaders, current_records, is_min, vcfw, args)
         current_records = GetNextRecords(vcfreaders, current_records, is_min)
         is_min = GetMinRecords(current_records, chroms)

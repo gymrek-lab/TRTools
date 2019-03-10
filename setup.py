@@ -32,7 +32,10 @@ setup(name=NAME,
               'statSTR=statSTR.statSTR:main'
           ],
       },
-      install_requires=['argparse', 'pybedtools', 'pyvcf'],
+      install_requires=['argparse',
+                        'numpy',
+                        'pybedtools',
+                        'pyvcf'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.2',\
                        'License :: OSI Approved :: MIT License',\
