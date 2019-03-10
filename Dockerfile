@@ -34,9 +34,9 @@ RUN make && make install
 WORKDIR ..
 
 # Download, compile, and install GangSTR
-RUN wget -O GangSTR-2.3.tar.gz https://github.com/gymreklab/GangSTR/releases/download/v2.3/GangSTR-2.3.tar.gz
-RUN tar -xzvf GangSTR-2.3.tar.gz
-WORKDIR GangSTR-2.3
+RUN wget -O GangSTR-2.4.tar.gz https://github.com/gymreklab/GangSTR/releases/download/v2.4/GangSTR-2.4.tar.gz
+RUN tar -xzvf GangSTR-2.4.tar.gz
+WORKDIR GangSTR-2.4
 RUN ./install-gangstr.sh
 RUN ldconfig
 WORKDIR ..
