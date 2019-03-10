@@ -319,6 +319,8 @@ def main():
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
+    debug_group.add_argument("--die-on-warning", help="Quit if a record can't be parsed", action="store_true")
+    debug_group.add_argument("--verbose", help="Print out extra info", action="store_true")
 
     args = parser.parse_args()
     # Load VCF file
@@ -365,8 +367,10 @@ def main():
             record = next(invcf)
         except IndexError:
             common.WARNING("Skipping TR that couldn't be parsed by PyVCF. Check VCF format")
-            continue
+            if args.die_on_warning: sys.exit(1)
         except StopIteration: break
+        if args.verbose:
+            common.MSG("Processing %s:%s"%(record.CHROM, record.POS))
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
