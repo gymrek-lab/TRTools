@@ -200,7 +200,9 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
     output_items.append(str(current_records[use_ind[0]].POS)) # POS
     output_items.append(GetID(current_records[use_ind[0]].ID)) # ID
     output_items.append(ref_allele) # REF
-    output_items.append(",".join(alt_alleles)) # ALT
+    if len(alt_alleles) == 0:
+        output_items.append(".")
+    else: output_items.append(",".join(alt_alleles)) # ALT
     output_items.append(".") # QUAL
     output_items.append(".") # FILTER
     # Set INFO
