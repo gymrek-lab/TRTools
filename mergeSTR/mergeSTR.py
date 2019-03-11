@@ -100,7 +100,11 @@ def CheckPos(record, chrom, pos):
     if record is None: return False
     return record.CHROM==chrom and record.POS==pos
 
-def GetMinRecords(record_list, chroms):
+def GetChromOrderEqual(chrom_order, min_chrom):
+    if chrom_order == np.inf: return False
+    return chrom_order == min_chrom
+
+def GetMinRecords(record_list, chroms, debug=True):
     """
     Return a vector of boolean set to true if 
     the record is in lowest sort order of all the records
@@ -109,7 +113,11 @@ def GetMinRecords(record_list, chroms):
     chrom_order = [GetChromOrder(r, chroms) for r in record_list]
     pos = [GetPos(r) for r in record_list]
     min_chrom = min(chrom_order)
-    min_pos = min([pos[i] for i in range(len(pos)) if chrom_order[i]==min_chrom])
+    allpos = [pos[i] for i in range(len(pos)) if GetChromOrderEqual(chrom_order[i], min_chrom)]
+    if len(allpos) > 0:
+        min_pos = min(allpos)
+    else:
+        return [False]*len(record_list)
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 def GetRefAllele(current_records, mergelist):
@@ -312,7 +320,7 @@ def main():
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
-    is_min = GetMinRecords(current_records, chroms)
+    is_min = GetMinRecords(current_records, chroms, debug=args.verbose)
     done = DoneReading(current_records)
     while not done:
         if args.verbose: PrintCurrentRecords(current_records, is_min)
