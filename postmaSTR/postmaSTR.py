@@ -45,6 +45,29 @@ def CheckFilters(invcf, args):
         if args.unaff_expansion_prob_total < 0 or args.unaff_expansion_prob_total > 1:
             common.ERROR("--unaff_expansion-prob-total must be between 0 and 1")
 
+def BuildPostMaSTRCallFilters(args):
+    """
+    Build list of locus-level filters to include for affected and unaffected samples.
+    Input:
+    - args (namespace from parser.parse_args)
+    
+    Output:
+    - cdict ({'affec': list<filters.Filter>, 'unaff': list<filters.Filter>}): list of call-level filters
+    """
+    cdict = {'affec':[], 'unaff':[]}
+    if args.affec_expansion_prob_het is not None:
+        cdict['affec'].append(filters.ProbHet(args.affec_expansion_prob_het))
+    if args.affec_expansion_prob_hom is not None:
+        cdict['affec'].append(filters.ProbHom(args.affec_expansion_prob_hom))
+    if args.affec_expansion_prob_total is not None:
+        cdict['affec'].append(filters.ProbTotal(args.affec_expansion_prob_total))
+    if args.unaff_expansion_prob_het is not None:
+        cdict['unaff'].append(filters.ProbHet(args.unaff_expansion_prob_het))
+    if args.unaff_expansion_prob_hom is not None:
+        cdict['unaff'].append(filters.ProbHom(args.unaff_expansion_prob_hom))
+    if args.unaff_expansion_prob_total is not None:
+        cdict['unaff'].append(filters.ProbTotal(args.unaff_expansion_prob_total))
+    return cdict
 
 
 def ParseFam(filename):
@@ -93,6 +116,14 @@ def main():
     invcf = vcf.Reader(filename=args.vcf)
     # Load FAM file
     isAffected = ParseFam(filename=args.fam)
+    
+    # Set up filter list
+    CheckFilters(invcf, args)
+    
+    # No need to set up locus level filters.
+
+    # Two sets of parameters set for call filters (for affected and unaffected)
+    call_filters = BuildPostMaSTRCallFilters(args)
 
 if __name__ == "__main__":
     main()
