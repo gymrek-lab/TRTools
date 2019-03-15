@@ -144,7 +144,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "FILTER": sampdat.append("PASS")
-            else: sampdat.append(sample[key])
+                else: sampdat.append(sample[key])
         call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
         new_samples.append(call)
     record.samples = new_samples
@@ -269,15 +269,15 @@ def main():
         # Locus-level filters
         record.FILTER = None
         output_record = True
-        #for filt in filter_list:
-        #    if filt(record) == None: continue
-        #    if args.drop_filtered:
-        #        output_record = False
-        #        break
-        #    record.add_filter(filt.filter_name())
-        #    loc_info[filt.filter_name()] += 1
-        #if args.drop_filtered:
-        #    if record.call_rate == 0: output_record = False
+        for filt in filter_list:
+            if filt(record) == None: continue
+            if args.drop_filtered:
+                output_record = False
+                break
+            record.add_filter(filt.filter_name())
+            loc_info[filt.filter_name()] += 1
+        if args.drop_filtered:
+            if record.call_rate == 0: output_record = False
         if output_record:
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
