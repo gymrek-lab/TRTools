@@ -39,7 +39,7 @@ def GetAFreq(record, samplelist=[]):
     total = sum(acounts.values())
     if len(acounts.keys()) == 0: return "."
     if total == 0: return "."
-    afreqs = ",".join(["%s:%.2f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(acounts.keys())])
+    afreqs = ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(acounts.keys())])
     return afreqs
             
 def main():
