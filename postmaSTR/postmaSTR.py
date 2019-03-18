@@ -199,16 +199,28 @@ def BuildPostMaSTRCallFilters(args):
     cdict = {'affec':[], 'unaff':[]}
     if args.affec_min_expansion_prob_het is not None:
         cdict['affec'].append(filters.ProbHet(args.affec_min_expansion_prob_het))
+    if args.affec_max_expansion_prob_het is not None:
+        cdict['affec'].append(filters.MaxProbHet(args.affec_max_expansion_prob_het))
     if args.affec_min_expansion_prob_hom is not None:
         cdict['affec'].append(filters.ProbHom(args.affec_min_expansion_prob_hom))
+    if args.affec_max_expansion_prob_hom is not None:
+        cdict['affec'].append(filters.MaxProbHom(args.affec_max_expansion_prob_hom))
     if args.affec_min_expansion_prob_total is not None:
         cdict['affec'].append(filters.ProbTotal(args.affec_min_expansion_prob_total))
+    if args.affec_max_expansion_prob_total is not None:
+        cdict['affec'].append(filters.MaxProbTotal(args.affec_max_expansion_prob_total))
     if args.unaff_min_expansion_prob_het is not None:
         cdict['unaff'].append(filters.ProbHet(args.unaff_min_expansion_prob_het))
+    if args.unaff_max_expansion_prob_het is not None:
+        cdict['unaff'].append(filters.MaxProbHet(args.unaff_max_expansion_prob_het))
     if args.unaff_min_expansion_prob_hom is not None:
         cdict['unaff'].append(filters.ProbHom(args.unaff_min_expansion_prob_hom))
+    if args.unaff_max_expansion_prob_hom is not None:
+        cdict['unaff'].append(filters.MaxProbHom(args.unaff_max_expansion_prob_hom))
     if args.unaff_min_expansion_prob_total is not None:
         cdict['unaff'].append(filters.ProbTotal(args.unaff_min_expansion_prob_total))
+    if args.unaff_max_expansion_prob_total is not None:
+        cdict['unaff'].append(filters.MaxProbTotal(args.unaff_max_expansion_prob_total))
     return cdict
 
 
