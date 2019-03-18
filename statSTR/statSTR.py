@@ -4,7 +4,8 @@
 Tool for computing stats on STR VCF files
 """
 # Example: statSTR --vcf /storage/mgymrek/gangstr-analysis/round2/trio/trio_gangstr_filtered_level1.vcf.gz --out test.tab --thresh
-# TODO add arguments for other stats here: mean, heterozygosity, allele freqs
+# Example: statSTR --vcf 
+# TODO add arguments for other stats here: mean, heterozygosity
 
 # Imports
 import argparse
@@ -45,7 +46,7 @@ def main():
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
-    inout_group.add_argument("--out", help="Name of output file", type=str, required=True)
+    inout_group.add_argument("--out", help="Name of output file. Use stdout for standard output.", type=str, required=True)
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
@@ -57,13 +58,17 @@ def main():
     # Load samples
     if args.samples:
         samplelist = [item.strip() for item in open(args.samples, "r").readlines()]
+    else: samplelist = []
 
     invcf = vcf.Reader(filename=args.vcf)
     header = ["chrom","start","end"]
     if args.thresh: header.append("thresh")
     if args.afreq: header.append("afreq")
-    outf = open(args.out, "w")
-    outf.write("\t".join(header)+"\n")
+    if args.out == "stdout":
+        outf = sys.stdout
+    else:
+        outf = open(args.out, "w")
+        outf.write("\t".join(header)+"\n")
 
     if args.region: regions = invcf.fetch(args.region)
     else: regions = invcf
