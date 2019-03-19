@@ -118,6 +118,16 @@ def FilterCall(sample, call_filters):
     for cfilt in call_filters:
         if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
     return reasons
+def PrintAcceptedRecord(record, isAffected):
+    affec_CN = []
+    unaff_CN = []
+    for sample in record:
+        if isAffected[sample.sample]:
+            affec_CN.append(str(sample['REPCN']))
+        else:
+            unaff_CN.append(str(sample['REPCN']))
+    print("\t".join([str(record.CHROM), str(record.POS), record.INFO['RU']])\
+          + "\t" + ", ".join(unaff_CN) + "\t" +  ", ".join(affec_CN))
 
 def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected, args):
     """
@@ -195,6 +205,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
         new_samples.append(call)
     record.samples = new_samples
     if num_unaff_calls >= min_unaff and num_affec_calls >= min_affec:
+        PrintAcceptedRecord(record, isAffected)
         return record
     else:
         return None
@@ -333,7 +344,7 @@ def main():
         sample_info[s] = {"numcalls": 0, "totaldp": 0}
         for r in all_reasons: sample_info[s][r]  = 0
 
-
+    print("CHROM\tPOS\tMOTIF\tUNAFF\tAFFEC")
     # Go through each record
     record_counter = 0
     while True:
