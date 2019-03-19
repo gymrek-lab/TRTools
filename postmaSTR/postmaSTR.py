@@ -10,7 +10,7 @@ Tool for post-processing and priotization of STR genotypes
 
 # Load local libraries
 import strtools.utils.common as common
-import strtools.utils.utils as utils
+# import strtools.utils.utils as utils
 import dumpSTR.filters as filters
 
 # Load external libraries
@@ -18,16 +18,16 @@ import argparse
 import inspect
 import vcf
 import sys
-from vcf.parser import _Filter
-from vcf.parser import _Format
-from vcf.parser import _Info
+# from vcf.parser import _Filter
+# from vcf.parser import _Format
+# from vcf.parser import _Info
 
 def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-postmaSTR"] = [command]
     writer = vcf.Writer(open(outfile, "w"), invcf)
     return writer
 
-def CheckFilters(invcf, args):
+def CheckFilters(args):
     """
     Perform checks on user input for filters
     Input:
@@ -89,6 +89,12 @@ def CheckFilters(invcf, args):
     if args.unaff_min_expansion_prob_total is not None and args.unaff_max_expansion_prob_total is not None:
         if args.unaff_min_expansion_prob_total < args.unaff_max_expansion_prob_total:
             common.ERROR("--unaff-min-expansion-prob-total must be less than --unaff-max-expansion-prob-total")
+    if args.affec_min_call_count < 1:
+        common.ERROR("Minimum number of affected calls (" + str(args.affec_min_call_count) + \
+                     ") must be 1 or more")
+    if args.unaff_min_call_count < 1:
+        common.ERROR("Minimum number of unaffected calls (" + str(args.unaff_min_call_count) + \
+                     ") must be 1 or more")
 
 def GetAllCallFilters():
     """
@@ -117,7 +123,7 @@ def FilterCall(sample, call_filters):
         if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
     return reasons
 
-def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected):
+def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected, args):
     """
     Apply call level filters to a record
     Return a new record with FILTER populated for each sample
@@ -131,6 +137,8 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
     Output:
     - modified record (vcf._Record). 
     """
+    min_affec = args.affec_min_call_count
+    min_unaff = args.unaff_min_call_count
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
     else:
@@ -189,11 +197,8 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                 else: sampdat.append(sample[key])
         call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
         new_samples.append(call)
-    # print (record, passList)
     record.samples = new_samples
-    # print (record)
-    # print (" ")
-    if num_unaff_calls > 0 and num_affec_calls > 0:
+    if num_unaff_calls >= min_unaff and num_affec_calls >= min_affec:
         return record
     else:
         return None
@@ -316,14 +321,11 @@ def main():
     invcf = vcf.Reader(filename=args.vcf)
     # Load FAM file
     isAffected = ParseFam(args)
-    
-    # Set up filter list
-    CheckFilters(invcf, args)
-    
-    # TODO should we have locus level filters?
-    CheckFilters(invcf, args)
+
+    # Checking filters for validity
+    CheckFilters(args)
     invcf.filters = {}
-    filter_list = []
+    # filter_list = []
     
     # Two sets of parameters set for call filters (for affected and unaffected)
     call_filters = BuildPostMaSTRCallFilters(args)
@@ -356,7 +358,8 @@ def main():
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
-        record = ApplyPostMaSTRCallFilters(record, invcf, call_filters, sample_info, isAffected)
+        record = ApplyPostMaSTRCallFilters(record, invcf, call_filters, sample_info,\
+                                           isAffected, args)
         output_record = True
 
         if record is None:
