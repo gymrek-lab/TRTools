@@ -147,7 +147,8 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
             samp_fmt._nums.append(entry_num)
     # Get data
     new_samples = []
-    passList = []
+    num_affec_calls = 0
+    num_unaff_calls = 0
     for sample in record:
         sampdat = []
         if sample['GT'] is None or sample['GT'] == "./." or sample['GT'] == ".":
@@ -158,7 +159,6 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                 else: sampdat.append(sample[key])
             call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
             new_samples.append(call)
-            passList.append(False)
             continue
         
         if isAffected[sample.sample]:
@@ -167,7 +167,6 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
             filter_reasons = FilterCall(sample, call_filters['unaff'])
 
         if len(filter_reasons) > 0:
-            passList.append(False)
             for r in filter_reasons:
                 sample_info[sample.sample][r] += 1
             for i in range(len(samp_fmt._fields)):
@@ -178,7 +177,10 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                     if key == "FILTER": sampdat.append(",".join(filter_reasons))
                     else: sampdat.append(None)
         else:
-            passList.append(True)
+            if isAffected[sample.sample]:
+                num_affec_calls = num_affec_calls + 1
+            else:
+                num_unaff_calls = num_unaff_calls + 1
             sample_info[sample.sample]["numcalls"] += 1
             sample_info[sample.sample]["totaldp"] += sample["DP"]
             for i in range(len(samp_fmt._fields)):
@@ -191,7 +193,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
     record.samples = new_samples
     # print (record)
     # print (" ")
-    if all(passList):
+    if num_unaff_calls > 0 and num_affec_calls > 0:
         return record
     else:
         return None
@@ -234,10 +236,23 @@ def BuildPostMaSTRCallFilters(args):
     return cdict
 
 
-def ParseFam(filename):
+def ParseFam(args):
+    """
+    Parse fam file and extract affected and unaffected sample IDs.
+    Input:
+    - args (namespace from parser.parse_args)
+
+    Output:
+    - isAffected ({str: bool}): dictionary for affected and unaffected sample status
+    """
+    filename = args.fam
+    min_affec = args.affec_min_call_count
+    min_unaff = args.unaff_min_call_count
     isAffected = {}
     with open(filename, 'r') as f:
         i = 0
+        count_affec = 0
+        count_unaff = 0
         for line in f:
             i = i + 1
             recs = line.strip().split('\t')
@@ -247,8 +262,16 @@ def ParseFam(filename):
             phe = recs[5]
             if phe == '2':
                 isAffected[sid] = True
+                count_affec = count_affec + 1
             else:
                 isAffected[sid] = False
+                count_unaff = count_unaff + 1
+        if count_affec < min_affec:
+            common.ERROR("Minimum number of affected calls (" + str(min_affec) + \
+                         ") larger than number of affected samples in fam file (" + str(count_affec) + ")")
+        if count_unaff < min_unaff:
+            common.ERROR("Minimum number of unaffected calls (" + str(min_unaff) + \
+                         ") larger than number of unaffected samples in fam file (" + str(count_unaff) + ")")
     return isAffected
                 
 
@@ -271,6 +294,7 @@ def main():
     affec_group.add_argument("--affec-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     affec_group.add_argument("--affec-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     affec_group.add_argument("--affec-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
+    affec_group.add_argument("--affec-min-call-count", help="Minimum number of affected calls per TR region", type=int, default=1)
     
     #### Unaffected sample filters
     unaff_group = parser.add_argument_group("Call-level filters specific to unaffected samples")
@@ -280,6 +304,7 @@ def main():
     unaff_group.add_argument("--unaff-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     unaff_group.add_argument("--unaff-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     unaff_group.add_argument("--unaff-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
+    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region", type=int, default=1)
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
@@ -290,7 +315,7 @@ def main():
     # Load VCF file
     invcf = vcf.Reader(filename=args.vcf)
     # Load FAM file
-    isAffected = ParseFam(filename=args.fam)
+    isAffected = ParseFam(args)
     
     # Set up filter list
     CheckFilters(invcf, args)
@@ -314,8 +339,8 @@ def main():
         for r in all_reasons: sample_info[s][r]  = 0
 
     # TODO modify this?
-    loc_info = {"totalcalls": 0, "PASS": 0} 
-    for filt in filter_list: loc_info[filt.filter_name()] = 0
+    # loc_info = {"totalcalls": 0, "PASS": 0}
+    # for filt in filter_list: loc_info[filt.filter_name()] = 0
 
     # Go through each record
     record_counter = 0
@@ -352,24 +377,24 @@ def main():
 
         if output_record:
             # Recalculate locus-level INFO fields
-            record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
-            if record.num_called > 0:
-                if args.use_length:
-                    record.INFO["HET"] = utils.GetLengthHet(record)
-                else: record.INFO["HET"] = record.heterozygosity
-                record.INFO["HWEP"] = utils.GetSTRHWE(record, uselength=args.use_length)
-                record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
-                record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
-            else:
-                record.INFO["HET"] = -1
-                record.INFO["HWEP"] = -1
-                record.INFO["AC"] = [0]*len(record.ALT)
-                record.INFO["REFAC"] = 0
+            # record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
+            # if record.num_called > 0:
+            #     if args.use_length:
+            #         record.INFO["HET"] = utils.GetLengthHet(record)
+            #     else: record.INFO["HET"] = record.heterozygosity
+            #     record.INFO["HWEP"] = utils.GetSTRHWE(record, uselength=args.use_length)
+            #     record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
+            #     record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
+            # else:
+            #     record.INFO["HET"] = -1
+            #     record.INFO["HWEP"] = -1
+            #     record.INFO["AC"] = [0]*len(record.ALT)
+            #     record.INFO["REFAC"] = 0
             # Recalc filter
-            if record.FILTER is None and not args.drop_filtered:
-                record.FILTER = "PASS"
-                loc_info["PASS"] += 1
-                loc_info["totalcalls"] += record.num_called
+            # if record.FILTER is None and not args.drop_filtered:
+            #     record.FILTER = "PASS"
+            #     loc_info["PASS"] += 1
+            #     loc_info["totalcalls"] += record.num_called
             # Output the record
             outvcf.write_record(record)
 
