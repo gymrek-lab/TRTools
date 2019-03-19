@@ -10,7 +10,6 @@ Tool for post-processing and priotization of STR genotypes
 
 # Load local libraries
 import strtools.utils.common as common
-# import strtools.utils.utils as utils
 import dumpSTR.filters as filters
 
 # Load external libraries
@@ -18,9 +17,6 @@ import argparse
 import inspect
 import vcf
 import sys
-# from vcf.parser import _Filter
-# from vcf.parser import _Format
-# from vcf.parser import _Info
 
 def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-postmaSTR"] = [command]
@@ -289,7 +285,6 @@ def main():
 
     locus_group = parser.add_argument_group("Locus-level filters")
     locus_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
-    locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
     
     #### Affected sample filters
     affec_group = parser.add_argument_group("Call-level filters specific to affected samples")
@@ -325,24 +320,19 @@ def main():
     # Checking filters for validity
     CheckFilters(args)
     invcf.filters = {}
-    # filter_list = []
     
     # Two sets of parameters set for call filters (for affected and unaffected)
     call_filters = BuildPostMaSTRCallFilters(args)
 
     # Set up output files
     outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
-    
-    # TODO modify this?
+
     all_reasons = GetAllCallFilters()
     sample_info = {}
     for s in invcf.samples:
         sample_info[s] = {"numcalls": 0, "totaldp": 0}
         for r in all_reasons: sample_info[s][r]  = 0
 
-    # TODO modify this?
-    # loc_info = {"totalcalls": 0, "PASS": 0}
-    # for filt in filter_list: loc_info[filt.filter_name()] = 0
 
     # Go through each record
     record_counter = 0
@@ -361,44 +351,9 @@ def main():
         record = ApplyPostMaSTRCallFilters(record, invcf, call_filters, sample_info,\
                                            isAffected, args)
         output_record = True
-
         if record is None:
             output_record = False
-        elif args.drop_filtered:
-            if record.call_rate == 0: output_record = False
-
-        # Locus-level filters
-        # record.FILTER = None
-        # for filt in filter_list:
-        #     if filt(record) == None: continue
-        #     if args.drop_filtered:
-        #         output_record = False
-        #         break
-        #     record.add_filter(filt.filter_name())
-        #     loc_info[filt.filter_name()] += 1
-
-
         if output_record:
-            # Recalculate locus-level INFO fields
-            # record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
-            # if record.num_called > 0:
-            #     if args.use_length:
-            #         record.INFO["HET"] = utils.GetLengthHet(record)
-            #     else: record.INFO["HET"] = record.heterozygosity
-            #     record.INFO["HWEP"] = utils.GetSTRHWE(record, uselength=args.use_length)
-            #     record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
-            #     record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
-            # else:
-            #     record.INFO["HET"] = -1
-            #     record.INFO["HWEP"] = -1
-            #     record.INFO["AC"] = [0]*len(record.ALT)
-            #     record.INFO["REFAC"] = 0
-            # Recalc filter
-            # if record.FILTER is None and not args.drop_filtered:
-            #     record.FILTER = "PASS"
-            #     loc_info["PASS"] += 1
-            #     loc_info["totalcalls"] += record.num_called
-            # Output the record
             outvcf.write_record(record)
 
 if __name__ == "__main__":
