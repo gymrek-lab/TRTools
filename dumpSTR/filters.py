@@ -205,7 +205,7 @@ class ProbHom(Reason):
         if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
         else: return None
 class MaxProbHom(Reason):
-    name = "ProbHom"
+    name = "MaxProbHom"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -222,7 +222,7 @@ class ProbHet(Reason):
         if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
         else: return None
 class MaxProbHet(Reason):
-    name = "ProbHet"
+    name = "MaxProbHet"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -240,7 +240,7 @@ class ProbTotal(Reason):
         if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
         else: return None
 class MaxProbTotal(Reason):
-    name = "ProbTotal"
+    name = "MaxProbTotal"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):

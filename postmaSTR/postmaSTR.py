@@ -147,6 +147,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
             samp_fmt._nums.append(entry_num)
     # Get data
     new_samples = []
+    passList = []
     for sample in record:
         sampdat = []
         if sample['GT'] is None or sample['GT'] == "./." or sample['GT'] == ".":
@@ -157,6 +158,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                 else: sampdat.append(sample[key])
             call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
             new_samples.append(call)
+            passList.append(False)
             continue
         
         if isAffected[sample.sample]:
@@ -165,6 +167,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
             filter_reasons = FilterCall(sample, call_filters['unaff'])
 
         if len(filter_reasons) > 0:
+            passList.append(False)
             for r in filter_reasons:
                 sample_info[sample.sample][r] += 1
             for i in range(len(samp_fmt._fields)):
@@ -175,6 +178,7 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                     if key == "FILTER": sampdat.append(",".join(filter_reasons))
                     else: sampdat.append(None)
         else:
+            passList.append(True)
             sample_info[sample.sample]["numcalls"] += 1
             sample_info[sample.sample]["totaldp"] += sample["DP"]
             for i in range(len(samp_fmt._fields)):
@@ -183,8 +187,14 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
                 else: sampdat.append(sample[key])
         call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
         new_samples.append(call)
+    # print (record, passList)
     record.samples = new_samples
-    return record
+    # print (record)
+    # print (" ")
+    if all(passList):
+        return record
+    else:
+        return None
 
 
 def BuildPostMaSTRCallFilters(args):
@@ -235,7 +245,10 @@ def ParseFam(filename):
                 common.ERROR("Insufficient number of columns in line " + str(i) + " of fam file: " + filename)
             sid = recs[1]
             phe = recs[5]
-            isAffected[sid] = phe
+            if phe == '2':
+                isAffected[sid] = True
+            else:
+                isAffected[sid] = False
     return isAffected
                 
 
@@ -319,19 +332,24 @@ def main():
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
         record = ApplyPostMaSTRCallFilters(record, invcf, call_filters, sample_info, isAffected)
+        output_record = True
+
+        if record is None:
+            output_record = False
+        elif args.drop_filtered:
+            if record.call_rate == 0: output_record = False
 
         # Locus-level filters
-        record.FILTER = None
-        output_record = True
-        for filt in filter_list:
-            if filt(record) == None: continue
-            if args.drop_filtered:
-                output_record = False
-                break
-            record.add_filter(filt.filter_name())
-            loc_info[filt.filter_name()] += 1
-        if args.drop_filtered:
-            if record.call_rate == 0: output_record = False
+        # record.FILTER = None
+        # for filt in filter_list:
+        #     if filt(record) == None: continue
+        #     if args.drop_filtered:
+        #         output_record = False
+        #         break
+        #     record.add_filter(filt.filter_name())
+        #     loc_info[filt.filter_name()] += 1
+
+
         if output_record:
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
