@@ -34,7 +34,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import argparse
-import common
 import numpy as np
 import pandas as pd
 from statsmodels.formula.api import logit
@@ -273,14 +272,14 @@ def main():
     fm_group.add_argument("--condition", help="Condition on this position chrom:start", type=str)
     args = parser.parse_args()
     # Some initial checks
-    if int(args.linear) + int(args.logistic) != 1: ERROR("Must choose one of --linear or --logistic")
+    if int(args.linear) + int(args.logistic) != 1: common.ERROR("Must choose one of --linear or --logistic")
 
     # Load phenotype information
     common.MSG("Loading phenotype information...")
     if args.fam is not None:
         pdata = LoadPhenoData(args.fam, fam=True, missing=args.missing_phenotype, sex=args.sex)
     elif args.pheno is not None:
-        if args.sex: ERROR("--sex only works when using --fam (not --pheno)")
+        if args.sex: common.ERROR("--sex only works when using --fam (not --pheno)")
         pdata = LoadPhenoData(args.pheno, fam=False, missing=args.missing_phenotype, mpheno=args.mpheno)
     else:
         common.ERROR("Must specify phenotype using either --fam or --pheno")
