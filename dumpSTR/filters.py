@@ -204,6 +204,14 @@ class ProbHom(Reason):
         #### Prob hom expansion
         if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
         else: return None
+class MaxProbHom(Reason):
+    name = "MaxProbHom"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob hom expansion
+        if sample["QEXP"][2] > self.threshold: return sample["QEXP"][2]
+        else: return None
 
 class ProbHet(Reason):
     name = "ProbHet"
@@ -212,6 +220,14 @@ class ProbHet(Reason):
     def __call__(self, sample):
         #### Prob het expansion
         if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
+        else: return None
+class MaxProbHet(Reason):
+    name = "MaxProbHet"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob het expansion
+        if sample["QEXP"][1] > self.threshold: return sample["QEXP"][1]
         else: return None
 
 
@@ -222,6 +238,14 @@ class ProbTotal(Reason):
     def __call__(self, sample):
         #### Prob het and hom expansion
         if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
+        else: return None
+class MaxProbTotal(Reason):
+    name = "MaxProbTotal"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        #### Prob het and hom expansion
+        if sample["QEXP"][1]+sample["QEXP"][2] > self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
         else: return None
 
 class SpanOnly(Reason):

@@ -29,7 +29,8 @@ setup(name=NAME,
               'plinkSTR=plinkSTR.plinkSTR:main',
               'dumpSTR=dumpSTR.dumpSTR:main',
               'mergeSTR=mergeSTR.mergeSTR:main',
-              'statSTR=statSTR.statSTR:main'
+              'statSTR=statSTR.statSTR:main',
+              'postmaSTR=postmaSTR.postmaSTR:main'
           ],
       },
       install_requires=['argparse',
