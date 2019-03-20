@@ -126,7 +126,7 @@ def PrintAcceptedRecord(record, isAffected):
             affec_CN.append(str(sample['REPCN']))
         else:
             unaff_CN.append(str(sample['REPCN']))
-    print("\t".join([str(record.CHROM), str(record.POS), record.INFO['RU']])\
+    print("\t".join([str(record.CHROM), str(record.POS), record.INFO['RU'], str(record.INFO['EXPTHRESH'])])\
           + "\t" + ", ".join(unaff_CN) + "\t" +  ", ".join(affec_CN))
 
 def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected, args):
@@ -344,7 +344,7 @@ def main():
         sample_info[s] = {"numcalls": 0, "totaldp": 0}
         for r in all_reasons: sample_info[s][r]  = 0
 
-    print("CHROM\tPOS\tMOTIF\tUNAFF\tAFFEC")
+    print("CHROM\tPOS\tMOTIF\tEXPTHRESH\tUNAFF\tAFFEC")
     # Go through each record
     record_counter = 0
     while True:
