@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Perform STR association tests
-
 Example - KD:
 ./plinkSTR.py --vcf /storage/mgymrek/KD/imputed/KD.chr22.imputed.vcf.gz --out stdout --fam /storage/mgymrek/KD/pheno/KD.fam --sex --logistic --infer-snpstr --allele-tests --allele-tests-length  --remove-rare-str-alleles 0.05 --region 22:17655257-17655258
-
 Example - PGC:
 ./plinkSTR.py \
 --vcf /home/gymrek/ssaini/per_locus/11.57523883/PGC.11.57523883.imputed.noAF.vcf.gz \
@@ -26,14 +24,16 @@ Example - PGC:
 # Constants
 MIN_STR_LENGTH = 8 # min ref length for an STR
 
-import strtools.utils.common as common
-
+# Imports - TODO make this more robust
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "utils"))
+
 import warnings
 warnings.filterwarnings("ignore")
 
 import argparse
+import common
 import numpy as np
 import pandas as pd
 from statsmodels.formula.api import logit
@@ -45,6 +45,7 @@ def LoadCondition(vcffile, condition, sample_order):
     region = "%s:%s-%s"%(chrom, start, int(start)+1)
     reader2.fetch(region)
     for record in reader2:
+        print record.start, int(start), record.ID
         if record.start==int(start):
             return LoadGT(record, sample_order, is_str=False)
     common.ERROR("Could not find SNP to condition on")
@@ -63,24 +64,20 @@ def GetAssocType(is_str, alt=-1, alt_len=-1, name=None):
 def PrintHeader(outf, case_control=False, quant=True, comment_lines=[]):
     """
     Print header info for association output
-
     Input:
     - outf (file handle): output file handle
     - case_control (bool): specific logistic regression output
     - quant (bool): specify linear regression output
     """
     if case_control:
-        header = ["chrom", "start", "type", "p-val", "OR", "se(OR)", "CI95", "maf", "N"]
-    else: header = ["chrom", "start", "type", "p-val", "coef", "stderr", "CI95", "maf", "N"]
-    for cl in comment_lines:
-        outf.write("#"+cl.strip()+"\n")
+        header = ["CHROM", "BP", "SNP", "P", "OR", "SE", "CI95", "MAF", "NMISS","ALLELE1","ALLELE2"]
+    else: header = ["CHROM", "BP", "SNP", "P", "BETA", "SE", "CI95", "MAF", "NMISS","ALLELE1","ALLELE2"]
     outf.write("\t".join(header)+"\n")
     outf.flush()
 
 def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     """
     Write association output
-
     Input:
     - chrom (str)
     - start (int)
@@ -89,21 +86,19 @@ def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     - assoc_type (str): type of association
     """
     if assoc is None: return
-    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["stderr"], assoc["CI"], assoc["maf"], assoc["N"]]
+    items = [chrom, start, assoc_type, assoc["pval"], assoc["coef"], assoc["stderr"], assoc["CI"], assoc["maf"], assoc["N"],"CAG","CAGCAG"]
     outf.write("\t".join([str(item) for item in items])+"\n")
     outf.flush()
 
 def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05, exclude_samples=[], maxiter=100):
     """
     Perform association tests
-
     Input:
     - data (pd.DataFrame): has columns GT, phenotype, and covarcols
     - covarcols (list<str>): names of columns to use as covars
     - case_control (bool): indicate to perform logistic regression
     - quant (bool): indicate to perform linear regression
     - minmaf (float): don't attempt regression below this MAF
-
     Output:
     - assoc (dict). Returns association results. Return None on error
     """
@@ -140,15 +135,13 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
 def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1, rmrare=0):
     """
     Load genotypes from a record and return values in the sample order
-
     Input:
     - record (vcf._Record): input record
     - sample_order (list<str>): list of sample ids. Return genotypes in this order
-    - is_str (bool): If false, treat as a SNP and use GT field. 
+    - is_str (bool): If false, treat as a SNP and use GT field.
                      If true, treat as STR and by default use length
     - use_alt_num (int): If >=0, treat as bi-allelic using this allele number as the reference
     - use_alt_length (int): If >=0, treat as bi-allelic using this allele length as the reference
-
     Output:
     - genotypes (list<int>): list of genotype values using given sample order
     - exclude_samples: list of sample to exclude later
@@ -166,22 +159,25 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
             elif use_alt_length >-1:
                 gtdata[sample.sample] = sum([int(len(alleles[int(item)])==use_alt_length) for item in sample.gt_alleles])
             else:
-                f1, f2 = [afreqs[int(item)] for item in sample.gt_alleles]
-                if f1 < rmrare or f2 < rmrare: 
+                try:
+                    f1, f2 = [afreqs[int(item)] for item in sample.gt_alleles]
+                except:
+                    f1, f2 = [0,0]
+                if f1 < rmrare or f2 < rmrare:
                     exclude_samples.append(sample.sample)
-                gtdata[sample.sample] = sum([len(alleles[int(item)]) for item in sample.gt_alleles])
+                    gtdata[sample.sample] = sum([len(record.REF) for item in sample.gt_alleles])
+                else:
+                    gtdata[sample.sample] = sum([len(alleles[int(item)]) for item in sample.gt_alleles])
     d = [gtdata[s] for s in sample_order]
     return d, exclude_samples
 
 def RestrictSamples(data, samplefile, include=True):
     """
     Include or exclude specific samples
-
     Input:
     - data (pd.DataFrame): data frame. must have columns FID, IID
     - samplefile (str): filename of samples. Must have two columns (FID, IID)
     - include (bool): If true, include these samples. Else exclude them
-
     Output:
     - data (pd.DataFrame): modified dataframe
     """
@@ -221,7 +217,6 @@ def LoadPhenoData(fname, fam=True, missing=-9, mpheno=1, sex=False):
     Load phenotype data from fam or pheno file
     Only return samples with non-missing phenotype
     If using sex as a covariate, only return samples with sex specified
-
     Input:
     - fname (str): input filename
     - fam (bool): True if the file is .fam. Else assume .pheno
@@ -272,14 +267,14 @@ def main():
     fm_group.add_argument("--condition", help="Condition on this position chrom:start", type=str)
     args = parser.parse_args()
     # Some initial checks
-    if int(args.linear) + int(args.logistic) != 1: common.ERROR("Must choose one of --linear or --logistic")
+    if int(args.linear) + int(args.logistic) != 1: ERROR("Must choose one of --linear or --logistic")
 
     # Load phenotype information
     common.MSG("Loading phenotype information...")
     if args.fam is not None:
         pdata = LoadPhenoData(args.fam, fam=True, missing=args.missing_phenotype, sex=args.sex)
     elif args.pheno is not None:
-        if args.sex: common.ERROR("--sex only works when using --fam (not --pheno)")
+        if args.sex: ERROR("--sex only works when using --fam (not --pheno)")
         pdata = LoadPhenoData(args.pheno, fam=False, missing=args.missing_phenotype, mpheno=args.mpheno)
     else:
         common.ERROR("Must specify phenotype using either --fam or --pheno")
@@ -333,7 +328,7 @@ def main():
     common.MSG("Perform associations... with covars %s"%str(covarcols))
     if args.region: reader = reader.fetch(args.region)
     for record in reader:
-        # Check MAF 
+        # Check MAF
         aaf = sum(record.aaf)
         aaf = min([aaf, 1-aaf])
         if aaf < args.minmaf: continue
@@ -369,6 +364,6 @@ def main():
                 pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
-        
+
 if __name__ == "__main__":
     main()
