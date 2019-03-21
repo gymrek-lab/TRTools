@@ -85,10 +85,10 @@ def CheckFilters(args):
     if args.unaff_min_expansion_prob_total is not None and args.unaff_max_expansion_prob_total is not None:
         if args.unaff_min_expansion_prob_total < args.unaff_max_expansion_prob_total:
             common.ERROR("--unaff-min-expansion-prob-total must be less than --unaff-max-expansion-prob-total")
-    if args.affec_min_call_count < 0:
+    if args.affec_min_call_count!= -1 and args.affec_min_call_count < 0:
         common.ERROR("Minimum number of affected calls (" + str(args.affec_min_call_count) + \
                      ") must be 0 or more")
-    if args.unaff_min_call_count < 0:
+    if args.unaff_min_call_count!= -1 and args.unaff_min_call_count < 0:
         common.ERROR("Minimum number of unaffected calls (" + str(args.unaff_min_call_count) + \
                      ") must be 0 or more")
 
@@ -129,7 +129,7 @@ def PrintAcceptedRecord(record, isAffected):
     print("\t".join([str(record.CHROM), str(record.POS), record.INFO['RU'], str(record.INFO['EXPTHRESH'])])\
           + "\t" + ", ".join(unaff_CN) + "\t" +  ", ".join(affec_CN))
 
-def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected, args):
+def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffected, min_affec, min_unaff):
     """
     Apply call level filters to a record
     Return a new record with FILTER populated for each sample
@@ -143,8 +143,6 @@ def ApplyPostMaSTRCallFilters(record, reader, call_filters, sample_info, isAffec
     Output:
     - modified record (vcf._Record). 
     """
-    min_affec = args.affec_min_call_count
-    min_unaff = args.unaff_min_call_count
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
     else:
@@ -278,13 +276,19 @@ def ParseFam(args):
             else:
                 isAffected[sid] = False
                 count_unaff = count_unaff + 1
-        if count_affec < min_affec:
-            common.ERROR("Minimum number of affected calls (" + str(min_affec) + \
-                         ") larger than number of affected samples in fam file (" + str(count_affec) + ")")
-        if count_unaff < min_unaff:
-            common.ERROR("Minimum number of unaffected calls (" + str(min_unaff) + \
-                         ") larger than number of unaffected samples in fam file (" + str(count_unaff) + ")")
-    return isAffected
+        if min_affec != -1:
+            if count_affec < min_affec:
+                common.ERROR("Minimum number of affected calls (" + str(min_affec) + \
+                             ") larger than number of affected samples in fam file (" + str(count_affec) + ")")
+        else:
+            min_affec = count_affec
+        if min_unaff != -1:
+            if count_unaff < min_unaff:
+                common.ERROR("Minimum number of unaffected calls (" + str(min_unaff) + \
+                             ") larger than number of unaffected samples in fam file (" + str(count_unaff) + ")")
+        else:
+            min_unaff = count_unaff
+    return isAffected, min_affec, min_unaff
                 
 
 def main():
@@ -305,7 +309,7 @@ def main():
     affec_group.add_argument("--affec-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     affec_group.add_argument("--affec-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     affec_group.add_argument("--affec-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
-    affec_group.add_argument("--affec-min-call-count", help="Minimum number of affected calls per TR region", type=int, default=1)
+    affec_group.add_argument("--affec-min-call-count", help="Minimum number of affected calls per TR region", type=int, default=-1)
     
     #### Unaffected sample filters
     unaff_group = parser.add_argument_group("Call-level filters specific to unaffected samples")
@@ -315,7 +319,7 @@ def main():
     unaff_group.add_argument("--unaff-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     unaff_group.add_argument("--unaff-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     unaff_group.add_argument("--unaff-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
-    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region", type=int, default=1)
+    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region (default: set based on fam)", type=int, default=-1)
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
@@ -326,7 +330,7 @@ def main():
     # Load VCF file
     invcf = vcf.Reader(filename=args.vcf)
     # Load FAM file
-    isAffected = ParseFam(args)
+    isAffected, min_affec, min_unaff = ParseFam(args)
 
     # Checking filters for validity
     CheckFilters(args)
@@ -360,7 +364,7 @@ def main():
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
         record = ApplyPostMaSTRCallFilters(record, invcf, call_filters, sample_info,\
-                                           isAffected, args)
+                                           isAffected, min_affec, min_unaff)
         output_record = True
         if record is None:
             output_record = False
