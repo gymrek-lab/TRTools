@@ -85,12 +85,12 @@ def CheckFilters(args):
     if args.unaff_min_expansion_prob_total is not None and args.unaff_max_expansion_prob_total is not None:
         if args.unaff_min_expansion_prob_total < args.unaff_max_expansion_prob_total:
             common.ERROR("--unaff-min-expansion-prob-total must be less than --unaff-max-expansion-prob-total")
-    if args.affec_min_call_count < 1:
+    if args.affec_min_call_count < 0:
         common.ERROR("Minimum number of affected calls (" + str(args.affec_min_call_count) + \
-                     ") must be 1 or more")
-    if args.unaff_min_call_count < 1:
+                     ") must be 0 or more")
+    if args.unaff_min_call_count < 0:
         common.ERROR("Minimum number of unaffected calls (" + str(args.unaff_min_call_count) + \
-                     ") must be 1 or more")
+                     ") must be 0 or more")
 
 def GetAllCallFilters():
     """
