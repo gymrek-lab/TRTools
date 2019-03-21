@@ -315,7 +315,7 @@ def main():
     unaff_group.add_argument("--unaff-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     unaff_group.add_argument("--unaff-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     unaff_group.add_argument("--unaff-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
-    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region", type=int, default=1)
+    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region", type=int, default=0)
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
