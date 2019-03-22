@@ -309,7 +309,7 @@ def main():
     affec_group.add_argument("--affec-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     affec_group.add_argument("--affec-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     affec_group.add_argument("--affec-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
-    affec_group.add_argument("--affec-min-call-count", help="Minimum number of affected calls per TR region", type=int, default=-1)
+    affec_group.add_argument("--affec-min-call-count", help="Minimum number of affected calls per TR region (default: set based on fam file)", type=int, default=-1)
     
     #### Unaffected sample filters
     unaff_group = parser.add_argument_group("Call-level filters specific to unaffected samples")
@@ -319,7 +319,7 @@ def main():
     unaff_group.add_argument("--unaff-min-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion more than this", type=float)
     unaff_group.add_argument("--unaff-max-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
     unaff_group.add_argument("--unaff-min-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion more than this", type=float)
-    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region (default: set based on fam)", type=int, default=-1)
+    unaff_group.add_argument("--unaff-min-call-count", help="Minimum number of unaffected calls per TR region (default: set based on fam file)", type=int, default=-1)
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
