@@ -24,3 +24,6 @@ Type `<command> --help` to see a full set of options.
 ## Usage
 See the README in each subidrectory for usage details.
 
+## Support
+STRTools supports **GangSTR v2.4** or newer. The required filtering tags are not available in the older versions of GangSTR.
+
