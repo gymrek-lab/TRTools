@@ -37,6 +37,7 @@ import common
 import numpy as np
 import pandas as pd
 from statsmodels.formula.api import logit
+import statsmodels.api as sm
 import vcf
 
 def LoadCondition(vcffile, condition, sample_order):
@@ -102,6 +103,7 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
     Output:
     - assoc (dict). Returns association results. Return None on error
     """
+    data = data[data["sample"].apply(lambda x: x not in exclude_samples)]
     assoc = {}
     formula = "phenotype ~ GT+"+"+".join(covarcols)
     maf = sum(data["GT"])*1.0/(2*data.shape[0])
@@ -111,7 +113,8 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
         return None # don't attempt regression
     if case_control:
         try:
-            pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter)
+            pgclogit = sm.Logit(data["phenotype"], data[["intercept","GT"]]).fit(disp=0, maxiter=maxiter) # not using formula api anymore, much faster!
+            #pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter)
             #print pgclogit.summary() # TODO remove after debug
         except:
             assoc["coef"] = "NA"
@@ -343,6 +346,7 @@ def main():
         common.MSG("   Load genotypes...")
         gts, exclude_samples = LoadGT(record, sample_order, is_str=is_str, rmrare=args.remove_rare_str_alleles)
         pdata["GT"] = gts
+        pdata["intercept"] = 1
         if is_str: minmaf = 1
         else: minmaf = args.minmaf
         common.MSG("   Perform association...")
