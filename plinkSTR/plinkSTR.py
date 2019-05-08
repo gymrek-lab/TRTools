@@ -113,7 +113,7 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
         return None # don't attempt regression
     if case_control:
         try:
-            pgclogit = sm.Logit(data["phenotype"], data[["GT"]+covarcols]).fit(disp=0, maxiter=maxiter) # not using formula api anymore, much faster!
+            pgclogit = sm.Logit(data["phenotype"], data[["intercept","GT"]+covarcols]).fit(disp=0, maxiter=maxiter) # not using formula api anymore, much faster!
             #pgclogit = logit(formula=formula, data=data[data["sample"].apply(lambda x: x not in exclude_samples)][["phenotype", "GT"]+covarcols]).fit(disp=0, maxiter=maxiter)
             #print pgclogit.summary() # TODO remove after debug
         except:
