@@ -162,12 +162,14 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
                     sumAlleles = sum([int(int(item)==use_alt_num) for item in sample.gt_alleles])
                 except:
                     sumAlleles = 0
+                    exclude_samples.append(sample.sample)
                 gtdata[sample.sample] = sumAlleles
             elif use_alt_length >-1:
                 try:
                     sumAllelesLen = sum([int(len(alleles[int(item)])==use_alt_length) for item in sample.gt_alleles])
                 except:
                     sumAllelesLen = 0
+                    exclude_samples.append(sample.sample)
                 gtdata[sample.sample] = sumAllelesLen
             else:
                 try:
