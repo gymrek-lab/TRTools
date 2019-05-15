@@ -28,7 +28,7 @@ def GetHomopolymerRun(seq):
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
 
-def GetSTRHWE(record, samples=[], uselength=False):
+def GetSTRHWE(record, samples=[], uselength=False, het_output=False):
     hwe_p = 0
     het = 0
     # Get genotypes, allele frequencies
@@ -40,7 +40,10 @@ def GetSTRHWE(record, samples=[], uselength=False):
         if len(samples)>0 and sample.sample not in samples: continue
         if sample["GT"] == "." or sample["GT"] == "./." or sample["GT"] is None: continue
         if uselength:
-            gt = map(int, sample["GB"].split("|"))
+            try:
+                gt = map(int, sample["GB"].split("|")) #HipSTR
+            except:
+                gt = sample["REPCN"] #GangSTR
         else:
             gt = sample.gt_alleles
         if gt[0] == gt[1]: obs_hom += 1
@@ -57,9 +60,13 @@ def GetSTRHWE(record, samples=[], uselength=False):
     exp_hom_frac = 0
     for al in allele_freqs.keys():
         exp_hom_frac += allele_freqs[al]**2
+
     # Binomial test for HWE
     hwe_p = scipy.stats.binom_test(obs_het, n=obs_het+obs_hom, p=1-exp_hom_frac)
-    return hwe_p
+    if het_output: # Extended output is HWE P and obs_het
+        return hwe_p, obs_het
+    else: # Standard output is HWE P
+        return hwe_p
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
