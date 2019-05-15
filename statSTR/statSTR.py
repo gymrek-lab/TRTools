@@ -15,11 +15,8 @@ import vcf
 
 # Load local libraries
 import dumpSTR.filters as filters
-# import strtools.utils.common as common
-# import strtools.utils.utils as utils
-sys.path.append("$HOME/STRtools/utils/")
-import common
-import utils
+import strtools.utils.common as common
+import strtools.utils.utils as utils
 
 """
 Compute the maximum allele length seen
