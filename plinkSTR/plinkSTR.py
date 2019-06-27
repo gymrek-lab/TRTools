@@ -194,7 +194,8 @@ def RestrictSamples(data, samplefile, include=True):
     Output:
     - data (pd.DataFrame): modified dataframe
     """
-    samples = pd.read_csv(samplefile, names=["FID", "IID"])
+    samples = pd.read_csv(samplefile, names=["FID", "IID"], delim_whitespace=True)
+    samples = samples.applymap(str)
     if include:
         data = pd.merge(data, samples, on=["FID", "IID"])
     else:
