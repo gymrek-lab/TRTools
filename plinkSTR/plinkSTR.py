@@ -55,11 +55,11 @@ def GetAssocType(is_str, alt=-1, alt_len=-1, name=None):
     """
     Return string describing association type
     """
-    if not name is None: return name
     if not is_str: return "SNP"
     else:
-        if alt >= 0: return "STR-alt-%s"%alt
-        elif alt_len >= 0: return "STR-length-%s"%alt_len
+        if alt >= 0: return "%s-alt-%s"%(name,alt)
+        elif alt_len >= 0: return "%s-length-%s"%(name,alt_len)
+        elif not name is None: return name
         else: return "STR"
 
 def PrintHeader(outf, case_control=False, quant=True, comment_lines=[]):
@@ -372,13 +372,13 @@ def main():
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i)
                 pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
-                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=alleles[i]))
+                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=alleles[i], name=record.ID))
         if is_str and args.allele_tests_length:
             for length in set([len(record.REF)] + [len(alt) for alt in record.ALT]):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
                 pdata["GT"] = gts
                 assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
-                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length))
+                OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length, name=record.ID))
 
 if __name__ == "__main__":
     main()
