@@ -104,6 +104,10 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
     - assoc (dict). Returns association results. Return None on error
     """
     data = data[data["sample"].apply(lambda x: x not in exclude_samples)]
+
+    if data.shape[0] == 0:
+        return None
+
     assoc = {}
     formula = "phenotype ~ GT+"+"+".join(covarcols)
     maf = sum(data["GT"])*1.0/(2*data.shape[0])
