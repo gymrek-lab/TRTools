@@ -159,7 +159,11 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
     afreqs = [(1-sum(record.aaf))]+record.aaf
     for sample in record:
         if not is_str: # Note, code opposite to match plink results
-            gtdata[sample.sample] = sum([1-int(item) for item in sample.gt_alleles])
+            try:
+                gtdata[sample.sample] = sum([1-int(item) for item in sample.gt_alleles])
+            except:
+                gtdata[sample.sample] = 0
+                exclude_samples.append(sample.sample)
         else:
             if use_alt_num > -1:
                 try:
