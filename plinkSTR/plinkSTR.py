@@ -91,7 +91,7 @@ def OutputAssoc(chrom, start, assoc, outf, assoc_type="STR"):
     outf.write("\t".join([str(item) for item in items])+"\n")
     outf.flush()
 
-def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0.05, exclude_samples=[], maxiter=100):
+def PerformAssociation(data, covarcols, case_control=False, quant=True, maf=1.0, exclude_samples=[], maxiter=100):
     """
     Perform association tests
     Input:
@@ -110,11 +110,8 @@ def PerformAssociation(data, covarcols, case_control=False, quant=True, minmaf=0
 
     assoc = {}
     formula = "phenotype ~ GT+"+"+".join(covarcols)
-    maf = sum(data["GT"])*1.0/(2*data.shape[0])
     assoc["maf"] = "%.3f"%maf
     assoc["N"] = data.shape[0]
-    if minmaf != 1 and (maf <= minmaf or (maf >= 1-minmaf)):
-        return None # don't attempt regression
     if case_control:
         try:
             pgclogit = sm.Logit(data["phenotype"], data[["intercept","GT"]+covarcols]).fit(disp=0, maxiter=maxiter) # not using formula api anymore, much faster!
@@ -182,13 +179,16 @@ def LoadGT(record, sample_order, is_str=True, use_alt_num=-1, use_alt_length=-1,
             else:
                 try:
                     f1, f2 = [afreqs[int(item)] for item in sample.gt_alleles]
+                    if f1 < rmrare or f2 < rmrare:
+                        exclude_samples.append(sample.sample)
+                        gtdata[sample.sample] = sum([len(record.REF) for item in sample.gt_alleles])
+                    else:
+                        gtdata[sample.sample] = sum([len(alleles[int(item)]) for item in sample.gt_alleles])
                 except:
                     f1, f2 = [0,0]
-                if f1 < rmrare or f2 < rmrare:
                     exclude_samples.append(sample.sample)
-                    gtdata[sample.sample] = sum([len(record.REF) for item in sample.gt_alleles])
-                else:
-                    gtdata[sample.sample] = sum([len(alleles[int(item)]) for item in sample.gt_alleles])
+                    gtdata[sample.sample] = 2*len(record.REF)
+
     d = [gtdata[s] for s in sample_order]
     return d, exclude_samples
 
@@ -281,7 +281,7 @@ def main():
     assoc_group.add_argument("--infer-snpstr", help="Infer which positions are SNPs vs. STRs", action="store_true")
     assoc_group.add_argument("--allele-tests", help="Also perform allele-based tests using each separate allele", action="store_true")
     assoc_group.add_argument("--allele-tests-length", help="Also perform allele-based tests using allele length", action="store_true")
-    assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF", type=float, default=0.01)
+    assoc_group.add_argument("--minmaf", help="Ignore bi-allelic sites with low MAF.", type=float, default=0.01)
     assoc_group.add_argument("--str-only", help="Used with --infer-snptr, only analyze STRs", action="store_true")
     assoc_group.add_argument("--remove-rare-str-alleles", help="Remove genotypes with alleles less than this freq", default=0.0, type=float)
     assoc_group.add_argument("--max-iter", help="Maximum number of iterations for logistic regression", default=100, type=int)
@@ -353,7 +353,7 @@ def main():
         # Check MAF
         aaf = sum(record.aaf)
         aaf = min([aaf, 1-aaf])
-        if aaf < args.minmaf: continue
+        if aaf < args.minmaf and args.minmaf != 1: continue
         # Infer whether we should treat as a SNP or STR
         is_str = True # by default, assume all data is STRs
         if args.infer_snpstr:
@@ -366,10 +366,9 @@ def main():
         gts, exclude_samples = LoadGT(record, sample_order, is_str=is_str, rmrare=args.remove_rare_str_alleles)
         pdata["GT"] = gts
         pdata["intercept"] = 1
-        if is_str: minmaf = 1
-        else: minmaf = args.minmaf
+        minmaf = args.minmaf
         common.MSG("   Perform association...")
-        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, minmaf=minmaf, exclude_samples=exclude_samples, maxiter=args.max_iter)
+        assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, maf=aaf, exclude_samples=exclude_samples, maxiter=args.max_iter)
         common.MSG("   Output association...")
         OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, name=record.ID))
         # Allele based tests
@@ -379,13 +378,13 @@ def main():
             for i in range(len(record.ALT)+1):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_num=i)
                 pdata["GT"] = gts
-                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, maf=aaf, exclude_samples=exclude_samples, maxiter=args.max_iter)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt=alleles[i], name=record.ID))
         if is_str and args.allele_tests_length:
             for length in set([len(record.REF)] + [len(alt) for alt in record.ALT]):
                 gts, exclude_samples = LoadGT(record, sample_order, is_str=True, use_alt_length=length)
                 pdata["GT"] = gts
-                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, exclude_samples=exclude_samples, maxiter=args.max_iter)
+                assoc = PerformAssociation(pdata, covarcols, case_control=args.logistic, quant=args.linear, maf=aaf, exclude_samples=exclude_samples, maxiter=args.max_iter)
                 OutputAssoc(record.CHROM, record.POS, assoc, outf, assoc_type=GetAssocType(is_str, alt_len=length, name=record.ID))
 
 if __name__ == "__main__":
