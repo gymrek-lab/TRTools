@@ -46,7 +46,7 @@ def LoadCondition(vcffile, condition, sample_order):
     region = "%s:%s-%s"%(chrom, start, int(start)+1)
     reader2.fetch(region)
     for record in reader2:
-        print record.start, int(start), record.ID
+        print(record.start, int(start), record.ID)
         if record.start==int(start):
             return LoadGT(record, sample_order, is_str=False)
     common.ERROR("Could not find SNP to condition on")
