@@ -36,7 +36,9 @@ setup(name=NAME,
       install_requires=['argparse',
                         'numpy',
                         'pybedtools',
-                        'pyvcf'],
+                        'pyvcf',
+                        'statsmodels',
+                        'pysam'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.2',\
                        'License :: OSI Approved :: MIT License',\
