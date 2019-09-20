@@ -10,13 +10,13 @@ Tool for merging STR VCF files from GangSTR
 
 ### GangSTR merging ###
 # By default, merge the following FORMAT fields in the logical way:
-# GT, DP, Q, REPCN, REPCI, RC, ML, INS, STDERR
+# GT, DP, Q, REPCN, REPCI, RC, ML, INS, STDERR, ENCLREADS, FLNKREADS
 
 # By default, require the following INFO fields to be the same across files:
 # END, PERIOD, RU, REF
 
-# Stutter model (INFO:STUTTERUP, STUTTERDOWN, and STUTTERP) included if it is the same across files.
-# FORMAT:QEXP included if EXPTHRESH is the same across files
+# Stutter model (INFO:STUTTERUP, STUTTERDOWN, STUTTERP, EXPTHRESH) included if it is the same across files.
+# If those are different across files, an error is thrown.
 
 # Special options required for:
 #- Merging GGL (affects INFO:GRID and FORMAT:GGL)
@@ -35,6 +35,7 @@ import strtools.utils.common as common
 import strtools.utils.utils as utils
 
 NOCALLSTRING = "."
+FORMATFIELDS = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR","ENCLREADS","FLNKREADS","QEXP"]
 
 def GetInfoString(info):
     return '##INFO=<ID=%s,Number=%s,Type=%s,Description="%s">'%(info.id, info.num, info.type, info.desc)
@@ -77,11 +78,13 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
     # Write GangSTR specific INFO fields
     for field in ["END", "PERIOD", "RU", "REF","STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
-        vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
+        if field in readers[0].infos:
+            vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
     if args.merge_ggl: vcfw.write(GetInfoString(readers[0].infos["GRID"])+"\n")
     # Write GangSTR specific FORMAT fields
-    for field in ["GT", "DP", "Q", "REPCN", "REPCI", "RC", "ML", "INS", "STDERR", "QEXP"]:
-        vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
+    for field in FORMATFIELDS:
+        if field in readers[0].formats:
+            vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
     if args.merge_ggl: vcfw.write(GetFormatString(readers[0].formats["GGL"])+"\n")
     # Write sample list
     samples=GetSamples(readers, usefilenames=args.update_sample_from_file)
@@ -169,12 +172,11 @@ def GetGT(gt_alleles, alleles):
     newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
     return "/".join([str(item) for item in newgt])
 
-def GetSampleInfo(record, alleles, formats, use_qexp, args):
+def GetSampleInfo(record, alleles, formats, args):
     """
     Output sample info
     """
-    easy_fmts = ["DP","Q","REPCN","REPCI","RC","ML","INS","STDERR"]
-    if use_qexp: easy_fmts.append("QEXP")
+    easy_fmts = FORMATFIELDS
     record_items = []
     for sample in record:
         sample_items = []
@@ -188,8 +190,11 @@ def GetSampleInfo(record, alleles, formats, use_qexp, args):
                 if args.merge_ggl:
                     sample_items.append(".") # TODO merge this for real
             if fmt in easy_fmts:
-                val = sample[fmt]
-                if type(val)==list: val = ",".join([str(item) for item in val])
+                try:
+                    val = sample[fmt]
+                    if type(val)==list: val = ",".join([str(item) for item in val])
+                except:
+                    val = NOCALLSTRING
                 sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
@@ -224,18 +229,15 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
         info_items.append("GRID=%s,%s"%MergeGRID(current_records, mergelist))
     info_items = [item for item in info_items if item is not None]
     output_items.append(";".join(info_items))
-    # should we use qexp?
-    use_qexp = ("EXPTHRESH" in [item.split("=")[0] for item in info_items])
     # Set FORMAT
-    formats = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR"]
-    if use_qexp: formats.append("QEXP")
+    formats = FORMATFIELDS[:]
     if args.merge_ggl: formats.append("GGL")
     output_items.append(":".join(formats))
     # Set sample info
     alleles = [ref_allele]+alt_alleles
     for i in range(len(mergelist)):
         if mergelist[i]:
-            output_items.extend(GetSampleInfo(current_records[i], alleles, formats, use_qexp, args))
+            output_items.extend(GetSampleInfo(current_records[i], alleles, formats, args))
         else:
             output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
