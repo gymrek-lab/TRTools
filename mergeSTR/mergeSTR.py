@@ -76,7 +76,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
     for key,val in contigs.items():
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
     # Write GangSTR specific INFO fields
-    for field in ["END", "PERIOD", "RU", "REF","STUTTERP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
+    for field in ["END", "PERIOD", "RU", "REF","STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
         vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
     if args.merge_ggl: vcfw.write(GetInfoString(readers[0].infos["GRID"])+"\n")
     # Write GangSTR specific FORMAT fields
