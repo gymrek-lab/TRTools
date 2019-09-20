@@ -204,6 +204,7 @@ class ProbHom(Reason):
         #### Prob hom expansion
         if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
         else: return None
+
 class MaxProbHom(Reason):
     name = "MaxProbHom"
     def __init__(self, threshold):
@@ -221,6 +222,7 @@ class ProbHet(Reason):
         #### Prob het expansion
         if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
         else: return None
+
 class MaxProbHet(Reason):
     name = "MaxProbHet"
     def __init__(self, threshold):
@@ -230,7 +232,6 @@ class MaxProbHet(Reason):
         if sample["QEXP"][1] > self.threshold: return sample["QEXP"][1]
         else: return None
 
-
 class ProbTotal(Reason):
     name = "ProbTotal"
     def __init__(self, threshold):
@@ -239,6 +240,7 @@ class ProbTotal(Reason):
         #### Prob het and hom expansion
         if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
         else: return None
+
 class MaxProbTotal(Reason):
     name = "MaxProbTotal"
     def __init__(self, threshold):
@@ -281,4 +283,30 @@ class BadCI(Reason):
             ci_low = int(ci[i].split("-")[0])
             ci_high = int(ci[i].split("-")[1])
             if ml_est<ci_low or ml_est>ci_high: return ml_est
+        return None
+
+class RequireSupport(Reason):
+    name = "RequireSupport"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        ### Require x number of reads supporting
+        try:
+            encl = dict([(int(item.split(",")[0]), int(item.split(",")[1])) for item in sample["ENCLREADS"].split("|")])
+        except: encl = {}
+        try:
+            flank = dict([(int(item.split(",")[0]), int(item.split(",")[1])) for item in sample["FLNKREADS"].split("|")])
+        except:
+            flank = {}
+        repcn = [int(item) for item in sample["REPCN"]]
+        frrcount = int(sample["RC"].split(",")[2])
+        for allele in repcn:
+            # First, check enclosing
+            if encl.get(allele, 0) >= self.threshold: continue
+            # Then, check flanking
+            if flank.get(allele, 0) >= self.threshold: continue
+            # Else, better see some FRRs
+            if frrcount >= self.threshold: continue
+            # If didn't pass yet, error
+            return self.threshold
         return None
