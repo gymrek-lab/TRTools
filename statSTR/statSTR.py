@@ -31,7 +31,7 @@ def GetThresh(record, samplelist=[]):
     if len(values) == 0: return -1
     return max(values)
 
-def GetAFreq(record, samplelist=[]):
+def GetAFreq(record, samplelist=[], count=False):
     acounts = {}
     reflen = len(record.REF)
     for sample in record:
@@ -44,6 +44,8 @@ def GetAFreq(record, samplelist=[]):
     total = sum(acounts.values())
     if len(acounts.keys()) == 0: return "."
     if total == 0: return "."
+    if count:
+        return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(acounts.keys())])
     afreqs = ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(acounts.keys())])
     return afreqs
 
@@ -66,6 +68,7 @@ def main():
     stat_group = parser.add_argument_group("Stats group")
     stat_group.add_argument("--thresh", help="Output threshold field (for GangSTR strinfo). Threshold is set to the max observed allele length", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
+    stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
     stat_group.add_argument("--het", help="Output observed heterozygote counts used for HWE per loci.", action="store_true")
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
@@ -81,6 +84,7 @@ def main():
     header = ["chrom","start","end"]
     if args.thresh: header.append("thresh")
     if args.afreq: header.append("afreq")
+    if args.acount: header.append("acount")
     if args.hwep: header.append("hwep")
     if args.het: header.append("obs_het")
     if args.out == "stdout":
@@ -97,6 +101,8 @@ def main():
             items.append(GetThresh(record, samplelist=samplelist))
         if args.afreq:
             items.append(GetAFreq(record, samplelist=samplelist))
+        if args.acount:
+            items.append(GetAFreq(record, samplelist=samplelist, count=True))
         if args.hwep & ~args.het:
             items.append(GetHWEP(record, samplelist=samplelist, use_length=args.use_length, het_output=args.het))
         if args.hwep & args.het:
