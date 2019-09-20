@@ -78,13 +78,15 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
     # Write GangSTR specific INFO fields
     for field in ["END", "PERIOD", "RU", "REF","STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
-        if field in readers[0].infos:
-            vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
+        vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
     if args.merge_ggl: vcfw.write(GetInfoString(readers[0].infos["GRID"])+"\n")
     # Write GangSTR specific FORMAT fields
+    rmfields = []
     for field in FORMATFIELDS:
-        if field in readers[0].formats:
-            vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
+        if field not in readers[0].formats:
+            rmfields.append(field)
+        else: vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
+    for field in rmfields: FORMATFIELDS.remove(field)
     if args.merge_ggl: vcfw.write(GetFormatString(readers[0].formats["GGL"])+"\n")
     # Write sample list
     samples=GetSamples(readers, usefilenames=args.update_sample_from_file)
