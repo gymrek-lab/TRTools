@@ -287,8 +287,9 @@ class BadCI(Reason):
 
 class RequireSupport(Reason):
     name = "RequireSupport"
-    def __init__(self, threshold):
+    def __init__(self, threshold, readlen):
         self.threshold = threshold
+        self.readlen = readlen
     def __call__(self, sample):
         ### Require x number of reads supporting
         try:
@@ -299,14 +300,25 @@ class RequireSupport(Reason):
         except:
             flank = {}
         repcn = [int(item) for item in sample["REPCN"]]
+        repcn_len = [len(item) for item in sample.gt_bases]
         frrcount = int(sample["RC"].split(",")[2])
-        for allele in repcn:
-            # First, check enclosing
-            if encl.get(allele, 0) >= self.threshold: continue
-            # Then, check flanking
-            if flank.get(allele, 0) >= self.threshold: continue
-            # Else, better see some FRRs
-            if frrcount >= self.threshold: continue
-            # If didn't pass yet, error
-            return self.threshold
+        for i in range(len(repcn)):
+            allele = repcn[i]
+            alen = repcn_len[i]
+            # First, check enclosing. In all cases if we see good enclosings we're good to go
+            if encl.get(allele, 0) >= self.threshold:
+                continue
+            else: # Fail if we *should* have seen enclosing
+                if alen < 0.5*self.readlen:
+                    #print("Expected enclosing: %s"%sample)
+                    return self.threshold
+            # If allele is super long, we should see some FRRs
+            if alen > 2*self.readlen and frrcount < self.threshold:
+                #print("Expeceted FRR: %s"%sample)
+                return self.threshold
+            # For middle range, need to at least see some flanking
+            numflank = sum(flank.values()) # TODO something smarter?
+            if numflank < self.threshold:
+                #print("Expected flank: %s"%sample)
+                return self.threshold
         return None

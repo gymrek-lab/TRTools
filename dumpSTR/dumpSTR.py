@@ -76,6 +76,10 @@ def CheckFilters(invcf, args):
             common.ERROR("--expansion-prob-total must be between 0 and 1")
     if args.require_support < 0:
         common.ERROR("--require-support must be >= 0")
+    if args.require_support > 0 and args.readlen is None:
+        common.ERROR("Using --require-support requires setting --readlen")
+    if args.readlen < 20:
+        common.ERROR("--readlen must be an integer value >= 20")
 
 def WriteLocLog(loc_info, fname):
     """
@@ -248,7 +252,7 @@ def BuildCallFilters(args):
     if args.filter_badCI:
         cdict.append(filters.BadCI())
     if args.require_support > 0:
-        cdict.append(filters.RequireSupport(args.require_support))
+        cdict.append(filters.RequireSupport(args.require_support, args.readlen))
     return cdict
 
 def BuildLocusFilters(args):
@@ -321,6 +325,7 @@ def main():
     gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
     gangstr_call_group.add_argument("--filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
     gangstr_call_group.add_argument("--require-support", help="Require each allele call to have at least n supporting reads", type=int, default=0)
+    gangstr_call_group.add_argument("--readlen", help="Read length used (bp). Required if using --require-support", type=int)
 
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
