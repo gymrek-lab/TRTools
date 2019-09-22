@@ -300,7 +300,7 @@ class RequireSupport(Reason):
         except:
             flank = {}
         repcn = [int(item) for item in sample["REPCN"]]
-        repcn_len = [len(item) for item in sample.gt_bases]
+        repcn_len = [len(item) for item in sample.gt_bases.split("/")]
         frrcount = int(sample["RC"].split(",")[2])
         for i in range(len(repcn)):
             allele = repcn[i]
@@ -310,15 +310,15 @@ class RequireSupport(Reason):
                 continue
             else: # Fail if we *should* have seen enclosing
                 if alen < 0.5*self.readlen:
-                    #print("Expected enclosing: %s"%sample)
+#                    print("Expected enclosing: %s: %s"%(sample, sample.gt_bases))
                     return self.threshold
             # If allele is super long, we should see some FRRs
             if alen > 2*self.readlen and frrcount < self.threshold:
-                #print("Expeceted FRR: %s"%sample)
+#                print("Expeceted FRR: %s"%sample)
                 return self.threshold
             # For middle range, need to at least see some flanking
             numflank = sum(flank.values()) # TODO something smarter?
             if numflank < self.threshold:
-                #print("Expected flank: %s"%sample)
+#                print("Expected flank: %s"%sample)
                 return self.threshold
         return None
