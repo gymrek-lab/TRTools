@@ -309,16 +309,12 @@ class RequireSupport(Reason):
             if encl.get(allele, 0) >= self.threshold:
                 continue
             else: # Fail if we *should* have seen enclosing
-                if alen < 0.5*self.readlen:
-#                    print("Expected enclosing: %s: %s"%(sample, sample.gt_bases))
+                if alen < 0.2*self.readlen: # TODO should this be stricter?
                     return self.threshold
-            # If allele is super long, we should see some FRRs
             if alen > 2*self.readlen and frrcount < self.threshold:
-#                print("Expeceted FRR: %s"%sample)
                 return self.threshold
             # For middle range, need to at least see some flanking
-            numflank = sum(flank.values()) # TODO something smarter?
+            numflank = sum(flank.values())
             if numflank < self.threshold:
-#                print("Expected flank: %s"%sample)
                 return self.threshold
         return None
