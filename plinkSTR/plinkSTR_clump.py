@@ -4,7 +4,6 @@
 Author: Shubham Saini
 shubhamsaini@eng.ucsd.edu
 
-
 Plink style LD-based clumping of GWAS results from plinkSTR
 Example:
 ./clump.py --clump-p1 0.2 --clump-p2 0.2 --clump-r2 0.1 --clump-kb 3000 \
@@ -12,7 +11,6 @@ Example:
 --vcf /storage/s1saini/hipstr_allfilters/phased_feb18/hipstr.chr21.phased.vcf.gz
 
 """
-
 
 import argparse
 import sys
@@ -23,7 +21,7 @@ from cyvcf2 import VCF
 def PrintLine(text, f):
     f.write(text+"\n")
     f.flush()
-
+    
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -31,7 +29,7 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
+        
 def main():
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument("--clump-p1", help="Significance threshold for index SNPs", required=True, type=str)
@@ -69,7 +67,6 @@ def main():
     if args.region:
         region_chrom = int(args.region.split(":")[0])
         assoc_results = assoc_results[assoc_results['CHROM'] == region_chrom]
-
         ### implement position
 
     while(assoc_results[(assoc_results['keep']==-1)].shape[0]>0):
@@ -111,19 +108,17 @@ def main():
 		str_gt = []
                 gt_array = []
                 if str(v.ID) in assoc_ids:
-                    	vcf_strids.append(str(v.ID))
-                    	if CLUMP_R2 == 0:
-				strs_discard.append(str(v.ID))
-			else:
-				for gt in v.gt_bases:
-                        		str_gt.append(np.sum([len(i)-len(v.REF) for i in gt.split("|")]))
-                    		corr_matrix = np.corrcoef(str_gt,index_str_gt)[0,1] ** 2
-                    		if corr_matrix < CLUMP_R2:
-                        		strs_retain.append(str(v.ID))
-                    		else:
-                        		strs_discard.append(str(v.ID))
-
-
+                    vcf_strids.append(str(v.ID))
+                    if CLUMP_R2 == 0:
+                        strs_discard.append(str(v.ID))
+                    else:
+                        for gt in v.gt_bases:
+                            str_gt.append(np.sum([len(i)-len(v.REF) for i in gt.split("|")]))
+                        corr_matrix = np.corrcoef(str_gt,index_str_gt)[0,1] ** 2
+                        if corr_matrix < CLUMP_R2:
+                            strs_retain.append(str(v.ID))
+                        else:
+                            strs_discard.append(str(v.ID))
         assoc_results.loc[assoc_results['SNP'].isin(strs_discard),'keep'] = 0
         PrintLine('%d %s %d %s %d %s'%(chrom, index_str_id, index_str_bp, str(index_str_pmin), len(strs_discard), ",".join(strs_discard)), outf)
 
