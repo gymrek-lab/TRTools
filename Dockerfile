@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -qqy \
     unzip \
     zlib1g-dev
 
-RUN pip3 install pybedtools pyvcf scipy numpy
+RUN pip3 install pybedtools pyvcf scipy numpy statsmodels
 
 # Install samtools (needed to index reference fasta files)
 RUN wget -O samtools-1.9.tar.bz2 https://github.com/samtools/samtools/releases/download/1.9/samtools-1.9.tar.bz2
