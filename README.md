@@ -18,6 +18,7 @@ STRTools includes the following tools.
 
 * dumpSTR: a tool for filtering VCF files with STR genotypes (from [HipSTR](https://github.com/tfwillems/HipSTR) or [GangSTR](https://github.com/gymreklab/gangstr))
 * plinkSTR: a tool for performing STR association studies
+* mergeSTR: a tool to merge vcf files from gangSTR 
 
 Type `<command> --help` to see a full set of options.
 
