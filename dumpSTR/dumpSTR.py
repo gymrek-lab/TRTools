@@ -78,7 +78,7 @@ def CheckFilters(invcf, args):
         common.ERROR("--require-support must be >= 0")
     if args.require_support > 0 and args.readlen is None:
         common.ERROR("Using --require-support requires setting --readlen")
-    if args.readlen < 20:
+    if args.readlen is not None and args.readlen < 20:
         common.ERROR("--readlen must be an integer value >= 20")
 
 def WriteLocLog(loc_info, fname):
