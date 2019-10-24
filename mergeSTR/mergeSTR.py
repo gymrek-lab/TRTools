@@ -58,7 +58,7 @@ def MergeGRID(current_records, mergelist):
     Merge the INFO/GRID field
     """
     return (-1, -1) # TODO
-    
+
 def WriteMergedHeader(vcfw, args, readers, cmd):
     """
     Write merged header for VCFs in args.vcfs
@@ -111,7 +111,7 @@ def GetChromOrderEqual(chrom_order, min_chrom):
 
 def GetMinRecords(record_list, chroms, debug=True):
     """
-    Return a vector of boolean set to true if 
+    Return a vector of boolean set to true if
     the record is in lowest sort order of all the records
     Use order in chroms to determine sort order of chromosomes
     """
@@ -188,10 +188,10 @@ def GetSampleInfo(record, alleles, formats, args):
         for fmt in formats:
             if fmt == "GT":
                 sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
-            if fmt == "GGL":
+            elif fmt == "GGL":
                 if args.merge_ggl:
                     sample_items.append(".") # TODO merge this for real
-            if fmt in easy_fmts:
+            elif fmt in easy_fmts:
                 try:
                     val = sample[fmt]
                     if type(val)==list: val = ",".join([str(item) for item in val])
