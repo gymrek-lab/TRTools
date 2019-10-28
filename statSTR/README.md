@@ -6,7 +6,7 @@ This tool is used for computing stats on VCF files
 To run statSTR use the following command: 
 ```
 statSTR 
-  --vcf /storage/mgymrek/gangstr-analysis/round2/trio/trio_gangstr_filtered_level1.vcf.gz \
+  --vcf <vcf file> \
   --out test.tab \
   --thresh \
   [filter options]
