@@ -6,20 +6,20 @@ Perform STR association tests
 To run plinkSTR-KD use the following command: 
 ```
 ./plinkSTR.py \
-  --vcf /storage/mgymrek/KD/imputed/KD.chr22.imputed.vcf.gz \
-  --out stdout --fam /storage/mgymrek/KD/pheno/KD.fam \
+  --vcf vcf file \
+  --out stdout --fam fam file \
   --sex --logistic --infer-snpstr --allele-tests --allele-tests-length \
-  --remove-rare-str-alleles 0.05 --region 22:17655257-17655258
+  --remove-rare-str-alleles 0.05 --region chr:start-end
 ```
 
 To run plinkSTR-PGC use the following command: 
 ```
 ./plinkSTR.py \
-  --vcf /home/gymrek/ssaini/per_locus/11.57523883/PGC.11.57523883.imputed.noAF.vcf.gz \
-  --covar /home/pgcdac/DWFV2CJb8Piv_0116_pgc_data/scz/wave2/v1/prune.bfile.cobg.PGC_SCZ49.sh2.menv.mds_cov \
+  --vcf vcf file \
+  --covar covariates file \
   --covar-name C1,C2,C3,C4,C5,C6,C7,C9,C15,C18 \
   --out stdout \
-  --fam /home/gymrek/pgc_imputation/PGC_eur.fam \
+  --fam fam file \
   --sex --logistic --infer-snpstr --allele-tests --allele-tests-length \
   --remove-rare-str-alleles 0.05
 ```
