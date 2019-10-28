@@ -6,13 +6,13 @@ MergeSTR is a tool for merging vcf files from GangSTR.
 To run mergeSTR use the following command: 
 ```
 ./mergeSTR.py \
-  --vcfs ERR1955393.17.sorted.vcf.gz,ERR1955394.17.sorted.vcf.gz \
+  --vcfs <vcf file1, vcf file2> \
   --out test
   [additional options]
 ```
 
 Required Parameters: 
-* **--vcf <GangSTR VCF>** VCF file output by GangSTR. Can be unzipped or bgzipped.
+* **--vcf <GangSTR VCF>** VCF file output by GangSTR. Can be unzipped or bgzipped, must be indexed.
 * **--out <string>** prefix to name output files
 
 Special Merge Options: 
