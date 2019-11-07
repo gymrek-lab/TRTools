@@ -21,7 +21,7 @@ Filtering Group parameters:
 * **`--region`**: restrict to specific regions (chrom:start-end) 
 
 Stats group parameters: 
-* **`--thres`**: an output threshold field; threshold is set to the max observed allele length
+* **`--thres`**: output the maximum observed allele length
 * **`--afreq`**: to output allele frequencies 
 * **`--acount`**: to output allele counts 
 * **`--hwep`**: output HWE p-values per loci 
