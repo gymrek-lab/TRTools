@@ -9,7 +9,7 @@ statSTR
   --vcf <vcf file> \
   --out test.tab \
   --thresh \
-  [filter options]
+  [additional options]
 ```
 
 Required Parameters: 
