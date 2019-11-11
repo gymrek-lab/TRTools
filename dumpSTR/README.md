@@ -50,6 +50,16 @@ GangSTR-specific call-level filters:
 * **`--filter-spanbound-only`**: Filter loci where only spanning or bounding reads were identified
 * **`--filter-badCI`**: Filter regions where the ML estimate is not in the CI
 
+## Basic dumpSTR command 
+
+```
+dumpSTR \
+        --vcf /storage/mikhail/100919_BXD_all_drive1_drive3_rep_stutt_model/result/4512-JFI-0366_BXD196/res_chr1.vcf.gz \
+        --out test_run
+```
+
+Check test_run in testData folder for example output. 
+
 <a name="hipstr"></a>
 ## Recommended HipSTR filters
 
@@ -75,7 +85,7 @@ For population-level datasets (e.g. 50+ samples), the Hardy-Weinberg filter is r
 ```
 
 <a name="gangstr"></a>
-## Recommended GanSTR filters
+## Recommended GangSTR filters
 
 The following command gives recommended filters for dumpSTR calls:
 
