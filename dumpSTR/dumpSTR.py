@@ -12,7 +12,7 @@ import os
 # Load local libraries
 import strtools.utils.common as common
 import strtools.utils.utils as utils
-import dumpSTR.filters as filters
+import strtools.utils.filters
 
 # Load external libraries
 import argparse
@@ -36,50 +36,68 @@ def CheckFilters(invcf, args):
     - invcf (vcf.Reader)
     - args (argparse namespace)
 
-    Exit program if checks fail
+    Return True if all is good. else return False
     """
     if args.min_call_DP is not None:
         if args.min_call_DP < 0:
-            common.ERROR("Invalid min_call_DP <0")
+            common.WARNING("Invalid min_call_DP <0")
+            return False
         if "DP" not in invcf.formats:
-            common.ERROR("No DP FORMAT found")
+            common.WARNING("No DP FORMAT found")
+            return False
     if args.max_call_DP is not None:
         if args.max_call_DP < 0:
-            common.ERROR("Invalid min_call_DP <0")
+            common.WARNING("Invalid min_call_DP <0")
+            return False
         if args.min_call_DP is not None and args.max_call_DP <= args.min_call_DP:
-            common.ERROR("--max-call-DP must be > --min-call-DP")
+            common.WARNING("--max-call-DP must be > --min-call-DP")
+            return False
         if "DP" not in invcf.formats:
-            common.ERROR("No DP FORMAT found")
+            common.WARNING("No DP FORMAT found")
+            return False
     if args.min_call_Q is not None:
         if args.min_call_Q < 0 or args.min_call_Q > 1:
-            common.ERROR("--min-call-Q must be between 0 and 1")
+            common.WARNING("--min-call-Q must be between 0 and 1")
+            return False
         if "Q" not in invcf.formats:
-            common.ERROR("No Q FORMAT found")
+            common.WARNING("No Q FORMAT found")
+            return False
     if args.max_call_flank_indel is not None:
         if args.max_call_flank_indel < 0 or args.max_call_flank_indel > 1:
-            common.ERROR("--max-call-flank-indel must be between 0 and 1")
+            common.WARNING("--max-call-flank-indel must be between 0 and 1")
+            return False
         if "DP" not in invcf.formats or "DFLANKINDEL" not in invcf.formats:
-            common.ERROR("No DP or DFLANKINDEL FORMAT found")
+            common.WARNING("No DP or DFLANKINDEL FORMAT found")
+            return False
     if args.max_call_stutter is not None:
         if args.max_call_stutter < 0 or args.max_call_stutter > 1:
-            common.ERROR("--max-call-stutter must be between 0 and 1")
+            common.WARNING("--max-call-stutter must be between 0 and 1")
+            return False
         if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
-            common.ERROR("No DP or DSTUTTER FORMAT found")        
+            common.WARNING("No DP or DSTUTTER FORMAT found")        
+            return False
     if args.expansion_prob_het is not None:
         if args.expansion_prob_het < 0 or args.expansion_prob_het > 1:
-            common.ERROR("--expansion-prob-het must be between 0 and 1")
+            common.WARNING("--expansion-prob-het must be between 0 and 1")
+            return False
     if args.expansion_prob_hom is not None:
         if args.expansion_prob_hom < 0 or args.expansion_prob_hom > 1:
-            common.ERROR("--expansion-prob-hom must be between 0 and 1")
+            common.WARNING("--expansion-prob-hom must be between 0 and 1")
+            return False
     if args.expansion_prob_total is not None:
         if args.expansion_prob_total < 0 or args.expansion_prob_total > 1:
-            common.ERROR("--expansion-prob-total must be between 0 and 1")
+            common.WARNING("--expansion-prob-total must be between 0 and 1")
+            return False
     if args.require_support < 0:
-        common.ERROR("--require-support must be >= 0")
+        common.WARNING("--require-support must be >= 0")
+        return False
     if args.require_support > 0 and args.readlen is None:
-        common.ERROR("Using --require-support requires setting --readlen")
+        common.WARNING("Using --require-support requires setting --readlen")
+        return False
     if args.readlen is not None and args.readlen < 20:
-        common.ERROR("--readlen must be an integer value >= 20")
+        common.WARNING("--readlen must be an integer value >= 20")
+        return False
+    return True
 
 def WriteLocLog(loc_info, fname):
     """
@@ -281,13 +299,14 @@ def BuildLocusFilters(args):
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
             if len(filter_region_names) != len(filter_region_files):
-                common.ERROR("ERROR: length of --filter-regions-names must match --filter-regions\n")
+                common.WARNING("Length of --filter-regions-names must match --filter-regions\n")
+                return fdict, True
         else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
             fdict.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
-    return fdict
+    return fdict, False
 
-def main():
+def getargs():
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
@@ -333,13 +352,18 @@ def main():
     debug_group.add_argument("--verbose", help="Print out extra info", action="store_true")
 
     args = parser.parse_args()
+    return args
+
+def main(args):
     # Load VCF file
     invcf = vcf.Reader(filename=args.vcf)
 
-    # Set up filter list
-    CheckFilters(invcf, args)
+    # Set up filter list and check for errors
+    if not CheckFilters(invcf, args): return 1
     invcf.filters = {}
-    filter_list = BuildLocusFilters(args)
+    filter_list, build_err = BuildLocusFilters(args)
+    if build_err: return 1
+
     for f in filter_list:
         short_doc = f.__doc__ or ''
         short_doc = short_doc.split('\n')[0].lstrip()
@@ -377,7 +401,7 @@ def main():
             record = next(invcf)
         except IndexError:
             common.WARNING("Skipping TR that couldn't be parsed by PyVCF. Check VCF format")
-            if args.die_on_warning: sys.exit(1)
+            if args.die_on_warning: return 1
         except StopIteration: break
         if args.verbose:
             common.MSG("Processing %s:%s"%(record.CHROM, record.POS))
@@ -425,6 +449,12 @@ def main():
     WriteSampLog(sample_info, all_reasons, args.out + ".samplog.tab")
     WriteLocLog(loc_info, args.out+".loclog.tab")
 
+    return 0
+
 if __name__ == "__main__":
-    main()
+    # Set up args
+    args = getargs()
+    # Run main function
+    retcode = main(args)
+    sys.exit(retcode)
 
