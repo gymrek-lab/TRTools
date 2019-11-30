@@ -58,7 +58,7 @@ dumpSTR \
         --out test_run
 ```
 
-Check test_run in testData folder for example output. 
+Check test_run_original in Example_files folder for example output. 
 
 <a name="hipstr"></a>
 ## Recommended HipSTR filters
