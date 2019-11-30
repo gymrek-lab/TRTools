@@ -27,9 +27,9 @@ Optional Additional Parameters:
 
 ```
 ./mergeSTR.py \
-   --vcfs /storage/mikhail/100919_BXD_all_drive1_drive3_rep_stutt_model/result/4512-JFI-0358_BXD40_TyJ/res_chr1.vcf.gz,       /storage/mikhail/100919_BXD_all_drive1_drive3_rep_stutt_model/result/4512-JFI-0366_BXD196/res_chr1.vcf.gz 
-   --out test 
+   --vcfs ../test_files/test_file.vcf.gz,../test_files/test_file2.vcf.gz
+   --out test_run_original
 ```
 
-Check test in testData for example output. 
+Check test_run_original in Example_Files for example output. 
 
