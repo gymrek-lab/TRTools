@@ -28,4 +28,13 @@ Stats group parameters:
 * **`--het`**: output observed heterozygote counts used for HWE per loci 
 * **`--use-length`**: calculate per-locus stats (het, HWE) collapsing alleles by length 
 
+## Basic statSTR command 
+
+```
+statSTR 
+  --vcf ./test_files/test_file.vcf 
+  --out test.tab 
+```
+Check test.tab in Example_Files for example output 
+
 
