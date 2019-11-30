@@ -27,7 +27,7 @@ Optional Additional Parameters:
 
 ```
 ./mergeSTR.py \
-   --vcfs ../test_files/test_file.vcf.gz,../test_files/test_file2.vcf.gz
+   --vcfs ./test_files/test_file.vcf.gz,./test_files/test_file2.vcf.gz
    --out test_run_original
 ```
 
