@@ -54,7 +54,7 @@ GangSTR-specific call-level filters:
 
 ```
 dumpSTR \
-        --vcf /storage/mikhail/100919_BXD_all_drive1_drive3_rep_stutt_model/result/4512-JFI-0366_BXD196/res_chr1.vcf.gz \
+        --vcf ./test_files/test_files.vcf \
         --out test_run
 ```
 
