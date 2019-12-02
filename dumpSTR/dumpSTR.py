@@ -9,10 +9,17 @@ Tool for filtering and QC of STR genotypes
 import sys
 import os
 
-# Load local libraries
+# Handle STRTools imports differently depending on where we're calling this from
+if __name__ == '__main__' and __package__ is None:
+    from os import sys, path
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+try:
+    import dumpSTR.filters as filters # Before
+except ImportError:
+    import filters # After
+
 import strtools.utils.common as common
 import strtools.utils.utils as utils
-import strtools.utils.filters
 
 # Load external libraries
 import argparse
@@ -356,6 +363,9 @@ def getargs():
 
 def main(args):
     # Load VCF file
+    if not os.path.exists(args.vcf):
+        common.WARNING("%s does not exist"%args.vcf)
+        return 1
     invcf = vcf.Reader(filename=args.vcf)
 
     # Set up filter list and check for errors
