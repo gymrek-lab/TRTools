@@ -22,3 +22,14 @@ Special Merge Options:
 Optional Additional Parameters: 
 * **`--verbose`**: Prints out extra information 
 * **`--quiet`**: Doesn't print out anything 
+
+## Basic MergeSTR command 
+
+```
+./mergeSTR.py \
+   --vcfs ./test_files/test_file.vcf.gz,./test_files/test_file2.vcf.gz
+   --out test_run_original
+```
+
+Check test_run_original in Example_Files for example output. 
+
