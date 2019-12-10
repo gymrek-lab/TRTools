@@ -1,7 +1,7 @@
 import argparse
 import os
 import pytest
-import dumpSTR
+from .dumpSTR import *
 
 # Set up base argparser
 def base_argparse():
@@ -44,5 +44,5 @@ def test_WrongFile():
     if os.path.exists(fname):
         os.remove(fname)
     args.vcf = fname
-    retcode = dumpSTR.main(args)
+    retcode = main(args)
     assert retcode==1
