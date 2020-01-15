@@ -30,6 +30,7 @@ import numpy as np
 import sys
 import vcf
 
+
 # Load local libraries
 import strtools.utils.common as common
 import strtools.utils.utils as utils
@@ -295,7 +296,7 @@ def CheckMin(is_min):
     if sum(is_min)==0:
         common.ERROR("Unexpected error. Stuck in infinite loop and exiting.")
 
-def main():
+def getargs():
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
@@ -311,8 +312,20 @@ def main():
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
     ### Parse args ###
     args = parser.parse_args()
-    if args.merge_ggl: common.ERROR("--merge-ggl not implemented yet") # TODO remove
+    if args.merge_ggl: common.ERROR("--merge-ggl not implemented yet") # TODO remove 
 
+    return args
+
+def main(args):
+
+    ###Check VCF files ###
+    vcfs = args.vcfs.split(",")
+    if not os.path.exists(vcfs[0]):
+        common.WARNING("%s does not exist"%args.vcfs)
+        return 1
+    if not os.path.exists(vcfs[1]):
+        common.WARNING("%s does not exist"%args.vcfs)
+        return 1
     ### Load readers ###
     vcfreaders = LoadReaders(args.vcfs.split(","))
     contigs = vcfreaders[0].contigs
@@ -334,5 +347,11 @@ def main():
         is_min = GetMinRecords(current_records, chroms)
         done = DoneReading(current_records)
 
+    return 0 
+
 if __name__ == "__main__":
-    main()
+    # Set up args
+    args = getargs()
+    # Run main function
+    retcode = main(args)
+    sys.exit(retcode)
