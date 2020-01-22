@@ -13,6 +13,7 @@ import os
 import sys
 import vcf
 
+
 # Load local libraries
 import dumpSTR.filters as filters
 import strtools.utils.common as common
@@ -55,9 +56,7 @@ def GetHWEP(record, samplelist=[], use_length=False, het_output=False):
     If het=False, then Standard output is HWE P.'''
     return utils.GetSTRHWE(record, samples=samplelist, uselength=use_length, het_output=het_output)
 
-
-
-def main():
+def getargs(): 
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
@@ -74,7 +73,13 @@ def main():
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
 
     args = parser.parse_args()
+    return args 
 
+def main(args):
+
+    if not os.path.exists(args.vcf):
+        common.WARNING("%s does not exist"%args.vcf)
+        return 1
     # Load samples
     if args.samples:
         samplelist = [item.strip() for item in open(args.samples, "r").readlines()]
@@ -112,7 +117,11 @@ def main():
         outf.write("\t".join([str(item) for item in items])+"\n")
 
     outf.close()
-    sys.exit(0)
+    return 0 
 
 if __name__ == "__main__":
-    main()
+    # Set up args
+    args = getargs()
+    # Run main function
+    retcode = main(args)
+    sys.exit(retcode)

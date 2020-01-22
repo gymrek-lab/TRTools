@@ -22,12 +22,12 @@ def base_argparse():
     args.min_call_Q = None
     args.max_call_flank_indel = None
     args.max_call_stutter = None
-    args.min_supp_reads = None
+    args.min_supp_reads = 0
     args.expansion_prob_het = None
     args.expansion_prob_hom = None
     args.expansion_prob_total = None
-    args.filter_span_only = None
-    args.filter_spanbound_only = None
+    args.filter_span_only = False
+    args.filter_spanbound_only = False 
     args.filter_badCI = None
     args.require_support = 0
     args.readlen = None
@@ -46,3 +46,22 @@ def test_WrongFile():
     args.vcf = fname
     retcode = main(args)
     assert retcode==1
+
+
+#Test if test works for the right filename 
+def test_RightFile():
+    args = base_argparse()
+    # Try an actual file 
+    fname = "./test_files/test_file_short.vcf"
+    args.vcf = fname
+    retcode = main(args)
+    assert retcode==0
+
+def test_Filters(): 
+    args = base_argparse() 
+    fname = "./test_files/test_file_short.vcf"
+    args.vcf = fname
+    invcf = vcf.Reader(filename=args.vcf)
+    retcode = main(args)
+    assert retcode==0
+
