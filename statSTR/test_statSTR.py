@@ -3,6 +3,8 @@ import os
 import pytest
 from .statSTR import *
 
+TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
+
 # Set up base argparser
 def base_argparse():
     args = argparse.ArgumentParser()
@@ -32,7 +34,7 @@ def test_WrongFile():
 # Test the right file or directory
 def test_RightFile():
     args = base_argparse()
-    fname1 = "./test_files/test_file_short.vcf"
+    fname1 = os.path.join(TESTDIR, "test_file.vcf")
     args.vcf = fname1
     retcode = main(args)
     assert retcode==0

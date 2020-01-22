@@ -3,6 +3,8 @@ import os
 import pytest
 from .dumpSTR import *
 
+TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
+
 # Set up base argparser
 def base_argparse():
     args = argparse.ArgumentParser()
@@ -52,16 +54,15 @@ def test_WrongFile():
 def test_RightFile():
     args = base_argparse()
     # Try an actual file 
-    fname = "./test_files/test_file_short.vcf"
+    fname = os.path.join(TESTDIR, "test_file.vcf")
     args.vcf = fname
     retcode = main(args)
     assert retcode==0
 
 def test_Filters(): 
     args = base_argparse() 
-    fname = "./test_files/test_file_short.vcf"
+    fname = os.path.join(TESTDIR, "test_file.vcf")
     args.vcf = fname
     invcf = vcf.Reader(filename=args.vcf)
     retcode = main(args)
     assert retcode==0
-
