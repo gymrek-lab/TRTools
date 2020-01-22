@@ -30,10 +30,14 @@ import numpy as np
 import sys
 import vcf
 
-
 # Load local libraries
-import strtools.utils.common as common
-import strtools.utils.utils as utils
+if __name__ == '__main__' and __package__ is None:
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
+    import common
+    import utils
+else:
+    import strtools.utils.common as common
+    import strtools.utils.utils as utils
 
 NOCALLSTRING = "."
 FORMATFIELDS = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR","ENCLREADS","FLNKREADS","QEXP"]
@@ -316,8 +320,9 @@ def getargs():
 
     return args
 
-def main(args):
-
+def main(args=None):
+    if args is None:
+        args = getargs()
     ###Check VCF files ###
     vcfs = args.vcfs.split(",")
     if not os.path.exists(vcfs[0]):

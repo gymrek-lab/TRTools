@@ -13,11 +13,14 @@ import os
 import sys
 import vcf
 
-
 # Load local libraries
-import dumpSTR.filters as filters
-import strtools.utils.common as common
-import strtools.utils.utils as utils
+if __name__ == '__main__' and __package__ is None:
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
+    import common
+    import utils
+else:
+    import strtools.utils.common as common
+    import strtools.utils.utils as utils
 
 """
 Compute the maximum allele length seen
@@ -75,8 +78,9 @@ def getargs():
     args = parser.parse_args()
     return args 
 
-def main(args):
-
+def main(args=None):
+    if args is None:
+        args = getargs()
     if not os.path.exists(args.vcf):
         common.WARNING("%s does not exist"%args.vcf)
         return 1
