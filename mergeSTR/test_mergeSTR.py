@@ -31,8 +31,8 @@ def test_WrongFile():
 # Test right files or directory
 def test_RightFile():
     args = base_argparse()
-    fname1 = "/home/npusarla/workspace/str/STRTools/mergeSTR/test_files/test_file.vcf.gz"
-    fname2 = "/home/npusarla/workspace/str/STRTools/mergeSTR/test_files/test_file2.vcf.gz"
+    fname1 = "./test_files/test_file_short1.vcf.gz"
+    fname2 = "./test_files/test_file_short2.vcf.gz"
     args.vcfs = fname1 + "," + fname2
     retcode = main(args)
     assert retcode==0

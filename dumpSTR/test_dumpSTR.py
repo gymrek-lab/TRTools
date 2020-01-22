@@ -52,14 +52,14 @@ def test_WrongFile():
 def test_RightFile():
     args = base_argparse()
     # Try an actual file 
-    fname = "/home/npusarla/workspace/str/STRTools/dumpSTR/test_files/test_file.vcf"
+    fname = "./test_files/test_file_short.vcf"
     args.vcf = fname
     retcode = main(args)
     assert retcode==0
 
 def test_Filters(): 
     args = base_argparse() 
-    fname = "/home/npusarla/workspace/str/STRTools/dumpSTR/test_files/test_file.vcf"
+    fname = "./test_files/test_file_short.vcf"
     args.vcf = fname
     invcf = vcf.Reader(filename=args.vcf)
     retcode = main(args)

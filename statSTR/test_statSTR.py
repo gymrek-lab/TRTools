@@ -32,7 +32,7 @@ def test_WrongFile():
 # Test the right file or directory
 def test_RightFile():
     args = base_argparse()
-    fname1 = "/home/npusarla/workspace/str/STRTools/statSTR/test_files/test_file.vcf"
+    fname1 = "./test_files/test_file_short.vcf"
     args.vcf = fname1
     retcode = main(args)
     assert retcode==0
