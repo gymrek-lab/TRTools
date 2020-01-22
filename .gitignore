@@ -1,9 +1,11 @@
 # Python files
 *~
 *.pyc
+.pytest_cache/
 
 # Extras
 nohup.out
+\#*
 
 # Testing
 test.*

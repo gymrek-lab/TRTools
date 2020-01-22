@@ -2,13 +2,18 @@
 Locus-level and Call-level VCF filters
 """
 
-import strtools.utils.common as common
-import strtools.utils.utils as utils
-
 from pybedtools import BedTool
 import os
 import sys
 import vcf.filters
+
+if __name__ == "filters":
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
+    import common
+    import utils
+else:
+    import strtools.utils.common as common
+    import strtools.utils.utils as utils
 
 ###################################
 # Locus level filters

@@ -26,11 +26,9 @@ setup(name=NAME,
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'plinkSTR=plinkSTR.plinkSTR:main',
               'dumpSTR=dumpSTR.dumpSTR:main',
               'mergeSTR=mergeSTR.mergeSTR:main',
               'statSTR=statSTR.statSTR:main',
-              'postmaSTR=postmaSTR.postmaSTR:main'
           ],
       },
       install_requires=['argparse',
