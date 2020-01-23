@@ -3,16 +3,31 @@ Utilities for harmonizing tandem repeat VCF records
 across various formats output by TR genotyping tools
 """
 
-class TRRecordHarmonizer:
-    def __init__(self, vcffile, vcftype="auto"):
-        self.vcftype = self.InferVCFType(vcffile, vcftype)
+import enum
 
-    def InferVCFType(self, vcffile, vcftype):
+types =  enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr']) #TODO add Beagle
+
+class TRRecordHarmonizer:
+    #vcffile - a pyvcf reader instance
+    def __init__(self, vcffile, vcftype="auto"):
+        if vcftype == "auto":
+            self.vcftype = self.InferVCFType(vcffile)
+        else:
+            if vcftype not in types.__members__:
+                raise ValueError(f"{vcftype} is not an excepted TR vcf type. Expected one of {list(types.__members__)}")
+            self.ConfirmVCFType(vcffile, vcftype)
+            self.vcftype = vcftype
+
+    def InferVCFType(self, vcffile):
         return "gangstr" # TODO fill this in! and make these names not strings
+
+    def ConfirmVCFType(self, vcffile, vcftype):
+        pass
+        #TODO!
 
     def HarmonizeRecord(self, vcfrecord):
         if self.vcftype == "gangstr":
-            return TRRecord(vcfrecord, vcfrecord.REF, vcfrecord.ALT, vcfrecord.INFO["RU"])
+            return TRRecord(vcfrecord, vcfrecord.REF.upper(), vcfrecord.ALT.upper(), vcfrecord.INFO["RU"])
         else:
             return None # TODO implement other types
 
@@ -29,3 +44,6 @@ class TRRecord:
         gts = vcfsample.gt_alleles
         gts_bases = [([self.ref_allele]+self.alt_alleles)[int(gt)] for gt in gts]
         return [float(len(item))/len(self.motif) for item in gts_bases]
+
+    def __iter__(self):
+        return iter(self.vcfrecord)

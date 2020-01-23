@@ -1,3 +1,6 @@
+# Editor files
+*.swp
+
 # Python files
 *~
 *.pyc
