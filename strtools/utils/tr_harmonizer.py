@@ -40,10 +40,26 @@ class TRRecord:
         self.alt_alleles = alt_alleles
         self.motif = motif
 
-    def GetLengthGenotype(self, vcfsample):
+    def GetStringGenotype(self, vcfsample):
         gts = vcfsample.gt_alleles
         gts_bases = [([self.ref_allele]+self.alt_alleles)[int(gt)] for gt in gts]
+        return gts_bases
+
+    def GetLengthGenotype(self, vcfsample):
+        gts_bases = self.GetStringGenotype(vcfsample)
         return [float(len(item))/len(self.motif) for item in gts_bases]
 
     def __iter__(self):
         return iter(self.vcfrecord)
+
+    def GetAlleleCounts(self, uselength=True):
+        allele_counts = {}
+        for sample in self.vcfrecord:
+            if sample.called:
+                if uselength:
+                    alleles = self.GetLengthGenotype(sample)
+                else:
+                    alleles = self.GetStringGenotype(sample)
+                for a in alleles: allele_counts[a] += 1
+        return allele_counts
+
