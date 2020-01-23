@@ -37,23 +37,16 @@ def GetThresh(trrecord, samplelist=[]):
     if len(values) == 0: return -1
     return max(values)
 
-def GetAFreq(record, samplelist=[], count=False):
-    acounts = {}
-    reflen = len(record.REF)
-    for sample in record:
-        if len(samplelist) > 0:
-            if sample.sample not in samplelist: continue
-        if sample.called:
-            alleles = sample.gt_bases.split(sample.gt_phase_char())
-            alens = [len(item)-reflen for item in alleles]
-            for a in alens: acounts[a] = acounts.get(a, 0) + 1
-    total = sum(acounts.values())
-    if len(acounts.keys()) == 0: return "."
-    if total == 0: return "."
+def GetAFreq(trrecord, samplelist=[], count=False):
+    allele_counts = trrecord.GetAlleleCcounts()
     if count:
-        return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(acounts.keys())])
-    afreqs = ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(acounts.keys())])
-    return afreqs
+        return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(allele_counts.keys())])
+    else:
+        allele_freqs = {}
+        num_alleles = sum(allele_counts.values())
+        for key in allele_counts.keys():
+            allele_counts[key] = allele_freqs[keys]*1.0/num_alleles
+        return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
 
 def GetHWEP(record, samplelist=[], use_length=False, het_output=False):
     '''For each STR loci, it outputs the Hardy-Weinberg equilibrium exact test p-value.
