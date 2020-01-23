@@ -49,8 +49,7 @@ def test_WrongFile():
     retcode = main(args)
     assert retcode==1
 
-
-#Test if test works for the right filename 
+# Test if test works for the right filename 
 def test_RightFile():
     args = base_argparse()
     # Try an actual file 

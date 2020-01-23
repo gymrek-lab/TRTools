@@ -9,6 +9,7 @@ TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 def base_argparse():
     args = argparse.ArgumentParser()
     args.vcfs = None
+    args.vcftype = "auto"
     args.out = "test"
     args.samples = None 
     args.region = None
@@ -39,4 +40,12 @@ def test_RightFile():
     retcode = main(args)
     assert retcode==0
 
-
+#### Testing options on GangSTR VCF files ####
+# Test thresh
+def test_GangSTRThresh():
+    args = base_argparse()
+    fname1 = os.path.join(TESTDIR, "test_file.vcf")
+    args.vcf = fname1
+    args.thresh = True
+    retcode = main(args)
+    assert retcode==0

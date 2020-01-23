@@ -17,21 +17,23 @@ import vcf
 if __name__ == '__main__' and __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
+    import tr_harmonizer as trh
     import utils
 else:
     import strtools.utils.common as common
+    import strtools.utils.tr_harmonizer as trh
     import strtools.utils.utils as utils
 
 """
 Compute the maximum allele length seen
 """
-def GetThresh(record, samplelist=[]):
+def GetThresh(trrecord, samplelist=[]):
     values = []
-    for sample in record:
+    for sample in trrecord.vcfrecord:
         if len(samplelist) > 0:
             if sample.sample not in samplelist: continue
         if sample.called:
-            values.extend(sample["REPCN"])
+            values.extend(trrecord.GetLengthGenotype(sample))
     if len(values) == 0: return -1
     return max(values)
 
@@ -64,6 +66,7 @@ def getargs():
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Name of output file. Use stdout for standard output.", type=str, required=True)
+    inout_group.add_argument("--vcftype", help="Specify the tool the VCF came from. Options=gangstr,hipstr,EH,popstr,advntr,auto.", type=str, default="auto") # TODO don't hard code these options. explode if we give invalid option
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
@@ -90,6 +93,8 @@ def main(args=None):
     else: samplelist = []
 
     invcf = vcf.Reader(filename=args.vcf)
+    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
+
     header = ["chrom","start","end"]
     if args.thresh: header.append("thresh")
     if args.afreq: header.append("afreq")
@@ -105,19 +110,20 @@ def main(args=None):
     if args.region: regions = invcf.fetch(args.region)
     else: regions = invcf
     for record in regions:
+        trrecord = tr_harmonizer.HarmonizeRecord(record)
         items = [record.CHROM, record.POS, record.INFO["END"]]
         if args.thresh:
-            items.append(GetThresh(record, samplelist=samplelist))
+            items.append(GetThresh(trrecord, samplelist=samplelist))
         if args.afreq:
-            items.append(GetAFreq(record, samplelist=samplelist))
+            items.append(GetAFreq(trrecord, samplelist=samplelist))
         if args.acount:
-            items.append(GetAFreq(record, samplelist=samplelist, count=True))
+            items.append(GetAFreq(trrecord, samplelist=samplelist, count=True))
         if args.hwep & ~args.het:
-            items.append(GetHWEP(record, samplelist=samplelist, use_length=args.use_length, het_output=args.het))
+            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het))
         if args.hwep & args.het:
-            items.append(GetHWEP(record, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[0])
+            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[0])
         if args.het:
-            items.append(GetHWEP(record, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[1])
+            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[1])
         outf.write("\t".join([str(item) for item in items])+"\n")
 
     outf.close()
