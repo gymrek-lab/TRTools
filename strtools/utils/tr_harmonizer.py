@@ -4,6 +4,7 @@ across various formats output by TR genotyping tools
 """
 
 import enum
+import math
 
 types =  enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr']) #TODO add Beagle
 
@@ -14,6 +15,29 @@ class TRRecordHarmonizer:
     #however, if the name of the program is not obvious from the command metadata
     #line in the vcf, then it will need to be manually specified
     #see the above list for possibilities
+    #peculiarities of particular types:
+    #gangstr
+    #  does not include impurities, TODO partial repeats?
+    #hipstr
+    #  both ref and alt alleles may contain impurities (including partial repeats)
+    #  hipstr sometimes includes non-repeat flanks in the original genotypes,
+    #  which are trimmed off during harmonization. If the alt alleles
+    #  have differently sized flanks than the ref allele then those
+    #  alt alleles will be improperly trimmed
+    #  hipstr reports the motif length but no the motif itself
+    #  so the motif is inferred from the sequence. This normally results in an accurate
+    #  motif, but in theory could be wrong on occasion.
+    #advntr
+    #  uses its own peculiar ID convention that may change from run to run
+    #  may contain impurities or partial repeats?
+    #popstr
+    #  includes written out reference alleles (with impurities)
+    #  but only repeat counts for alternate alleles. So the alternate alleles we output
+    #  start at the beginning of the motif (even if its in the wrong part of the cycle),
+    #  never contain impurities, and in the case of non-integer repeat counts, we
+    #  include extra characters from the motif until we would exceed the count.
+    #  since repeat counts are rounded to the nearest tenth, this means we could
+    #  miss/add extra base pairs that weren't there
     def __init__(self, vcffile, vcftype="auto"):
         self.vcffile = vcffile
         if vcftype == "auto":
@@ -21,8 +45,7 @@ class TRRecordHarmonizer:
         else:
             if vcftype not in types.__members__:
                 raise ValueError(f"{vcftype} is not an excepted TR vcf type. Expected one of {list(types.__members__)}")
-            self.ConfirmVCFType(vcffile, vcftype)
-            self.vcftype = types['vcftype']
+            self.vcftype = types[vcftype]
 
     def InferVCFType(self, vcffile):
         possible_vcf_types = set()
@@ -41,9 +64,8 @@ class TRRecordHarmonizer:
                 if key.upper() == 'SOURCE' and 'ADVNTR' in value.upper():
                     possible_vcf_types.add(types.advntr)
                 if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
-                    possible_vcf_types.add(types.advntr)
+                    possible_vcf_types.add(types.popstr)
                 #TODO expansion hunter - it doesn't document itself well
-        #TODO add more cases!
 
         if len(possible_vcf_types) == 0:
             raise ValueError('Could not identify the type of this vcf')
@@ -52,10 +74,6 @@ class TRRecordHarmonizer:
             raise ValueError(f'Confused - this vcf looks like it could have been any of the types: {possible_vcf_types}')
 
         return next(iter(possible_vcf_types))
-
-    def ConfirmVCFType(self, vcffile, vcftype):
-        pass
-        #TODO!
 
     def __iter__(self):
         for record in self.vcffile:
@@ -77,6 +95,7 @@ class TRRecordHarmonizer:
             else:
                 alt_alleles = [None]
             motif = vcfrecord.INFO["RU"].upper()
+            id = vcfrecord.ID
 
         elif self.vcftype == types.hipstr:
             #remove the flanking variants
@@ -136,25 +155,54 @@ class TRRecordHarmonizer:
                     best_copies = current_best_copies
                         
             motif = best_kmer
+            id = vcfrecord.ID
 
         elif self.vcftype == types.advntr:
+            ref_allele = vcfrecord.REF.upper()
+            if vcfrecord.ALT[0] is not None:
+                    alt_alleles = []
+                    for alt in vcfrecord.ALT:
+                        alt_alleles.append(str(alt).upper())
+            else:
+                alt_alleles = [None]
+
             motif = vcfrecord.INFO["RU"].upper()
+            id = vcfrecord.INFO["VID"]
         
         elif self.vcftype == types.eh:
-            pass #TODO
+            raise NotImplementedError("Haven't implemented expansion hunter harmonization yet")
         elif self.vcftype == types.popstr:
-            pass #TODO
+            ref_allele = vcfrecord.REF.upper()
+            motif = vcfrecord.INFO["Motif"].upper()
+
+            if vcfrecord.ALT[0] is not None:
+                    alt_alleles = []
+                    for alt in vcfrecord.ALT:
+                        n_repeats = float(str(alt)[1:-1])
+                        int_repeats = math.floor(n_repeats)
+                        extra = n_repeats - int_repeats
+                        alt_allele = int_repeats*motif
+                        idx = 0
+                        while extra - 1/len(motif) >= 0:
+                            alt_allele += motif[idx]
+                            extra -= 1/len(motif)
+                            idx += 1
+                        alt_alleles.append(alt_allele)
+            else:
+                alt_alleles = [None]
+
+            id = vcfrecord.ID
         else:
             raise ValueError(f"self.vcftype is the unexpected type {self.vcftype}")
 
-        return TRRecord(vcfrecord, ref_allele, alt_alleles, motif)
+        return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, id)
 
 # TODO add __iter__ to go through samples?
 # So we could do for sample in trrecord
 class TRRecord:
-    def __init__(self, vcfrecord, ref_allele, alt_alleles, motif):
+    def __init__(self, vcfrecord, ref_allele, alt_alleles, motif, id):
         self.vcfrecord = vcfrecord
-        self.id = vcfrecord.ID
+        self.id = id
 
         #alleles are stored as upper case strings with all the repeats written out
         #i.e. ACGACGACG
