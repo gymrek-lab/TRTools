@@ -10,7 +10,8 @@ TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 def base_argparse():
     args = argparse.ArgumentParser()
     args.vcfs = None
-    args.out = "test"
+    args.out = "test.tab"
+    args.vcftype = "auto"
     args.samples = None 
     args.region = None
     args.thresh = False

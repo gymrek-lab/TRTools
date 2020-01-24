@@ -71,7 +71,7 @@ class TRRecordHarmonizer:
             raise ValueError('Could not identify the type of this vcf')
 
         if len(possible_vcf_types) > 1:
-            raise ValueError(f'Confused - this vcf looks like it could have been any of the types: {possible_vcf_types}')
+            raise ValueError('Confused - this vcf looks like it could have been any of the types: {}'.format(possible_vcf_types))
 
         return next(iter(possible_vcf_types))
 
