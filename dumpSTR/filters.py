@@ -8,7 +8,7 @@ import sys
 import vcf.filters
 
 if __name__ == "filters":
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
     import utils
 else:
