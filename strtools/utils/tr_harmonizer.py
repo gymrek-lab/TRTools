@@ -9,35 +9,171 @@ types =  enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr']) #TO
 
 class TRRecordHarmonizer:
     #vcffile - a pyvcf reader instance
+    #vcftype - the type of the program that produced this vcf file
+    #it defaults to auto and is inferred from the vcf metadata
+    #however, if the name of the program is not obvious from the command metadata
+    #line in the vcf, then it will need to be manually specified
+    #see the above list for possibilities
     def __init__(self, vcffile, vcftype="auto"):
+        self.vcffile = vcffile
         if vcftype == "auto":
             self.vcftype = self.InferVCFType(vcffile)
         else:
             if vcftype not in types.__members__:
                 raise ValueError(f"{vcftype} is not an excepted TR vcf type. Expected one of {list(types.__members__)}")
             self.ConfirmVCFType(vcffile, vcftype)
-            self.vcftype = vcftype
+            self.vcftype = types['vcftype']
 
     def InferVCFType(self, vcffile):
-        return "gangstr" # TODO fill this in! and make these names not strings
+        possible_vcf_types = set()
+        for key, value in vcffile.metadata.items():
+            #sometimes value is a list of values, other times it is the value itself
+            #no documentation as to why this is the case, so consider both as possible
+            if type(value) == list:
+                values = value
+            else:
+                values = {value}
+            for value in values:
+                if key.upper() == 'COMMAND' and 'GANGSTR' in value.upper():
+                    possible_vcf_types.add(types.gangstr)
+                if key.upper() == 'COMMAND' and 'HIPSTR' in value.upper():
+                    possible_vcf_types.add(types.hipstr)
+                if key.upper() == 'SOURCE' and 'ADVNTR' in value.upper():
+                    possible_vcf_types.add(types.advntr)
+                if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
+                    possible_vcf_types.add(types.advntr)
+                #TODO expansion hunter - it doesn't document itself well
+        #TODO add more cases!
+
+        if len(possible_vcf_types) == 0:
+            raise ValueError('Could not identify the type of this vcf')
+
+        if len(possible_vcf_types) > 1:
+            raise ValueError(f'Confused - this vcf looks like it could have been any of the types: {possible_vcf_types}')
+
+        return next(iter(possible_vcf_types))
 
     def ConfirmVCFType(self, vcffile, vcftype):
         pass
         #TODO!
 
+    def __iter__(self):
+        for record in self.vcffile:
+            yield self.HarmonizeRecord(record)
+
+    #harmonize to the gangstr standard of 
+    #catcatcat catcatcatcat,catcat
     def HarmonizeRecord(self, vcfrecord):
-        if self.vcftype == "gangstr":
-            return TRRecord(vcfrecord, vcfrecord.REF.upper(), vcfrecord.ALT.upper(), vcfrecord.INFO["RU"])
+        ref_allele = None
+        alt_alleles = None
+        motif = None
+
+        if self.vcftype == types.gangstr:
+            ref_allele = vcfrecord.REF.upper()
+            if vcfrecord.ALT[0] is not None:
+                    alt_alleles = []
+                    for alt in vcfrecord.ALT:
+                        alt_alleles.append(str(alt).upper())
+            else:
+                alt_alleles = [None]
+            motif = vcfrecord.INFO["RU"].upper()
+
+        elif self.vcftype == types.hipstr:
+            #remove the flanking variants
+            #note that if there are both flanking variants
+            #and some of the alterante alleles have insertions/deletions in the flanks
+            #then this might inadvertantly elongate/truncate those alternate alleles
+            pos = int(vcfrecord.POS)
+            start_offset = int(vcfrecord.INFO['START']) - pos
+            pos_end_offset = int(vcfrecord.INFO['END']) - pos
+            neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
+
+            # neg_end_offset is the number of flanking non repeat bp to remove from the
+            # end of each allele
+            # e.g. 'AAAT'[0:-1] == 'AAA'
+            # however, if neg_end_offset == 0, then we would get
+            # 'AAAA'[0:0] == '' which is not the intent
+            #so we need an if statement to instead write 'AAAA'[0:]
+            #which gives us 'AAAA'
+            if neg_end_offset == 0:
+                ref_allele = vcfrecord.REF[start_offset:].upper()
+                if vcfrecord.ALT[0] is not None:
+                    alt_alleles = []
+                    for alt in vcfrecord.ALT:
+                        alt_alleles.append(str(alt)[start_offset:].upper())
+                else:
+                    alt_alleles = [None]
+            else:
+                ref_allele = vcfrecord.REF[start_offset:neg_end_offset].upper()
+                if vcfrecord.ALT[0] is not None:
+                    alt_alleles = []
+                    for alt in vcfrecord.ALT:
+                        alt_alleles.append(str(alt)[start_offset:neg_end_offset].upper())
+                else:
+                    alt_alleles = [None]
+
+            #get the motif. Hipstr doesn't tell us this explicitly, so figure it out
+            #from the kmers in the sequence
+            #do this by looking for the kmer of the given length which appears
+            #most frequently at the same offset
+            motif_len = int(vcfrecord.INFO["PERIOD"])
+            best_kmer = None
+            best_copies = 0
+            for offset in range(0, motif_len):
+                kmers = {}
+                start_idx = start_offset
+                while start_idx + motif_len <= len(ref_allele):
+                    kmer = ref_allele[start_idx:(start_idx + motif_len)]
+                    if kmer not in kmers:
+                        kmers[kmer] = 1
+                    else:
+                        kmers[kmer] += 1
+                    start_idx += motif_len
+                current_best_kmer = max(kmers, key = lambda k: kmers[k])
+                current_best_copies = kmers[current_best_kmer]
+                if current_best_copies > best_copies:
+                    best_kmer = current_best_kmer
+                    best_copies = current_best_copies
+                        
+            motif = best_kmer
+
+        elif self.vcftype == types.advntr:
+            motif = vcfrecord.INFO["RU"].upper()
+        
+        elif self.vcftype == types.eh:
+            pass #TODO
+        elif self.vcftype == types.popstr:
+            pass #TODO
         else:
-            return None # TODO implement other types
+            raise ValueError(f"self.vcftype is the unexpected type {self.vcftype}")
+
+        return TRRecord(vcfrecord, ref_allele, alt_alleles, motif)
 
 # TODO add __iter__ to go through samples?
 # So we could do for sample in trrecord
 class TRRecord:
     def __init__(self, vcfrecord, ref_allele, alt_alleles, motif):
         self.vcfrecord = vcfrecord
+        self.id = vcfrecord.ID
+
+        #alleles are stored as upper case strings with all the repeats written out
+        #i.e. ACGACGACG
+        #alleles may partial repeat copies or impurities in them
+        #but will attempt to not contain any extra base pairs to either side of the repeat
+        #but none of the statistics using this class should reflect that
+        #because how these impurities are represented is not guaranteed 
+
         self.ref_allele = ref_allele
+
+        #alt alleles is a list of alleles
+        #if there are no alt alleles, it is the list [None]
+        #as that's what pyvcf does
         self.alt_alleles = alt_alleles
+
+        #motifs are as documented by the original 
+        #or as derived from the original
+        #they are not required to be canonical - so they may be 
+        #cycles and/or reverse complements of the canonical motif
         self.motif = motif
 
     def GetStringGenotype(self, vcfsample):
@@ -49,9 +185,6 @@ class TRRecord:
         gts_bases = self.GetStringGenotype(vcfsample)
         return [float(len(item))/len(self.motif) for item in gts_bases]
 
-    def __iter__(self):
-        return iter(self.vcfrecord)
-
     def GetAlleleCounts(self, uselength=True):
         allele_counts = {}
         for sample in self.vcfrecord:
@@ -62,4 +195,12 @@ class TRRecord:
                     alleles = self.GetStringGenotype(sample)
                 for a in alleles: allele_counts[a] += 1
         return allele_counts
+
+    def __str__(self):
+        string = f"{self.id} {self.motif} {self.ref_allele} "
+        if self.alt_alleles[0] is None:
+            string += '.'
+        else:
+            string += ','.join(self.alt_alleles)
+        return string
 
