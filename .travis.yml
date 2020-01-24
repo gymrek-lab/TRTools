@@ -11,7 +11,7 @@ before_install:
   - pip install codecov
 
 install:
-  - pip install ".[test]" . # install package + test dependencies
+  - pip install .
   
 script: pytest 
 
