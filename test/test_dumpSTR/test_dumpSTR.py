@@ -5,13 +5,14 @@ import vcf
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','dumpSTR'))
 from dumpSTR import *
 
-TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
-
+DUMPDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dump")
+COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
+VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
 # Set up base argparser
 def base_argparse():
     args = argparse.ArgumentParser()
     args.vcf = None
-    args.out = "test"
+    args.out = os.path.join(DUMPDIR, "test")
     args.min_locus_callrate = None
     args.min_locus_hwep = None
     args.min_locus_het = None
@@ -43,8 +44,7 @@ def base_argparse():
 # Test no such file or directory
 def test_WrongFile():
     args = base_argparse()
-    # Try a dummy file name. Make sure it doesn't exist before we try
-    fname = "xxxx"
+    fname = os.path.join(VCFDIR, "test_non_existent.vcf")
     if os.path.exists(fname):
         os.remove(fname)
     args.vcf = fname
@@ -56,14 +56,14 @@ def test_WrongFile():
 def test_RightFile():
     args = base_argparse()
     # Try an actual file 
-    fname = os.path.join(TESTDIR, "test_file.vcf")
+    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
     args.vcf = fname
     retcode = main(args)
     assert retcode==0
 
 def test_Filters(): 
     args = base_argparse() 
-    fname = os.path.join(TESTDIR, "test_file.vcf")
+    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
     args.vcf = fname
     invcf = vcf.Reader(filename=args.vcf)
     retcode = main(args)
