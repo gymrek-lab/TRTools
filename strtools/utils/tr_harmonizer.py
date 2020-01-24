@@ -44,7 +44,7 @@ class TRRecordHarmonizer:
             self.vcftype = self.InferVCFType(vcffile)
         else:
             if vcftype not in types.__members__:
-                raise ValueError(f"{vcftype} is not an excepted TR vcf type. Expected one of {list(types.__members__)}")
+                raise ValueError("{} is not an excepted TR vcf type. Expected one of {}".format(vcftype, list(types.__members__)))
             self.vcftype = types[vcftype]
 
     def InferVCFType(self, vcffile):
@@ -193,7 +193,7 @@ class TRRecordHarmonizer:
 
             id = vcfrecord.ID
         else:
-            raise ValueError(f"self.vcftype is the unexpected type {self.vcftype}")
+            raise ValueError("self.vcftype is the unexpected type {}".format(self.vcftype))
 
         return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, id)
 
@@ -245,7 +245,7 @@ class TRRecord:
         return allele_counts
 
     def __str__(self):
-        string = f"{self.id} {self.motif} {self.ref_allele} "
+        string = "{} {} {} ".format(self.id, self.motif, self.ref_allele)
         if self.alt_alleles[0] is None:
             string += '.'
         else:
