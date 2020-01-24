@@ -1,7 +1,8 @@
 import argparse
-import os
+import os, sys
 import pytest
-from .dumpSTR import *
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','dumpSTR'))
+from dumpSTR import *
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
