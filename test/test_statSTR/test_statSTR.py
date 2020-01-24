@@ -4,13 +4,15 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','statSTR'))
 from statSTR import *
 
-TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
+COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
+DUMPDIR = os.path.join(COMMDIR, "dump")
+VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
 
 # Set up base argparser
 def base_argparse():
     args = argparse.ArgumentParser()
     args.vcfs = None
-    args.out = "test.tab"
+    args.out = os.path.join(DUMPDIR, "test")
     args.vcftype = "auto"
     args.samples = None 
     args.region = None
@@ -25,19 +27,18 @@ def base_argparse():
 # Test no such file or directory
 def test_WrongFile():
     args = base_argparse()
-    # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = "xxxx"
-    if os.path.exists(fname1):
-        os.remove(fname1)
-    args.vcf = fname1
+    fname = os.path.join(VCFDIR, "test_non_existent.vcf")
+    if os.path.exists(fname):
+        os.remove(fname)
+    args.vcf = fname
     retcode = main(args)
     assert retcode==1
 
 # Test the right file or directory
 def test_RightFile():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file.vcf")
-    args.vcf = fname1
+    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+    args.vcf = fname
     retcode = main(args)
     assert retcode==0
 

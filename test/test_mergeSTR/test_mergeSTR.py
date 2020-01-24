@@ -5,12 +5,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from mergeSTR import * 
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
-
+COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
+DUMPDIR = os.path.join(COMMDIR, "dump")
+VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
 # Set up base argparser
 def base_argparse():
     args = argparse.ArgumentParser()
     args.vcfs = None
-    args.out = "test"
+    args.out = os.path.join(DUMPDIR, "test")
     args.update_sample_from_file = False 
     args.merge_ggl = False
     args.quiet = False

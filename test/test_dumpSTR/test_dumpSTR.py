@@ -5,8 +5,9 @@ import vcf
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','dumpSTR'))
 from dumpSTR import *
 
-DUMPDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dump")
+
 COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
+DUMPDIR = os.path.join(COMMDIR, "dump")
 VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
 # Set up base argparser
 def base_argparse():
