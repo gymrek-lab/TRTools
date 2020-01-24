@@ -49,7 +49,7 @@ def GetAFreq(trrecord, samplelist=[], count=False):
         return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
 
 def GetHeterozygosity(trrecord):
-    allele_freqs = [float(a.split(":")[1])**2 for a in self.GetAFreq(trrecord)]
+    allele_freqs = [float(a.split(":")[1])**2 for a in self.GetAFreq(trrecord).split(',')]
     het = 1 - sum(allele_freqs)
     return het
 
