@@ -14,7 +14,7 @@ import sys
 import vcf
 
 # Load local libraries
-if __name__ == '__main__' and __package__ is None:
+if __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
     import tr_harmonizer as trh

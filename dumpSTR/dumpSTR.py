@@ -10,13 +10,14 @@ import sys
 import os
 
 # Handle STRTools imports differently depending on where we're calling this from
-if __name__ == '__main__' and __package__ is None:
+if __name__ == '__main__' or  __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import filters # If running from source code
     import common
     import utils
 else:
+    print(dumpSTR)
     import dumpSTR.filters as filters # If running as a package
     import strtools.utils.common as common
     import strtools.utils.utils as utils

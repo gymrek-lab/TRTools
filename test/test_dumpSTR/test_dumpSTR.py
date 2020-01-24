@@ -1,8 +1,8 @@
 import argparse
-import os, sys
+import os,sys
 import pytest
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','dumpSTR'))
-from dumpSTR import *
+from dumpSTR import dumpSTR
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
@@ -47,6 +47,8 @@ def test_WrongFile():
     if os.path.exists(fname):
         os.remove(fname)
     args.vcf = fname
+    #print(dstr)
+    #print(dstr.FilterCall)
     retcode = main(args)
     assert retcode==1
 
@@ -57,7 +59,7 @@ def test_RightFile():
     # Try an actual file 
     fname = os.path.join(TESTDIR, "test_file.vcf")
     args.vcf = fname
-    retcode = main(args)
+    retcode = dstr.main(args)
     assert retcode==0
 
 def test_Filters(): 
@@ -65,5 +67,5 @@ def test_Filters():
     fname = os.path.join(TESTDIR, "test_file.vcf")
     args.vcf = fname
     invcf = vcf.Reader(filename=args.vcf)
-    retcode = main(args)
+    retcode = dstr.main(args)
     assert retcode==0
