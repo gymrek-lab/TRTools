@@ -10,7 +10,7 @@ import sys
 import os
 
 # Handle STRTools imports differently depending on where we're calling this from
-if __name__ == '__main__' and __package__ is None:
+if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import filters # If running from source code

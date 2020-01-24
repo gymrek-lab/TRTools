@@ -1,7 +1,9 @@
 import argparse
-import os
+import os,sys
 import pytest
-from .dumpSTR import *
+import vcf
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','dumpSTR'))
+from dumpSTR import *
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 

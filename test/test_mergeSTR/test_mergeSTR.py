@@ -1,7 +1,8 @@
 import argparse
-import os
+import os, sys
 import pytest
-from .mergeSTR import * 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','mergeSTR'))
+from mergeSTR import * 
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
