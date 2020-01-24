@@ -48,6 +48,11 @@ def GetAFreq(trrecord, samplelist=[], count=False):
             allele_counts[key] = allele_freqs[keys]*1.0/num_alleles
         return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
 
+def GetHeterozygosity(trrecord):
+    allele_freqs = [float(a.split(":")[1])**2 for a in self.GetAFreq(trrecord)]
+    het = 1 - sum(allele_freqs)
+    return het
+
 def GetHWEP(record, samplelist=[], use_length=False, het_output=False):
     '''For each STR loci, it outputs the Hardy-Weinberg equilibrium exact test p-value.
     If het=True, then Extended output is HWE P and obs_het.
