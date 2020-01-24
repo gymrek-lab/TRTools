@@ -13,7 +13,7 @@ nohup.out
 # Testing
 test.*
 test/common/*.vcf~
-test/dump/*.*
+
 
 # Build files
 *egg-info*
