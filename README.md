@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/gymreklab/STRTools.svg?branch=master)](https://travis-ci.org/gymreklab/STRTools)
+[![codecov](https://codecov.io/gh/gymreklab/STRTools/branch/master/graph/badge.svg)](https://codecov.io/gh/gymreklab/STRTools)
 
 # STRTools
 Toolkit for genome-wide analysis of STRs
