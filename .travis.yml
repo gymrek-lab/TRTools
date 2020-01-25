@@ -13,7 +13,7 @@ before_install:
 install:
   - pip install .
   
-script: pytest 
+script: pytest --cov=codecov
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - codecov
