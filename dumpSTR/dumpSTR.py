@@ -357,7 +357,7 @@ def getargs():
     gangstr_call_group.add_argument("--expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
-    gangstr_call_group.add_argument("--filter-span-only", help="Filter out all reads except spanning", action="store_true")
+    gangstr_call_group.add_argument("--filter-span-only", help="Filter out all calls that only have spanning read support", action="store_true")
     gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
     gangstr_call_group.add_argument("--filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
     gangstr_call_group.add_argument("--require-support", help="Require each allele call to have at least n supporting reads", type=int, default=0)

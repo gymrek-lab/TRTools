@@ -144,7 +144,7 @@ class LowCallDepth(Reason):
         else: return None
 
 class HighCallDepth(Reason):
-    name = "HighCallDpeth"
+    name = "HighCallDepth"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
