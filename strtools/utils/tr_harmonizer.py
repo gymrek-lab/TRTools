@@ -6,7 +6,7 @@ across various formats output by TR genotyping tools
 import enum
 import math
 
-types =  enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr']) #TODO add Beagle
+VCFTYPES =  enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr']) #TODO add Beagle
 
 class TRRecordHarmonizer:
     #vcffile - a pyvcf reader instance
@@ -43,9 +43,9 @@ class TRRecordHarmonizer:
         if vcftype == "auto":
             self.vcftype = self.InferVCFType(vcffile)
         else:
-            if vcftype not in types.__members__:
-                raise ValueError("{} is not an excepted TR vcf type. Expected one of {}".format(vcftype, list(types.__members__)))
-            self.vcftype = types[vcftype]
+            if vcftype not in VCFTYPES.__members__:
+                raise ValueError("{} is not an excepted TR vcf type. Expected one of {}".format(vcftype, list(VCFTYPES.__members__)))
+            self.vcftype = VCFTYPES[vcftype]
 
     def InferVCFType(self, vcffile):
         possible_vcf_types = set()
@@ -58,13 +58,13 @@ class TRRecordHarmonizer:
                 values = {value}
             for value in values:
                 if key.upper() == 'COMMAND' and 'GANGSTR' in value.upper():
-                    possible_vcf_types.add(types.gangstr)
+                    possible_vcf_types.add(VCFTYPES.gangstr)
                 if key.upper() == 'COMMAND' and 'HIPSTR' in value.upper():
-                    possible_vcf_types.add(types.hipstr)
+                    possible_vcf_types.add(VCFTYPES.hipstr)
                 if key.upper() == 'SOURCE' and 'ADVNTR' in value.upper():
-                    possible_vcf_types.add(types.advntr)
+                    possible_vcf_types.add(VCFTYPES.advntr)
                 if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
-                    possible_vcf_types.add(types.popstr)
+                    possible_vcf_types.add(VCFTYPES.popstr)
                 #TODO expansion hunter - it doesn't document itself well
 
         if len(possible_vcf_types) == 0:
@@ -86,7 +86,7 @@ class TRRecordHarmonizer:
         alt_alleles = None
         motif = None
 
-        if self.vcftype == types.gangstr:
+        if self.vcftype == VCFTYPES.gangstr:
             ref_allele = vcfrecord.REF.upper()
             if vcfrecord.ALT[0] is not None:
                     alt_alleles = []
@@ -97,7 +97,7 @@ class TRRecordHarmonizer:
             motif = vcfrecord.INFO["RU"].upper()
             id = vcfrecord.ID
 
-        elif self.vcftype == types.hipstr:
+        elif self.vcftype == VCFTYPES.hipstr:
             #remove the flanking variants
             #note that if there are both flanking variants
             #and some of the alterante alleles have insertions/deletions in the flanks
@@ -157,7 +157,7 @@ class TRRecordHarmonizer:
             motif = best_kmer
             id = vcfrecord.ID
 
-        elif self.vcftype == types.advntr:
+        elif self.vcftype == VCFTYPES.advntr:
             ref_allele = vcfrecord.REF.upper()
             if vcfrecord.ALT[0] is not None:
                     alt_alleles = []
@@ -169,9 +169,9 @@ class TRRecordHarmonizer:
             motif = vcfrecord.INFO["RU"].upper()
             id = vcfrecord.INFO["VID"]
         
-        elif self.vcftype == types.eh:
+        elif self.vcftype == VCFTYPES.eh:
             raise NotImplementedError("Haven't implemented expansion hunter harmonization yet")
-        elif self.vcftype == types.popstr:
+        elif self.vcftype == VCFTYPES.popstr:
             ref_allele = vcfrecord.REF.upper()
             motif = vcfrecord.INFO["Motif"].upper()
 
