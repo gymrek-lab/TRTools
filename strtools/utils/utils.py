@@ -13,72 +13,17 @@ def GetHeterozygosity(allele_freqs):
     return 1-sum([freq**2 for freq in allele_freqs.values()])
 
 def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
-    exp_hom_frac = [val**2 for val in allele_freqs.values()]
+    exp_hom_frac = sum([val**2 for val in allele_freqs.values()])
     total_samples = sum(genotype_counts.values())
     num_hom = 0
     for gt in genotype_counts:
         if gt[0] == gt[1]: num_hom += genotype_counts[gt]
     return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
 
-def GetLengthHet(record):
-    len_to_count = {}
-    for sample in record:
-        if sample["GT"] is None or sample["GT"] == "." or sample["GT"] == "./.": continue
-        alleles = sample.gt_bases.split(sample.gt_phase_char())
-        l1 = len(alleles[0])
-        l2 = len(alleles[1])
-        len_to_count[l1] = len_to_count.get(l1, 0) + 1
-        len_to_count[l2] = len_to_count.get(l2, 0) + 1
-    total = sum(len_to_count.values())
-    x = 0
-    for al in len_to_count.keys():
-        x += (len_to_count[al]*1.0/total)**2
-    return 1-x
-
 def GetHomopolymerRun(seq):
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
 
-# Deprecated. use functions above
-def GetSTRHWE(record, samples=[], uselength=False, het_output=False):
-    hwe_p = 0
-    het = 0
-    # Get genotypes, allele frequencies
-    allele_counts = {}
-    obs_het = 0
-    obs_hom = 0
-    total = 0
-    for sample in record:
-        if len(samples)>0 and sample.sample not in samples: continue
-        if sample["GT"] == "." or sample["GT"] == "./." or sample["GT"] is None: continue
-        if uselength:
-            try:
-                gt = map(int, sample["GB"].split("|")) #HipSTR
-            except:
-                gt = sample["REPCN"] #GangSTR
-        else:
-            gt = sample.gt_alleles
-        if gt[0] == gt[1]: obs_hom += 1
-        else:
-            obs_het += 1
-        total += 1
-        for al in gt:
-            allele_counts[al] = allele_counts.get(al, 0) + 1
-    # Get Allele frequencies
-    allele_freqs = {}
-    for key in allele_counts.keys():
-        allele_freqs[key] = allele_counts[key]*1.0/sum(allele_counts.values())
-    # Get expected num homs/hets
-    exp_hom_frac = 0
-    for al in allele_freqs.keys():
-        exp_hom_frac += allele_freqs[al]**2
-
-    # Binomial test for HWE
-    hwe_p = scipy.stats.binom_test(obs_het, n=obs_het+obs_hom, p=1-exp_hom_frac)
-    if het_output: # Extended output is HWE P and obs_het
-        return hwe_p, obs_het
-    else: # Standard output is HWE P
-        return hwe_p
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 

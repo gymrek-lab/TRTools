@@ -10,9 +10,11 @@ import vcf.filters
 if __name__ == "filters":
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
+    import tr_harmonizer as trh
     import utils
 else:
     import strtools.utils.common as common
+    import strtools.utils.tr_harmonizer as trh
     import strtools.utils.utils as utils
 
 ###################################
@@ -41,7 +43,10 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        hwep = utils.GetSTRHWE(record, uselength=self.uselength)
+        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        allele_freqs = trrecord.GetAlleleFreqs(uselength=self.uselength)
+        genotype_counts = trrecord.GetGenotypeCounts(uselength=self.uselength)
+        hwep = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
         if hwep < self.threshold: return hwep
         else: return None
 
@@ -55,9 +60,8 @@ class Filter_MinLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        if self.uselength:
-            het = utils.GetLengthHet(record)
-        else: het = record.heterozygosity
+        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het < self.threshold:
             return het
         return None
@@ -72,9 +76,8 @@ class Filter_MaxLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        if self.uselength:
-            het = utils.GetLengthHet(record)
-        else: het = record.heterozygosity
+        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het > self.threshold:
             return het
         return None

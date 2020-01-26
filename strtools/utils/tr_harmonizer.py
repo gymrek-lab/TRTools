@@ -197,6 +197,7 @@ class TRRecordHarmonizer:
 
         return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, id)
 
+# TODO don't use id, which is a built in
 class TRRecord:
     def __init__(self, vcfrecord, ref_allele, alt_alleles, motif, id):
         self.vcfrecord = vcfrecord
@@ -224,7 +225,7 @@ class TRRecord:
 
     def GetStringGenotype(self, vcfsample):
         gts = vcfsample.gt_alleles
-        gts_bases = [([self.ref_allele]+self.alt_alleles)[int(gt)] for gt in gts]
+        gts_bases = [str(([self.ref_allele]+self.alt_alleles)[int(gt)]) for gt in gts]
         return gts_bases
 
     def GetLengthGenotype(self, vcfsample):
@@ -237,9 +238,9 @@ class TRRecord:
             if len(samplelist) > 0 and sample.sample not in samplelist: continue
             if sample.called:
                 if uselength:
-                    alleles = self.GetLengthGenotype(sample)
+                    alleles = tuple(self.GetLengthGenotype(sample))
                 else:
-                    alleles = self.GetStringGenotype(sample)
+                    alleles = tuple(self.GetStringGenotype(sample))
                 genotype_counts[alleles] = genotype_counts.get(alleles, 0) + 1
         return genotype_counts
 
@@ -252,7 +253,8 @@ class TRRecord:
                     alleles = self.GetLengthGenotype(sample)
                 else:
                     alleles = self.GetStringGenotype(sample)
-                for a in alleles: allele_counts[a] += 1
+                for a in alleles:
+                    allele_counts[a] = allele_counts.get(a, 0) + 1
         return allele_counts
 
     def GetAlleleFreqs(self, uselength=True, samplelist=[]):

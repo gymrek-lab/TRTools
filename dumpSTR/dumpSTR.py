@@ -15,10 +15,12 @@ if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import filters # If running from source code
     import common
+    import tr_harmonizer as trh
     import utils
 else:
     import dumpSTR.filters as filters # If running as a package
     import strtools.utils.common as common
+    import strtools.utils.tr_harmonizer as trh
     import strtools.utils.utils as utils
     
 #try:
@@ -445,13 +447,14 @@ def main(args=None):
         if args.drop_filtered:
             if record.call_rate == 0: output_record = False
         if output_record:
+            trrecord = trh.TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
             if record.num_called > 0:
-                if args.use_length:
-                    record.INFO["HET"] = utils.GetLengthHet(record)
-                else: record.INFO["HET"] = record.heterozygosity
-                record.INFO["HWEP"] = utils.GetSTRHWE(record, uselength=args.use_length)
+                allele_freqs = trrecord.GetAlleleFreqs(uselength=args.use_length)
+                genotype_counts = trrecord.GetGenotypeCounts(uselength=args.use_length)
+                record.INFO["HET"] = utils.GetHeterozygosity(allele_freqs)
+                record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
                 record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
                 record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
             else:
