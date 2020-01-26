@@ -9,6 +9,17 @@ import itertools
 import scipy.stats
 import sys
 
+def GetHeterozygosity(allele_freqs):
+    return 1-sum([freq**2 for freq in allele_freqs.values()])
+
+def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
+    exp_hom_frac = [val**2 for val in allele_freqs.values()]
+    total_samples = sum(genotype_counts.values())
+    num_hom = 0
+    for gt in genotype_counts:
+        if gt[0] == gt[1]: num_hom += genotype_counts[gt]
+    return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
+
 def GetLengthHet(record):
     len_to_count = {}
     for sample in record:
@@ -28,6 +39,7 @@ def GetHomopolymerRun(seq):
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
 
+# Deprecated. use functions above
 def GetSTRHWE(record, samples=[], uselength=False, het_output=False):
     hwe_p = 0
     het = 0

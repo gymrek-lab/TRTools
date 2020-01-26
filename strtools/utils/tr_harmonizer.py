@@ -231,9 +231,22 @@ class TRRecord:
         gts_bases = self.GetStringGenotype(vcfsample)
         return [float(len(item))/len(self.motif) for item in gts_bases]
 
-    def GetAlleleCounts(self, uselength=True):
+    def GetGenotypeCounts(self, samplelist=[], uselength=True):
+        genotype_counts = {}
+        for sample in self.vcfrecord:
+            if len(samplelist) > 0 and sample.sample not in samplelist: continue
+            if sample.called:
+                if uselength:
+                    alleles = self.GetLengthGenotype(sample)
+                else:
+                    alleles = self.GetStringGenotype(sample)
+                genotype_counts[alleles] = genotype_counts.get(alleles, 0) + 1
+        return genotype_counts
+
+    def GetAlleleCounts(self, uselength=True, samplelist=[]):
         allele_counts = {}
         for sample in self.vcfrecord:
+            if len(samplelist) > 0 and sample.sample not in samplelist: continue
             if sample.called:
                 if uselength:
                     alleles = self.GetLengthGenotype(sample)
@@ -242,13 +255,17 @@ class TRRecord:
                 for a in alleles: allele_counts[a] += 1
         return allele_counts
 
-    def GetAlleleFreqs(self, uselength=True):
-        allele_counts = self.GetAlleleCounts(uselength=uselength)
+    def GetAlleleFreqs(self, uselength=True, samplelist=[]):
+        allele_counts = self.GetAlleleCounts(uselength=uselength, samplelist=samplelist)
         total = float(sum(allele_counts.values()))
         allele_freqs = {}
         for key in allele_counts.keys():
             allele_freqs[key] = allele_counts[key]/total
         return allele_freqs
+
+    def GetMaxAllele(self, samplelist=[]):
+        alleles = self.GetAlleleCounts(uselength=True, samplelist=samplelist).keys()
+        return max(alleles)
 
     def __str__(self):
         string = "{} {} {} ".format(self.id, self.motif, self.ref_allele)

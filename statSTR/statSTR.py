@@ -3,9 +3,7 @@
 """
 Tool for computing stats on STR VCF files
 """
-# Example: statSTR --vcf /storage/mgymrek/gangstr-analysis/round2/trio/trio_gangstr_filtered_level1.vcf.gz --out test.tab --thresh
-# Example: statSTR --vcf
-# TODO add arguments for other stats here: mean, heterozygosity
+# TODO add arguments for other stats here: mean, mode, variance, nheterozygosity
 
 # Imports
 import argparse
@@ -24,50 +22,42 @@ else:
     import strtools.utils.tr_harmonizer as trh
     import strtools.utils.utils as utils
 
-"""
-Compute the maximum allele length seen
-"""
 def GetThresh(trrecord, samplelist=[]):
-    values = []
-    for sample in trrecord.vcfrecord:
-        if len(samplelist) > 0:
-            if sample.sample not in samplelist: continue
-        if sample.called:
-            values.extend(trrecord.GetLengthGenotype(sample))
-    if len(values) == 0: return -1
-    return max(values)
+    return trrecord.GetMaxAllele(self, samplelist=samplelist)
 
-def GetAFreq(trrecord, samplelist=[], count=False):
+def GetAFreq(trrecord, samplelist=[], count=False, uselength=True):
     if count:
-        allele_counts = trrecord.GetAlleleCcounts()
+        allele_counts = trrecord.GetAlleleCcounts(samplelist=samplelist, uselength=uselength)
         return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(allele_counts.keys())])
     else:
-        allele_freqs = trrecord.GetAlleleFreqs()
+        allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
         return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
 
-def GetHWEP(record, samplelist=[], use_length=False, het_output=False):
-    '''For each STR loci, it outputs the Hardy-Weinberg equilibrium exact test p-value.
-    If het=True, then Extended output is HWE P and obs_het.
-    If het=False, then Standard output is HWE P.'''
-    return utils.GetSTRHWE(record, samples=samplelist, uselength=use_length, het_output=het_output)
+def GetHWEP(trrecord, samplelist=[], uselength=True):
+    allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
+    genotype_counts = trrecord.GetGenotypeCounts(samplelist=samplelist, uselength=uselength)
+    return utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
+
+def GetHet(trrecord, samplelist=[], uselength=True):
+    allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
+    return utils.GetHeterozygosity(allele_freqs)
 
 def getargs(): 
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Name of output file. Use stdout for standard output.", type=str, required=True)
-    inout_group.add_argument("--vcftype", help="Specify the tool the VCF came from. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    inout_group.add_argument("--vcftype", help="Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
     stat_group = parser.add_argument_group("Stats group")
-    stat_group.add_argument("--thresh", help="Output threshold field (for GangSTR strinfo). Threshold is set to the max observed allele length", action="store_true")
+    stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
     stat_group.add_argument("--het", help="Output observed heterozygote counts used for HWE per loci.", action="store_true")
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
-
     args = parser.parse_args()
     return args 
 
@@ -105,17 +95,14 @@ def main(args=None):
         if args.thresh:
             items.append(GetThresh(trrecord, samplelist=samplelist))
         if args.afreq:
-            items.append(GetAFreq(trrecord, samplelist=samplelist))
+            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.uselength))
         if args.acount:
-            items.append(GetAFreq(trrecord, samplelist=samplelist, count=True))
-        if args.hwep & ~args.het:
-            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het))
-        if args.hwep & args.het:
-            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[0])
+            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.uselength, count=True))
+        if args.hwep:
+            items.append(GetHWEP(trrecord, samplelist=samplelist, uselength=args.uselength))
         if args.het:
-            items.append(GetHWEP(trrecord, samplelist=samplelist, use_length=args.use_length, het_output=args.het)[1])
+            items.append(GetHet(trrecord, samplelist=samplelist, uselength=args.uselength))
         outf.write("\t".join([str(item) for item in items])+"\n")
-
     outf.close()
     return 0 
 
