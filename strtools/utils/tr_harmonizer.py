@@ -197,8 +197,6 @@ class TRRecordHarmonizer:
 
         return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, id)
 
-# TODO add __iter__ to go through samples?
-# So we could do for sample in trrecord
 class TRRecord:
     def __init__(self, vcfrecord, ref_allele, alt_alleles, motif, id):
         self.vcfrecord = vcfrecord
@@ -243,6 +241,14 @@ class TRRecord:
                     alleles = self.GetStringGenotype(sample)
                 for a in alleles: allele_counts[a] += 1
         return allele_counts
+
+    def GetAlleleFreqs(self, uselength=True):
+        allele_counts = self.GetAlleleCounts(uselength=uselength)
+        total = float(sum(allele_counts.values()))
+        allele_freqs = {}
+        for key in allele_counts.keys():
+            allele_freqs[key] = allele_counts[key]/total
+        return allele_freqs
 
     def __str__(self):
         string = "{} {} {} ".format(self.id, self.motif, self.ref_allele)

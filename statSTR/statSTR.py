@@ -38,14 +38,11 @@ def GetThresh(trrecord, samplelist=[]):
     return max(values)
 
 def GetAFreq(trrecord, samplelist=[], count=False):
-    allele_counts = trrecord.GetAlleleCcounts()
     if count:
+        allele_counts = trrecord.GetAlleleCcounts()
         return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(allele_counts.keys())])
     else:
-        allele_freqs = {}
-        num_alleles = sum(allele_counts.values())
-        for key in allele_counts.keys():
-            allele_counts[key] = allele_freqs[keys]*1.0/num_alleles
+        allele_freqs = trrecord.GetAlleleFreqs()
         return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
 
 def GetHWEP(record, samplelist=[], use_length=False, het_output=False):
