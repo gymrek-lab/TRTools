@@ -230,3 +230,43 @@ def ReverseComplement(seq):
             newseq += "A"
         else: newseq += "N"
     return newseq
+
+def InferRepeatSequence(seq, period):
+    """
+    Infer the repeated sequence in a string
+
+    Parameters
+    ----------
+    seq : str
+        A string of nucleotides
+    period : int
+        Length of the repeat unit
+
+    Returns
+    -------
+    repseq : str
+        The inferred repeat unit (motif)
+
+    Examples
+    --------
+    >>> InferRepeatSequence('ATATATAT')
+    'AT'
+    """
+    best_kmer = None
+    best_copies = 0
+    for offset in range(0, period):
+        kmers = {}
+        start_idx = 0
+        while start_idx + period <= len(seq):
+            kmer = seq[start_idx:(start_idx + period)]
+            if kmer not in kmers:
+                kmers[kmer] = 1
+            else:
+                kmers[kmer] += 1
+            start_idx += period
+            current_best_kmer = max(kmers, key = lambda k: kmers[k])
+            current_best_copies = kmers[current_best_kmer]
+            if current_best_copies > best_copies:
+                best_kmer = current_best_kmer
+                best_copies = current_best_copies
+    return GetCanonicalOneStrand(best_kmer)

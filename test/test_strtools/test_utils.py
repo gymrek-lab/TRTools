@@ -78,8 +78,15 @@ def test_GetCanonicalOneStrand():
     assert(utils.GetCanonicalOneStrand("")=="")
     assert(utils.GetCanonicalOneStrand("at")=="AT")
 
+# ReverseComplement
 def test_ReverseComplement():
     assert(utils.ReverseComplement("CGAT")=="ATCG")
     assert(utils.ReverseComplement("")=="")
     assert(utils.ReverseComplement("CGNT")=="ANCG")
     assert(utils.ReverseComplement("ccga")=="TCGG")
+
+# InferRepeatSequence
+def test_InferRepeatSequence():
+    assert(utils.InferRepeatSequence("ATATATATATA", 2)=="AT")
+    assert(utils.InferRepeatSequence("ATATATACATA", 2)=="AT")
+    assert(utils.InferRepeatSequence("ATATATACATAAAAAAAAAAAAAAA", 1)=="A")
