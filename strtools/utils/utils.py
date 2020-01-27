@@ -3,10 +3,35 @@ Util functions for calculating summary STR statistics
 and performing basic string operations on STR alleles.
 """
 import itertools
+import numpy as np
 import scipy.stats
 import sys
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
+
+def ValidateAlleleFreqs(allele_freqs):
+    r"""Check that the allele frequency distribution is valid.
+
+    Allele frequencies must sum to 1.
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    is_valid : bool
+          Return True if the distribution is valid, else False
+
+    Examples
+    --------
+    >>> ValidateAlleleFreqs({0:0.5, 1:0.5})
+    True
+    """
+    if len(allele_freqs.keys()) == 0: return False
+    return sum(allele_freqs.values()) == 1
 
 def GetHeterozygosity(allele_freqs):
     r"""Compute heterozygosity of a locus
@@ -24,6 +49,7 @@ def GetHeterozygosity(allele_freqs):
     -------
     heterozygosity : float
           The heterozygosity of the locus.
+          If the allele frequencies dictionary is invalid, return np.nan
 
     Notes
     -----
@@ -38,6 +64,8 @@ def GetHeterozygosity(allele_freqs):
     >>> GetHeterozygosity({0:0.5, 1:0.5})
     0.5
     """
+    if not ValidateAlleleFreqs(allele_freqs):
+        return np.nan
     return 1-sum([freq**2 for freq in allele_freqs.values()])
 
 def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
@@ -62,16 +90,19 @@ def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
     -------
     p-value : float
           The two-sided p-value returned by a binomial test (scipy.stats.binom_test)
-
-    Examples
-    --------
-    >>> GetHeterozygosity({0:0.5, 1:0.5})
-    0.5
+          If the allele frequencies dictionary is invalid, return np.nan
+          If genotype alleles not included in frequencies dictionary, return np.nan
     """
+    if not ValidateAlleleFreqs(allele_freqs):
+        return np.nan
     exp_hom_frac = sum([val**2 for val in allele_freqs.values()])
     total_samples = sum(genotype_counts.values())
     num_hom = 0
     for gt in genotype_counts:
+        if gt[0] not in allele_freqs.keys():
+            return np.nan
+        if gt[1] not in allele_freqs.keys():
+            return np.nan
         if gt[0] == gt[1]: num_hom += genotype_counts[gt]
     return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
 
@@ -93,6 +124,7 @@ def GetHomopolymerRun(seq):
     >>> GetHomopolymerRun("AATAAAATAAAAAT")
     5
     """
+    if len(seq) == 0: return 0
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
 
@@ -151,6 +183,7 @@ def GetCanonicalOneStrand(repseq):
     >>> GetCanonicalOneStrand("CAG")
     "AGC"
     """
+    repseq = repseq.upper()
     size = len(repseq)
     canonical = repseq
     for i in range(size):
