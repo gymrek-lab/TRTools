@@ -6,6 +6,8 @@ import itertools
 import scipy.stats
 import sys
 
+nucToNumber={"A":0,"C":1,"G":2,"T":3}
+
 def GetHeterozygosity(allele_freqs):
     r"""Compute heterozygosity of a locus
 
@@ -74,25 +76,55 @@ def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
     return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
 
 def GetHomopolymerRun(seq):
+    r"""Compute the maximum homopolymer run length in a sequence
+
+    Parameters
+    ----------
+    seq : str
+          String giving a sequence of nucleotides
+
+    Returns
+    -------
+    runlength : int
+          The length of the longest homopolymer run
+
+    Examples
+    --------
+    >>> GetHomopolymerRun("AATAAAATAAAAAT")
+    5
+    """
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
 
-nucToNumber={"A":0,"C":1,"G":2,"T":3}
-
-def CheckMotif(motif):
-    # If all consist of the same nucleotide, error
-    if len(motif) > 1 and len(''.join(set(motif))) == 1: return False
-    return True
-
 def GetCanonicalMotif(repseq):
-    """ Get canonical STR sequence, considering both strands """
+    r"""Get canonical STR sequence, considering both strands
+
+    The canonical sequence is the first alphabetically
+    out of all possible rotations on + and - strands
+    of the sequence. e.g. "TG" canonical sequence is "AC".
+
+    Parameters
+    ----------
+    repseq : str
+          String giving a STR motif (repeat unit sequence)
+
+    Returns
+    -------
+    canon : str
+          The canonical sequence of the STR motif
+
+    Examples
+    --------
+    >>> GetCanonicalMotif("TG")
+    "AC"
+    """
     repseq = repseq.upper()
-    repseq_f = getCanonicalMS(repseq)
-    repseq_r = getCanonicalMS(reverseComplement(repseq))
-    repseq = compareString(repseq_f, repseq_r)
+    repseq_f = GetCanonicalMS(repseq)
+    repseq_r = GetCanonicalMS(reverseComplement(repseq))
+    repseq = compareString(repseq_f, repseq_r) # TODO remove comparestring function and put functionality here
     return repseq
 
-def getCanonicalMS(repseq):
+def GetCanonicalMS(repseq):
     """ Get canonical STR sequence """
     size = len(repseq)
     canonical = repseq
