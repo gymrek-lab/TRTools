@@ -18,24 +18,6 @@ def WARNING(msg):
     """
     sys.stderr.write(msg.strip()+"\n")
 
-def ERROR(msg):
-    r"""Write an error message to standard error
-
-    .. deprecated:: 1.0.0
-       Functions should instead raise exceptions that will be caught by main
-
-    Parameters
-    ----------
-    msg : str
-          A descriptive error message
-
-    Examples
-    --------
-    >>> ERROR("Something bad happened. Existing")
-    """
-    sys.stderr.write(msg.strip()+"\n")
-    sys.exit(1)
-
 def MSG(msg, debug=False):
     r"""Write a status message to standard error
 

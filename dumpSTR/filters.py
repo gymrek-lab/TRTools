@@ -105,13 +105,15 @@ def create_region_filter(name, filename):
             self.LoadRegions(filename)
         def LoadRegions(self, filename):
             if not os.path.exists(filename):
-                common.ERROR("%s not found"%filename)
+                self.regions = None
+                common.WARNING("%s not found"%filename) # TODO raise exception
             self.regions = BedTool(filename)
             if not self.regions._tabixed():
                 sys.stderr.write("Creating tabix index for %s\n"%filename)
                 self.regions.tabix(force=True)
         def __call__(self, record):
             interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
+            if self.regions is None: return None
             if "chr" in interval:
                 interval2 = interval.replace("chr","")
             else: interval2 = "chr"+interval
