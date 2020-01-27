@@ -119,13 +119,38 @@ def GetCanonicalMotif(repseq):
     "AC"
     """
     repseq = repseq.upper()
-    repseq_f = GetCanonicalMS(repseq)
-    repseq_r = GetCanonicalMS(reverseComplement(repseq))
-    repseq = compareString(repseq_f, repseq_r) # TODO remove comparestring function and put functionality here
-    return repseq
+    # Get canonical sequence of each strand
+    repseq_f = GetCanonicalOneStrand(repseq)
+    repseq_r = GetCanonicalOneStrand(ReverseComplement(repseq))
+    # choose first seq alphabetically
+    for i in range(len(repseq_f)):
+        if nucToNumber[repseq_f[i]] < nucToNumber[repseq_r[i]]:
+            return repseq_f
+        if nucToNumber[repseq_r[i]] < nucToNumber[repseq_f[i]]:
+            return repseq_r
+    return repseq_f
 
-def GetCanonicalMS(repseq):
-    """ Get canonical STR sequence """
+def GetCanonicalOneStrand(repseq):
+    r"""Get canonical STR sequence, considering one strand
+
+    The canonical sequence is the first alphabetically
+    out of all possible rotations. e.g. CAG -> AGC.
+
+    Parameters
+    ----------
+    repseq : str
+          String giving a STR motif (repeat unit sequence)
+
+    Returns
+    -------
+    canon : str
+          The canonical sequence of the STR motif
+
+    Examples
+    --------
+    >>> GetCanonicalOneStrand("CAG")
+    "AGC"
+    """
     size = len(repseq)
     canonical = repseq
     for i in range(size):
@@ -137,24 +162,38 @@ def GetCanonicalMS(repseq):
                 break
     return canonical
 
-def compareString(seq1,seq2):
-    """ Compare two strings alphabetically """
-    size = len(seq1)
-    for i in range(size):
-        if nucToNumber[seq1[i]] < nucToNumber[seq2[i]]:
-            return seq1
-        if nucToNumber[seq1[i]] > nucToNumber[seq2[i]]:
-            return seq2
-    return seq1
+def ReverseComplement(seq):
+    r"""Get reverse complement of a sequence.
 
-def reverseComplement(seq):
-    """ Get the reverse complement of a nucleotide string """
+    Converts everything to uppsercase.
+
+    Parameters
+    ----------
+    seq : str
+          String of nucleotides.
+
+    Returns
+    -------
+    revcompseq : str
+          Reverse complement of the input sequence.
+
+    Examples
+    --------
+    >>> ReverseComplement("AGGCT")
+    "AGCCT"
+    """
+    seq = seq.upper()
     newseq = ""
     size = len(seq)
     for i in range(len(seq)):
         char = seq[len(seq)-i-1]
-        if char == "A": newseq += "T"
-        if char == "G": newseq += "C"
-        if char == "C": newseq += "G"
-        if char == "T": newseq += "A"
+        if char == "A":
+            newseq += "T"
+        elif char == "G":
+            newseq += "C"
+        elif char == "C":
+            newseq += "G"
+        elif char == "T":
+            newseq += "A"
+        else: newseq += "N"
     return newseq
