@@ -1,18 +1,71 @@
 """
-Util functions for calculating STR locus stats from VCF record
+Util functions for calculating summary STR statistics
+and performing basic string operations on STR alleles.
 """
-
-import warnings
-warnings.filterwarnings("ignore")
-
 import itertools
 import scipy.stats
 import sys
 
 def GetHeterozygosity(allele_freqs):
+    r"""Compute heterozygosity of a locus
+
+    Heterozygosity is defined as the probability
+    that two randomly drawn alleles are different.
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    heterozygosity : float
+          The heterozygosity of the locus.
+
+    Notes
+    -----
+    Heterzygosity is computed as:
+
+    .. math:: H = 1-\sum_{i=1..n} p_i^2
+
+    where `p_i` is the frequency of allele `i` and `n` is the number of alleles.
+
+    Examples
+    --------
+    >>> GetHeterozygosity({0:0.5, 1:0.5})
+    0.5
+    """
     return 1-sum([freq**2 for freq in allele_freqs.values()])
 
 def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
+    r"""Compute Hardy Weinberg p-value
+
+    Tests whether the number of observed heterozygous vs.
+    homozygous individuals is different than expected
+    under Hardy Weinberg Equilibrium given the observed
+    allele frequencies, based on a binomial test.
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+    genotype_counts : dict of (object, object): int
+          Dictionary of counts of each genotype. Genotypes are defined
+          as tuples of alleles. Alleles must be the same as those given in
+          allele_freqs
+
+    Returns
+    -------
+    p-value : float
+          The two-sided p-value returned by a binomial test (scipy.stats.binom_test)
+
+    Examples
+    --------
+    >>> GetHeterozygosity({0:0.5, 1:0.5})
+    0.5
+    """
     exp_hom_frac = sum([val**2 for val in allele_freqs.values()])
     total_samples = sum(genotype_counts.values())
     num_hom = 0
@@ -23,7 +76,6 @@ def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
 def GetHomopolymerRun(seq):
     seq = seq.upper()
     return max(len(list(y)) for (c,y) in itertools.groupby(seq))
-
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
