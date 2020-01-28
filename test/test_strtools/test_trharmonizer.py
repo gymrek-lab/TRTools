@@ -1,6 +1,7 @@
 import os, sys
 import pytest
 import vcf
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','strtools'))
 
@@ -207,29 +208,28 @@ def test_GetMaxAllele():
     true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
     true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
     slist = ['S1', 'S3', 'S6']
-    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = slist)
-    al_freqs_nolength_slist = rec.GetAlleleFreqs(samplelist = slist, uselength = False)
-    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
-    assert (all(v == true_al_freqs_slist[k] for k,v in al_freqs_nolength_slist.items()) and len(al_freqs_nolength_slist) == len(true_al_freqs_slist))    
+    true_al_max_slist = 4.0
+    al_max_slist = rec.GetMaxAllele(samplelist = slist)
+    assert al_max_slist == true_al_max_slist
 
     # Test example where alt=[None]
     rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
-    true_len_al_freqs = {3: 1.0}
-    al_freqs_uselength = rec.GetAlleleFreqs()
-    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
-
+    true_al_max = 3.0
+    al_max = rec.GetMaxAllele()
+    assert al_max == true_al_max
 
     # Test example with non of samples in samplelist in VCF
     rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
-    true_len_al_freqs_slist = {}
-    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = ['NonExistentSample'])
-    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))    
+    true_al_max_slist = np.nan
+    al_max_slist = rec.GetMaxAllele(samplelist = ['NonExistentSample'])
+    assert np.isnan(al_max_slist) == True
 
     # Test example where that has one uncalled sample only
     rec = trh.TRRecord(dummy_record4, ref_allele, [None], "CAG", "")
-    true_len_al_freqs = {}
-    al_freqs_uselength = rec.GetAlleleFreqs()
-    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
+    true_al_max = np.nan
+    al_max = rec.GetMaxAllele()
+    assert np.isnan(al_max) == True
+
 
 
 #### Test TRRecordHarmonizer on different files ####
