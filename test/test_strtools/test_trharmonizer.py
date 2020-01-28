@@ -349,8 +349,18 @@ def test_HarmonizeRecord():
     #assert tr_rec3.ref_allele == 'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()
     #assert tr_rec3.alt_alleles == ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()]
     #assert tr_rec3.motif == 'tg'.upper()
-
     # TODO check record id
+
+
+    ## advntr
+    advntr_vcf = vcf.Reader(filename=advntr_path)
+    advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
+    
+    tr_rec1 = next(iter(advntr_trh)) 
+    #assert tr_rec1.ref_allele == 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG'
+    #assert tr_rec1.alt_alleles == ['GCGCGGGGCGGGGCGCGGGGCGGG', 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG']
+    #assert tr_rec1.motif == 'GCGCGGGGCGGG'
+
 
     # Test examples with incorrect preset VCF type
     #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
