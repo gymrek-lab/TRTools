@@ -12,21 +12,24 @@ VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
 #### Test TRRecord using dummy info ####
 # Set up dummy class with gt_alleles
 class DummyVCFSample:
-    def __init__(self, gt_alleles):
+    def __init__(self, gt_alleles, called, sample=''):
         self.gt_alleles = gt_alleles
-        self.called = True
+        self.called = called
+        self.sample = sample
 # Set up dummy VCF records which are just lists of genotypes
 dummy_record1 = [] # Example record with real data
-dummy_record1.append(DummyVCFSample(['0','1']))
-dummy_record1.append(DummyVCFSample(['1','1']))
-dummy_record1.append(DummyVCFSample(['1','1']))
-dummy_record1.append(DummyVCFSample(['1','2']))
-dummy_record1.append(DummyVCFSample(['2','2']))
-dummy_record1.append(DummyVCFSample(['0'])) # add a haploid sample
+dummy_record1.append(DummyVCFSample(['0','1'], True, 'S1'))
+dummy_record1.append(DummyVCFSample(['1','1'], True, 'S2'))
+dummy_record1.append(DummyVCFSample(['1','1'], True, 'S3'))
+dummy_record1.append(DummyVCFSample(['1','2'], True, 'S4'))
+dummy_record1.append(DummyVCFSample(['2','2'], True, 'S5'))
+dummy_record1.append(DummyVCFSample(['0'], True, 'S6')) # add a haploid sample
 dummy_record2 = [] # Empty record
 dummy_record3 = [] # All reference
-for i in range(3): dummy_record3.append(DummyVCFSample(['0','0']))
-dummy_record3.append(DummyVCFSample(['0','0','0'])) # add a triploid sample
+for i in range(3): dummy_record3.append(DummyVCFSample(['0','0'], True, 'S7'))
+dummy_record3.append(DummyVCFSample(['0','0','0'], True, 'S8')) # add a triploid sample
+dummy_record4 = [] # Example record not called (not sure what gt field should look like)
+dummy_record4.append(DummyVCFSample(['0'], False, 'S9'))
 
 def test_TRRecord_GetGenotypes():
     # Test good example
@@ -60,10 +63,51 @@ def test_TRRecord_GetGenotypes():
         trh.TRRecord(dummy_record1, ref_allele, [None], "CAG", "")
     
 def test_GetGenotypeCounts():
-    # TODO Test using dummy records above.
-    # Test samplelist, uselength options
-    pass 
+    # Test good example, no samplelist, uselength=True (default)
+    ref_allele = "CAGCAGCAG"
+    alt_alleles = ["CAGCAGCAGCAG","CAGCAGCAGCAGCAGCAG"]
+    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "")
+    print(rec) # To test str function
+    true_gt_counts = {(ref_allele, alt_alleles[0]): 1, \
+                      (alt_alleles[0], alt_alleles[0]): 2, \
+                      (alt_alleles[0], alt_alleles[1]): 1, \
+                      (alt_alleles[1], alt_alleles[1]): 1, (ref_allele,): 1}
+    true_len_gt_counts = {(3, 4): 1, (4, 4): 2, (4, 6): 1, (6, 6): 1, (3,): 1}
 
+    gt_counts_uselength = rec.GetGenotypeCounts()
+    gt_counts_nolength = rec.GetGenotypeCounts(uselength = False)
+    assert (all(v == true_len_gt_counts[k] for k,v in gt_counts_uselength.items()) and len(gt_counts_uselength) == len(true_len_gt_counts))
+    assert (all(v == true_gt_counts[k] for k,v in gt_counts_nolength.items()) and len(gt_counts_nolength) == len(true_gt_counts))
+    
+    # Test good example with samplelist
+    true_gt_counts_slist = {(ref_allele, alt_alleles[0]): 1, \
+                            (alt_alleles[0], alt_alleles[0]): 1, \
+                            (ref_allele,): 1}
+    true_len_gt_counts_slist = {(3, 4): 1, (4, 4): 1, (3,): 1}
+    slist = ['S1', 'S3', 'S6']
+    gt_counts_uselength_slist = rec.GetGenotypeCounts(samplelist = slist)
+    gt_counts_nolength_slist = rec.GetGenotypeCounts(samplelist = slist, uselength = False)
+    assert (all(v == true_len_gt_counts_slist[k] for k,v in gt_counts_uselength_slist.items()) and len(gt_counts_uselength_slist) == len(true_len_gt_counts_slist))
+    assert (all(v == true_gt_counts_slist[k] for k,v in gt_counts_nolength_slist.items()) and len(gt_counts_nolength_slist) == len(true_gt_counts_slist))
+    
+    # Test example where alt=[None]
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_gt_counts = {(3, 3, 3): 1, (3, 3): 3}
+    gt_counts_uselength = rec.GetGenotypeCounts()
+    assert (all(v == true_len_gt_counts[k] for k,v in gt_counts_uselength.items()) and len(gt_counts_uselength) == len(true_len_gt_counts))
+
+    # Test example with non of samples in samplelist in VCF
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_gt_counts_slist = {}
+    gt_counts_uselength_slist = rec.GetGenotypeCounts(samplelist = ['NonExistentSample'])
+    assert (all(v == true_len_gt_counts_slist[k] for k,v in gt_counts_uselength_slist.items()) and len(gt_counts_uselength_slist) == len(true_len_gt_counts_slist))
+
+    # Test example where that has one uncalled sample only
+    rec = trh.TRRecord(dummy_record4, ref_allele, [None], "CAG", "")
+    true_len_gt_counts = {}
+    gt_counts_uselength = rec.GetGenotypeCounts()
+    assert (all(v == true_len_gt_counts[k] for k,v in gt_counts_uselength.items()) and len(gt_counts_uselength) == len(true_len_gt_counts))
+    
 def test_GetAlleleCounts():
     # TODO Test using dummy records above.
     # Test samplelist, uselength options
