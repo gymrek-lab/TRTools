@@ -233,8 +233,74 @@ def test_GetMaxAllele():
 
 
 #### Test TRRecordHarmonizer on different files ####
-# TODO: test that we can correctly infer the vcf type for gangstr, advntr, hipstr, eh, popstr
 # TODO: test that we don't explode if a user gives the wrong input type, but rather fail gracefully (e.g. eh for gangstr)
 # TODO: test input an invalid VCF type, e.g. vcftype="notarealformat"
 # TODO: test input a VCF that came from something else e.g. SNP calls from samtools
 # TODO: test the actual harmonizer output on one or more records from each type
+
+gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
+hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
+popstr_path = os.path.join(VCFDIR, "test_popstr.vcf")
+advntr_path = os.path.join(VCFDIR, "test_advntr.vcf")
+ehuntr_path = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+
+gangstr_vcf = vcf.Reader(filename=gangstr_path)
+hipstr_vcf = vcf.Reader(filename=hipstr_path)
+popstr_vcf = vcf.Reader(filename=popstr_path)
+advntr_vcf = vcf.Reader(filename=advntr_path)
+ehuntr_vcf = vcf.Reader(filename=ehuntr_path)
+
+def test_trhinit():
+    # Test example with unknown VCF type given
+    with pytest.raises(ValueError):
+        trh.TRRecordHarmonizer(gangstr_vcf, vcftype='unknownvcf')
+    # Test examples with correct preset VCF type
+    gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
+    gangstr_infer = gangstr_trh.InferVCFType()
+    assert gangstr_infer == trh.VCFTYPES.gangstr
+
+    hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
+    hipstr_infer = hipstr_trh.InferVCFType()
+    assert hipstr_infer == trh.VCFTYPES.hipstr
+
+    popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
+    popstr_infer = popstr_trh.InferVCFType()
+    assert popstr_infer == trh.VCFTYPES.popstr
+
+    advntr_trh = trh.TRRecordHarmonizer(advntr_vcf, vcftype='advntr')
+    advntr_infer = advntr_trh.InferVCFType()
+    assert advntr_infer == trh.VCFTYPES.advntr
+
+    # No implemented yet
+    #ehuntr_trh = trh.TRRecordHarmonizer(ehuntr_vcf, vcftype='eh')
+    #ehuntr_infer = advntr_trh.InferVCFType()
+    #assert ehuntr_infer == trh.VCFTYPES.eh
+
+
+def test_InferVCFType():
+    gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
+    gangstr_infer = gangstr_trh.InferVCFType()
+    assert gangstr_infer == trh.VCFTYPES.gangstr
+
+    hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
+    hipstr_infer = hipstr_trh.InferVCFType()
+    assert hipstr_infer == trh.VCFTYPES.hipstr
+
+    popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
+    popstr_infer = popstr_trh.InferVCFType()
+    assert popstr_infer == trh.VCFTYPES.popstr
+
+    advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
+    advntr_infer = advntr_trh.InferVCFType()
+    assert advntr_infer == trh.VCFTYPES.advntr
+
+    # No implemented yet
+    #ehuntr_trh = trh.TRRecordHarmonizer(ehuntr_vcf)
+    #ehuntr_infer = advntr_trh.InferVCFType()
+    #assert ehuntr_infer == trh.VCFTYPES.eh
+
+def test_HarmonizeRecord():
+    pass
+    # Test examples with incorrect preset VCF type
+    #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
+    #assert ic_gangstr_infer == trh.VCFTYPES.gangstr
