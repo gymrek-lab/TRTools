@@ -194,9 +194,43 @@ def test_GetAlleleFreqs():
     assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
 
 def test_GetMaxAllele():
-    # TODO Test using dummy records above.
-    # Test samplelist option
-    pass
+    # Test good example, no samplelist, uselength=True (default)
+    ref_allele = "CAGCAGCAG"
+    alt_alleles = ["CAGCAGCAGCAG","CAGCAGCAGCAGCAGCAG"]
+    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "")
+    print(rec) # To test str function
+    true_al_max = 6.0
+    al_max = rec.GetMaxAllele()
+    assert al_max == true_al_max
+    
+    # Test good example with samplelist
+    true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
+    true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
+    slist = ['S1', 'S3', 'S6']
+    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = slist)
+    al_freqs_nolength_slist = rec.GetAlleleFreqs(samplelist = slist, uselength = False)
+    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
+    assert (all(v == true_al_freqs_slist[k] for k,v in al_freqs_nolength_slist.items()) and len(al_freqs_nolength_slist) == len(true_al_freqs_slist))    
+
+    # Test example where alt=[None]
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_al_freqs = {3: 1.0}
+    al_freqs_uselength = rec.GetAlleleFreqs()
+    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
+
+
+    # Test example with non of samples in samplelist in VCF
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_al_freqs_slist = {}
+    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = ['NonExistentSample'])
+    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))    
+
+    # Test example where that has one uncalled sample only
+    rec = trh.TRRecord(dummy_record4, ref_allele, [None], "CAG", "")
+    true_len_al_freqs = {}
+    al_freqs_uselength = rec.GetAlleleFreqs()
+    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
+
 
 #### Test TRRecordHarmonizer on different files ####
 # TODO: test that we can correctly infer the vcf type for gangstr, advntr, hipstr, eh, popstr

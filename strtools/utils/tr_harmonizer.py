@@ -433,7 +433,7 @@ class TRRecord:
         Parameters
         ----------
         samplelist : list of str, optional
-            List of samples to include when computing frequencies
+            List of samples to include when computing max allele
 
         Returns
         -------
