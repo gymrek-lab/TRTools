@@ -5,6 +5,7 @@ across various formats output by TR genotyping tools
 
 import enum
 import math
+import numpy as np
 import os
 import sys
 
@@ -283,6 +284,27 @@ class TRRecord:
         self.alt_alleles = alt_alleles
         self.motif = motif
         self.record_id = record_id
+        if not self.CheckRecord():
+            raise ValueError("Invalid TRRecord.")
+
+    def CheckRecord(self):
+        """
+        Check that valid allele lists are valid given sample genotypes
+
+        Returns
+        -------
+        is_valid : bool
+            Returns True if the record is valid. Otherwise return False.
+        """
+        if len(self.alt_alleles) == 0 or None in self.alt_alleles:
+            num_alleles = 1
+        else: num_alleles = 1 + len(self.alt_alleles)
+        for sample in self.vcfrecord:
+            if not sample.called: continue
+            gts = sample.gt_alleles
+            for al in gts:
+                if int(al) > num_alleles-1: return False
+        return True
 
     def GetStringGenotype(self, vcfsample):
         """
@@ -419,6 +441,7 @@ class TRRecord:
             The maximum allele length called (in number of repeat units)
         """
         alleles = self.GetAlleleCounts(uselength=True, samplelist=samplelist).keys()
+        if len(alleles) == 0: return np.nan
         return max(alleles)
 
     def __str__(self):
