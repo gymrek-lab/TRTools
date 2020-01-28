@@ -250,7 +250,7 @@ popstr_vcf = vcf.Reader(filename=popstr_path)
 advntr_vcf = vcf.Reader(filename=advntr_path)
 ehuntr_vcf = vcf.Reader(filename=ehuntr_path)
 
-def test_trhinit():
+def test_trh_init():
     # Test example with unknown VCF type given
     with pytest.raises(ValueError):
         trh.TRRecordHarmonizer(gangstr_vcf, vcftype='unknownvcf')
@@ -300,7 +300,58 @@ def test_InferVCFType():
     #assert ehuntr_infer == trh.VCFTYPES.eh
 
 def test_HarmonizeRecord():
-    pass
+    # TODO test record id if used
+
+    # Gangstr
+    gangstr_vcf = vcf.Reader(filename=gangstr_path)
+    gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
+
+    tr_rec1 = next(iter(gangstr_trh)) 
+    assert tr_rec1.ref_allele == 'tctgtctgtctg'.upper()
+    assert tr_rec1.alt_alleles == [None]
+    assert tr_rec1.motif == 'tctg'.upper()
+    tr_rec2 = next(iter(gangstr_trh)) 
+    tr_rec3 = next(iter(gangstr_trh)) 
+    assert tr_rec3.ref_allele == 'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()
+    assert tr_rec3.alt_alleles == ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()]
+    assert tr_rec3.motif == 'tg'.upper()
+
+
+
+    ## hipstr
+    hipstr_vcf = vcf.Reader(filename=hipstr_path)
+    hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
+    
+    # TODO check if these hipstr examples are correct and if they cover corner cases
+    tr_rec1 = next(iter(hipstr_trh)) 
+    assert tr_rec1.ref_allele == 'GGTGGTGGTGGGGGCGGTGGGGGTGGTG'
+    assert tr_rec1.alt_alleles == ['GGTGGTGGTGGGGGCGGTGGTGGTGCTG']
+    assert tr_rec1.motif == 'GGT'
+    assert tr_rec1.record_id == 'STR_2'
+    tr_rec2 = next(iter(hipstr_trh)) 
+    tr_rec3 = next(iter(hipstr_trh)) 
+    assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTT'
+    assert tr_rec3.alt_alleles == [None]
+    assert tr_rec3.motif == 'T'.upper()
+    assert tr_rec3.record_id == 'STR_4'
+
+    ##  popstr
+    popstr_vcf = vcf.Reader(filename=popstr_path)
+    popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
+
+    tr_rec1 = next(iter(popstr_trh)) 
+    #assert tr_rec1.ref_allele == 'G'*18
+    #assert tr_rec1.alt_alleles == ['G' * 14, 'G' * 17]
+    #assert tr_rec1.motif == 'G'
+    # TODO check record id
+    tr_rec2 = next(iter(popstr_trh)) 
+    tr_rec3 = next(iter(popstr_trh)) 
+    #assert tr_rec3.ref_allele == 'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()
+    #assert tr_rec3.alt_alleles == ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()]
+    #assert tr_rec3.motif == 'tg'.upper()
+
+    # TODO check record id
+
     # Test examples with incorrect preset VCF type
     #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
     #assert ic_gangstr_infer == trh.VCFTYPES.gangstr
