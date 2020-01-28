@@ -109,9 +109,48 @@ def test_GetGenotypeCounts():
     assert (all(v == true_len_gt_counts[k] for k,v in gt_counts_uselength.items()) and len(gt_counts_uselength) == len(true_len_gt_counts))
     
 def test_GetAlleleCounts():
-    # TODO Test using dummy records above.
-    # Test samplelist, uselength options
-    pass
+    # Test good example, no samplelist, uselength=True (default)
+    ref_allele = "CAGCAGCAG"
+    alt_alleles = ["CAGCAGCAGCAG","CAGCAGCAGCAGCAGCAG"]
+    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "")
+    print(rec) # To test str function
+    true_al_counts = {ref_allele: 2, alt_alleles[0]: 6, alt_alleles[1]: 3}
+    true_len_al_counts = {3: 2, 4: 6, 6: 3}
+
+    al_counts_uselength = rec.GetAlleleCounts()
+    al_counts_nolength = rec.GetAlleleCounts(uselength = False)
+    assert (all(v == true_len_al_counts[k] for k,v in al_counts_uselength.items()) and len(al_counts_uselength) == len(true_len_al_counts))
+    assert (all(v == true_al_counts[k] for k,v in al_counts_nolength.items()) and len(al_counts_nolength) == len(true_al_counts))
+
+    
+    # Test good example with samplelist
+    true_al_counts_slist = {ref_allele: 2, alt_alleles[0]: 3}
+    true_len_al_counts_slist = {3: 2, 4: 3}
+    slist = ['S1', 'S3', 'S6']
+    al_counts_uselength_slist = rec.GetAlleleCounts(samplelist = slist)
+    al_counts_nolength_slist = rec.GetAlleleCounts(samplelist = slist, uselength = False)
+
+    assert (all(v == true_len_al_counts_slist[k] for k,v in al_counts_uselength_slist.items()) and len(al_counts_uselength_slist) == len(true_len_al_counts_slist))
+    assert (all(v == true_al_counts_slist[k] for k,v in al_counts_nolength_slist.items()) and len(al_counts_nolength_slist) == len(true_al_counts_slist))    
+
+    # Test example where alt=[None]
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_al_counts = {3: 9}
+    al_counts_uselength = rec.GetAlleleCounts()
+    assert (all(v == true_len_al_counts[k] for k,v in al_counts_uselength.items()) and len(al_counts_uselength) == len(true_len_al_counts))
+
+    # Test example with non of samples in samplelist in VCF
+    rec = trh.TRRecord(dummy_record3, ref_allele, [None], "CAG", "")
+    true_len_al_counts_slist = {}
+    al_counts_uselength_slist = rec.GetAlleleCounts(samplelist = ['NonExistentSample'])
+    assert (all(v == true_len_al_counts_slist[k] for k,v in al_counts_uselength_slist.items()) and len(al_counts_uselength_slist) == len(true_len_al_counts_slist))    
+
+    # Test example where that has one uncalled sample only
+    rec = trh.TRRecord(dummy_record4, ref_allele, [None], "CAG", "")
+    true_len_al_counts = {}
+    al_counts_uselength = rec.GetGenotypeCounts()
+    assert (all(v == true_len_al_counts[k] for k,v in al_counts_uselength.items()) and len(al_counts_uselength) == len(true_len_al_counts))
+
 
 def test_GetAlleleFreqs():
     # TODO Test using dummy records above.
