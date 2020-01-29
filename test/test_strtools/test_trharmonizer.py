@@ -341,8 +341,8 @@ def test_HarmonizeRecord():
 
     tr_rec1 = next(iter(popstr_trh)) 
     #assert tr_rec1.ref_allele == 'G'*18
-    #assert tr_rec1.alt_alleles == ['G' * 14, 'G' * 17]
-    #assert tr_rec1.motif == 'G'
+    assert tr_rec1.alt_alleles == ['G' * 14, 'G' * 17]
+    assert tr_rec1.motif == 'G'
     # TODO check record id
     tr_rec2 = next(iter(popstr_trh)) 
     tr_rec3 = next(iter(popstr_trh)) 
@@ -357,10 +357,9 @@ def test_HarmonizeRecord():
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
     
     tr_rec1 = next(iter(advntr_trh)) 
-    #assert tr_rec1.ref_allele == 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG'
-    #assert tr_rec1.alt_alleles == ['GCGCGGGGCGGGGCGCGGGGCGGG', 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG']
-    #assert tr_rec1.motif == 'GCGCGGGGCGGG'
-
+    assert tr_rec1.ref_allele == 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG'
+    assert tr_rec1.alt_alleles == ['GCGCGGGGCGGGGCGCGGGGCGGG', 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG']
+    assert tr_rec1.motif == 'GCGCGGGGCGGG'
 
     # Test examples with incorrect preset VCF type
     #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
