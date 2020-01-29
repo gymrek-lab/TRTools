@@ -233,27 +233,30 @@ def test_GetMaxAllele():
 
 
 #### Test TRRecordHarmonizer on different files ####
-# TODO: test that we don't explode if a user gives the wrong input type, but rather fail gracefully (e.g. eh for gangstr)
-# TODO: test input an invalid VCF type, e.g. vcftype="notarealformat"
 # TODO: test input a VCF that came from something else e.g. SNP calls from samtools
-# TODO: test the actual harmonizer output on one or more records from each type
 
 gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
 hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
 popstr_path = os.path.join(VCFDIR, "test_popstr.vcf")
 advntr_path = os.path.join(VCFDIR, "test_advntr.vcf")
 ehuntr_path = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+snps_path = os.path.join(VCFDIR, "snps.vcf")
 
 gangstr_vcf = vcf.Reader(filename=gangstr_path)
 hipstr_vcf = vcf.Reader(filename=hipstr_path)
 popstr_vcf = vcf.Reader(filename=popstr_path)
 advntr_vcf = vcf.Reader(filename=advntr_path)
 ehuntr_vcf = vcf.Reader(filename=ehuntr_path)
+snps_vcf = vcf.Reader(filename=snps_path)
 
 def test_trh_init():
     # Test example with unknown VCF type given
     with pytest.raises(ValueError):
         trh.TRRecordHarmonizer(gangstr_vcf, vcftype='unknownvcf')
+    # Test example with unsupported VCF
+    with pytest.raises(ValueError):
+        trh.TRRecordHarmonizer(snps_vcf)
+
     # Test examples with correct preset VCF type
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
     gangstr_infer = gangstr_trh.InferVCFType()
@@ -300,8 +303,6 @@ def test_InferVCFType():
     #assert ehuntr_infer == trh.VCFTYPES.eh
 
 def test_HarmonizeRecord():
-    # TODO test record id if used
-
     # Gangstr
     gangstr_vcf = vcf.Reader(filename=gangstr_path)
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
@@ -340,16 +341,17 @@ def test_HarmonizeRecord():
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
 
     tr_rec1 = next(iter(popstr_trh)) 
-    #assert tr_rec1.ref_allele == 'G'*18
+    assert tr_rec1.ref_allele == 'GGGGGGGCGGGGGGGGGG'
     assert tr_rec1.alt_alleles == ['G' * 14, 'G' * 17]
     assert tr_rec1.motif == 'G'
-    # TODO check record id
+    assert tr_rec1.record_id == 'chr21:5020351:M'
+
     tr_rec2 = next(iter(popstr_trh)) 
     tr_rec3 = next(iter(popstr_trh)) 
-    #assert tr_rec3.ref_allele == 'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()
-    #assert tr_rec3.alt_alleles == ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()]
-    #assert tr_rec3.motif == 'tg'.upper()
-    # TODO check record id
+    assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTTTTTTTTT'
+    assert tr_rec3.alt_alleles == ['T' * 21]
+    assert tr_rec3.motif == 'T'
+    assert tr_rec3.record_id == 'chr21:5031126:M'
 
 
     ## advntr
@@ -361,6 +363,9 @@ def test_HarmonizeRecord():
     assert tr_rec1.alt_alleles == ['GCGCGGGGCGGGGCGCGGGGCGGG', 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG']
     assert tr_rec1.motif == 'GCGCGGGGCGGG'
 
+
     # Test examples with incorrect preset VCF type
-    #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
-    #assert ic_gangstr_infer == trh.VCFTYPES.gangstr
+    ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
+    with pytest.raises(ValueError):
+        tr_rec1 = next(iter(ic_gangstr_trh)) # We need to raise a value error if we don't find the correct keys and report that vcf type is probably input incorrectly
+    
