@@ -130,7 +130,7 @@ def create_region_filter(name, filename):
     return Filter_Regions(name, filename)
 
 ###################################
-# Call level filters
+# Call level filters - General
 ###################################
 
 class Reason:
@@ -140,32 +140,12 @@ class Reason:
     def GetReason(self):
         return self.name
 
-class LowCallDepth(Reason):
-    name = "LowCallDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] < self.threshold: return sample["DP"]
-        else: return None
+###################################
+# Call level filters - HipSTR
+###################################
 
-class HighCallDepth(Reason):
-    name = "HighCallDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] > self.threshold: return sample["DP"]
-        else: return None
-
-class LowCallQ(Reason):
-    name = "LowCallQ"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["Q"] < self.threshold: return sample["Q"]
-        else: return None
-
-class CallFlankIndels(Reason):
-    name = "CallFlankIndels"
+class HipSTRCallFlankIndels(Reason):
+    name = "HipSTRCallFlankIndels"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -173,8 +153,8 @@ class CallFlankIndels(Reason):
             return 1.0*sample['DFLANKINDEL']/sample['DP']
         else: return None
 
-class CallStutter(Reason):
-    name = "CallStutter"
+class HipSTRCallStutter(Reason):
+    name = "HipSTRCallStutter"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -182,8 +162,8 @@ class CallStutter(Reason):
             return 1.0*sample['DSTUTTER']/sample['DP']
         else: return None
 
-class CallMinSuppReads(Reason):
-    name = "MinSuppReads"
+class HipSTRCallMinSuppReads(Reason):
+    name = "HipSTRMinSuppReads"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -201,6 +181,31 @@ class CallMinSuppReads(Reason):
         min_read_count = min([r1, r2])
         if min_read_count < self.threshold: return min_read_count
         else: return None
+
+class HipSTRCallMinDepth(Reason):
+    name = "HipSTRCallMinDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] < self.threshold: return sample["DP"]
+        else: return None
+
+class HipSTRCallMaxDepth(Reason):
+    name = "HipSTRCallMaxDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] > self.threshold: return sample["DP"]
+        else: return None
+
+class HipSTRCallMinQual(Reason):
+    name = "HipSTRCallMinQual"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["Q"] < self.threshold: return sample["Q"]
+        else: return None
+
 
 ###############################
 # GangSTR filters

@@ -53,19 +53,13 @@ def MakeWriter(outfile, invcf, command):
     writer = vcf.Writer(open(outfile, "w"), invcf)
     return writer
 
-# TODO update with vcf type info
-# TODO add fields for other tools
-def CheckFilters(invcf, args, vcftype="auto"):
-    r""" Perform checks on user input for filters
+def CheckLocusFilters(args):
+    r"""Perform checks on user inputs for locus-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
     args : argparse namespace
         Contains user arguments
-    vcftype : str
-        Specifies which tool this VCF came from
 
     Returns
     -------
@@ -73,65 +67,420 @@ def CheckFilters(invcf, args, vcftype="auto"):
         Set to True if all filters look ok. 
         Set to False if filters are invalid 
     """
-    if args.min_call_DP is not None:
-        if args.min_call_DP < 0:
-            common.WARNING("Invalid min_call_DP <0")
+    if args.min_locus_hwep is not None:
+        if args.min_locus_hwep < 0 or args.min_locus_hwep > 1:
+            common.WARNING("Invalid --min-locus-hwep. Must be between 0 and 1")
             return False
-        if "DP" not in invcf.formats:
+    if args.min_locus_het is not None:
+        if args.min_locus_het < 0 or args.min_locus_het > 1:
+            common.WARNING("Invalid --min-locus-het. Must be between 0 and 1")
+            return False
+    if args.max_locus_het is not None:
+        if args.max_locus_het < 0 or args.max_locus_het > 1:
+            common.WARNING("Invalid --max-locus-het. Must be between 0 and 1")
+            return False
+    if args.min_locus_het is not None and args.max_locus_het is not None:
+        if args.max_locus_het < args.min_locus_het:
+            common.WARNING("Cannot have --max-locus-het less than --min-locus-het")
+            return False
+    if args.use_length and vcftype not in trh.VCFTYPES["hipstr"]:
+        common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences")
+    if args.filter_regions is not None:
+        if args.filter_regions_names is not None:
+            filter_region_files = args.filter_regions.split(",")
+            filter_region_names = args.filter_regions_names.split(",")
+            if len(filter_region_names) != len(filter_region_files):
+                common.WARNING("Length of --filter-regions-names must match --filter-regions.")
+                return False
+    return True
+
+def CheckHipSTRFilters(invcf, args):
+    r"""Check HipSTR call-level filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if args.hipstr_max_call_flank_indel is not None:
+        if args.hipstr_max_call_flank_indel < 0 or args.hipstr_max_call_flank_indel > 1:
+            common.WARNING("--hipstr-max-call-flank-indel must be between 0 and 1")
+            return False
+        if not "DP" in invcf.formats or "DFLANKINDEL" not in invcf.formats:
+            common.WARNING("No DP or DFLANKINDEL FORMAT found. Cannot apply --hipstr-max-call-flank-indel")
+            return False
+    if args.hipstr_max_call_stutter is not None:
+        if args.hipstr_max_call_stutter < 0 or args.hipstr_max_call_stutter > 1:
+            common.WARNING("--hipstr-max-call-stutter must be between 0 and 1")
+            return False
+        if not "DP" in invcf.formats or "DSTUTTER" not in invcf.formats:
+            common.WARNING("No DP or DSTUTTER FORMAT found. Cannot apply--hipstr-max-call-stutter") 
+            return False
+    if args.hipstr_min_supp_reads is not None:
+        if args.hipstr_min_supp_reads < 0:
+            common.WARNING("--hipstr-min-supp-reads must be >= 0")
+            return False
+    if args.hipstr_min_call_DP is not None:
+        if args.hipstr_min_call_DP < 0:
+            common.WARNING("--hipstr-min-call-DP must be >= 0")
+            return False
+        if not "DP" in invcf.formats:
             common.WARNING("No DP FORMAT found")
             return False
-    if args.max_call_DP is not None:
-        if args.max_call_DP < 0:
-            common.WARNING("Invalid min_call_DP <0")
+    if args.hipstr_max_call_DP is not None:
+        if args.hipstr_max_call_DP < 0:
+            common.WARNING("--hipstr-max-call-DP must be >= 0")
             return False
-        if args.min_call_DP is not None and args.max_call_DP <= args.min_call_DP:
-            common.WARNING("--max-call-DP must be > --min-call-DP")
-            return False
-        if "DP" not in invcf.formats:
+        if not "DP" in invcf.formats:
             common.WARNING("No DP FORMAT found")
             return False
-    if args.min_call_Q is not None:
-        if args.min_call_Q < 0 or args.min_call_Q > 1:
-            common.WARNING("--min-call-Q must be between 0 and 1")
+    if args.hipstr_min_call_DP is not None and args.hipstr_max_call_DP is not None:
+        if args.hipstr_max_call_DP < args.hipstr_min_call_DP:
+            common.WARNING("--hipstr-max-call-DP must be >= --hipstr-min-call-DP")
             return False
-        if "Q" not in invcf.formats:
+    if args.hipstr_min_call_Q is not None:
+        if args.hipstr_min_call_Q < 0 or args.hipstr_min_call_Q > 1:
+            common.WARNING("--hipstr-min-call-Q must be between 0 and 1")
+            return False
+        if not "Q" in invcf.formats:
             common.WARNING("No Q FORMAT found")
             return False
-    if args.max_call_flank_indel is not None:
-        if args.max_call_flank_indel < 0 or args.max_call_flank_indel > 1:
-            common.WARNING("--max-call-flank-indel must be between 0 and 1")
+    return True
+
+def CheckGangSTRFilters(invcf, args):
+    r"""Check GangSTR call-level filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if args.gangstr_min_call_DP is not None:
+        if args.gangstr_min_call_DP < 0:
+            common.WARNING("--gangstr-min-call-DP must be >= 0")
             return False
-        if "DP" not in invcf.formats or "DFLANKINDEL" not in invcf.formats:
-            common.WARNING("No DP or DFLANKINDEL FORMAT found")
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
             return False
-    if args.max_call_stutter is not None:
-        if args.max_call_stutter < 0 or args.max_call_stutter > 1:
-            common.WARNING("--max-call-stutter must be between 0 and 1")
+    if args.gangstr_max_call_DP is not None:
+        if args.gangstr_max_call_DP < 0:
+            common.WARNING("--gangstr-max-call-DP must be >= 0")
             return False
-        if "DP" not in invcf.formats or "DSTUTTER" not in invcf.formats:
-            common.WARNING("No DP or DSTUTTER FORMAT found")        
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
             return False
-    if args.expansion_prob_het is not None:
-        if args.expansion_prob_het < 0 or args.expansion_prob_het > 1:
-            common.WARNING("--expansion-prob-het must be between 0 and 1")
+    if args.gangstr_min_call_DP is not None and args.gangstr_max_call_DP is not None:
+        if args.gangstr_max_call_DP < args.gangstr_min_call_DP:
+            common.WARNING("--gangstr-max-call-DP must be >= --gangstr-min-call-DP")
             return False
-    if args.expansion_prob_hom is not None:
-        if args.expansion_prob_hom < 0 or args.expansion_prob_hom > 1:
-            common.WARNING("--expansion-prob-hom must be between 0 and 1")
+    if args.gangstr_min_call_Q is not None:
+        if args.gangstr_min_call_Q < 0 or args.gangstr_min_call_Q > 1:
+            common.WARNING("--gangstr-min-call-Q must be between 0 and 1")
             return False
-    if args.expansion_prob_total is not None:
-        if args.expansion_prob_total < 0 or args.expansion_prob_total > 1:
-            common.WARNING("--expansion-prob-total must be between 0 and 1")
+        if not "Q" in invcf.formats:
+            common.WARNING("No Q FORMAT found")
             return False
-    if args.require_support < 0:
-        common.WARNING("--require-support must be >= 0")
+    if args.gangstr_expansion_prob_het is not None:
+        if args.gangstr_expansion_prob_het < 0 or args.gangstr_expansion_prob_het > 1:
+            common.WARNING("--gangstr-expansion-prob-het must be between 0 and 1")
+            return False
+        if not "QEXP" in invcf.formats:
+            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-het")
+            return False
+    if args.gangstr_expansion_prob_hom is not None:
+        if args.gangstr_expansion_prob_hom < 0 or args.gangstr_expansion_prob_hom > 1:
+            common.WARNING("--gangstr-expansion-prob-hom must be between 0 and 1")
+            return False
+        if not "QEXP" in invcf.formats:
+            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-hom")
+            return False
+    if args.gangstr_expansion_prob_total is not None:
+        if args.gangstr_expansion_prob_total < 0 or args.gangstr_expansion_prob_total > 1:
+            common.WARNING("--gangstr-expansion-prob-total must be between 0 and 1")
+            return False
+        if not "QEXP" in invcf.formats:
+            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-total")
+            return False
+    if args.gangstr_require_support is not None:
+        if args.gangstr_require_support < 0:
+            common.WARNING("--gangstr-require-support must be >= 0")
+            return False
+        if args.require_support > 0 and args.readlen is None:
+            common.WARNING("Using --gangstr-require-support requires setting --gangstr-readlen")
+            return False
+        if args.gangstr_readlen is not None and args.gangstr_readlen < 20:
+            common.WARNING("--gangstr-readlen must be an integer value >= 20")
+            return False
+        if not "ENCLREADS" in invcf.formats and "FLNKREADS" in invcf.formats and "RC" in invcf.formats:
+            common.WARNING("--gangstr-require-support requires fields ENCLREADS, FLNKREADS, and RC to be present")
+            return False
+    return True
+
+def CheckAdVNTRFilters(invcf, args):
+    r"""Check adVNTR call-level filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if args.advntr_min_call_DP is not None:
+        if args.advntr_min_call_DP < 0:
+            common.WARNING("--advntr-min-call-DP must be >= 0")
+            return False
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
+            return False
+    if args.advntr_max_call_DP is not None:
+        if args.advntr_max_call_DP < 0:
+            common.WARNING("--advntr-max-call-DP must be >= 0")
+            return False
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
+            return False
+    if args.advntr_min_call_DP is not None and args.advntr_max_call_DP is not None:
+        if args.advntr_max_call_DP < args.advntr_min_call_DP:
+            common.WARNING("--advntr-max-call-DP must be >= --advntr-min-call-DP")
+            return False
+    if args.adnvtr_min_spanning is not None:
+        if args.advntr_min_spanning < 0:
+            common.WARNING("--advntr-min-spanning must be >=0")
+            return False
+        if not "SR" in invcf.formats:
+            common.WARNING("No SR field found")
+            return False
+    if args.adnvtr_min_flanking is not None:
+        if args.advntr_min_flanking < 0:
+            common.WARNING("--advntr-min-flanking must be >=0")
+            return False
+        if not "FR" in invcf.formats:
+            common.WARNING("No FR field found")
+            return False
+    if args.advntr_min_ML is not None:
+        if args.advntr_min_ML < 0:
+            common.WARNING("--advntr-min-ML must be >= 0")
+            return False
+        if not "ML" in invcf.formats:
+            common.WARNING("No ML field found")
+            return False
+    return True
+
+def CheckEHFilters(invcf, args):
+    r"""Check ExpansionHunter call-level filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if args.eh_min_ADFL is not None:
+        if args.eh_min_ADFL < 0:
+            common.WARNING("--eh-min-ADFL must be >= 0")
+            return False
+        if not "ADFL" in invcf.formats:
+            common.WARNING("ADFL FORMAT field required for --eh-min-ADFL")
+            return False
+    if args.eh_min_ADIR is not None:
+        if args.eh_min_ADIR < 0:
+            common.WARNING("--eh-min-ADIR must be >= 0")
+            return False
+        if not "ADIR" in invcf.formats:
+            common.WARNING("ADFL FORMAT field required for --eh-min-ADIR")
+            return False
+    if args.eh_min_ADSP is not None:
+        if args.eh_min_ADSP < 0:
+            common.WARNING("--eh-min-ADSP must be >= 0")
+            return False
+        if not "ADSP" in invcf.formats:
+            common.WARNING("ADSP FORMAT field required for --eh-min-ADFL")
+            return False
+    if args.eh_min_call_LC is not None:
+        if args.eh_min_call_LC < 0:
+            common.WARNING("--eh-min-call-LC must be >= 0")
+            return False
+        if not "LC" in invcf.formats:
+            common.WARNING("No LC FORMAT found")
+            return False
+    if args.eh_max_call_LC is not None:
+        if args.eh_max_call_LC < 0:
+            common.WARNING("--eh-max-call-LC must be >= 0")
+            return False
+        if not "LC" in invcf.formats:
+            common.WARNING("No LC FORMAT found")
+            return False
+    if args.eh_min_call_LC is not None and args.eh_max_call_LC is not None:
+        if args.eh_max_call_LC < args.eh_min_call_LC:
+            common.WARNING("--eh-max-call-LC must be >= --eh-min-call-LC")
+            return False
+    return True
+
+def CheckPopSTRFilters(invcf, args):
+    r"""Check PopSTR call-level filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if args.popstr_min_call_DP is not None:
+        if args.popstr_min_call_DP < 0:
+            common.WARNING("--popstr-min-call-DP must be >= 0")
+            return False
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
+            return False
+    if args.popstr_max_call_DP is not None:
+        if args.popstr_max_call_DP < 0:
+            common.WARNING("--popstr-max-call-DP must be >= 0")
+            return False
+        if not "DP" in invcf.formats:
+            common.WARNING("No DP FORMAT found")
+            return False
+    if args.popstr_min_call_DP is not None and args.popstr_max_call_DP is not None:
+        if args.popstr_max_call_DP < args.popstr_min_call_DP:
+            common.WARNING("--popstr-max-call-DP must be >= --popstr-min-call-DP")
+            return False
+    if args.popstr_require_support is not None:
+        if args.popstr_require_support < 0:
+            common.WARNING("--popstr-require-support must be >= 0")
+            return False
+        if not "AD" in invcf.formats:
+            common.WARNING("No AD FORMAT field found. Required for --popstr-require-support")
+            return False
+    return True
+
+def CheckFilters(invcf, args, vcftype):
+    r"""Perform checks on user input for filters
+
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+    vcftype : enum.
+        Specifies which tool this VCF came from.
+        Must be included in trh.VCFTYPES
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
+    """
+    if not CheckLocusFilters(args):
         return False
-    if args.require_support > 0 and args.readlen is None:
-        common.WARNING("Using --require-support requires setting --readlen")
-        return False
-    if args.readlen is not None and args.readlen < 20:
-        common.WARNING("--readlen must be an integer value >= 20")
-        return False
+
+    # Check HipSTR specific filters
+    if args.hipstr_max_call_flank_indel is not None or \
+       args.hipstr_max_call_stutter is not None or \
+       args.hipstr_min_supp_reads is not None or \
+       args.hipstr_min_call_DP is not None or \
+       args.hipstr_max_call_DP is not None or \
+       args.hipstr_min_call_Q is not None:
+        if vcftype != trh.VCFTYPES["hipstr"]:
+            common.WARNING("HipSTR options can only be applied to HipSTR VCFs")
+            return False
+        else:
+            if not CheckHipSTRFilters(invcf, args):
+                return False
+        
+    # Check GangSTR specific filters
+    if args.gangstr_min_call_DP is not None or \
+       args.gangstr_max_call_DP is not None or \
+       args.gangstr_min_call_Q is not None or \
+       args.gangstr_expansion_prob_het is not None or \
+       args.gangstr_expansion_prob_hom is not None or \
+       args.gangstr_expansion_prob_total is not None or \
+       args.gangstr_filter_span_only or \
+       args.gangstr_filter_spanbound_only or \
+       args.gangstr_filter_badCI or \
+       args.gangstr_require_support is not None or \
+       args.gangstr_readlen is not None:
+        if vcftype != trh.VCFTYPES["gangstr"]:
+            common.WARNING("GangSTR options can only be applied to GangSTR VCFs")
+            return False
+        else:
+            if not CheckGangSTRFilters(invcf, args):
+                return False
+
+    # Check adVNTR specific filters
+    if args.advntr_min_call_DP is not None or \
+       args.advntr_max_call_DP is not None or \
+       args.advntr_min_spanning is not None or \
+       args.advntr_min_flanking is not None or \
+       args.advntr_min_ML is not None:
+        if vcftype != trh.VCFTYPES["advntr"]:
+            common.WARNING("adVNTR options can only be applied to adVNTR VCFs")
+            return False
+        else:
+            if not CheckAdVNTRFilters(invcf, args):
+                return False
+
+    # Check EH specific filters
+    if args.eh_min_ADFL is not None or \
+       args.eh_min_ADIR is not None or \
+       args.eh_min_ADSP is not None or \
+       args.eh_min_call_LC is not None or \
+       args.eh_max_call_LC is not None:
+        if vcftype != trh.VCFTYPES["eh"]:
+            common.WARNING("ExpansionHunter options can only be applied to ExpansionHunter VCFs")
+            return False
+        else:
+            if not CheckEHFilters(invcf, args):
+                return False
+
+    # Check popSTR specific filters
+    if args.popstr_min_call_DP is not None or \
+       args.popstr_max_call_DP is not None or \
+       args.popstr_require_support is not None:
+        if vcftype != trh.VCFTYPES["popstr"]:
+            common.WARNING("popSTR options can only be applied to popSTR VCFs")
+            return False
+        else:
+            if not CheckPopSTRFilters(invcf, args):
+                return False
+
     return True
 
 def WriteLocLog(loc_info, fname):
@@ -314,7 +663,7 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
 
 # TODO update with new filters for different VCFs
 def BuildCallFilters(args):
-    r"""Build list of locus-leve filters to include
+    r"""Build list of locus-level filters to include
 
     Parameters
     ----------
@@ -327,40 +676,34 @@ def BuildCallFilters(args):
        List of call-level filters to apply
     """
     filter_list = []
-    if args.min_call_DP is not None:
-        filter_list.append(filters.LowCallDepth(args.min_call_DP))
-    if args.max_call_DP is not None:
-        filter_list.append(filters.HighCallDepth(args.max_call_DP))
-    if args.min_call_Q is not None:
-        filter_list.append(filters.LowCallQ(args.min_call_Q))
-    if args.max_call_flank_indel is not None:
-        filter_list.append(filters.CallFlankIndels(args.max_call_flank_indel))
-    if args.max_call_stutter is not None:
-        filter_list.append(filters.CallStutter(args.max_call_stutter))
-    if args.min_supp_reads > 0:
-        filter_list.append(filters.CallMinSuppReads(args.min_supp_reads))
-    if args.expansion_prob_het is not None:
-        filter_list.append(filters.ProbHet(args.expansion_prob_het))
-    if args.expansion_prob_hom is not None:
-        filter_list.append(filters.ProbHom(args.expansion_prob_hom))
-    if args.expansion_prob_total is not None:
-        filter_list.append(filters.ProbTotal(args.expansion_prob_total))
-    if args.filter_span_only:
-        filter_list.append(filters.SpanOnly())
-    if args.filter_spanbound_only:
-        filter_list.append(filters.SpanBoundOnly())
-    if args.filter_badCI:
-        filter_list.append(filters.BadCI())
-    if args.require_support > 0:
-        filter_list.append(filters.RequireSupport(args.require_support, args.readlen))
+    
+    # HipSTR call-level filters
+    if args.hipstr_max_call_flank_indel is not None:
+        filter_list.append(filters.HipSTRCallFlankIndels(args.hipstr_max_call_flank_indel))
+    if args.hipstr_max_call_stutter is not None:
+        filter_list.append(filters.HipSTRCallStutter(args.hipstr_max_call_stutter))
+    if args.hipstr_min_supp_reads is not None:
+        filter_list.append(filters.HipSTRCallMinSuppReads(args.hipstr_min_supp_reads))
+    if args.hipstr_min_call_DP is not None:
+        filter_list.append(filters.HipSTRCallMinDepth(args.hipstr_min_call_DP))
+    if args.hipstr_max_call_DP is not None:
+        filter_list.append(filters.HipSTRCallMaxDepth(args.hipstr_max_call_DP))
+    if args.hipstr_min_call_Q is not None:
+        filter_list.append(filters.HipSTRCallMinQual(args.hipstr_min_call_Q))
+
+    # GangSTR call-level filters - TODO
+    # adVNTR call-level filters - TODO
+    # EH call-level filters - TODO
+    # popSTR call-level filters - TODO
+
     return filter_list
 
 def BuildLocusFilters(args):
-    r"""Build list of locus-level fitlers to include.
+    r"""Build list of locus-level filters to include.
 
     These filters should in general not be tool specific
 
-    Paramters
+    Parameters
     ---------
     args : argparse namespace
        User input arguments used to decide on filters
@@ -369,8 +712,6 @@ def BuildLocusFilters(args):
     -------
     filter_list : list of filters.Filter
        List of locus-level filters
-    success : bool
-       Return False if we had an issue building filters
     """
     filter_list = []
     if args.min_locus_callrate is not None:
@@ -387,21 +728,21 @@ def BuildLocusFilters(args):
         filter_region_files = args.filter_regions.split(",")
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
-            if len(filter_region_names) != len(filter_region_files):
-                common.WARNING("Length of --filter-regions-names must match --filter-regions\n")
-                return filter_list, False
         else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
             filter_list.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
-    return filter_list, True
+    return filter_list
 
 def getargs():
     parser = argparse.ArgumentParser(__doc__)
+    # In/out are always relevant
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
+    inout_group.add_argument("--vcftype", help="Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
 
-    locus_group = parser.add_argument_group("Locus-level filters")
+    # Locus-level filters are not specific to any tool
+    locus_group = parser.add_argument_group("Locus-level filters (tool agnostic)")
     locus_group.add_argument("--min-locus-callrate", help="Minimum locus call rate", type=float)
     locus_group.add_argument("--min-locus-hwep", help="Filter loci failing HWE at this p-value threshold", type=float)
     locus_group.add_argument("--min-locus-het", help="Minimum locus heterozygosity", type=float)
@@ -412,29 +753,49 @@ def getargs():
     locus_group.add_argument("--filter-hrun", help="Filter STRs with long homopolymer runs.", action="store_true")
     locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
 
-    #### General call-level filters (HipSTR or GangSTR)
-    call_group = parser.add_argument_group("General call-level filters")
-    call_group.add_argument("--min-call-DP", help="Minimum call coverage", type=int)
-    call_group.add_argument("--max-call-DP", help="Maximum call coverage", type=int)
-    call_group.add_argument("--min-call-Q", help="Minimum call quality score", type=float)    
-
-    #### HipSTR
+    ###### Tool specific filters #####
     hipstr_call_group = parser.add_argument_group("Call-level filters specific to HipSTR output")
-    hipstr_call_group.add_argument("--max-call-flank-indel", help="Maximum call flank indel rate", type=float)
-    hipstr_call_group.add_argument("--max-call-stutter", help="Maximum call stutter rate", type=float)
-    hipstr_call_group.add_argument("--min-supp-reads", help="Minimum supporting reads for each allele", default=0, type=int)
-    
-    #### GangSTR
-    gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
-    gangstr_call_group.add_argument("--expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
-    gangstr_call_group.add_argument("--expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
-    gangstr_call_group.add_argument("--expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
-    gangstr_call_group.add_argument("--filter-span-only", help="Filter out all calls that only have spanning read support", action="store_true")
-    gangstr_call_group.add_argument("--filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
-    gangstr_call_group.add_argument("--filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
-    gangstr_call_group.add_argument("--require-support", help="Require each allele call to have at least n supporting reads", type=int, default=0)
-    gangstr_call_group.add_argument("--readlen", help="Read length used (bp). Required if using --require-support", type=int)
+    hipstr_call_group.add_argument("--hipstr-max-call-flank-indel", help="Maximum call flank indel rate", type=float)
+    hipstr_call_group.add_argument("--hipstr-max-call-stutter", help="Maximum call stutter rate", type=float)
+    hipstr_call_group.add_argument("--hipstr-min-supp-reads", help="Minimum supporting reads for each allele", type=int)
+    hipstr_call_group.add_argument("--hipstr-min-call-DP", help="Minimum call coverage", type=int)
+    hipstr_call_group.add_argument("--hipstr-max-call-DP", help="Maximum call coverage", type=int)
+    hipstr_call_group.add_argument("--hipstr-min-call-Q", help="Minimum call quality score", type=float)    
 
+    gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
+    gangstr_call_group.add_argument("--gangstr-min-call-DP", help="Minimum call coverage", type=int)
+    gangstr_call_group.add_argument("--gangstr-max-call-DP", help="Maximum call coverage", type=int)
+    gangstr_call_group.add_argument("--gangstr-min-call-Q", help="Minimum call quality score", type=float)    
+    gangstr_call_group.add_argument("--gangstr-expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
+    gangstr_call_group.add_argument("--gangstr-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
+    gangstr_call_group.add_argument("--gangstr-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
+    gangstr_call_group.add_argument("--gangstr-filter-span-only", help="Filter out all calls that only have spanning read support", action="store_true")
+    gangstr_call_group.add_argument("--gangstr-filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
+    gangstr_call_group.add_argument("--gangstr-filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
+    gangstr_call_group.add_argument("--gangstr-require-support", help="Require each allele call to have at least n supporting reads", type=int)
+    gangstr_call_group.add_argument("--gangstr-readlen", help="Read length used (bp). Required if using --require-support", type=int)
+
+    advntr_call_group = parser.add_argument_group("Call-level filters specific to adVNTR output")
+    advntr_call_group.add_argument("--advntr-min-call-DP", help="Minimum call coverage", type=int)
+    advntr_call_group.add_argument("--advntr-max-call-DP", help="Maximum call coverage", type=int)
+    advntr_call_group.add_argument("--advntr-min-spanning", help="Minimum spanning read count (SR field)", type=int)
+    advntr_call_group.add_argument("--advntr-min-flanking", help="Minimum flanking read count (FR field)", type=int)
+    advntr_call_group.add_argument("--advntr-min-ML", help="Minimum value of maximum likelihood (ML field)", type=float)
+
+    eh_call_group = parser.add_argument_group("Call-level filters specific to ExpansionHunter output")
+    eh_call_group.add_argument("--eh-min-ADFL", help="Minimum number of flanking reads consistent with the allele", type=int)
+    eh_call_group.add_argument("--eh-min-ADIR", help="Minimum number of in-repeat reads consistent with the allele", type=int)
+    eh_call_group.add_argument("--eh-min-ADSP", help="Minimum number of spanning reads consistent with the allele", type=int)
+    eh_call_group.add_argument("--eh-min-call-LC", help="Minimum call coverage", type=int)
+    eh_call_group.add_argument("--eh-max-call-LC", help="Maximum call coverage", type=int)
+    # TODO: add SO field filter. After clarifying possible formats it can take
+
+    popstr_call_group = parser.add_argument_group("Call-level filters specific to PopSTR output")
+    popstr_call_group.add_argument("--popstr-min-call-DP", help="Minimum call coverage", type=int)
+    popstr_call_group.add_argument("--popstr-max-call-DP", help="Maximum call coverage", type=int)
+    popstr_call_group.add_argument("--popstr-require-support", help="Require each allele call to have at least n supporting reads", type=int)
+
+    # Debugging options
     debug_group = parser.add_argument_group("Debugging parameters")
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
     debug_group.add_argument("--die-on-warning", help="Quit if a record can't be parsed", action="store_true")
@@ -451,17 +812,23 @@ def main(args=None):
         common.WARNING("%s does not exist"%args.vcf)
         return 1
     invcf = vcf.Reader(filename=args.vcf)
+    
+    # Set up record harmonizer and infer VCF type
+    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
+    vcftype = tr_harmonizer.vcftype
 
-    # Set up filter list and check for errors
-    if not CheckFilters(invcf, args): return 1
+    # Check filters all make sense
+    if not CheckFilters(invcf, args, vcftype): return 1
+
+    # Set up locus-level filter list
+    filter_list = BuildLocusFilters(args)
     invcf.filters = {}
-    filter_list, build_success = BuildLocusFilters(args)
-    if not build_success: return 1
-
     for f in filter_list:
         short_doc = f.__doc__ or ''
         short_doc = short_doc.split('\n')[0].lstrip()
         invcf.filters[f.filter_name()] = _Filter(f.filter_name(), short_doc)
+
+    # Set up call-level filters
     call_filters = BuildCallFilters(args)
 
     # Add new FORMAT fields
