@@ -372,4 +372,48 @@ class AdVNTRCallMinML(Reason):
     def __call__(self, sample):
         if sample["ML"] < self.threshold: return sample["ML"]
         else: return None
+
+###############################
+# ExpansionHunter call-level filters
+###############################
     
+class EHCallMinDepth(Reason):
+    name = "EHCallMinDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["LC"] < self.threshold: return sample["LC"]
+        else: return None
+
+class EHCallMaxDepth(Reason):
+    name = "EHCallMaxDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["LC"] > self.threshold: return sample["LC"]
+        else: return None
+
+class EHCallMinADFL(Reason):
+    name = "EHCallMinADFL"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["ADFL"] < self.threshold: return sample["ADFL"]
+        else: return None
+
+class EHCallMinADIR(Reason):
+    name = "EHCallMinADIR"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["ADIR"] < self.threshold: return sample["ADIR"]
+        else: return None
+
+class EHCallMinADSP(Reason):
+    name = "EHCallMinADSP"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["ADSP"] < self.threshold: return sample["ADSP"]
+        else: return None
+

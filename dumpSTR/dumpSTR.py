@@ -725,6 +725,17 @@ def BuildCallFilters(args):
         filter_list.append(filters.AdVNTRCallMinML(args.advntr_min_ML))
 
     # EH call-level filters - TODO
+    if args.eh_min_call_LC is not None:
+        filter_list.append(filters.EHCallMinDepth(args.eh_min_call_LC))
+    if args.eh_max_call_LC is not None:
+        filter_list.append(filters.EHCallMaxDepth(args.eh_max_call_LC))
+    if args.eh_min_ADFL is not None:
+        filter_list.append(filters.EHCallMinADFL(args.eh_min_ADFL))
+    if args.eh_min_ADIR is not None:
+        filter_list.append(filters.EHCallMinADIR(args.eh_min_ADIR))
+    if args.eh_min_ADSP is not None:
+        filter_list.append(filters.EHCallMinADSP(args.eh_min_ADSP))
+
     # popSTR call-level filters - TODO
 
     return filter_list
