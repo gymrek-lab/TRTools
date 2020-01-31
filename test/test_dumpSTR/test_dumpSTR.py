@@ -69,13 +69,20 @@ def test_WrongFile():
     retcode = main(args)
     assert retcode==1
 
-
-#Test if test works for the right filename 
-def test_RightFile():
+# Test if basic inputs work for each file
+def test_GangSTRFile():
     args = base_argparse()
     fname = os.path.join(VCFDIR, "test_gangstr.vcf")
     args.vcf = fname
-    args.vcftype = "gangstr"
+    args.num_records = 10
+    retcode = main(args)
+    assert retcode==0
+
+def test_HipSTRFile():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_hipstr.vcf")
+    args.vcf = fname
+    args.num_records = 10
     retcode = main(args)
     assert retcode==0
 

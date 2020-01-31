@@ -661,7 +661,6 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
     record.samples = new_samples
     return record
 
-# TODO update with new filters for different VCFs
 def BuildCallFilters(args):
     r"""Build list of locus-level filters to include
 
@@ -691,8 +690,40 @@ def BuildCallFilters(args):
     if args.hipstr_min_call_Q is not None:
         filter_list.append(filters.HipSTRCallMinQual(args.hipstr_min_call_Q))
 
-    # GangSTR call-level filters - TODO
-    # adVNTR call-level filters - TODO
+    # GangSTR call-level filters
+    if args.gangstr_min_call_DP is not None:
+        filter_list.append(filters.GangSTRCallMinDepth(args.gangstr_min_call_DP))
+    if args.gangstr_max_call_DP is not None:
+        filter_list.append(filters.GangSTRCallMaxDepth(args.gangstr_max_call_DP))
+    if args.gangstr_min_call_Q is not None:
+        filter_list.append(filters.GangSTRCallMinQual(args.gangstr_min_call_Q))
+    if args.gangstr_expansion_prob_het is not None:
+        filter_list.append(filters.GangSTRCallExpansionProbHet(args.gangstr_expansion_prob_het))
+    if args.gangstr_expansion_prob_hom is not None:
+        filter_list.append(filters.GangSTRCallExpansionProbHom(args.gangstr_expansion_prob_hom))
+    if args.gangstr_expansion_prob_total is not None:
+        filter_list.append(filters.GangSTRCallExpansionProbTotal(args.gangstr_expansion_prob_total))
+    if args.gangstr_filter_span_only:
+        filter_list.append(filters.GangSTRCallSpanOnly())
+    if args.gangstr_filter_spanbound_only:
+        filter_list.append(filters.GangSTRCallSpanBoundOnly())
+    if args.gangstr_filter_badCI:
+        filter_list.append(filters.GangSTRCallBadCI())
+    if args.gangstr_require_support is not None:
+        filter_list.append(filters.GangSTRCallRequireSupport(args.gangstr_require_support, args.gangstr_readlen))
+
+    # adVNTR call-level filters
+    if args.advntr_min_call_DP is not None:
+        filter_list.append(filters.AdVNTRCallMinDepth(args.advntr_min_call_DP))
+    if args.advntr_max_call_DP is not None:
+        filter_list.append(filters.AdVNTRCallMaxDepth(args.advntr_max_call_DP))
+    if args.advntr_min_spanning is not None:
+        filter_list.append(filters.AdVNTRCallMinSpanning(args.advntr_min_spanning))
+    if args.advntr_min_flanking is not None:
+        filter_list.append(filters.AdVNTRCallMinFlanking(args.advntr_min_flanking))
+    if args.advntr_min_ML is not None:
+        filter_list.append(filters.AdVNTRCallMinML(args.advntr_min_ML))
+
     # EH call-level filters - TODO
     # popSTR call-level filters - TODO
 

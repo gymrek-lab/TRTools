@@ -206,31 +206,44 @@ class HipSTRCallMinQual(Reason):
         if sample["Q"] < self.threshold: return sample["Q"]
         else: return None
 
-
 ###############################
 # GangSTR filters
 ###############################
 
-class ProbHom(Reason):
-    name = "ProbHom"
+class GangSTRCallMinDepth(Reason):
+    name = "GangSTRCallMinDepth"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
-        #### Prob hom expansion
+        if sample["DP"] < self.threshold: return sample["DP"]
+        else: return None
+
+class GangSTRCallMaxDepth(Reason):
+    name = "GangSTRCallMaxDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] > self.threshold: return sample["DP"]
+        else: return None
+
+class GangSTRCallMinQual(Reason):
+    name = "GangSTRCallMinQual"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["Q"] < self.threshold: return sample["Q"]
+        else: return None
+
+class GangSTRCallExpansionProbHom(Reason):
+    name = "GangSTRCallExpansionProbHom"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
         if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
         else: return None
 
-class MaxProbHom(Reason):
-    name = "MaxProbHom"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        #### Prob hom expansion
-        if sample["QEXP"][2] > self.threshold: return sample["QEXP"][2]
-        else: return None
-
-class ProbHet(Reason):
-    name = "ProbHet"
+class GangSTRCallExpansionProbHet(Reason):
+    name = "GangSTRCallExpansionProbHet"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -238,35 +251,17 @@ class ProbHet(Reason):
         if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
         else: return None
 
-class MaxProbHet(Reason):
-    name = "MaxProbHet"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        #### Prob het expansion
-        if sample["QEXP"][1] > self.threshold: return sample["QEXP"][1]
-        else: return None
-
-class ProbTotal(Reason):
-    name = "ProbTotal"
+class GangSTRCallExpansionProbTotal(Reason):
+    name = "GangSTRCallExpansionProbTotal"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
         #### Prob het and hom expansion
-        if sample["QEXP"][1]+sample["QEXP"][2] < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
+        if (sample["QEXP"][1]+sample["QEXP"][2]) < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
         else: return None
 
-class MaxProbTotal(Reason):
-    name = "MaxProbTotal"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        #### Prob het and hom expansion
-        if sample["QEXP"][1]+sample["QEXP"][2] > self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
-        else: return None
-
-class SpanOnly(Reason):
-    name = "SpanOnly"
+class GangSTRCallSpanOnly(Reason):
+    name = "GangSTRCallSpanOnly"
     def __init__(self):
         pass
     def __call__(self, sample):
@@ -275,8 +270,8 @@ class SpanOnly(Reason):
         if sample["DP"] == rcvals[1] : return rcvals[1]
         else: return None
 
-class SpanBoundOnly(Reason):
-    name = "SpanBoundOnly"
+class GangSTRCallSpanBoundOnly(Reason):
+    name = "GangSTRCallSpanBoundOnly"
     def __init__(self):
         pass
     def __call__(self, sample):
@@ -285,8 +280,8 @@ class SpanBoundOnly(Reason):
         if sample["DP"] == rcvals[1]+rcvals[3] : return rcvals[1]+rcvals[3]
         else: return None
 
-class BadCI(Reason):
-    name = "BadCI"
+class GangSTRCallBadCI(Reason):
+    name = "GangSTRCallBadCI"
     def __init__(self):
         pass
     def __call__(self, sample):
@@ -300,8 +295,8 @@ class BadCI(Reason):
             if ml_est<ci_low or ml_est>ci_high: return ml_est
         return None
 
-class RequireSupport(Reason):
-    name = "RequireSupport"
+class GangSTRCallRequireSupport(Reason):
+    name = "GangSTRCallRequireSupport"
     def __init__(self, threshold, readlen):
         self.threshold = threshold
         self.readlen = readlen
@@ -333,3 +328,48 @@ class RequireSupport(Reason):
             if numflank < self.threshold:
                 return self.threshold
         return None
+
+###############################
+# AdVNTR filters
+###############################
+
+class AdVNTRCallMinDepth(Reason):
+    name = "AdVNTRCallMinDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] < self.threshold: return sample["DP"]
+        else: return None
+
+class AdVNTRCallMaxDepth(Reason):
+    name = "AdVNTRCallMaxDepth"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["DP"] > self.threshold: return sample["DP"]
+        else: return None
+
+class AdVNTRCallMinSpanning(Reason):
+    name = "AdVNTRCallMinSpanning"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["SR"] < self.threshold: return sample["SR"]
+        else: return None
+
+class AdVNTRCallMinFlanking(Reason):
+    name = "AdVNTRCallMinFlanking"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["FR"] < self.threshold: return sample["FR"]
+        else: return None
+
+class AdVNTRCallMinML(Reason):
+    name = "AdVNTRCallMinML"
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample["ML"] < self.threshold: return sample["ML"]
+        else: return None
+    
