@@ -555,18 +555,22 @@ def WriteSampLog(sample_info, reasons, fname):
     f.close()
     return True
 
-def GetAllCallFilters():
-    r"""List all possible call filters by extracting from filters module
+def GetAllCallFilters(call_filters):
+    r"""List all possible call filters
     
+    Parameters
+    ----------
+    call_filters : list of filters.Reason
+        List of all call-level filters
+
     Returns
     -------
     reasons : list of str
-        A list of call-level filter reasons
+        A list of call-level filter reason strings
     """
     reasons = []
-    for name, obj in inspect.getmembers(filters):
-        if inspect.isclass(obj) and issubclass(obj, filters.Reason) and not obj is filters.Reason:
-            reasons.append(obj.name)
+    for filt in call_filters:
+        reasons.append(filt.name)
     return reasons
 
 def FilterCall(sample, call_filters):
@@ -684,19 +688,19 @@ def BuildCallFilters(args):
     if args.hipstr_min_supp_reads is not None:
         filter_list.append(filters.HipSTRCallMinSuppReads(args.hipstr_min_supp_reads))
     if args.hipstr_min_call_DP is not None:
-        filter_list.append(filters.HipSTRCallMinDepth(args.hipstr_min_call_DP))
+        filter_list.append(filters.CallFilterMinValue("HipSTRCallMinDepth", "DP", args.hipstr_min_call_DP))
     if args.hipstr_max_call_DP is not None:
-        filter_list.append(filters.HipSTRCallMaxDepth(args.hipstr_max_call_DP))
+        filter_list.append(filters.CallFilterMaxValue("HipSTRCallMaxDepth", "DP", args.hipstr_max_call_DP))
     if args.hipstr_min_call_Q is not None:
-        filter_list.append(filters.HipSTRCallMinQual(args.hipstr_min_call_Q))
+        filter_list.append(filters.CallFilterMinValue("HipSTRCallMinQ", "Q", args.hipstr_min_call_Q))
 
     # GangSTR call-level filters
     if args.gangstr_min_call_DP is not None:
-        filter_list.append(filters.GangSTRCallMinDepth(args.gangstr_min_call_DP))
+        filter_list.append(filters.CallFilterMinValue("GangSTRCallMinDepth", "DP", args.gangstr_min_call_DP))
     if args.gangstr_max_call_DP is not None:
-        filter_list.append(filters.GangSTRCallMaxDepth(args.gangstr_max_call_DP))
+        filter_list.append(filters.CallFilterMaxValue("GangSTRCallMaxDepth", "DP", args.gangstr_max_call_DP))
     if args.gangstr_min_call_Q is not None:
-        filter_list.append(filters.GangSTRCallMinQual(args.gangstr_min_call_Q))
+        filter_list.append(filters.CallFilterMinValue("GangSTRCallMinQ", "DP", args.gangstr_min_call_Q))
     if args.gangstr_expansion_prob_het is not None:
         filter_list.append(filters.GangSTRCallExpansionProbHet(args.gangstr_expansion_prob_het))
     if args.gangstr_expansion_prob_hom is not None:
@@ -714,30 +718,35 @@ def BuildCallFilters(args):
 
     # adVNTR call-level filters
     if args.advntr_min_call_DP is not None:
-        filter_list.append(filters.AdVNTRCallMinDepth(args.advntr_min_call_DP))
+        filter_list.append(filters.CallFilterMinValue("AdVNTRCallMinDepth", "DP", args.advntr_min_call_DP))
     if args.advntr_max_call_DP is not None:
-        filter_list.append(filters.AdVNTRCallMaxDepth(args.advntr_max_call_DP))
+        filter_list.append(filters.CallFilterMaxValue("AdVNTRCallMaxDepth", "DP", args.advntr_max_call_DP))
     if args.advntr_min_spanning is not None:
-        filter_list.append(filters.AdVNTRCallMinSpanning(args.advntr_min_spanning))
+        filter_list.append(filters.CallFilterMinValue("AdVNTRCallMinSpanning", "SR", args.advntr_min_spanning))
     if args.advntr_min_flanking is not None:
-        filter_list.append(filters.AdVNTRCallMinFlanking(args.advntr_min_flanking))
+        filter_list.append(filters.CallFilterMinValue("AdVNTRCallMinFlanking", "FR", args.advntr_min_flanking))
     if args.advntr_min_ML is not None:
-        filter_list.append(filters.AdVNTRCallMinML(args.advntr_min_ML))
+        filter_list.append(filters.CallFilterMinValue("AdVNTRCallMinML", "ML", args.advntr_min_ML))
 
-    # EH call-level filters - TODO
+    # EH call-level filters
     if args.eh_min_call_LC is not None:
-        filter_list.append(filters.EHCallMinDepth(args.eh_min_call_LC))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinDepth", "LC", args.eh_min_call_LC))
     if args.eh_max_call_LC is not None:
-        filter_list.append(filters.EHCallMaxDepth(args.eh_max_call_LC))
+        filter_list.append(filters.CallFilterMaxValue("EHCallMaxDepth", "LC", args.eh_max_call_LC))
     if args.eh_min_ADFL is not None:
-        filter_list.append(filters.EHCallMinADFL(args.eh_min_ADFL))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADFL", args.eh_min_ADFL))
     if args.eh_min_ADIR is not None:
-        filter_list.append(filters.EHCallMinADIR(args.eh_min_ADIR))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADIR", args.eh_min_ADIR))
     if args.eh_min_ADSP is not None:
-        filter_list.append(filters.EHCallMinADSP(args.eh_min_ADSP))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADSP", "ADSP", args.eh_min_ADSP))
 
-    # popSTR call-level filters - TODO
-
+    # popSTR call-level filters
+    if args.popstr_min_call_DP is not None:
+        filter_list.append(filters.CallFilterMinValue("PopSTRMinCallDepth", "DP", args.popstr_min_call_DP))
+    if args.popstr_max_call_DP is not None:
+        filter_list.append(filters.CallFilterMaxValue("PopSTRMaxCallDepth", "DP", args.popstr_max_call_DP))
+    if args.popstr_require_support is not None:
+        filter_list.append(filters.PopSTRCallRequireSupport(args.popstr_require_support))
     return filter_list
 
 def BuildLocusFilters(args):
@@ -888,7 +897,7 @@ def main(args=None):
     outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
 
     # Set up sample info
-    all_reasons = GetAllCallFilters()
+    all_reasons = GetAllCallFilters(call_filters)
     sample_info = {}
     for s in invcf.samples:
         sample_info[s] = {"numcalls": 0, "totaldp": 0}

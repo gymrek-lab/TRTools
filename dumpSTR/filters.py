@@ -140,6 +140,24 @@ class Reason:
     def GetReason(self):
         return self.name
 
+class CallFilterMinValue(Reason):
+    def __init__(self, name, field, threshold):
+        self.name = name
+        self.field = field
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample[self.field] < self.threshold: return sample[self.field]
+        else: return None
+
+class CallFilterMaxValue(Reason):
+    def __init__(self, name, field, threshold):
+        self.name = name
+        self.field = field
+        self.threshold = threshold
+    def __call__(self, sample):
+        if sample[self.field] > self.threshold: return sample[self.field]
+        else: return None
+
 ###################################
 # Call level filters - HipSTR
 ###################################
@@ -182,57 +200,9 @@ class HipSTRCallMinSuppReads(Reason):
         if min_read_count < self.threshold: return min_read_count
         else: return None
 
-class HipSTRCallMinDepth(Reason):
-    name = "HipSTRCallMinDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] < self.threshold: return sample["DP"]
-        else: return None
-
-class HipSTRCallMaxDepth(Reason):
-    name = "HipSTRCallMaxDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] > self.threshold: return sample["DP"]
-        else: return None
-
-class HipSTRCallMinQual(Reason):
-    name = "HipSTRCallMinQual"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["Q"] < self.threshold: return sample["Q"]
-        else: return None
-
 ###############################
 # GangSTR filters
 ###############################
-
-class GangSTRCallMinDepth(Reason):
-    name = "GangSTRCallMinDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] < self.threshold: return sample["DP"]
-        else: return None
-
-class GangSTRCallMaxDepth(Reason):
-    name = "GangSTRCallMaxDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] > self.threshold: return sample["DP"]
-        else: return None
-
-class GangSTRCallMinQual(Reason):
-    name = "GangSTRCallMinQual"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["Q"] < self.threshold: return sample["Q"]
-        else: return None
 
 class GangSTRCallExpansionProbHom(Reason):
     name = "GangSTRCallExpansionProbHom"
@@ -333,87 +303,21 @@ class GangSTRCallRequireSupport(Reason):
 # AdVNTR filters
 ###############################
 
-class AdVNTRCallMinDepth(Reason):
-    name = "AdVNTRCallMinDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] < self.threshold: return sample["DP"]
-        else: return None
-
-class AdVNTRCallMaxDepth(Reason):
-    name = "AdVNTRCallMaxDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["DP"] > self.threshold: return sample["DP"]
-        else: return None
-
-class AdVNTRCallMinSpanning(Reason):
-    name = "AdVNTRCallMinSpanning"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["SR"] < self.threshold: return sample["SR"]
-        else: return None
-
-class AdVNTRCallMinFlanking(Reason):
-    name = "AdVNTRCallMinFlanking"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["FR"] < self.threshold: return sample["FR"]
-        else: return None
-
-class AdVNTRCallMinML(Reason):
-    name = "AdVNTRCallMinML"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["ML"] < self.threshold: return sample["ML"]
-        else: return None
-
 ###############################
 # ExpansionHunter call-level filters
 ###############################
     
-class EHCallMinDepth(Reason):
-    name = "EHCallMinDepth"
+###############################
+# PopSTR call level filters
+###############################
+
+class PopSTRCallRequireSupport(Reason):
+    name = "PopSTRCallRequireSupport"
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
-        if sample["LC"] < self.threshold: return sample["LC"]
-        else: return None
-
-class EHCallMaxDepth(Reason):
-    name = "EHCallMaxDepth"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["LC"] > self.threshold: return sample["LC"]
-        else: return None
-
-class EHCallMinADFL(Reason):
-    name = "EHCallMinADFL"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["ADFL"] < self.threshold: return sample["ADFL"]
-        else: return None
-
-class EHCallMinADIR(Reason):
-    name = "EHCallMinADIR"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["ADIR"] < self.threshold: return sample["ADIR"]
-        else: return None
-
-class EHCallMinADSP(Reason):
-    name = "EHCallMinADSP"
-    def __init__(self, threshold):
-        self.threshold = threshold
-    def __call__(self, sample):
-        if sample["ADSP"] < self.threshold: return sample["ADSP"]
-        else: return None
-
+        read_support = sample["AD"]
+        gts = sample.gt_alleles
+        for gt in gts:
+            if read_support[int(gt)] < self.threshold: return self.threshold
+        return None

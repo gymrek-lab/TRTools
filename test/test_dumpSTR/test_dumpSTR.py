@@ -82,6 +82,7 @@ def test_HipSTRFile():
     args = base_argparse()
     fname = os.path.join(VCFDIR, "test_hipstr.vcf")
     args.vcf = fname
+    args.hipstr_min_call_DP = 10
     args.num_records = 10
     retcode = main(args)
     assert retcode==0
