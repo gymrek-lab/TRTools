@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Tool for filtering and QC of STR genotypes
 """
@@ -136,36 +135,67 @@ def CheckFilters(invcf, args, vcftype="auto"):
     return True
 
 def WriteLocLog(loc_info, fname):
-    """
-    Write locus-level features to log file
+    r"""Write locus-level features to log file
 
-    Input:
-    - loc_info (dict): dictionary with locus-level stats
-    - fname (str): output filename
+    Parameters
+    ----------
+    loc_info : dict of str->value
+       Dictionary containing locus-level stats.
+       Must have at least keys: 'totalcalls', 'PASS'
+    fname : str
+       Output log filename
+
+    Returns
+    -------
+    success : bool
+       Set to true if outputting the log was successful
     """
+    if not os.path.exists(os.path.dirname(fname)):
+        common.WARNING("Could not write log to %s"%fname)
+        return False
     f = open(fname, "w")
     keys = list(loc_info.keys())
+    if 'totalcalls' not in keys or 'PASS' not in keys:
+        common.WARNING("Unexpected error occurred when writing log file. Missing required stats")
+        return False
     keys.remove("totalcalls")
-    if loc_info["PASS"] == 0: callrate = 0
-    else: callrate = loc_info["totalcalls"]*1.0/loc_info["PASS"]
+    if loc_info["PASS"] == 0:
+        callrate = 0
+    else:
+        callrate = float(loc_info["totalcalls"])/loc_info["PASS"]
     f.write("MeanSamplesPerPassingSTR\t%s\n"%callrate)
     for k in keys:
         f.write("FILTER:%s\t%s\n"%(k, loc_info[k]))
     f.close()
+    return True
 
 def WriteSampLog(sample_info, reasons, fname):
-    """
-    Write sample-level features to log file
+    r"""Write sample-level features to log file
+    
+    Parameters
+    ----------
+    sample_info : dict of str->value
+        Dictionary of statistics for each sample
+    reasons: list of str
+        List of possible call filter reasons
+    fname : str
+        Output filename
 
-    Input:
-    - sample_info (dict): dictionary of stats for each sample
-    - reasons (list<str>): list of possible feature reasons
-    - fname (str): output filename
+    Returns
+    -------
+    success : bool
+       Set to true if outputting the log was successful
     """
+    if not os.path.exists(os.path.dirname(fname)):
+        common.WARNING("Could not write log to %s"%fname)
+        return False
+    if 'numcalls' not in sample_info or not 'totaldp' in sample_info:
+        common.WARNING("Unexpected error occurred when writing sample log file. Missing required stats")
+        return False        
     header = ["sample", "numcalls","meanDP"] + reasons
     f = open(fname, "w")
     f.write("\t".join(header)+"\n")
-    for s in sample_info:
+    for s in sample_info:        
         numcalls = sample_info[s]["numcalls"]
         if numcalls > 0:
             meancov = sample_info[s]["totaldp"]*1.0/numcalls
@@ -174,14 +204,15 @@ def WriteSampLog(sample_info, reasons, fname):
         for r in reasons: items.append(sample_info[s][r])
         f.write("\t".join([str(item) for item in items])+"\n")
     f.close()
+    return True
 
 def GetAllCallFilters():
-    """
-    List all possible call filters by
-    extracting from filters module
-
-    Output:
-    - reasons (list<str>): list of call-level filter reasons
+    r"""List all possible call filters by extracting from filters module
+    
+    Returns
+    -------
+    reasons : list of str
+        A list of call-level filter reasons
     """
     reasons = []
     for name, obj in inspect.getmembers(filters):
@@ -190,15 +221,19 @@ def GetAllCallFilters():
     return reasons
 
 def FilterCall(sample, call_filters):
-    """
-    Apply call-level filters and return filter reason.
+    r"""Apply call-level filters and return filter reason.
 
-    Input:
-    - sample (vcf._Call)
-    - call_filters (list<filters.Reason>): list of call level filters
+    Parameters
+    ----------
+    sample : vcf._Call
+       The call to be filtered
+    call_filters : list of filters.Reason
+       List of call-level filters
 
-    Return:
-    - reason (list<str>): list of string description of filter reasons
+    Returns
+    -------
+    reasons : list of str
+       List of string description of fitler reasons
     """
     reasons = []
     for cfilt in call_filters:
@@ -206,19 +241,26 @@ def FilterCall(sample, call_filters):
     return reasons
 
 def ApplyCallFilters(record, reader, call_filters, sample_info):
-    """
-    Apply call level filters to a record
-    Return a new record with FILTER populated for each sample
-    Update sample_info with sample level stats
+    r"""Apply call-level filters to a record
 
-    Input:
-    - record (vcf._Record)
-    - reader (vcf.Reader)
-    - call_filters (list<filters.Reason>): list of call filters
-    - sample_info (dict): dictionary of sample stats
+    Returns a new record with FILTER populated for each sample.
+    Also updates sample_info with sample level stats
+    
+    Parameters
+    ----------
+    record : vcf._Record
+       The record to apply filters to
+    reader : vcf.Reader
+       The vcf.Reader object we're reading from
+    call_filters : list of filters.Reason
+       List of call filters to apply
+    sample_info : dict of str->value
+       Dictionary of sample stats to keep updated
 
-    Output:
-    - modified record (vcf._Record). 
+    Returns
+    -------
+    new_record : vcf._Record
+       Modified record object with FILTER field set
     """
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
@@ -270,77 +312,88 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
     record.samples = new_samples
     return record
 
+# TODO update with new filters for different VCFs
 def BuildCallFilters(args):
-    """
-    Build list of locus-level filters to include
+    r"""Build list of locus-leve filters to include
 
-    Input:
-    - args (namespace from parser.parse_args)
+    Parameters
+    ----------
+    args : argparse namespace
+       User input arguments used to decide on filters
     
-    Output:
-    - cdict (list<filters.Filter>): list of call-level filters
+    Returns
+    -------
+    filter_list : list of filters.Filter
+       List of call-level filters to apply
     """
-    cdict = []
+    filter_list = []
     if args.min_call_DP is not None:
-        cdict.append(filters.LowCallDepth(args.min_call_DP))
+        filter_list.append(filters.LowCallDepth(args.min_call_DP))
     if args.max_call_DP is not None:
-        cdict.append(filters.HighCallDepth(args.max_call_DP))
+        filter_list.append(filters.HighCallDepth(args.max_call_DP))
     if args.min_call_Q is not None:
-        cdict.append(filters.LowCallQ(args.min_call_Q))
+        filter_list.append(filters.LowCallQ(args.min_call_Q))
     if args.max_call_flank_indel is not None:
-        cdict.append(filters.CallFlankIndels(args.max_call_flank_indel))
+        filter_list.append(filters.CallFlankIndels(args.max_call_flank_indel))
     if args.max_call_stutter is not None:
-        cdict.append(filters.CallStutter(args.max_call_stutter))
+        filter_list.append(filters.CallStutter(args.max_call_stutter))
     if args.min_supp_reads > 0:
-        cdict.append(filters.CallMinSuppReads(args.min_supp_reads))
+        filter_list.append(filters.CallMinSuppReads(args.min_supp_reads))
     if args.expansion_prob_het is not None:
-        cdict.append(filters.ProbHet(args.expansion_prob_het))
+        filter_list.append(filters.ProbHet(args.expansion_prob_het))
     if args.expansion_prob_hom is not None:
-        cdict.append(filters.ProbHom(args.expansion_prob_hom))
+        filter_list.append(filters.ProbHom(args.expansion_prob_hom))
     if args.expansion_prob_total is not None:
-        cdict.append(filters.ProbTotal(args.expansion_prob_total))
+        filter_list.append(filters.ProbTotal(args.expansion_prob_total))
     if args.filter_span_only:
-        cdict.append(filters.SpanOnly())
+        filter_list.append(filters.SpanOnly())
     if args.filter_spanbound_only:
-        cdict.append(filters.SpanBoundOnly())
+        filter_list.append(filters.SpanBoundOnly())
     if args.filter_badCI:
-        cdict.append(filters.BadCI())
+        filter_list.append(filters.BadCI())
     if args.require_support > 0:
-        cdict.append(filters.RequireSupport(args.require_support, args.readlen))
-    return cdict
+        filter_list.append(filters.RequireSupport(args.require_support, args.readlen))
+    return filter_list
 
 def BuildLocusFilters(args):
-    """
-    Build list of locus-level filters to include
+    r"""Build list of locus-level fitlers to include.
 
-    Input:
-    - args (namespace from parser.parse_args)
-    
-    Output:
-    - fdict (list<filters.Filter>): list of locus-level filters
+    These filters should in general not be tool specific
+
+    Paramters
+    ---------
+    args : argparse namespace
+       User input arguments used to decide on filters
+
+    Returns
+    -------
+    filter_list : list of filters.Filter
+       List of locus-level filters
+    success : bool
+       Return False if we had an issue building filters
     """
-    fdict = []
+    filter_list = []
     if args.min_locus_callrate is not None:
-        fdict.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
+        filter_list.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
     if args.min_locus_hwep is not None:
-        fdict.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep, args.use_length))
     if args.min_locus_het is not None:
-        fdict.append(filters.Filter_MinLocusHet(args.min_locus_het, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het, args.use_length))
     if args.max_locus_het is not None:
-        fdict.append(filters.Filter_MaxLocusHet(args.max_locus_het, args.use_length))
+        filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het, args.use_length))
     if args.filter_hrun is not None:
-        fdict.append(filters.Filter_LocusHrun())
+        filter_list.append(filters.Filter_LocusHrun())
     if args.filter_regions is not None:
         filter_region_files = args.filter_regions.split(",")
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
             if len(filter_region_names) != len(filter_region_files):
                 common.WARNING("Length of --filter-regions-names must match --filter-regions\n")
-                return fdict, True
+                return filter_list, False
         else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
-            fdict.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
-    return fdict, False
+            filter_list.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
+    return filter_list, True
 
 def getargs():
     parser = argparse.ArgumentParser(__doc__)
@@ -402,14 +455,15 @@ def main(args=None):
     # Set up filter list and check for errors
     if not CheckFilters(invcf, args): return 1
     invcf.filters = {}
-    filter_list, build_err = BuildLocusFilters(args)
-    if build_err: return 1
+    filter_list, build_success = BuildLocusFilters(args)
+    if not build_success: return 1
 
     for f in filter_list:
         short_doc = f.__doc__ or ''
         short_doc = short_doc.split('\n')[0].lstrip()
         invcf.filters[f.filter_name()] = _Filter(f.filter_name(), short_doc)
     call_filters = BuildCallFilters(args)
+
     # Add new FORMAT fields
     if "FILTER" not in invcf.formats:
         invcf.formats["FILTER"] = _Format("FILTER", 1, "String", "Call-level filter")
