@@ -2,7 +2,6 @@
 
 """
 Tool for filtering and QC of STR genotypes
-
 """
 
 # Imports
@@ -23,16 +22,6 @@ else:
     import strtools.utils.tr_harmonizer as trh
     import strtools.utils.utils as utils
     
-#try:
-#    import dumpSTR.filters as filters # If running as a package
-#    import strtools.utils.common as common
-#    import strtools.utils.utils as utils
-#except ImportError:
-#    import filters # If running from source code
-#    import common
-#    import utils
-
-
 # Load external libraries
 import argparse
 import inspect
@@ -43,19 +32,47 @@ from vcf.parser import _Format
 from vcf.parser import _Info
 
 def MakeWriter(outfile, invcf, command):
+    r"""Create a VCF writer with a dumpSTR header
+
+    Adds a header line with the dumpSTR command used
+
+    Parameters
+    ----------
+    outfile : str
+       Name of the output file
+    invcf : vcf.Reader object
+       Input VCF. Used to grab header info
+    command : str
+       String command used to run dumpSTR
+
+    Returns
+    -------
+    writer : vcf.Writer object
+       VCF writer initialized with header of input VCF
+    """
     invcf.metadata["command-DumpSTR"] = [command]
     writer = vcf.Writer(open(outfile, "w"), invcf)
     return writer
 
-def CheckFilters(invcf, args):
-    """
-    Perform checks on user input for filters
+# TODO update with vcf type info
+# TODO add fields for other tools
+def CheckFilters(invcf, args, vcftype="auto"):
+    r""" Perform checks on user input for filters
 
-    Input:
-    - invcf (vcf.Reader)
-    - args (argparse namespace)
+    Parameters
+    ----------
+    invcf : str
+        vcf.Reader object
+    args : argparse namespace
+        Contains user arguments
+    vcftype : str
+        Specifies which tool this VCF came from
 
-    Return True if all is good. else return False
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok. 
+        Set to False if filters are invalid 
     """
     if args.min_call_DP is not None:
         if args.min_call_DP < 0:
