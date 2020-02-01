@@ -78,7 +78,7 @@ def test_GangSTRFile():
     args.num_records = 10
     args.gangstr_min_call_DP = 10
     args.gangstr_max_call_DP = 20
-    args.gangstr_min_call_Q = 0.8
+    args.gangstr_min_call_Q = 0.99
     args.gangstr_filter_span_only = True
     args.gangstr_filter_spanbound_only = True
     args.gangstr_filter_badCI = True
@@ -193,13 +193,14 @@ def test_LocusLevel():
         args.num_records = 10
         args.min_locus_callrate = 0.8
         args.min_locus_hwep = 10e-4
-        args.min_locus_het = 0
+        args.min_locus_het = 0.5
         args.max_locus_het = 1
         args.use_length = True
-        args.drop_filtered = True
+        args.drop_filtered = False
         args.filter_hrun = True
-        retcode = main(args)
-        assert retcode==0
+        assert main(args)==0
+        args.drop_filtered = True
+        assert main(args)==0
 
 def test_RegionFilters():
     args = base_argparse()
@@ -330,7 +331,87 @@ def test_InvalidAdVNTROptions():
     assert main(args)==1
     args.advntr_min_spanning = -1
     assert main(args)==1
-    
+
+"""
+def test_InvalidEHOptions():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+    args.vcf = fname
+    args.num_records = 10
+    # TODO add once EH is implemented
+""" 
+
+def test_InvalidPopSTROptions():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+    args.vcf = fname
+    args.num_records = 10
+    args.popstr_min_call_DP = -1
+    assert main(args)==1
+    args.popstr_min_call_DP = None
+    args.popstr_max_call_DP = -1
+    assert main(args)==1
+    args.popstr_min_call_DP = 5
+    args.popstr_max_call_DP = 2
+    assert main(args)==1
+    args.popstr_min_call_DP = None
+    args.popstr_max_call_DP = None
+    args.popstr_require_support = -1
+    assert main(args)==1
+
+def test_InvalidGenotyperOptions():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+    args.vcf = fname
+    args.num_records = 10
+    args.hipstr_min_call_DP = 10
+    assert main(args)==1
+    args.hipstr_min_call_DP = None
+
+    args.gangstr_min_call_DP = 10
+    assert main(args)==1
+    args.gangstr_min_call_DP = None
+
+    fname = os.path.join(VCFDIR, "test_hipstr.vcf")
+    args.vcf = fname
+    args.popstr_min_call_DP = 10
+    assert main(args)==1
+    args.popstr_min_call_DP = None
+    args.advntr_min_call_DP = 10
+    assert main(args)==1
+    args.advntr_min_call_DP = None
+    args.eh_min_call_LC = 5
+    assert main(args)==1
+    args.eh_min_call_LC = None
+
+def test_InvalidOutput():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+    args.vcf = fname
+    args.out = "/notadirectory"
+    assert main(args)==1
+    args.out = os.path.join(DUMPDIR, "dummydir","test")
+    assert main(args)==1
+
+def test_TwoDumpSTRRounds():
+    args = base_argparse()
+    args.num_records = 10
+    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+    args.vcf = fname
+    args.min_locus_callrate = 0
+    main(args) # produces DUMPDIR/test.vcf
+    args.vcf = os.path.join(DUMPDIR, "test.vcf")
+    args.out = os.path.join(DUMPDIR, "test2")
+    assert main(args)==0
+
+def test_BrokenVCF():
+    args = base_argparse()
+    args.num_records = 10
+    fname = os.path.join(VCFDIR, "test_broken.vcf")
+    args.vcf = fname
+    args.die_on_warning = True
+    args.verbose = True
+    assert main(args)==1
 
 """
 def test_Filters(): 

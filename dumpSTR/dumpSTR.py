@@ -48,9 +48,13 @@ def MakeWriter(outfile, invcf, command):
     -------
     writer : vcf.Writer object
        VCF writer initialized with header of input VCF
+       Set to None if we had a problem writing the file
     """
     invcf.metadata["command-DumpSTR"] = [command]
-    writer = vcf.Writer(open(outfile, "w"), invcf)
+    try:
+        writer = vcf.Writer(open(outfile, "w"), invcf)
+    except OSError:
+        writer = None
     return writer
 
 def CheckLocusFilters(args, vcftype):
@@ -261,7 +265,8 @@ def CheckAdVNTRFilters(invcf, args):
         assert "ML" in invcf.formats
     return True
 
-def CheckEHFilters(invcf, args):
+# TODO remove pragma line when EH implemented
+def CheckEHFilters(invcf, args): # pragma: no cover
     r"""Check ExpansionHunter call-level filters
 
     Parameters
@@ -422,9 +427,9 @@ def CheckFilters(invcf, args, vcftype):
         if vcftype != trh.VCFTYPES["eh"]:
             common.WARNING("ExpansionHunter options can only be applied to ExpansionHunter VCFs")
             return False
-        else:
-            if not CheckEHFilters(invcf, args):
-                return False
+        else:  # pragma: no cover
+            if not CheckEHFilters(invcf, args):  # pragma: no cover
+                return False  # pragma: no cover
 
     # Check popSTR specific filters
     if args.popstr_min_call_DP is not None or \
@@ -436,7 +441,6 @@ def CheckFilters(invcf, args, vcftype):
         else:
             if not CheckPopSTRFilters(invcf, args):
                 return False
-
     return True
 
 def WriteLocLog(loc_info, fname):
@@ -455,14 +459,9 @@ def WriteLocLog(loc_info, fname):
     success : bool
        Set to true if outputting the log was successful
     """
-    if not os.path.exists(os.path.dirname(fname)):
-        common.WARNING("Could not write log to %s"%fname)
-        return False
     f = open(fname, "w")
     keys = list(loc_info.keys())
-    if 'totalcalls' not in keys or 'PASS' not in keys:
-        common.WARNING("Unexpected error occurred when writing log file. Missing required stats")
-        return False
+    assert "totalcalls" in keys and "PASS" in keys
     keys.remove("totalcalls")
     if loc_info["PASS"] == 0:
         callrate = 0
@@ -491,16 +490,11 @@ def WriteSampLog(sample_info, reasons, fname):
     success : bool
        Set to true if outputting the log was successful
     """
-    if not os.path.exists(os.path.dirname(fname)):
-        common.WARNING("Could not write log to %s"%fname)
-        return False
-    if 'numcalls' not in sample_info or not 'totaldp' in sample_info:
-        common.WARNING("Unexpected error occurred when writing sample log file. Missing required stats")
-        return False        
     header = ["sample", "numcalls","meanDP"] + reasons
     f = open(fname, "w")
     f.write("\t".join(header)+"\n")
     for s in sample_info:        
+        assert "numcalls" in sample_info[s] and "totaldp" in sample_info[s]
         numcalls = sample_info[s]["numcalls"]
         if numcalls > 0:
             meancov = sample_info[s]["totaldp"]*1.0/numcalls
@@ -571,13 +565,14 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
     new_record : vcf._Record
        Modified record object with FILTER field set
     """
+    # Add FILTER to end of formats
     if "FILTER" in record.FORMAT:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
     else:
         samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
         record.FORMAT = record.FORMAT+":FILTER"
     for fmt in samp_fmt._fields:
-        if fmt == "FILTER" and "FILTER" not in record.FORMAT:
+        if fmt == "FILTER":
             samp_fmt._types.append("String")
             samp_fmt._nums.append(1)
         else:
@@ -589,7 +584,7 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
     new_samples = []
     for sample in record:
         sampdat = []
-        if sample['GT'] is None or sample['GT'] == "./." or sample['GT'] == ".":
+        if not sample.called:
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "FILTER":
@@ -686,15 +681,15 @@ def BuildCallFilters(args):
 
     # EH call-level filters
     if args.eh_min_call_LC is not None:
-        filter_list.append(filters.CallFilterMinValue("EHCallMinDepth", "LC", args.eh_min_call_LC))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinDepth", "LC", args.eh_min_call_LC))  # pragma: no cover
     if args.eh_max_call_LC is not None:
-        filter_list.append(filters.CallFilterMaxValue("EHCallMaxDepth", "LC", args.eh_max_call_LC))
+        filter_list.append(filters.CallFilterMaxValue("EHCallMaxDepth", "LC", args.eh_max_call_LC))  # pragma: no cover
     if args.eh_min_ADFL is not None:
-        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADFL", args.eh_min_ADFL))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADFL", args.eh_min_ADFL))  # pragma: no cover
     if args.eh_min_ADIR is not None:
-        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADIR", args.eh_min_ADIR))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADFL", "ADIR", args.eh_min_ADIR))  # pragma: no cover
     if args.eh_min_ADSP is not None:
-        filter_list.append(filters.CallFilterMinValue("EHCallMinADSP", "ADSP", args.eh_min_ADSP))
+        filter_list.append(filters.CallFilterMinValue("EHCallMinADSP", "ADSP", args.eh_min_ADSP)) # pragma: no cover
 
     # popSTR call-level filters
     if args.popstr_min_call_DP is not None:
@@ -746,7 +741,7 @@ def BuildLocusFilters(args, tr_harm):
                 raise ValueError('Could not load regions file: {}'.format(filter_region_files[i]))
     return filter_list
 
-def getargs():
+def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     # In/out are always relevant
     inout_group = parser.add_argument_group("Input/output")
@@ -819,7 +814,7 @@ def getargs():
 
 def main(args=None):
     if args is None:
-        args = getargs()
+        args = getargs() # pragma: no cover
     # Load VCF file
     if not os.path.exists(args.vcf):
         common.WARNING("%s does not exist"%args.vcf)
@@ -859,7 +854,11 @@ def main(args=None):
     invcf.infos["HRUN"] = _Info("HRUN", 1, "Integer", "Length of longest homopolymer run", source=None, version=None)
 
     # Set up output files
+    if not os.path.exists(os.path.dirname(args.out)):
+        common.WARNING("Output directory does not exist")
+        return 1
     outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
+    if outvcf is None: return 1
 
     # Set up sample info
     all_reasons = GetAllCallFilters(call_filters)
@@ -930,7 +929,7 @@ def main(args=None):
 
     return 0
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     # Set up args
     args = getargs()
     # Run main function
