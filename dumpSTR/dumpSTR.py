@@ -15,11 +15,11 @@ if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     import common
     import tr_harmonizer as trh
     import utils
-else:
-    import dumpSTR.filters as filters # If running as a package
-    import strtools.utils.common as common
-    import strtools.utils.tr_harmonizer as trh
-    import strtools.utils.utils as utils
+else:  # pragma: no cover
+    import dumpSTR.filters as filters  # pragma: no cover
+    import strtools.utils.common as common # pragma: no cover
+    import strtools.utils.tr_harmonizer as trh # pragma: no cover
+    import strtools.utils.utils as utils # pragma: no cover
     
 # Load external libraries
 import argparse
@@ -86,9 +86,9 @@ def CheckLocusFilters(args, vcftype):
         if args.max_locus_het < args.min_locus_het:
             common.WARNING("Cannot have --max-locus-het less than --min-locus-het")
             return False
-    if args.use_length and vcftype not in trh.VCFTYPES["hipstr"]:
+    if args.use_length and vcftype not in [trh.VCFTYPES["hipstr"]]:
         common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
-    if args.filter_hrun and vcftype not in trh.VCFTYPES["hipstr"]:
+    if args.filter_hrun and vcftype not in [trh.VCFTYPES["hipstr"]]:
         common.WARNING("--filter-run only relevant to HipSTR files. This filter will have no effect.")
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
@@ -119,34 +119,27 @@ def CheckHipSTRFilters(invcf, args):
         if args.hipstr_max_call_flank_indel < 0 or args.hipstr_max_call_flank_indel > 1:
             common.WARNING("--hipstr-max-call-flank-indel must be between 0 and 1")
             return False
-        if not "DP" in invcf.formats or "DFLANKINDEL" not in invcf.formats:
-            common.WARNING("No DP or DFLANKINDEL FORMAT found. Cannot apply --hipstr-max-call-flank-indel")
-            return False
+        assert "DP" in invcf.formats and "DFLANKINDEL" in invcf.formats # should always be true
     if args.hipstr_max_call_stutter is not None:
         if args.hipstr_max_call_stutter < 0 or args.hipstr_max_call_stutter > 1:
             common.WARNING("--hipstr-max-call-stutter must be between 0 and 1")
             return False
-        if not "DP" in invcf.formats or "DSTUTTER" not in invcf.formats:
-            common.WARNING("No DP or DSTUTTER FORMAT found. Cannot apply--hipstr-max-call-stutter") 
-            return False
+        assert "DP" in invcf.formats and "DSTUTTER" in invcf.formats # should always be true
     if args.hipstr_min_supp_reads is not None:
         if args.hipstr_min_supp_reads < 0:
             common.WARNING("--hipstr-min-supp-reads must be >= 0")
             return False
+        assert "ALLREADS" in invcf.formats and "GB" in invcf.formats
     if args.hipstr_min_call_DP is not None:
         if args.hipstr_min_call_DP < 0:
             common.WARNING("--hipstr-min-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.hipstr_max_call_DP is not None:
         if args.hipstr_max_call_DP < 0:
             common.WARNING("--hipstr-max-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.hipstr_min_call_DP is not None and args.hipstr_max_call_DP is not None:
         if args.hipstr_max_call_DP < args.hipstr_min_call_DP:
             common.WARNING("--hipstr-max-call-DP must be >= --hipstr-min-call-DP")
@@ -155,9 +148,7 @@ def CheckHipSTRFilters(invcf, args):
         if args.hipstr_min_call_Q < 0 or args.hipstr_min_call_Q > 1:
             common.WARNING("--hipstr-min-call-Q must be between 0 and 1")
             return False
-        if not "Q" in invcf.formats:
-            common.WARNING("No Q FORMAT found")
-            return False
+        assert "Q" in invcf.formats
     return True
 
 def CheckGangSTRFilters(invcf, args):
@@ -180,16 +171,12 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_min_call_DP < 0:
             common.WARNING("--gangstr-min-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.gangstr_max_call_DP is not None:
         if args.gangstr_max_call_DP < 0:
             common.WARNING("--gangstr-max-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.gangstr_min_call_DP is not None and args.gangstr_max_call_DP is not None:
         if args.gangstr_max_call_DP < args.gangstr_min_call_DP:
             common.WARNING("--gangstr-max-call-DP must be >= --gangstr-min-call-DP")
@@ -198,30 +185,22 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_min_call_Q < 0 or args.gangstr_min_call_Q > 1:
             common.WARNING("--gangstr-min-call-Q must be between 0 and 1")
             return False
-        if not "Q" in invcf.formats:
-            common.WARNING("No Q FORMAT found")
-            return False
+        assert "Q" in invcf.formats
     if args.gangstr_expansion_prob_het is not None:
         if args.gangstr_expansion_prob_het < 0 or args.gangstr_expansion_prob_het > 1:
             common.WARNING("--gangstr-expansion-prob-het must be between 0 and 1")
             return False
-        if not "QEXP" in invcf.formats:
-            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-het")
-            return False
+        assert "QEXP" in invcf.formats
     if args.gangstr_expansion_prob_hom is not None:
         if args.gangstr_expansion_prob_hom < 0 or args.gangstr_expansion_prob_hom > 1:
             common.WARNING("--gangstr-expansion-prob-hom must be between 0 and 1")
             return False
-        if not "QEXP" in invcf.formats:
-            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-hom")
-            return False
+        assert "QEXP" in invcf.formats
     if args.gangstr_expansion_prob_total is not None:
         if args.gangstr_expansion_prob_total < 0 or args.gangstr_expansion_prob_total > 1:
             common.WARNING("--gangstr-expansion-prob-total must be between 0 and 1")
             return False
-        if not "QEXP" in invcf.formats:
-            common.WARNING("No QEXP FORMAT found. Can't apply --gangstr-expansion-prob-total")
-            return False
+        assert "QEXP" in invcf.formats
     if args.gangstr_require_support is not None:
         if args.gangstr_require_support < 0:
             common.WARNING("--gangstr-require-support must be >= 0")
@@ -232,9 +211,7 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_readlen is not None and args.gangstr_readlen < 20:
             common.WARNING("--gangstr-readlen must be an integer value >= 20")
             return False
-        if not "ENCLREADS" in invcf.formats and "FLNKREADS" in invcf.formats and "RC" in invcf.formats:
-            common.WARNING("--gangstr-require-support requires fields ENCLREADS, FLNKREADS, and RC to be present")
-            return False
+        assert "ENCLREADS" in invcf.formats and "FLNKREADS" in invcf.formats and "RC" in invcf.formats
     return True
 
 def CheckAdVNTRFilters(invcf, args):
@@ -257,16 +234,12 @@ def CheckAdVNTRFilters(invcf, args):
         if args.advntr_min_call_DP < 0:
             common.WARNING("--advntr-min-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.advntr_max_call_DP is not None:
         if args.advntr_max_call_DP < 0:
             common.WARNING("--advntr-max-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.advntr_min_call_DP is not None and args.advntr_max_call_DP is not None:
         if args.advntr_max_call_DP < args.advntr_min_call_DP:
             common.WARNING("--advntr-max-call-DP must be >= --advntr-min-call-DP")
@@ -275,23 +248,17 @@ def CheckAdVNTRFilters(invcf, args):
         if args.advntr_min_spanning < 0:
             common.WARNING("--advntr-min-spanning must be >=0")
             return False
-        if not "SR" in invcf.formats:
-            common.WARNING("No SR field found")
-            return False
+        assert "SR" in invcf.formats
     if args.advntr_min_flanking is not None:
         if args.advntr_min_flanking < 0:
             common.WARNING("--advntr-min-flanking must be >=0")
             return False
-        if not "FR" in invcf.formats:
-            common.WARNING("No FR field found")
-            return False
+        assert "FR" in invcf.formats
     if args.advntr_min_ML is not None:
         if args.advntr_min_ML < 0:
             common.WARNING("--advntr-min-ML must be >= 0")
             return False
-        if not "ML" in invcf.formats:
-            common.WARNING("No ML field found")
-            return False
+        assert "ML" in invcf.formats
     return True
 
 def CheckEHFilters(invcf, args):
@@ -314,37 +281,27 @@ def CheckEHFilters(invcf, args):
         if args.eh_min_ADFL < 0:
             common.WARNING("--eh-min-ADFL must be >= 0")
             return False
-        if not "ADFL" in invcf.formats:
-            common.WARNING("ADFL FORMAT field required for --eh-min-ADFL")
-            return False
+        assert "ADFL" in invcf.formats
     if args.eh_min_ADIR is not None:
         if args.eh_min_ADIR < 0:
             common.WARNING("--eh-min-ADIR must be >= 0")
             return False
-        if not "ADIR" in invcf.formats:
-            common.WARNING("ADFL FORMAT field required for --eh-min-ADIR")
-            return False
+        assert "ADIR" in invcf.formats
     if args.eh_min_ADSP is not None:
         if args.eh_min_ADSP < 0:
             common.WARNING("--eh-min-ADSP must be >= 0")
             return False
-        if not "ADSP" in invcf.formats:
-            common.WARNING("ADSP FORMAT field required for --eh-min-ADFL")
-            return False
+        assert "ADSP" in invcf.formats
     if args.eh_min_call_LC is not None:
         if args.eh_min_call_LC < 0:
             common.WARNING("--eh-min-call-LC must be >= 0")
             return False
-        if not "LC" in invcf.formats:
-            common.WARNING("No LC FORMAT found")
-            return False
+        assert "LC" in invcf.formats
     if args.eh_max_call_LC is not None:
         if args.eh_max_call_LC < 0:
             common.WARNING("--eh-max-call-LC must be >= 0")
             return False
-        if not "LC" in invcf.formats:
-            common.WARNING("No LC FORMAT found")
-            return False
+        assert "LC" in invcf.formats
     if args.eh_min_call_LC is not None and args.eh_max_call_LC is not None:
         if args.eh_max_call_LC < args.eh_min_call_LC:
             common.WARNING("--eh-max-call-LC must be >= --eh-min-call-LC")
@@ -371,16 +328,12 @@ def CheckPopSTRFilters(invcf, args):
         if args.popstr_min_call_DP < 0:
             common.WARNING("--popstr-min-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.popstr_max_call_DP is not None:
         if args.popstr_max_call_DP < 0:
             common.WARNING("--popstr-max-call-DP must be >= 0")
             return False
-        if not "DP" in invcf.formats:
-            common.WARNING("No DP FORMAT found")
-            return False
+        assert "DP" in invcf.formats
     if args.popstr_min_call_DP is not None and args.popstr_max_call_DP is not None:
         if args.popstr_max_call_DP < args.popstr_min_call_DP:
             common.WARNING("--popstr-max-call-DP must be >= --popstr-min-call-DP")
@@ -389,9 +342,7 @@ def CheckPopSTRFilters(invcf, args):
         if args.popstr_require_support < 0:
             common.WARNING("--popstr-require-support must be >= 0")
             return False
-        if not "AD" in invcf.formats:
-            common.WARNING("No AD FORMAT field found. Required for --popstr-require-support")
-            return False
+        assert "AD" in invcf.formats
     return True
 
 def CheckFilters(invcf, args, vcftype):
@@ -754,7 +705,7 @@ def BuildCallFilters(args):
         filter_list.append(filters.PopSTRCallRequireSupport(args.popstr_require_support))
     return filter_list
 
-def BuildLocusFilters(args):
+def BuildLocusFilters(args, tr_harm):
     r"""Build list of locus-level filters to include.
 
     These filters should in general not be tool specific
@@ -763,6 +714,8 @@ def BuildLocusFilters(args):
     ---------
     args : argparse namespace
        User input arguments used to decide on filters
+    tr_harm : trh.TRRecordHarmonizer
+       Used to harmonize records across genotypers
 
     Returns
     -------
@@ -773,11 +726,11 @@ def BuildLocusFilters(args):
     if args.min_locus_callrate is not None:
         filter_list.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
     if args.min_locus_hwep is not None:
-        filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep, tr_harm, args.use_length))
     if args.min_locus_het is not None:
-        filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het, tr_harm, args.use_length))
     if args.max_locus_het is not None:
-        filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het, args.use_length))
+        filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het, tr_harm, args.use_length))
     if args.filter_hrun:
         filter_list.append(filters.Filter_LocusHrun())
     if args.filter_regions is not None:
@@ -786,7 +739,11 @@ def BuildLocusFilters(args):
             filter_region_names = args.filter_regions_names.split(",")
         else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
-            filter_list.append(filters.create_region_filter(filter_region_names[i], filter_region_files[i]))
+            region_filter = filters.create_region_filter(filter_region_names[i], filter_region_files[i])
+            if region_filter is not None:
+                filter_list.append(region_filter)
+            else:
+                raise ValueError('Could not load regions file: {}'.format(filter_region_files[i]))
     return filter_list
 
 def getargs():
@@ -877,7 +834,10 @@ def main(args=None):
     if not CheckFilters(invcf, args, vcftype): return 1
 
     # Set up locus-level filter list
-    filter_list = BuildLocusFilters(args)
+    try:
+        filter_list = BuildLocusFilters(args, tr_harmonizer)
+    except ValueError:
+        return 1
     invcf.filters = {}
     for f in filter_list:
         short_doc = f.__doc__ or ''

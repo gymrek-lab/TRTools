@@ -38,12 +38,13 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
 
     name = 'HWE'
 
-    def __init__(self, min_locus_hwep, uselength=False):
+    def __init__(self, min_locus_hwep, tr_harmonizer, uselength=False):
         self.threshold = min_locus_hwep
+        self.tr_harmonizer = tr_harmonizer
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length here
+        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
         allele_freqs = trrecord.GetAlleleFreqs(uselength=self.uselength)
         genotype_counts = trrecord.GetGenotypeCounts(uselength=self.uselength)
         hwep = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
@@ -55,12 +56,13 @@ class Filter_MinLocusHet(vcf.filters.Base):
 
     name = 'HETLOW'
 
-    def __init__(self, min_locus_het, uselength=False):
+    def __init__(self, min_locus_het, tr_harmonizer, uselength=False):
         self.threshold = min_locus_het
+        self.tr_harmonizer = tr_harmonizer
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length
+        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het < self.threshold:
             return het
@@ -71,12 +73,13 @@ class Filter_MaxLocusHet(vcf.filters.Base):
 
     name = 'HETHIGH'
 
-    def __init__(self, max_locus_het, uselength=False):
+    def __init__(self, max_locus_het, tr_harmonizer, uselength=False):
         self.threshold = max_locus_het
+        self.tr_harmonizer = tr_harmonizer
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length
+        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het > self.threshold:
             return het
@@ -103,15 +106,21 @@ def create_region_filter(name, filename):
         def __init__(self, name, filename):
             self.threshold = ""
             self.name = name
+            self.pass_checks = True
             self.LoadRegions(filename)
         def LoadRegions(self, filename):
             if not os.path.exists(filename):
                 self.regions = None
-                common.WARNING("%s not found"%filename) # TODO raise exception
+                common.WARNING("%s not found"%filename)
+                self.pass_checks = False
+                return
             self.regions = BedTool(filename)
             if not self.regions._tabixed():
                 sys.stderr.write("Creating tabix index for %s\n"%filename)
-                self.regions.tabix(force=True)
+                try:
+                    self.regions.tabix(force=True)
+                except:
+                    self.pass_checks = False # TODO more specific exception to raise?
         def __call__(self, record):
             interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
             if self.regions is None: return None
@@ -128,7 +137,8 @@ def create_region_filter(name, filename):
             except ValueError: pass
             return None
     f = Filter_Regions(name, filename)
-    return Filter_Regions(name, filename)
+    if not f.pass_checks: return None
+    return f
 
 ###################################
 # Call level filters - General
