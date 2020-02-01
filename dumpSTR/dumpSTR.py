@@ -53,13 +53,16 @@ def MakeWriter(outfile, invcf, command):
     writer = vcf.Writer(open(outfile, "w"), invcf)
     return writer
 
-def CheckLocusFilters(args):
+def CheckLocusFilters(args, vcftype):
     r"""Perform checks on user inputs for locus-level filters
 
     Parameters
     ----------
     args : argparse namespace
         Contains user arguments
+    vcftype : enum.
+        Specifies which tool this VCF came from.
+        Must be included in trh.VCFTYPES
 
     Returns
     -------
@@ -84,7 +87,9 @@ def CheckLocusFilters(args):
             common.WARNING("Cannot have --max-locus-het less than --min-locus-het")
             return False
     if args.use_length and vcftype not in trh.VCFTYPES["hipstr"]:
-        common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences")
+        common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
+    if args.filter_hrun and vcftype not in trh.VCFTYPES["hipstr"]:
+        common.WARNING("--filter-run only relevant to HipSTR files. This filter will have no effect.")
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
             filter_region_files = args.filter_regions.split(",")
@@ -221,7 +226,7 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_require_support < 0:
             common.WARNING("--gangstr-require-support must be >= 0")
             return False
-        if args.require_support > 0 and args.readlen is None:
+        if args.gangstr_require_support > 0 and args.gangstr_readlen is None:
             common.WARNING("Using --gangstr-require-support requires setting --gangstr-readlen")
             return False
         if args.gangstr_readlen is not None and args.gangstr_readlen < 20:
@@ -266,14 +271,14 @@ def CheckAdVNTRFilters(invcf, args):
         if args.advntr_max_call_DP < args.advntr_min_call_DP:
             common.WARNING("--advntr-max-call-DP must be >= --advntr-min-call-DP")
             return False
-    if args.adnvtr_min_spanning is not None:
+    if args.advntr_min_spanning is not None:
         if args.advntr_min_spanning < 0:
             common.WARNING("--advntr-min-spanning must be >=0")
             return False
         if not "SR" in invcf.formats:
             common.WARNING("No SR field found")
             return False
-    if args.adnvtr_min_flanking is not None:
+    if args.advntr_min_flanking is not None:
         if args.advntr_min_flanking < 0:
             common.WARNING("--advntr-min-flanking must be >=0")
             return False
@@ -408,7 +413,7 @@ def CheckFilters(invcf, args, vcftype):
         Set to True if all filters look ok. 
         Set to False if filters are invalid 
     """
-    if not CheckLocusFilters(args):
+    if not CheckLocusFilters(args, vcftype):
         return False
 
     # Check HipSTR specific filters
@@ -773,7 +778,7 @@ def BuildLocusFilters(args):
         filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het, args.use_length))
     if args.max_locus_het is not None:
         filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het, args.use_length))
-    if args.filter_hrun is not None:
+    if args.filter_hrun:
         filter_list.append(filters.Filter_LocusHrun())
     if args.filter_regions is not None:
         filter_region_files = args.filter_regions.split(",")
@@ -936,7 +941,7 @@ def main(args=None):
         if args.drop_filtered:
             if record.call_rate == 0: output_record = False
         if output_record:
-            trrecord = trh.TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+            trrecord = tr_harmonizer.HarmonizeRecord(record)
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
             if record.num_called > 0:

@@ -43,7 +43,7 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length here
         allele_freqs = trrecord.GetAlleleFreqs(uselength=self.uselength)
         genotype_counts = trrecord.GetGenotypeCounts(uselength=self.uselength)
         hwep = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
@@ -60,7 +60,7 @@ class Filter_MinLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het < self.threshold:
             return het
@@ -76,7 +76,7 @@ class Filter_MaxLocusHet(vcf.filters.Base):
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = TRRecord(record, record.REF, record.ALT, "", "") # TODO handle different VCF types
+        trrecord = trh.TRRecord(record, record.REF, record.ALT, 1, "") # Caution: using dummy motif length
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het > self.threshold:
             return het
@@ -92,6 +92,7 @@ class Filter_LocusHrun(vcf.filters.Base):
 
     def __call__(self, record):
         hrun = utils.GetHomopolymerRun(record.REF)
+        if "PERIOD" not in record.INFO: return None # Don't apply if we don't know the period
         if record.INFO["PERIOD"] in [5,6] and hrun >= self.threshold+record.INFO["PERIOD"]:
             return hrun
         return None
@@ -188,12 +189,12 @@ class HipSTRCallMinSuppReads(Reason):
         if sample["ALLREADS"] is None: return 0
         delim = "|"
         if "/" in sample["GB"]: delim = "/"
-        gb = map(int, sample["GB"].split(delim))
+        gb = [int(item) for item in sample["GB"].split(delim)]
         allreads = sample["ALLREADS"].split(";")
         r1 = 0
         r2 = 0
         for item in allreads:
-            allele, readcount = map(int, item.split("|"))
+            allele, readcount = [int(item) for item in item.split("|")]
             if allele == gb[0]: r1 += readcount
             if allele == gb[1]: r2 += readcount
         min_read_count = min([r1, r2])
@@ -321,3 +322,4 @@ class PopSTRCallRequireSupport(Reason):
         for gt in gts:
             if read_support[int(gt)] < self.threshold: return self.threshold
         return None
+

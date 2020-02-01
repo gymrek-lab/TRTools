@@ -69,12 +69,36 @@ def test_WrongFile():
     retcode = main(args)
     assert retcode==1
 
-# Test if basic inputs work for each file
+# Test if basic inputs and threshold filters work for each file
 def test_GangSTRFile():
     args = base_argparse()
     fname = os.path.join(VCFDIR, "test_gangstr.vcf")
     args.vcf = fname
     args.num_records = 10
+    args.gangstr_min_call_DP = 10
+    args.gangstr_max_call_DP = 20
+    args.gangstr_min_call_Q = 0.8
+    args.gangstr_filter_span_only = True
+    args.gangstr_filter_spanbound_only = True
+    args.gangstr_filter_badCI = True
+    args.gangstr_require_support = 2
+    args.gangstr_readlen = 100
+    retcode = main(args)
+    assert retcode==0
+
+    # Test expansion options
+    args.gangstr_expansion_prob_het = 0.8
+    retcode = main(args)
+    assert retcode==0
+
+    args.gangstr_expansion_prob_het = None
+    args.gangstr_expansion_prob_hom = 0.8
+    retcode = main(args)
+    assert retcode==0
+
+    args.gangstr_expansion_prob_het = None
+    args.gangstr_expansion_prob_hom = None
+    args.gangstr_expansion_prob_total = 0.8
     retcode = main(args)
     assert retcode==0
 
@@ -82,10 +106,66 @@ def test_HipSTRFile():
     args = base_argparse()
     fname = os.path.join(VCFDIR, "test_hipstr.vcf")
     args.vcf = fname
+    args.num_records = 10
     args.hipstr_min_call_DP = 10
+    args.hipstr_max_call_DP = 100
+    args.hipstr_min_call_Q = 0.9
+    args.hipstr_min_supp_reads = 2
+    args.hipstr_max_call_flank_indel = 0.15
+    args.hipstr_max_call_stutter = 0.15
+    retcode = main(args)
+    assert retcode==0
+
+def test_AdVNTRFile():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_advntr.vcf")
+    args.vcf = fname
+    args.num_records = 10
+    args.advntr_min_call_DP = 10
+    args.advntr_max_call_DP = 20
+    args.advntr_min_spanning = 2
+    args.advntr_min_flanking = 2
+    args.advntr_min_ML = 0
+    retcode = main(args)
+    assert retcode==0
+
+# TODO: uncomment. EH not implemented yet in TR Harmonizer
+"""
+def test_EHFile():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+    args.vcf = fname
     args.num_records = 10
     retcode = main(args)
     assert retcode==0
+"""
+
+def test_PopSTRFile():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+    args.vcf = fname
+    args.num_records = 10
+    args.popstr_min_call_DP = 5
+    args.popstr_max_call_DP = 100
+    args.popstr_require_support = 2
+    retcode = main(args)
+    assert retcode==0
+
+# Test locus-level filters
+def test_LocusLevel():
+    args = base_argparse()
+    for tool in ["hipstr","gangstr","popstr","advntr"]:
+        fname = os.path.join(VCFDIR, "test_%s.vcf"%tool)
+        args.vcf = fname
+        args.num_records = 10
+        args.min_locus_callrate = 0.8
+        args.min_locus_hwep = 10e-4
+        args.min_locus_het = 0
+        args.max_locus_het = 1
+        args.use_length
+        args.drop_filtered = True
+        retcode = main(args)
+        assert retcode==0
 
 """
 def test_Filters(): 
