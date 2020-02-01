@@ -13,7 +13,7 @@ if __name__ == "tr_harmonizer":
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import utils
 else:
-    import strtools.utils.utils as utils
+    import strtools.utils.utils as utils # pragma: no cover
 
 # List of supported VCF types
 # TODO: add Beagle

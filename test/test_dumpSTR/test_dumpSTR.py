@@ -193,8 +193,8 @@ def test_LocusLevel():
         args.num_records = 10
         args.min_locus_callrate = 0.8
         args.min_locus_hwep = 10e-4
-        args.min_locus_het = 0.5
-        args.max_locus_het = 1
+        args.min_locus_het = 0.1
+        args.max_locus_het = 0.3
         args.use_length = True
         args.drop_filtered = False
         args.filter_hrun = True

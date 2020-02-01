@@ -12,10 +12,10 @@ if __name__ == "filters":
     import common
     import tr_harmonizer as trh
     import utils
-else:
-    import strtools.utils.common as common
-    import strtools.utils.tr_harmonizer as trh
-    import strtools.utils.utils as utils
+else: # pragma: no cover
+    import strtools.utils.common as common # pragma: no cover
+    import strtools.utils.tr_harmonizer as trh # pragma: no cover
+    import strtools.utils.utils as utils # pragma: no cover
 
 ###################################
 # Locus level filters
@@ -120,7 +120,7 @@ def create_region_filter(name, filename):
                 try:
                     self.regions.tabix(force=True)
                 except:
-                    self.pass_checks = False # TODO more specific exception to raise?
+                    self.pass_checks = False
         def __call__(self, record):
             interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
             if self.regions is None: return None
