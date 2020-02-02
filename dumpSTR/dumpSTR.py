@@ -651,7 +651,7 @@ def BuildCallFilters(args):
     if args.gangstr_max_call_DP is not None:
         filter_list.append(filters.CallFilterMaxValue("GangSTRCallMaxDepth", "DP", args.gangstr_max_call_DP))
     if args.gangstr_min_call_Q is not None:
-        filter_list.append(filters.CallFilterMinValue("GangSTRCallMinQ", "DP", args.gangstr_min_call_Q))
+        filter_list.append(filters.CallFilterMinValue("GangSTRCallMinQ", "Q", args.gangstr_min_call_Q))
     if args.gangstr_expansion_prob_het is not None:
         filter_list.append(filters.GangSTRCallExpansionProbHet(args.gangstr_expansion_prob_het))
     if args.gangstr_expansion_prob_hom is not None:
