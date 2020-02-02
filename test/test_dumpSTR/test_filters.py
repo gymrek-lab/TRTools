@@ -58,8 +58,8 @@ def base_argparse():
     args.die_on_warning = False
     args.verbose = False
     return args
-
-def test_Filters(): 
+    
+def test_GangSTRFilters(): 
     args = base_argparse() 
     fname = os.path.join(VCFDIR, "artificial_gangstr.vcf")
     args.vcf = fname
@@ -125,6 +125,12 @@ def test_Filters():
     call_filters = BuildCallFilters(args)
     reasons6 = FilterCall(vcfcall, call_filters)
     assert reasons6==['GangSTRCallExpansionProbHet']
+
+    args = base_argparse()
+    args.gangstr_expansion_prob_het = 0.0
+    call_filters = BuildCallFilters(args)
+    reasons61 = FilterCall(vcfcall, call_filters)
+    assert reasons61==[]
 
     # Line 2 of artificial vcf
     record2 = next(artificial_vcf)

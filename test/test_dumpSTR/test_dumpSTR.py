@@ -112,8 +112,8 @@ def test_HipSTRFile():
     args.hipstr_max_call_DP = 100
     args.hipstr_min_call_Q = 0.9
     args.hipstr_min_supp_reads = 2
-    args.hipstr_max_call_flank_indel = 0.15
-    args.hipstr_max_call_stutter = 0.15
+    args.hipstr_max_call_flank_indel = 0.05
+    args.hipstr_max_call_stutter = 0.01
     retcode = main(args)
     assert retcode==0
 

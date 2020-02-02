@@ -278,8 +278,6 @@ class Reason:
     """
     
     name = ""
-    def __init__(self):
-        pass
     def GetReason(self):
         return self.name
 
