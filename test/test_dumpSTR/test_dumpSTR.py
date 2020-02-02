@@ -227,6 +227,14 @@ def test_RegionFilters():
     args.filter_regions = os.path.join(REGIONDIR, "test_nonexistent.bed")
     retcode = main(args)
     assert retcode==1
+    # File missing tabix
+    args.filter_regions = os.path.join(REGIONDIR, "test_regions3.bed.gz")
+    assert main(args)==1
+    # File with no chr
+    args.filter_regions = os.path.join(REGIONDIR, "test_regions4.bed.gz")
+    assert main(args)==0
+    args.vcf = os.path.join(VCFDIR, "test_gangstr_nochr.vcf")
+    assert main(args)==0
 
 def test_InvalidHipstrOptions():
     args = base_argparse()

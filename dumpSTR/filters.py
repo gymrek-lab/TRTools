@@ -231,27 +231,23 @@ def create_region_filter(name, filename):
                 common.WARNING("%s not found"%filename)
                 self.pass_checks = False
                 return
+            if not os.path.exists(filename+".tbi"):
+                self.regions = None
+                common.WARNING("Tabix index for %s not found"%filename)
+                self.pass_checks = False
+                return
             self.regions = BedTool(filename)
-            if not self.regions._tabixed():
-                sys.stderr.write("Creating tabix index for %s\n"%filename)
-                try:
-                    self.regions.tabix(force=True)
-                except:
-                    self.pass_checks = False
         def __call__(self, record):
             interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
             if self.regions is None: return None
             if "chr" in interval:
                 interval2 = interval.replace("chr","")
             else: interval2 = "chr"+interval
-            try:
-                tb1 = self.regions.tabix_intervals(interval)
-                if tb1.count() > 0: return self.name
-            except ValueError: pass
-            try:
-                tb2 = self.regions.tabix_intervals(interval2)
-                if tb2.count() > 0: return self.name
-            except ValueError: pass
+            # Try with and without chr
+            tb1 = self.regions.tabix_intervals(interval)
+            if tb1.count() > 0: return self.name
+            tb2 = self.regions.tabix_intervals(interval2)
+            if tb2.count() > 0: return self.name
             return None
     f = Filter_Regions(name, filename)
     if not f.pass_checks: return None

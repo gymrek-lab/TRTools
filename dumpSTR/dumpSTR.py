@@ -756,7 +756,7 @@ def getargs(): # pragma: no cover
     locus_group.add_argument("--min-locus-het", help="Minimum locus heterozygosity", type=float)
     locus_group.add_argument("--max-locus-het", help="Maximum locus heterozygosity", type=float)
     locus_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
-    locus_group.add_argument("--filter-regions", help="Comma-separated list of BED files of regions to filter", type=str)
+    locus_group.add_argument("--filter-regions", help="Comma-separated list of BED files of regions to filter. Must be bgzipped and tabix indexed", type=str)
     locus_group.add_argument("--filter-regions-names", help="Comma-separated list of filter names for each BED filter file", type=str)
     locus_group.add_argument("--filter-hrun", help="Filter STRs with long homopolymer runs.", action="store_true")
     locus_group.add_argument("--drop-filtered", help="Drop filtered records from output", action="store_true")
