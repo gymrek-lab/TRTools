@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-
 """
 Tool for merging STR VCF files from GangSTR
-
 """
 
 # Test command:
@@ -35,9 +33,9 @@ if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
     import utils
-else:
-    import strtools.utils.common as common
-    import strtools.utils.utils as utils
+else: # pragma: no cover
+    import strtools.utils.common as common  # pragma: no cover
+    import strtools.utils.utils as utils  # pragma: no cover
 
 NOCALLSTRING = "."
 FORMATFIELDS = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR","ENCLREADS","FLNKREADS","QEXP"]
@@ -300,7 +298,7 @@ def CheckMin(is_min):
     if sum(is_min)==0:
         common.ERROR("Unexpected error. Stuck in infinite loop and exiting.")
 
-def getargs():
+def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
@@ -354,7 +352,7 @@ def main(args=None):
 
     return 0 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     # Set up args
     args = getargs()
     # Run main function
