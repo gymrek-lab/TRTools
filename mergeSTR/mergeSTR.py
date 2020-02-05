@@ -123,7 +123,8 @@ def GetSamples(readers, usefilenames=False):
             samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
         else: samples = samples + r.samples
     if len(set(samples))!=len(samples):
-        raise ValueError("Duplicate samples found.")
+        common.WARNING("Duplicate samples found.")
+        return []
     return samples
 
 def GetChromOrder(r, chroms):
@@ -283,6 +284,8 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
             useformat.append(field)
     # Write sample list
     samples = GetSamples(readers, usefilenames=args.update_sample_from_file)
+    if len(samples) == 0:
+        return None, None
     header_fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"]
     vcfw.write("#"+"\t".join(header_fields+samples)+"\n")
     return useinfo, useformat
@@ -568,7 +571,7 @@ def PrintCurrentRecords(current_records, is_min):
             chrom = None
             pos = None
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
-    common.MESSAGE("\t".join(info)+"\n")
+    common.MSG("\t".join(info)+"\n")
 
 def CheckMin(is_min):
     r"""Check if we're progressing through VCFs

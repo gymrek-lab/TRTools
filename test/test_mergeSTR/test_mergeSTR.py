@@ -34,11 +34,27 @@ def test_WrongFile():
     retcode = main(args)
     assert retcode==1
 
-# Test right files or directory
-def test_RightFile():
+# Test right files or directory - GangSTR
+def test_GangSTRRightFile():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file.vcf.gz")
-    fname2 = os.path.join(TESTDIR, "test_file2.vcf.gz")
+    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(TESTDIR, "test_file_gangstr2.vcf.gz")
+    args.vcftype = "gangstr"
     args.vcfs = fname1 + "," + fname2
-    retcode = main(args)
-    assert retcode==0
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+def test_GangSTRDuplicate():
+    args = base_argparse()
+    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
+    args.vcfs = fname1 + "," + fname1
+    assert main(args)==1
+
+# TODO - test EH, advntr, hipSTR, popstr
+# TODO - test unzipped, unindexed VCFs return 1
+# TODO - test VCFs with different ref genome contigs return 1
