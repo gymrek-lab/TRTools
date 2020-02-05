@@ -318,9 +318,7 @@ def getargs():  # pragma: no cover
 
     return args
 
-def main(args=None):
-    if args is None:
-        args = getargs()
+def main(args):
     ###Check VCF files ###
     vcfs = args.vcfs.split(",")
     if not os.path.exists(vcfs[0]):
