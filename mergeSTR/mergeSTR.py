@@ -14,13 +14,43 @@ import vcf
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
+    import tr_harmonizer as trh
     import utils
 else: # pragma: no cover
     import strtools.utils.common as common  # pragma: no cover
+    import strtools.utils.tr_harmonizer as trh # pragma: no cover
     import strtools.utils.utils as utils  # pragma: no cover
 
 NOCALLSTRING = "."
-FORMATFIELDS = ["GT","DP","Q","REPCN","REPCI","RC","ML","INS","STDERR","ENCLREADS","FLNKREADS","QEXP"]
+
+# Tool-specific fields to merge. (FIELDNAME, req'd). req'd is True if merge should
+# fail when all records don't have identical values for that field
+INFOFIELDS = {
+    "gangstr": [("END", True), ("RU", True), ("PERIOD", True), ("REF", True), \
+                ("GRID", False), ("EXPTHRESH", True), ("STUTTERUP", False), \
+                ("STUTTERDOWN", False), ("STUTTERP", False)],
+    "hipstr": [("INFRAME_PGEOM", False), ("INFRAME_UP", False), ("INFRAME_DOWN", False), \
+               ("OUTFRAME_PGEOM", False), ("OUTFRAME_UP", False), ("OUTFRAME_DOWN", False), \
+               ("BPDIFFS", False), ("START", True), ("END", True), ("PERIOD", True), \
+               ("AN", False), ("REFAC", False), ("AC", False), ("NSKIP", False), \
+               ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
+               ("DFLANKINDEL", False)],
+    "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
+           ("RU", True), ("SVTYPE", True), ("VARID", False)],
+    "popstr": [("RefLen", True), ("Motif", True)],
+    "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
+}
+
+# Tool-specific format fields to merge
+# Not all fields currently handled
+# If not listed here, it is ignored
+FORMATFIELDS = {
+    "gangstr": ["DP","Q","REPCN","REPCI","RC","ENCLREADS","FLNKREADS","ML","INS","STDERR","QEXP"],
+    "hipstr": ["GB","Q","PQ","DP","DSNP","PSNP","PDP","GLDIFF","DSTUTTER","DFLANKINDEL","AB","FS","DAB","ALLREADS","MALLREADS"],
+    "eh": ["ADFL","ADIR","ADSP","LC","REPCI","REPCN","SO"],
+    "popstr": ["AD","DP","PL"],
+    "advntr": ["DP","SR","FR","ML"]
+}
 
 def LoadReaders(vcffiles):
     r"""Return list of VCF readers
@@ -196,12 +226,12 @@ def GetMinRecords(record_list, chroms):
         return [False]*len(record_list)
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
-# TODO needs editing
-def WriteMergedHeader(vcfw, args, readers, cmd):
+def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     r"""Write merged header for VCFs in args.vcfs
 
     Also do some checks on the VCFs to make sure merging
-    is appropriate
+    is appropriate.
+    Return info and format fields to use
 
     Parameters
     ----------
@@ -212,35 +242,50 @@ def WriteMergedHeader(vcfw, args, readers, cmd):
     readers : list of vcf.Reader
        List of readers to merge
     cmd : str
-       Command used to call this program    
+       Command used to call this program
+    vcftype : str
+       Type of VCF files being merged
+
+    Returns
+    -------
+    useinfo : list of (str, bool)
+       List of (info field, required) to use downstream
+    useformat: list of str
+       List of format field strings to use downstream
     """
     # Check contigs the same for all readers
     contigs = readers[0].contigs
     for i in range(1, len(readers)):
         if readers[i].contigs != contigs:
-            raise ValueError("Different contigs found across VCF files. Make sure all files used the same reference")
+            common.WARNING("Different contigs found across VCF files. Make sure all files used the same reference")
+            return None, None
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
     for r in readers: vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
     for key,val in contigs.items():
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
-    ######## TODO change this part based on inferred VCF type
-    # Write GangSTR specific INFO fields - TODO automatically infer from each tool. Avoid fields not implemented yet
-    for field in ["END", "PERIOD", "RU", "REF","STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
-        vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
-    # Write GangSTR specific FORMAT fields
-    rmfields = []
-    for field in FORMATFIELDS:
+    # Write INFO fields, different for each tool
+    useinfo = []
+    for (field, reqd) in INFOFIELDS[vcftype]:
+        if field not in readers[0].infos:
+            common.WARNING("Expected field %s not found. Skipping"%field)
+        else:
+            vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
+            useinfo.append((field, reqd))
+    # Write FORMAT fields, different for each tool
+    useformat = []
+    for field in FORMATFIELDS[vcftype]:
         if field not in readers[0].formats:
-            rmfields.append(field)
-        else: vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
-    for field in rmfields: FORMATFIELDS.remove(field)
-    ############## end TODO
+            common.WARNING("Expected field %s not found. Skipping"%field)
+        else:
+            vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
+            useformat.append(field)
     # Write sample list
     samples = GetSamples(readers, usefilenames=args.update_sample_from_file)
     header_fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"]
     vcfw.write("#"+"\t".join(header_fields+samples)+"\n")
+    return useinfo, useformat
 
 def GetRefAllele(current_records, mergelist):
     r"""Get reference allele for a set of records
@@ -316,6 +361,7 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
 
     Make sure it's the same across merged records
     if fail=True, die if items not the same.
+    if fail=False, only do something if we have a rule on how to handle that field
 
     Parameters
     ----------
@@ -333,13 +379,16 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     infostring : str
        INFO string to add (key=value)
     """
+    if not fail: return None # TODO in future implement smart merging of select fields
     vals = set()
     for i in range(len(mergelist)):
         if mergelist[i]:
             vals.add(current_records[i].INFO[info_field])
-    if len(vals)==1: return "%s=%s"%(info_field, vals.pop())
+    if len(vals)==1:
+        return "%s=%s"%(info_field, vals.pop())
     else:
-        raise ValueError("WARNING more than one value found for %s"%info_field)
+        common.WARNING("ERROR: Failed to merge %s\n"%info_field)
+        return None
 
 def GetGT(gt_alleles, alleles):
     r"""Update GT field based on ref/alt alleles
@@ -359,7 +408,6 @@ def GetGT(gt_alleles, alleles):
     newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
     return "/".join([str(item) for item in newgt])
 
-# TODO needs editing
 def GetSampleInfo(record, alleles, formats, args):
     r"""Output sample FORMAT info
 
@@ -379,28 +427,27 @@ def GetSampleInfo(record, alleles, formats, args):
     sampleinfo : str
        FORMAT fields for the sample
     """
-    easy_fmts = FORMATFIELDS
+    assert "GT" not in formats # since we will add that
     record_items = []
     for sample in record:
         sample_items = []
         if not sample.called:
             record_items.append(".")
             continue
+        # Add GT
+        sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
+        # Add rest of formats
         for fmt in formats:
-            if fmt == "GT":
-                sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
-            elif fmt in easy_fmts:
-                try:
-                    val = sample[fmt]
-                    if type(val)==list: val = ",".join([str(item) for item in val])
-                except:
-                    val = NOCALLSTRING
-                sample_items.append(val)
+            try:
+                val = sample[fmt]
+                if type(val)==list: val = ",".join([str(item) for item in val])
+            except:
+                val = NOCALLSTRING
+            sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
 
-# TODO update 
-def MergeRecords(readers, current_records, mergelist, vcfw, args):
+def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, useformat):
     r"""Merge records from different files
 
     Merge all records with indicator set to True in mergelist
@@ -418,6 +465,10 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
        File to write output to
     args : argparse namespace
        Contains user options
+    useinfo : list of (str, bool)
+       List of (info field, required) to use downstream
+    useformat: list of str
+       List of format field strings to use downstream
     """
     output_items = []
     use_ind = [i for i in range(len(mergelist)) if mergelist[i]]
@@ -436,20 +487,19 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args):
     output_items.append(".") # FILTER
     # Set INFO
     info_items = []
-    for info_field in ["END", "PERIOD", "RU", "REF"]:
-        info_items.append(GetInfoItem(current_records, mergelist, info_field))
-    for info_field in ["STUTTERUP","STUTTERDOWN","STUTTERP","EXPTHRESH"]:
-        info_items.append(GetInfoItem(current_records, mergelist, info_field, fail=False))
+    for (field, reqd) in useinfo:
+        inf = GetInfoItem(current_records, mergelist, field, fail=reqd)
+        if inf is not None:
+            info_items.append(inf)
     info_items = [item for item in info_items if item is not None]
     output_items.append(";".join(info_items))
-    # Set FORMAT
-    formats = FORMATFIELDS[:]
-    output_items.append(":".join(formats))
+    # Set FORMAT - add GT to front
+    output_items.append(":".join(["GT"]+useformat))
     # Set sample info
     alleles = [ref_allele]+alt_alleles
     for i in range(len(mergelist)):
         if mergelist[i]:
-            output_items.extend(GetSampleInfo(current_records[i], alleles, formats, args))
+            output_items.extend(GetSampleInfo(current_records[i], alleles, useformat, args))
         else:
             output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
@@ -518,7 +568,7 @@ def PrintCurrentRecords(current_records, is_min):
             chrom = None
             pos = None
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
-    sys.stderr.write("\t".join(info)+"\n")
+    common.MESSAGE("\t".join(info)+"\n")
 
 def CheckMin(is_min):
     r"""Check if we're progressing through VCFs
@@ -534,7 +584,7 @@ def CheckMin(is_min):
         Set to True if something went wrong
     """
     if sum(is_min)==0:
-        sys.stderr.write("Unexpected error. Stuck in infinite loop and exiting.")
+        common.WARNING("Unexpected error. Stuck in infinite loop and exiting.")
         return True
     return False
 
@@ -556,6 +606,34 @@ def getargs():  # pragma: no cover
     args = parser.parse_args()
     return args
 
+def GetVCFType(vcfreaders, vcftype):
+    """Infer vcf type of readers
+
+    If vcftype is "auto", try to infer types of each reader.
+    If it is not auto, just return that string.
+    If they are all the same, return that type
+    If not, return error
+
+    Parameters
+    ----------
+    vcfreaders : list of vcf.Reader
+      Readers being merged
+    vcftype : str
+      Type of VCF
+
+    Returns
+    -------
+    vcftype : str
+      Inferred VCF type
+    """
+    if vcftype != "auto": return vcftype
+    types = []
+    for reader in vcfreaders:
+        tr_harmonizer = trh.TRRecordHarmonizer(reader)
+        types.append(tr_harmonizer.vcftype.name)
+    if len(set(types)) == 1: return types[0]
+    else: return "error"
+
 def main(args):
     ### Check VCF files ###
     vcfs = args.vcfs.split(",")
@@ -573,11 +651,16 @@ def main(args):
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
+    ### Check inferred type of each is the same
+    vcftype = GetVCFType(vcfreaders, args.vcftype)
+    if vcftype not in trh.VCFTYPES.__members__:
+        common.WARNING("ERROR: could not infer VCF type or files are of mixed types")
+        return 1
+
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
-    try:
-        WriteMergedHeader(vcfw, args, vcfreaders, " ".join(sys.argv))
-    except ValueError: return 1
+    useinfo, useformat = WriteMergedHeader(vcfw, args, vcfreaders, " ".join(sys.argv), vcftype)
+    if useinfo is None or useformat is None: return 1
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
@@ -586,7 +669,7 @@ def main(args):
     while not done:
         if args.verbose: PrintCurrentRecords(current_records, is_min)
         if CheckMin(is_min): return 1
-        MergeRecords(vcfreaders, current_records, is_min, vcfw, args)
+        MergeRecords(vcfreaders, current_records, is_min, vcfw, args, useinfo, useformat)
         current_records = GetNextRecords(vcfreaders, current_records, is_min)
         is_min = GetMinRecords(current_records, chroms)
         done = DoneReading(current_records)
