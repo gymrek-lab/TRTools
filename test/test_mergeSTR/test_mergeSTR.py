@@ -24,8 +24,8 @@ def base_argparse():
 def test_WrongFile():
     args = base_argparse()
     # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = "xxxx"
-    fname2 = "yyyy"
+    fname1 = os.path.join(VCFDIR, "test_non_existent1.vcf")
+    fname2 = os.path.join(VCFDIR, "test_non_existent2.vcf")
     if os.path.exists(fname1):
         os.remove(fname1)
     if os.path.exists(fname2):
@@ -37,8 +37,8 @@ def test_WrongFile():
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
-    fname2 = os.path.join(TESTDIR, "test_file_gangstr2.vcf.gz")
+    fname1 = os.path.join(VCFDIR, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(VCFDIR, "test_file_gangstr2.vcf.gz")
     args.vcftype = "gangstr"
     args.vcfs = fname1 + "," + fname2
     assert main(args)==0
@@ -51,7 +51,7 @@ def test_GangSTRRightFile():
 
 def test_GangSTRDuplicate():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
+    fname1 = os.path.join(VCFDIR, "test_file_gangstr1.vcf.gz")
     args.vcfs = fname1 + "," + fname1
     assert main(args)==1
 
