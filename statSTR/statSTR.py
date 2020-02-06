@@ -60,9 +60,7 @@ def getargs(): # pragma: no cover
     args = parser.parse_args()
     return args 
 
-def main(args=None):
-    if args is None:
-        args = getargs()
+def main(args):
     if not os.path.exists(args.vcf):
         common.WARNING("%s does not exist"%args.vcf)
         return 1

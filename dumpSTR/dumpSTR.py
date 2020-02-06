@@ -812,9 +812,7 @@ def getargs(): # pragma: no cover
     args = parser.parse_args()
     return args
 
-def main(args=None):
-    if args is None:
-        args = getargs() # pragma: no cover
+def main(args):
     # Load VCF file
     if not os.path.exists(args.vcf):
         common.WARNING("%s does not exist"%args.vcf)
