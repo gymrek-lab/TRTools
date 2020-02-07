@@ -262,7 +262,10 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
             return None, None
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
-    for r in readers: vcfw.write("##command="+r.metadata["command"][0]+"\n")
+
+    for r in readers: 
+        if "command" in r.metadata:
+            vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
     for key,val in contigs.items():
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
