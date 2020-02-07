@@ -8,6 +8,7 @@ TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
 DUMPDIR = os.path.join(COMMDIR, "dump")
 VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
+MRGVCFDIR = os.path.join(VCFDIR, "mergeSTR_vcfs")
 
 # Set up base argparser
 def base_argparse():
@@ -24,8 +25,8 @@ def base_argparse():
 def test_WrongFile():
     args = base_argparse()
     # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = "xxxx"
-    fname2 = "yyyy"
+    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf")
+    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf")
     if os.path.exists(fname1):
         os.remove(fname1)
     if os.path.exists(fname2):
@@ -37,9 +38,70 @@ def test_WrongFile():
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
-    fname2 = os.path.join(TESTDIR, "test_file_gangstr2.vcf.gz")
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
     args.vcftype = "gangstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+
+# Test right files or directory - advntr
+def test_AdVNTRRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_advntr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_advntr2.vcf.gz")
+    args.vcftype = "advntr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+# Test right files or directory - hipstr
+def test_hipSTRRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+# Test right files or directory - ExpansionHunter
+def test_ExpansionHunterRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_eh2.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+# Test right files or directory - popstr
+def test_PopSTRRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_popstr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_popstr2.vcf.gz")
+    args.vcftype = "popstr"
     args.vcfs = fname1 + "," + fname2
     assert main(args)==0
     args.vcftype = "auto"
@@ -51,7 +113,7 @@ def test_GangSTRRightFile():
 
 def test_GangSTRDuplicate():
     args = base_argparse()
-    fname1 = os.path.join(TESTDIR, "test_file_gangstr1.vcf.gz")
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr1.vcf.gz")
     args.vcfs = fname1 + "," + fname1
     assert main(args)==1
 
