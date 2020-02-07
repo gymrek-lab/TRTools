@@ -37,7 +37,7 @@ INFOFIELDS = {
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
            ("RU", True), ("SVTYPE", True), ("VARID", False)],
-    "popstr": [("RefLen", True), ("Motif", True)],
+    "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
     "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
 }
 
@@ -341,8 +341,28 @@ def GetAltAlleles(current_records, mergelist):
             ralts = current_records[i].ALT
             for item in ralts:
                 if item is not None and item:
-                    alts.add(item.sequence.upper())
+                    alts.add(GetAlleleString(item))
     return sorted(list(alts), key=len)
+
+def GetAlleleString(allele):
+    """Get string representation of allele
+    
+    If it is a sequence, return upper case sequence
+    If _SV type, return string representation
+
+    Parameters
+    ----------
+    allele : ALT allele from vcf.Record
+    
+    Returns
+    -------
+    str_allele : str
+       String representation of the allele
+    """
+    try:
+        return allele.sequence.upper()
+    except:
+        return str(allele)
 
 def GetID(idval):
     r"""Get the ID for a a record
@@ -411,6 +431,7 @@ def GetGT(gt_alleles, alleles):
     newgt : list of str
        List of new GT field based on updated allele list
     """
+    # TODO check this is correct - need to do GetAlleleString?
     newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
     return "/".join([str(item) for item in newgt])
 
