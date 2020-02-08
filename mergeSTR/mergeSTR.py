@@ -9,6 +9,7 @@ import os
 import numpy as np
 import sys
 import vcf
+import warnings
 
 # Load local libraries
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
@@ -254,12 +255,13 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat: list of str
        List of format field strings to use downstream
     """
+    # TODO: Check this for all readers, not just 0
+
     # Check contigs the same for all readers
     contigs = readers[0].contigs
     for i in range(1, len(readers)):
         if readers[i].contigs != contigs:
-            common.WARNING("Different contigs found across VCF files. Make sure all files used the same reference")
-            return None, None
+            raise ValueError("Different contigs found across VCF files. Make sure all files used the same reference")
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
@@ -273,7 +275,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
         if field not in readers[0].infos:
-            common.WARNING("Expected field %s not found. Skipping"%field)
+            warnings.warn("Expected info field %s not found. Skipping"%field, RuntimeWarning)
         else:
             vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
             useinfo.append((field, reqd))
@@ -281,7 +283,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat = []
     for field in FORMATFIELDS[vcftype]:
         if field not in readers[0].formats:
-            common.WARNING("Expected field %s not found. Skipping"%field)
+            warnings.warn("Expected format field %s not found. Skipping"%field, RuntimeWarning)
         else:
             vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
             useformat.append(field)
@@ -661,19 +663,10 @@ def GetVCFType(vcfreaders, vcftype):
     if len(set(types)) == 1: return types[0]
     else: return "error"
 
-def main(args):
-    ### Check VCF files ###
+def main(args):    
+    ### Check and Load VCF files ###
     vcfs = args.vcfs.split(",")
-    if not os.path.exists(vcfs[0]):
-        common.WARNING("%s does not exist"%args.vcfs)
-        return 1
-    if not os.path.exists(vcfs[1]):
-        common.WARNING("%s does not exist"%args.vcfs)
-        return 1
-    ### Load readers ###
-    try:
-        vcfreaders = LoadReaders(args.vcfs.split(","))
-    except ValueError: return 1
+    vcfreaders = LoadReaders(args.vcfs.split(","))
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)

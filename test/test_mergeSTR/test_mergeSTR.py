@@ -23,17 +23,17 @@ def base_argparse():
 
 # Test no such file or directory
 def test_WrongFile():
-    args = base_argparse()
     # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf")
-    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf")
+    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf.gz")
     if os.path.exists(fname1):
         os.remove(fname1)
     if os.path.exists(fname2):
         os.remove(fname2)
-    args.vcfs = fname1 + "," + fname2
-    retcode = main(args)
-    assert retcode==1
+    print (os.path.isfile(fname1))
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "Could not find VCF file" in str(info.value)
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile():
@@ -67,20 +67,19 @@ def test_GangSTRRightFile():
 #    assert main(args)==0
 
 # Test right files or directory - hipstr
-# TODO - uncomment. These files were missing
-#def test_hipSTRRightFile():
-#    args = base_argparse()
-#    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
-#    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
-#    args.vcftype = "hipstr"
-#    args.vcfs = fname1 + "," + fname2
-#    assert main(args)==0
-#    args.vcftype = "auto"
-#    assert main(args)==0
-#    args.update_sample_from_file = True
-#    assert main(args)==0
-#    args.verbose = True
-#    assert main(args)==0
+def test_hipSTRRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
 
 # Test right files or directory - ExpansionHunter
 # TODO fails bc no contig line in VCFs
@@ -119,6 +118,51 @@ def test_PopSTRRightFile():
     args.verbose = True
     assert main(args)==0
 
-# TODO - test EH, advntr, hipSTR, popstr
-# TODO - test unzipped, unindexed VCFs return 1
-# TODO - test VCFs with different ref genome contigs return 1
+    
+# test unzipped, unindexed VCFs return 1
+def test_UnzippedUnindexedFile():
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped1.vcf")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped2.vcf")
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "is bgzipped and indexed" in str(info.value)
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed2.vcf.gz")
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "Could not find VCF index" in str(info.value)
+
+# test VCFs with different ref genome contigs return 1
+def test_WrongContigFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "is not in list" in str(info.value)
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig3.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig4.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "Different contigs found across VCF files." in str(info.value)
+
+
+def test_MissingFieldWarnings():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missinginfo1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.warns(RuntimeWarning) as info:
+        main(args)
+    assert "Expected info field STUTTERP not found" in str(info[0].message.args[0])
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missingformat1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.warns(RuntimeWarning) as info:
+        main(args)
+    assert "Expected format field DP not found" in str(info[0].message.args[0])
