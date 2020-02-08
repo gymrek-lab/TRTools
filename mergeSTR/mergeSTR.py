@@ -411,11 +411,14 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     vals = set()
     for i in range(len(mergelist)):
         if mergelist[i]:
-            vals.add(current_records[i].INFO[info_field])
+            if info_field in current_records[i].INFO:
+                vals.add(current_records[i].INFO[info_field])
+            else:
+                raise ValueError("Missing info field %s"%info_field)
     if len(vals)==1:
         return "%s=%s"%(info_field, vals.pop())
     else:
-        common.WARNING("ERROR: Failed to merge %s\n"%info_field)
+        warnings.warn("Incompatible info field value %s"%info_field, RuntimeWarning)
         return None
 
 def GetGT(gt_alleles, alleles):
@@ -467,7 +470,7 @@ def GetSampleInfo(record, alleles, formats, args):
         sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
         # Add rest of formats
         for fmt in formats:
-            try:
+            try:  # Nima: probs have to remove the try except
                 val = sample[fmt]
                 if type(val)==list: val = ",".join([str(item) for item in val])
             except:
@@ -590,12 +593,15 @@ def PrintCurrentRecords(current_records, is_min):
     """
     info = []
     for i in range(len(is_min)):
+#        if 'CHROM' in current_records[i].__dict__ and 'POS' in current_records[i].__dict__:
         try:
             chrom = current_records[i].CHROM
             pos = current_records[i].POS
         except:
+#        else:
             chrom = None
             pos = None
+            warnings.warn("Missing CHROM and POS in record.", RuntimeWarning)
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
     common.MSG("\t".join(info)+"\n")
 
@@ -613,8 +619,7 @@ def CheckMin(is_min):
         Set to True if something went wrong
     """
     if sum(is_min)==0:
-        common.WARNING("Unexpected error. Stuck in infinite loop and exiting.")
-        return True
+        raise ValueError("Unexpected error. Stuck in infinite loop and exiting.")
     return False
 
 def getargs():  # pragma: no cover
@@ -660,8 +665,9 @@ def GetVCFType(vcfreaders, vcftype):
     for reader in vcfreaders:
         tr_harmonizer = trh.TRRecordHarmonizer(reader)
         types.append(tr_harmonizer.vcftype.name)
-    if len(set(types)) == 1: return types[0]
-    else: return "error"
+    if len(set(types)) == 1: 
+        return types[0]
+    else: raise ValueError("VCF files are of mixed types.")
 
 def main(args):    
     ### Check and Load VCF files ###
@@ -673,9 +679,6 @@ def main(args):
 
     ### Check inferred type of each is the same
     vcftype = GetVCFType(vcfreaders, args.vcftype)
-    if vcftype not in trh.VCFTYPES.__members__:
-        common.WARNING("ERROR: could not infer VCF type or files are of mixed types")
-        return 1
 
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
