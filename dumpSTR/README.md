@@ -1,6 +1,6 @@
 # DumpSTR
 
-[Usage](#usage) | [Filter options](#filters) | [Output files](#outputs) | [Recommended filters](#recommended)
+[Usage](#usage) | [Filter options](#filters) | [Output files](#outputs) 
 
 DumpSTR is a tool for filtering VCF file with STR genotypes produced by supported TR genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
 
@@ -35,8 +35,6 @@ DumpSTR offers the following types of filters:
   * [ExpansionHunter](#eh)
   * [PopSTR](#popstr)
   * [AdVNTR](#advntr)
-
-
 
 <a name="locus"></a>
 ### Locus-level filters
@@ -120,61 +118,12 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--advntr-min-ML <float>` | Minimum value of maximum likelihood (ML field) |
 
 
-<a name="recommended"></a>
-## Recommended filters
-
 <a name="outputs"></a>
 ## Output files
 
+DumpSTR outputs the following files:
 
-## Basic dumpSTR command 
+* `$out.vcf`: Filtered VCF file. Filtered loci have a list of failing filters in the FILTER column. An additional FORMAT:FILTER field is added to each call. This is set to PASS for passing calls. For failing calls, this is set to a list of filter reasons and the genotype is set to missing.
+* `$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample.
+* `$out.loclog.tab`: Output locus-level log info. It contains the mean call rate at passing TR loci. It also contains a separate line for each filter with the number of TR loci failing that filter.
 
-```
-dumpSTR \
-        --vcf ./test_files/test_files.vcf \
-        --out test_run
-```
-
-Check test_run_original in Example_files folder for example output. 
-
-<a name="hipstr"></a>
-## Recommended HipSTR filters
-
-The following command gives recommended filters for HipSTR calls:
-
-```
-dumpSTR \
-    --vcf ${HIPVCF} \
-    --out ${OUTPREFIX} \
-    --filter-regions dumpSTR/filter_files/hg19_segmentalduplications.bed.gz \
-    --filter-regions-names SEGDUP \
-    --min-supp-reads 1 \
-    --min-call-DP 10 \
-    --max-call-DP 1000 \
-    --min-call-Q 0.9 \
-    --max-call-flank-indel 0.15 \
-    --max-call-stutter 0.15
-```
-
-For population-level datasets (e.g. 50+ samples), the Hardy-Weinberg filter is recommended:
-```
---min-locus-hwep 0.01
-```
-
-<a name="gangstr"></a>
-## Recommended GangSTR filters
-
-The following command gives recommended filters for dumpSTR calls:
-
-```
-dumpSTR \
-    --vcf ${GANGSTRVCF} \
-    --out ${OUTPREFIX} \
-    --max-call-DP 1000 \
-    --filter-spanbound-only \
-    --filter-badCI \
-    --filter-regions dumpSTR/filter_files/hg19_segmentalduplications.bed.gz \
-    --filter-regions-names SEGDUP
-```
-
-Additional filters are recommended based on the application of interest. For more info, see (Filtering GangSTR output)[https://github.com/gymreklab/GangSTR/wiki/Filtering-GangSTR-output].
