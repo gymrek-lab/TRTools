@@ -9,7 +9,6 @@ import os
 import numpy as np
 import sys
 import vcf
-import warnings
 
 # Load local libraries
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
@@ -275,7 +274,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
         if field not in readers[0].infos:
-            warnings.warn("Expected info field %s not found. Skipping"%field, RuntimeWarning)
+            common.WARNING("Expected info field %s not found. Skipping"%field)
         else:
             vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
             useinfo.append((field, reqd))
@@ -283,7 +282,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat = []
     for field in FORMATFIELDS[vcftype]:
         if field not in readers[0].formats:
-            warnings.warn("Expected format field %s not found. Skipping"%field, RuntimeWarning)
+            common.WARNING("Expected format field %s not found. Skipping"%field)
         else:
             vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
             useformat.append(field)
@@ -418,7 +417,7 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     if len(vals)==1:
         return "%s=%s"%(info_field, vals.pop())
     else:
-        warnings.warn("Incompatible info field value %s"%info_field, RuntimeWarning)
+        common.WARNING("Incompatible info field value %s"%info_field)
         return None
 
 def GetGT(gt_alleles, alleles):
@@ -601,7 +600,7 @@ def PrintCurrentRecords(current_records, is_min):
 #        else:
             chrom = None
             pos = None
-            warnings.warn("Missing CHROM and POS in record.", RuntimeWarning)
+            common.WARNING("Missing CHROM and POS in record.")
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
     common.MSG("\t".join(info)+"\n")
 

@@ -161,23 +161,21 @@ def test_WrongContigFile():
     assert "Different contigs found across VCF files." in str(info.value)
 
 
-def test_MissingFieldWarnings():
+def test_MissingFieldWarnings(capsys):
     args = base_argparse()
     fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missinginfo1.vcf.gz")
     fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
-    with pytest.warns(RuntimeWarning) as info:
-        main(args)
-    assert "Expected info field STUTTERP not found" in str(info[3].message.args[0])
-    # Nima TODO: This test throws two other warnings for unclosed readers. We need to fix this.
-
+    main(args)
+    captured = capsys.readouterr()
+    assert "Expected info field STUTTERP not found" in captured.err
 
     fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missingformat1.vcf.gz")
     fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
-    with pytest.warns(RuntimeWarning) as info:
-        main(args)
-    assert "Expected format field DP not found" in str(info[0].message.args[0])
+    main(args)
+    captured = capsys.readouterr()
+    assert "Expected format field DP not found" in captured.err
 
 def test_ConflictingRefs():
     # Set up dummy records
@@ -193,7 +191,7 @@ def test_ConflictingRefs():
     retval = GetRefAllele(dummy_records, [True, True, False])
     assert retval == "CAGCAG"
 
-def test_GetInfoItem():
+def test_GetInfoItem(capsys):
     # Set up dummy records
     dummy_records = [] 
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
@@ -201,9 +199,9 @@ def test_GetInfoItem():
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={}))
 
-    with pytest.warns(RuntimeWarning) as info:
-        GetInfoItem(dummy_records, [True, True, True, False], 'END')
-    assert "Incompatible info field value END" in str(info[0].message.args[0])
+    GetInfoItem(dummy_records, [True, True, True, False], 'END')
+    captured = capsys.readouterr()
+    assert "Incompatible info field value END" in captured.err
 
     with pytest.raises(ValueError) as info:
         GetInfoItem(dummy_records, [True, True, False, True], 'END')
@@ -212,7 +210,7 @@ def test_GetInfoItem():
     retval = GetInfoItem(dummy_records, [True, True, False, False], 'END')
     assert retval == "END=120"
 
-def test_PrintCurrentRecords():
+def test_PrintCurrentRecords(capsys):
     # Set up dummy class
     class DummyRecordNoChrom:
         def __init__(self, chrom, pos, ref, alts=[], info = {}):
@@ -225,9 +223,9 @@ def test_PrintCurrentRecords():
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
     dummy_records.append(DummyRecordNoChrom('chr1', 100, 'CAGCAG', info={'END': 120}))
     
-    with pytest.warns(RuntimeWarning) as info:
-        PrintCurrentRecords(dummy_records, [True, True])
-    assert "Missing CHROM and POS in record" in str(info[0].message.args[0])
+    PrintCurrentRecords(dummy_records, [True, True])
+    captured = capsys.readouterr()
+    assert "Missing CHROM and POS in record" in captured.err
 
 def test_CheckMin():
     assert CheckMin([True, False]) == False
