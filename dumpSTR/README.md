@@ -28,6 +28,21 @@ Specific filters available are described below.
 
 DumpSTR offers the following types of filters:
 
+### Locus-level filters
+
+These filters are not specific to any tool and can be applied to any VCF file:
+
+| DumpSTR option | Filter Description |
+| ----| ------|
+| `--min-locus-callrate <float>` | Filters loci with too few calls |
+| `--min-locus-hwep <float>` | Filters loci departing from Hardy Weinberg equilibrium at some p-value threshold. Based on a two-sided binomial test comparing the observed vs. expected percent of calls that are homozygous |
+| `--min-locus-het <float>` | Filters loci with low heteroyzgosity. Where heterozygosity is equal to: 1-sum_i p_i^2, where p_i is the frequency of allele i |
+| `--max-locus-het <float>` | Filters loci with high heterozygosity |
+| `--use-length` | Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles) |
+| `--filter-regions <BEDFILE[,BEDFILE12,...]>` | Filter TRs overlapping the specified set of regions. Must be used with `--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed. |
+| `--filter-regions-names <string[,string2,...]>` | Filter names for each BED file specified in `--filter-regions`. |
+| `--filter-hrun` | Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
+
 <a name="recommended"></a>
 ## Recommended filters
 
@@ -35,15 +50,6 @@ DumpSTR offers the following types of filters:
 ## Output files
 
 
-Parameters for locus-level filtering:
-* **`--min-locus-callrate <float>`**: Filters loci with too few calls
-* **`--min-locus-hwep <float>`**: Filters loci departing from Hardy Weinberg equilibrium at some p-value threshold
-* **`--min-locus-het <float>`**: Filters loci with low heteroyzgosity
-* **`--max-locus-het <float>`**: Filters loci with high heterozygosity
-* **`--use-length`**: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR)
-* **`--filter-regions <BEDFILE[,BEDFILE12,...]>`**: Filter loci overlapping the specified set of regions. Must be used with `--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters.
-* **`--filter-regions-names <string[,string2,...]>`**: Filter names for each BED file specified in `--filter-regions`.
-* **`--filter-hrun`**: Filter repeats with long homopolymer runs
 * **`--drop-filtered`**: Do not output loci that were filtered, or loci with no calls remaining after filtering.
 
 A file is provided in `dumpSTR/filter_files/hg19_segmentalduplications.bed.gz` for filtering segmental duplications in hg19.
