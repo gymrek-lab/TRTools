@@ -53,6 +53,7 @@ Different call-level filters are available for each supported TR genotyping tool
 #### GangSTR call-level filters
 
 | DumpSTR option | Filter Description |
+|------| -----|
 | `--gangstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
 | `--gangstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--gangstr-min-call-Q <float>` | Minimum call quality score. Based on Q field. |
@@ -64,11 +65,11 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--gangstr-filter-badCI` | Filter regions where the ML estimate is not in the CI. Based on REPCN and REPCI fields. |
 | `--gangstr-require-support <int>` | Require each allele call to have at least this many supporting reads. Based on ENCLREADS, RC, and FLNKREADS fields.|
 | `--gangstr-readlen <int>` | Read length used (bp). Required if using --require-support. |
-| ----| ------|
 
 #### HipSTR call-level filters
 
 | DumpSTR option | Filter Description |
+| ----| ------|
 | `--hipstr-max-call-flank-indel <float>` | Maximum call flank indel rate. Computed as DFLANKINDEL/DP |
 | `--hipstr-max-call-stutter <float>` | Maximum call stutter rate. Computed as DSTUTTER/DP |
 | `--hipstr-min-supp-reads <int>` | Minimum supporting reads for each allele. Based on ALLREADS and GB fields |
@@ -78,32 +79,29 @@ Different call-level filters are available for each supported TR genotyping tool
 | ----| ------|
 
 #### PopSTR call-level filters
-
+| ----| ------|
 | DumpSTR option | Filter Description |
 | `--popstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
 | `--popstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--popstr-require-support <int>` | Require each allele call to have at least n supporting reads. Based on AD field.|
-| ----| ------|
 
 #### ExpansionHunter call-level filters
-
+| ----| ------|
 | DumpSTR option | Filter Description |
 | `--eh-min-ADFL <int>` | Minimum number of flanking reads consistent with the allele. Based on ADFL field. |
 | `--eh-min-ADIR <int>` | Minimum number of in-repeat reads consistent with the allele. Based on ADIR field. |
 | `--eh-min-ADSP <int>` | Minimum number of spanning reads consistent with the allele. Based on ADSP field. |
 | `--eh-min-call-LC <int>` | Minimum call coverage. Based on LC field. |
 | `--eh-max-call-LC <int>` | Maximum call coverage. Based on LC field. |
-| ----| ------|
 
 #### AdVNTR call-level filters
-
 | DumpSTR option | Filter Description |
+| ----| ------|
 | `--advntr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
 | `--advntr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--advntr-min-spanning <int>` | Minimum spanning read count (SR field) |
 | `--advntr-min-flanking <int>` | Minimum flanking read count (FR field) | 
 | `--advntr-min-ML <float>` | Minimum value of maximum likelihood (ML field) |
-| ----| ------|
 
 
 <a name="recommended"></a>
