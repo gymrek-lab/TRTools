@@ -469,11 +469,8 @@ def GetSampleInfo(record, alleles, formats, args):
         sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
         # Add rest of formats
         for fmt in formats:
-            try:  # Nima: probs have to remove the try except
-                val = sample[fmt]
-                if type(val)==list: val = ",".join([str(item) for item in val])
-            except:
-                val = NOCALLSTRING
+            val = sample[fmt]
+            if type(val)==list: val = ",".join([str(item) for item in val])
             sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
