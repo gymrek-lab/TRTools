@@ -1,11 +1,13 @@
 [![Build Status](https://travis-ci.org/gymreklab/STRTools.svg?branch=master)](https://travis-ci.org/gymreklab/STRTools)
 [![codecov](https://codecov.io/gh/gymreklab/STRTools/branch/master/graph/badge.svg)](https://codecov.io/gh/gymreklab/STRTools)
 
-# STRTools
-Toolkit for genome-wide analysis of STRs
+# STRTools: Toolkit for genome-wide analysis of STRs
+
+<a href="#install">INSTALL</a>
 
 STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
+<a name="install"></a>
 ## Install
 
 You can obtain STRTools from pip:
@@ -40,7 +42,7 @@ stls.GetHeterozygosity(allele_freqs) # should return 0.5
 ```
 
 ## Usage
-See the README in each subidrectory for usage details.
+See the README in each subdirectory for usage details.
 
 ## Supported Tools
 STRTools supports VCFs from the following STR/VNTR genotyping tools:
