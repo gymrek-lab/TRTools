@@ -62,7 +62,7 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--gangstr-filter-span-only` | Filter out all calls that only have spanning read support. Based on RC field. |
 | `--gangstr-filter-spanbound-only` | Filter out all reads except spanning and bounding. Based on RC field. | 
 | `--gangstr-filter-badCI` | Filter regions where the ML estimate is not in the CI. Based on REPCN and REPCI fields. |
-| `--gangstr-require-support <int>` | Require each allele call to have at least this many supporting reads. |
+| `--gangstr-require-support <int>` | Require each allele call to have at least this many supporting reads. Based on ENCLREADS, RC, and FLNKREADS fields.|
 | `--gangstr-readlen <int>` | Read length used (bp). Required if using --require-support. |
 | ----| ------|
 
@@ -80,17 +80,29 @@ Different call-level filters are available for each supported TR genotyping tool
 #### PopSTR call-level filters
 
 | DumpSTR option | Filter Description |
-
+| `--popstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
+| `--popstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
+| `--popstr-require-support <int>` | Require each allele call to have at least n supporting reads. Based on AD field.|
 | ----| ------|
 
 #### ExpansionHunter call-level filters
 
 | DumpSTR option | Filter Description |
+| `--eh-min-ADFL <int>` | Minimum number of flanking reads consistent with the allele. Based on ADFL field. |
+| `--eh-min-ADIR <int>` | Minimum number of in-repeat reads consistent with the allele. Based on ADIR field. |
+| `--eh-min-ADSP <int>` | Minimum number of spanning reads consistent with the allele. Based on ADSP field. |
+| `--eh-min-call-LC <int>` | Minimum call coverage. Based on LC field. |
+| `--eh-max-call-LC <int>` | Maximum call coverage. Based on LC field. |
 | ----| ------|
 
 #### AdVNTR call-level filters
 
 | DumpSTR option | Filter Description |
+| `--advntr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
+| `--advntr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
+| `--advntr-min-spanning <int>` | Minimum spanning read count (SR field) |
+| `--advntr-min-flanking <int>` | Minimum flanking read count (FR field) | 
+| `--advntr-min-ML <float>` | Minimum value of maximum likelihood (ML field) |
 | ----| ------|
 
 
@@ -100,27 +112,6 @@ Different call-level filters are available for each supported TR genotyping tool
 <a name="outputs"></a>
 ## Output files
 
-
-
-A file is provided in `dumpSTR/filter_files/hg19_segmentalduplications.bed.gz` for filtering segmental duplications in hg19.
-
-General parameters for call-level filtering (apply to both HipSTR or GangSTR):
-* **`--min-call-DP <int>`**: Minimum call coverage
-* **`--max-call-DP <int>`**: Maximum call coverage
-* **`--min-call-Q <int>`**: Minimum Q value
-
-HipSTR-specific call-level filters:
-* **`--max-call-flank-indel <float>`**: Maximum rate of indels in flanking regions
-* **`--max-call-stutter <float>`**: Maximum call stutter rate
-* **`--min-supp-reads <int>`**: Require this many supporting reads for each allele length called.
-
-GangSTR-specific call-level filters:
-* **`--expansion-prob-het <float>`**: Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this
-* **`--expansion-prob-hom <float>`**: Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this
-* **`--expansion-prob-total <float>`**: Expansion prob-value threshold. Filters calls with probability of total expansion less than this
-* **`--filter-span-only`**: Filter loci where only spanning reads were identified
-* **`--filter-spanbound-only`**: Filter loci where only spanning or bounding reads were identified
-* **`--filter-badCI`**: Filter regions where the ML estimate is not in the CI
 
 ## Basic dumpSTR command 
 
