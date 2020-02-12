@@ -28,6 +28,17 @@ Specific filters available are described below.
 
 DumpSTR offers the following types of filters:
 
+* [Locus-level filters](#locus)
+* [Call-level filters](#call)
+  * [GangSTR](#gangstr)
+  * [HipSTR](#hipstr)
+  * [ExpansionHunter](#eh)
+  * [PopSTR](#popstr)
+  * [AdVNTR](#advntr)
+
+
+
+<a name="locus"></a>
 ### Locus-level filters
 
 These filters are not specific to any tool and can be applied to any VCF file:
@@ -46,10 +57,12 @@ These filters are not specific to any tool and can be applied to any VCF file:
 
 TRs passing all locus-level filters will be marked as "PASS" in the FILTER field. Those failing will have a list of failing filters in the FILTER field. If `drop-filtered` is specified, only loci passing all filters will be output.
 
+<a name="call"></a>
 ### Call-level filters
 
 Different call-level filters are available for each supported TR genotyping tool:
 
+<a name="gangstr"></a>
 #### GangSTR call-level filters
 
 | DumpSTR option | Filter Description |
@@ -66,6 +79,7 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--gangstr-require-support <int>` | Require each allele call to have at least this many supporting reads. Based on ENCLREADS, RC, and FLNKREADS fields.|
 | `--gangstr-readlen <int>` | Read length used (bp). Required if using --require-support. |
 
+<a name="hipstr"></a>
 #### HipSTR call-level filters
 
 | DumpSTR option | Filter Description |
@@ -77,6 +91,7 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--hipstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--hipstr-min-call-Q <float>` | Minimum call quality score. Based on Q field. |
 
+<a name="popstr"></a>
 #### PopSTR call-level filters
 | DumpSTR option | Filter Description |
 | ----| ------|
@@ -84,6 +99,7 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--popstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--popstr-require-support <int>` | Require each allele call to have at least n supporting reads. Based on AD field.|
 
+<a name="eh"></a>
 #### ExpansionHunter call-level filters
 | DumpSTR option | Filter Description |
 | ----| ------|
@@ -93,6 +109,7 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--eh-min-call-LC <int>` | Minimum call coverage. Based on LC field. |
 | `--eh-max-call-LC <int>` | Maximum call coverage. Based on LC field. |
 
+<a name="advntr"></a>
 #### AdVNTR call-level filters
 | DumpSTR option | Filter Description |
 | ----| ------|
