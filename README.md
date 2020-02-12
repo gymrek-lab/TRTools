@@ -4,33 +4,61 @@
 # STRTools
 Toolkit for genome-wide analysis of STRs
 
-## Docker
-The Dockerfile in this container sets up a Docker with GangSTR and STRTools installed. You can pull this image from https://hub.docker.com/r/gymreklab/str-toolkit.
+STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
 ## Install
 
-Run the following command to install:
+You can obtain STRTools from pip:
+
+```
+pip install strtools
+```
+
+Or, to install from source, run the following command from the base directory of the STRTools repo:
 
 ```
 python setup.py install [--prefix=PREFIX]
 ```
+
 to install locally, set `--prefix=$HOME` and ensure `$HOME` is on your `PYTHONPATH`.
 
 ## Tools
 STRTools includes the following tools.
 
-* dumpSTR: a tool for filtering VCF files with STR genotypes (from [HipSTR](https://github.com/tfwillems/HipSTR) or [GangSTR](https://github.com/gymreklab/gangstr))
-* plinkSTR: a tool for performing STR association studies
-* mergeSTR: a tool to merge vcf files from gangSTR 
-* postmaSTR: a tool for post-processing and priotization of STR genotypes
-* statSTR: a tool is used for computing stats on VCF files
-
+* dumpSTR: a tool for filtering VCF files with STR/VNTR genotypes
+* mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
+* statSTR: a tool for computing various statistics on VCF files
 
 Type `<command> --help` to see a full set of options.
+
+It additionally includes a python library, `strtools`, which can be accessed from within Python scripts. e.g.:
+
+```
+import strtools.utils.utils as stls
+allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
+stls.GetHeterozygosity(allele_freqs) # should return 0.5
+```
 
 ## Usage
 See the README in each subidrectory for usage details.
 
-## Support
-STRTools supports **GangSTR v2.4** or newer. The required filtering tags are not available in the older versions of GangSTR.
+## Supported Tools
+STRTools supports VCFs from the following STR/VNTR genotyping tools:
+
+* [GangSTR](https://github.com/gymreklab/gangstr) version 2.4 or higher.
+* [HipSTR](https://github.com/tfwillems/HipSTR)
+* [PopSTR](https://github.com/DecodeGenetics/popSTR)
+* [ExpansionHunter](https://github.com/Illumina/ExpansionHunter)
+* [AdVNTR](https://github.com/mehrdadbakhtiari/adVNTR)
+
+## Contributing
+
+If you would like to contribute a fix or new tool to STRTools, follow these guidelines:
+
+* Fork the repository.
+* Make your changes. 
+* Ensure all functions, modules, classes etc. conform to [Numpy docstring standards](https://numpydoc.readthedocs.io/en/latest/format.html).
+* Add tests (see `tests/` folder to find the appropriate location for new tests) to test any new functionality. To make sure pytest knows about them, you may need to edit `pytest.ini`.
+* Run `pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests.
+* Submit a pull request, with a reasonably descriptive message of what changes you have made.
 
