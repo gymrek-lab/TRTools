@@ -21,19 +21,29 @@ def base_argparse():
     args.vcftype = "auto"
     return args
 
+# Set up dummy class
+class DummyRecord:
+    def __init__(self, chrom, pos, ref, alts=[], info = {}):
+        self.CHROM = chrom
+        self.POS = pos
+        self.REF = ref
+        self.ALTS = alts
+        self.INFO = info
+
+
 # Test no such file or directory
 def test_WrongFile():
-    args = base_argparse()
     # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf")
-    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf")
+    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf.gz")
     if os.path.exists(fname1):
         os.remove(fname1)
     if os.path.exists(fname2):
         os.remove(fname2)
-    args.vcfs = fname1 + "," + fname2
-    retcode = main(args)
-    assert retcode==1
+    print (os.path.isfile(fname1))
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "Could not find VCF file" in str(info.value)
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile():
@@ -67,20 +77,19 @@ def test_GangSTRRightFile():
 #    assert main(args)==0
 
 # Test right files or directory - hipstr
-# TODO - uncomment. These files were missing
-#def test_hipSTRRightFile():
-#    args = base_argparse()
-#    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
-#    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
-#    args.vcftype = "hipstr"
-#    args.vcfs = fname1 + "," + fname2
-#    assert main(args)==0
-#    args.vcftype = "auto"
-#    assert main(args)==0
-#    args.update_sample_from_file = True
-#    assert main(args)==0
-#    args.verbose = True
-#    assert main(args)==0
+def test_hipSTRRightFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
 
 # Test right files or directory - ExpansionHunter
 # TODO fails bc no contig line in VCFs
@@ -119,6 +128,143 @@ def test_PopSTRRightFile():
     args.verbose = True
     assert main(args)==0
 
-# TODO - test EH, advntr, hipSTR, popstr
-# TODO - test unzipped, unindexed VCFs return 1
-# TODO - test VCFs with different ref genome contigs return 1
+    
+# test unzipped, unindexed VCFs return 1
+def test_UnzippedUnindexedFile():
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped1.vcf")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped2.vcf")
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "is bgzipped and indexed" in str(info.value)
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed2.vcf.gz")
+    with pytest.raises(ValueError) as info:
+        LoadReaders([fname1, fname2])
+    assert "Could not find VCF index" in str(info.value)
+
+# test VCFs with different ref genome contigs return 1
+def test_WrongContigFile():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "is not in list" in str(info.value)
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig3.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig4.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "Different contigs found across VCF files." in str(info.value)
+
+
+def test_MissingFieldWarnings():
+    args = base_argparse()
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missinginfo1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.warns(RuntimeWarning) as info:
+        main(args)
+    assert "Expected info field STUTTERP not found" in str(info[3].message.args[0])
+    # Nima TODO: This test throws two other warnings for unclosed readers. We need to fix this.
+
+
+    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missingformat1.vcf.gz")
+    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.warns(RuntimeWarning) as info:
+        main(args)
+    assert "Expected format field DP not found" in str(info[0].message.args[0])
+
+def test_ConflictingRefs():
+    # Set up dummy records
+    dummy_records = [] 
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyRecord('chr1', 100, 'CAG'))
+
+    with pytest.raises(ValueError) as info:
+        GetRefAllele(dummy_records, [True, True, True])
+    assert "Conflicting refs found at chr1:100" in str(info.value)
+
+    retval = GetRefAllele(dummy_records, [True, True, False])
+    assert retval == "CAGCAG"
+
+def test_GetInfoItem():
+    # Set up dummy records
+    dummy_records = [] 
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={}))
+
+    with pytest.warns(RuntimeWarning) as info:
+        GetInfoItem(dummy_records, [True, True, True, False], 'END')
+    assert "Incompatible info field value END" in str(info[0].message.args[0])
+
+    with pytest.raises(ValueError) as info:
+        GetInfoItem(dummy_records, [True, True, False, True], 'END')
+    assert "Missing info field END" in str(info.value)
+
+    retval = GetInfoItem(dummy_records, [True, True, False, False], 'END')
+    assert retval == "END=120"
+
+def test_PrintCurrentRecords():
+    # Set up dummy class
+    class DummyRecordNoChrom:
+        def __init__(self, chrom, pos, ref, alts=[], info = {}):
+            self.POS = pos
+            self.REF = ref
+            self.ALTS = alts
+            self.INFO = info
+    # Set up dummy records
+    dummy_records = [] 
+    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyRecordNoChrom('chr1', 100, 'CAGCAG', info={'END': 120}))
+    
+    with pytest.warns(RuntimeWarning) as info:
+        PrintCurrentRecords(dummy_records, [True, True])
+    assert "Missing CHROM and POS in record" in str(info[0].message.args[0])
+
+def test_CheckMin():
+    assert CheckMin([True, False]) == False
+    with pytest.raises(ValueError) as info:
+        CheckMin([False, False])
+    assert "Unexpected error. Stuck in infinite loop and exiting." in str(info.value)
+
+def test_CheckVCFType():
+    snps_path = os.path.join(VCFDIR, "snps.vcf")
+    gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
+    hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
+    gangstr_vcf = vcf.Reader(filename=gangstr_path)
+    hipstr_vcf = vcf.Reader(filename=hipstr_path)
+    snps_vcf = vcf.Reader(filename=snps_path)
+    # TODO add tests to infer vcf type
+    assert "gangstr" == GetVCFType([gangstr_vcf], "gangstr")
+
+    with pytest.raises(ValueError) as info:
+        print(GetVCFType([gangstr_vcf, hipstr_vcf], "auto"))
+    assert "VCF files are of mixed types." in str(info.value)
+    
+    with pytest.raises(ValueError) as info:
+        print(GetVCFType([gangstr_vcf, snps_vcf], "auto"))
+    assert "Could not identify the type of this vcf" in str(info.value)
+
+def test_GetSampleInfo():
+    # TODO add more in depth tests (Create a better dummy class or import from vcf files)
+    
+    gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
+    gangstr_vcf = vcf.Reader(filename=gangstr_path)
+    record = next(gangstr_vcf)
+    
+    args = base_argparse()
+    
+    # TODO final percent!!!
+    #for sample in record:
+    #    with pytest.raises(ValueError) as info:
+    #        GetSampleInfo(record, sample.gt_bases.split(sample.gt_phase_char()), ['UNKNOWNFORMAT'], args)
+    #    print(info.traceback)
+    #    assert "lolz" in str(info.value)

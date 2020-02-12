@@ -9,6 +9,7 @@ import os
 import numpy as np
 import sys
 import vcf
+import warnings
 
 # Load local libraries
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
@@ -254,12 +255,13 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat: list of str
        List of format field strings to use downstream
     """
+    # TODO: Check this for all readers, not just 0
+
     # Check contigs the same for all readers
     contigs = readers[0].contigs
     for i in range(1, len(readers)):
         if readers[i].contigs != contigs:
-            common.WARNING("Different contigs found across VCF files. Make sure all files used the same reference")
-            return None, None
+            raise ValueError("Different contigs found across VCF files. Make sure all files used the same reference")
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
@@ -273,7 +275,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
         if field not in readers[0].infos:
-            common.WARNING("Expected field %s not found. Skipping"%field)
+            warnings.warn("Expected info field %s not found. Skipping"%field, RuntimeWarning)
         else:
             vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
             useinfo.append((field, reqd))
@@ -281,7 +283,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat = []
     for field in FORMATFIELDS[vcftype]:
         if field not in readers[0].formats:
-            common.WARNING("Expected field %s not found. Skipping"%field)
+            warnings.warn("Expected format field %s not found. Skipping"%field, RuntimeWarning)
         else:
             vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
             useformat.append(field)
@@ -409,11 +411,14 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     vals = set()
     for i in range(len(mergelist)):
         if mergelist[i]:
-            vals.add(current_records[i].INFO[info_field])
+            if info_field in current_records[i].INFO:
+                vals.add(current_records[i].INFO[info_field])
+            else:
+                raise ValueError("Missing info field %s"%info_field)
     if len(vals)==1:
         return "%s=%s"%(info_field, vals.pop())
     else:
-        common.WARNING("ERROR: Failed to merge %s\n"%info_field)
+        warnings.warn("Incompatible info field value %s"%info_field, RuntimeWarning)
         return None
 
 def GetGT(gt_alleles, alleles):
@@ -465,7 +470,7 @@ def GetSampleInfo(record, alleles, formats, args):
         sample_items.append(GetGT(sample.gt_bases.split(sample.gt_phase_char()), alleles))
         # Add rest of formats
         for fmt in formats:
-            try:
+            try:  # Nima: probs have to remove the try except
                 val = sample[fmt]
                 if type(val)==list: val = ",".join([str(item) for item in val])
             except:
@@ -588,12 +593,15 @@ def PrintCurrentRecords(current_records, is_min):
     """
     info = []
     for i in range(len(is_min)):
+#        if 'CHROM' in current_records[i].__dict__ and 'POS' in current_records[i].__dict__:
         try:
             chrom = current_records[i].CHROM
             pos = current_records[i].POS
         except:
+#        else:
             chrom = None
             pos = None
+            warnings.warn("Missing CHROM and POS in record.", RuntimeWarning)
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
     common.MSG("\t".join(info)+"\n")
 
@@ -611,8 +619,7 @@ def CheckMin(is_min):
         Set to True if something went wrong
     """
     if sum(is_min)==0:
-        common.WARNING("Unexpected error. Stuck in infinite loop and exiting.")
-        return True
+        raise ValueError("Unexpected error. Stuck in infinite loop and exiting.")
     return False
 
 def getargs():  # pragma: no cover
@@ -658,31 +665,20 @@ def GetVCFType(vcfreaders, vcftype):
     for reader in vcfreaders:
         tr_harmonizer = trh.TRRecordHarmonizer(reader)
         types.append(tr_harmonizer.vcftype.name)
-    if len(set(types)) == 1: return types[0]
-    else: return "error"
+    if len(set(types)) == 1: 
+        return types[0]
+    else: raise ValueError("VCF files are of mixed types.")
 
-def main(args):
-    ### Check VCF files ###
+def main(args):    
+    ### Check and Load VCF files ###
     vcfs = args.vcfs.split(",")
-    if not os.path.exists(vcfs[0]):
-        common.WARNING("%s does not exist"%args.vcfs)
-        return 1
-    if not os.path.exists(vcfs[1]):
-        common.WARNING("%s does not exist"%args.vcfs)
-        return 1
-    ### Load readers ###
-    try:
-        vcfreaders = LoadReaders(args.vcfs.split(","))
-    except ValueError: return 1
+    vcfreaders = LoadReaders(args.vcfs.split(","))
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
     ### Check inferred type of each is the same
     vcftype = GetVCFType(vcfreaders, args.vcftype)
-    if vcftype not in trh.VCFTYPES.__members__:
-        common.WARNING("ERROR: could not infer VCF type or files are of mixed types")
-        return 1
 
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
