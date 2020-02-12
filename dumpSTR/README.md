@@ -76,18 +76,17 @@ Different call-level filters are available for each supported TR genotyping tool
 | `--hipstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
 | `--hipstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--hipstr-min-call-Q <float>` | Minimum call quality score. Based on Q field. |
-| ----| ------|
 
 #### PopSTR call-level filters
-| ----| ------|
 | DumpSTR option | Filter Description |
+| ----| ------|
 | `--popstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
 | `--popstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
 | `--popstr-require-support <int>` | Require each allele call to have at least n supporting reads. Based on AD field.|
 
 #### ExpansionHunter call-level filters
-| ----| ------|
 | DumpSTR option | Filter Description |
+| ----| ------|
 | `--eh-min-ADFL <int>` | Minimum number of flanking reads consistent with the allele. Based on ADFL field. |
 | `--eh-min-ADIR <int>` | Minimum number of in-repeat reads consistent with the allele. Based on ADIR field. |
 | `--eh-min-ADSP <int>` | Minimum number of spanning reads consistent with the allele. Based on ADSP field. |
