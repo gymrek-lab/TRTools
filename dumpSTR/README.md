@@ -1,23 +1,39 @@
 # DumpSTR
 
-DumpSTR is a tool for filtering VCF file with STR genotypes produced by HipSTR or GangSTR.
+[Usage](#usage) | [Filter options](#filters) | [Output files](#outputs) | [Recommended filters](#recommended)
 
-[Usage](#usage) | [Recommended HipSTR filters](#hipstr) | [Recommended GangSTR filters](#gangstr)
-
+DumpSTR is a tool for filtering VCF file with STR genotypes produced by supported TR genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
 
 <a name="usage"></a>
 ## Usage
 To run dumpSTR use the following command:
 ```
 dumpSTR \
-  --vcf <HipSTR or GangSTR VCF> \
+  --vcf <VCF> \
   --out <string> \
   [filter options]
 ```
 
 Required parameters:
-* **--vcf <GangSTR or HipSTR VCF>** VCF file output by HipSTR or GangSTR. Can be unzipped or bgzipped.
-* **--out <string>** prefix to name output files
+* `--vcf <VCF>` VCF file output by a supported genotyping tool.
+* `--vcftype <string>`: Type of VCF files being merged. Default='auto'. Must be one of: 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr'.
+* `--out <string>` prefix to name output files.
+
+DumpSTR will output a new VCF file named `$out.vcf`, a sample log file `$out.samplog.tab`, and a locus log file `$out.loclog.tab`.
+
+Specific filters available are described below.
+
+<a name="filters"></a>
+## Filter options
+
+DumpSTR offers the following types of filters:
+
+<a name="recommended"></a>
+## Recommended filters
+
+<a name="outputs"></a>
+## Output files
+
 
 Parameters for locus-level filtering:
 * **`--min-locus-callrate <float>`**: Filters loci with too few calls
