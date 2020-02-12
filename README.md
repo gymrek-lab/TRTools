@@ -3,7 +3,7 @@
 
 # STRTools: Toolkit for genome-wide analysis of STRs
 
-<a href="#install">INSTALL</a> | <a href="#tools">TOOLS</a> | <a href="#usage">USAGE</a> | <a href="#supported">SUPPORTED</a> | <a href="#contributing">CONTRIBUTING</a>
+<a href="#install">INSTALL</a> | <a href="#tools">TOOLS</a> | <a href="#usage">USAGE</a> | <a href="#supported">SUPPORTED PROGRAMS</a> | <a href="#contributing">CONTRIBUTING</a>
 
 STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
