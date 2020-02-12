@@ -1,5 +1,5 @@
 # MergeSTR 
-<a href="#usage">Usage</a> | <a href="#example">EXAMPLE</a> | <a href="#supported">SUPPORTED FIELDS</a> 
+<a href="#usage">Usage</a> | <a href="#example">Example</a> | <a href="#supported">Supported Fields</a> 
 
 
 MergeSTR is a tool for merging VCF files from supported TR genotyping tools.
