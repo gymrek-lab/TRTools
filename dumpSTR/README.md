@@ -19,7 +19,7 @@ Required parameters:
 * `--vcftype <string>`: Type of VCF files being merged. Default='auto'. Must be one of: 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr'.
 * `--out <string>` prefix to name output files.
 
-DumpSTR will output a new VCF file named `$out.vcf`, a sample log file `$out.samplog.tab`, and a locus log file `$out.loclog.tab`.
+DumpSTR will output a new VCF file named `$out.vcf`, a sample log file `$out.samplog.tab`, and a locus log file `$out.loclog.tab`. See a description of output files below.
 
 Specific filters available are described below.
 
@@ -41,7 +41,58 @@ These filters are not specific to any tool and can be applied to any VCF file:
 | `--use-length` | Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles) |
 | `--filter-regions <BEDFILE[,BEDFILE12,...]>` | Filter TRs overlapping the specified set of regions. Must be used with `--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed. |
 | `--filter-regions-names <string[,string2,...]>` | Filter names for each BED file specified in `--filter-regions`. |
-| `--filter-hrun` | Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
+| `--filter-hrun` | Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer. |
+|`--drop-filtered` | Do not output loci that were filtered, or loci with no calls remaining after filtering. |
+
+TRs passing all locus-level filters will be marked as "PASS" in the FILTER field. Those failing will have a list of failing filters in the FILTER field. If `drop-filtered` is specified, only loci passing all filters will be output.
+
+### Call-level filters
+
+Different call-level filters are available for each supported TR genotyping tool:
+
+#### GangSTR call-level filters
+
+| DumpSTR option | Filter Description |
+| `--gangstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
+| `--gangstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
+| `--gangstr-min-call-Q <float>` | Minimum call quality score. Based on Q field. |
+| `--gangstr-expansion-prob-het <float>` | Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this. Based on QEXP field. |
+| `--gangstr-expansion-prob-hom <float>` | Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this. Based on QEXP field. |
+| `--gangstr-expansion-prob-total <float>` | Expansion prob-value threshold. Filters calls with probability of homozygous  or heterozygous expansion less than this. Based on QEXP field. |
+| `--gangstr-filter-span-only` | Filter out all calls that only have spanning read support. Based on RC field. |
+| `--gangstr-filter-spanbound-only` | Filter out all reads except spanning and bounding. Based on RC field. | 
+| `--gangstr-filter-badCI` | Filter regions where the ML estimate is not in the CI. Based on REPCN and REPCI fields. |
+| `--gangstr-require-support <int>` | Require each allele call to have at least this many supporting reads. |
+| `--gangstr-readlen <int>` | Read length used (bp). Required if using --require-support. |
+| ----| ------|
+
+#### HipSTR call-level filters
+
+| DumpSTR option | Filter Description |
+| `--hipstr-max-call-flank-indel <float>` | Maximum call flank indel rate. Computed as DFLANKINDEL/DP |
+| `--hipstr-max-call-stutter <float>` | Maximum call stutter rate. Computed as DSTUTTER/DP |
+| `--hipstr-min-supp-reads <int>` | Minimum supporting reads for each allele. Based on ALLREADS and GB fields |
+| `--hipstr-min-call-DP <int>` | Minimum call coverage. Based on DP field. |
+| `--hipstr-max-call-DP <int>` | Maximum call coverage. Based on DP field. |
+| `--hipstr-min-call-Q <float>` | Minimum call quality score. Based on Q field. |
+| ----| ------|
+
+#### PopSTR call-level filters
+
+| DumpSTR option | Filter Description |
+
+| ----| ------|
+
+#### ExpansionHunter call-level filters
+
+| DumpSTR option | Filter Description |
+| ----| ------|
+
+#### AdVNTR call-level filters
+
+| DumpSTR option | Filter Description |
+| ----| ------|
+
 
 <a name="recommended"></a>
 ## Recommended filters
@@ -50,7 +101,6 @@ These filters are not specific to any tool and can be applied to any VCF file:
 ## Output files
 
 
-* **`--drop-filtered`**: Do not output loci that were filtered, or loci with no calls remaining after filtering.
 
 A file is provided in `dumpSTR/filter_files/hg19_segmentalduplications.bed.gz` for filtering segmental duplications in hg19.
 
