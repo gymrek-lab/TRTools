@@ -1,8 +1,8 @@
-# DumpSTR
+# DumpSTR : A tool for filtering tandem repeat VCF files
 
 [Usage](#usage) | [Filter options](#filters) | [Output files](#outputs) 
 
-DumpSTR is a tool for filtering VCF file with STR genotypes produced by supported TR genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
+DumpSTR is a tool for filtering VCF file with TR genotypes produced by supported genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
 
 <a name="usage"></a>
 ## Usage
