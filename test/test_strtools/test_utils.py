@@ -29,6 +29,39 @@ def test_GetHeterozygosity():
     afreqs = {}
     assert(np.isnan(utils.GetHeterozygosity(afreqs)))
 
+# GetMean
+def test_GetMean(): 
+    afreqs = {0:1}
+    assert(utils.getMean(afreqs)==1)
+    afreqs = {0:0.5, 1:0.5}
+    assert(utils.getMean(afreqs)==0.5)
+    afreqs = {0:0.5, 1:0.2, 2:0.3}
+    assert(utils.getMean(afreqs)==(1/3))
+    afreqs = {}
+    assert(np.isnan(utils.getMean(afreqs)))
+
+# GetMode
+def test_GetMode():
+    afreqs = {0:1}
+    assert(utils.getMode(afreqs)==1)
+    afreqs = {0:0.5, 1:0.5}
+    assert(utils.getMode(afreqs)==0.5)
+    afreqs = {0:0.1, 1:0.1, 2:0.3, 3:0.5}
+    assert(utils.getMode(afreqs)==0.1)
+    afreqs = {}
+    assert(np.isnan(utils.getMode(afreqs)))
+
+# GetVariance 
+def test_GetVariance(): 
+    afreqs = {0:1}
+    assert(utils.getVariance(afreqs)==0)
+    afreqs = {0:0.5, 1:0.5}
+    assert(utils.getVariance(afreqs)==0)
+    afreqs = {0:0.1, 1:0.1, 2:0.3, 3:0.5}
+    assert(utils.getVariance(afreqs)==0.0275)
+    afreqs = {}
+    assert(np.isnan(utils.getVariance(afreqs)))
+
 # GetHardyWeinbergBinomialTest
 def test_GetHardyWeinbergBinomialTest():
     # Try examples that should work
