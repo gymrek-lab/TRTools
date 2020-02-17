@@ -22,6 +22,10 @@ def base_argparse():
     args.hwep = False
     args.het = False
     args.use_length = False
+    args.mean = False
+    args.mode = False 
+    args.var = False 
+    args.numSamples = False 
     return args
 
 # Test no such file or directory

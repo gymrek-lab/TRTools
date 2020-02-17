@@ -6,6 +6,7 @@ import itertools
 import numpy as np
 import scipy.stats
 import sys
+import statistics 
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
@@ -67,6 +68,101 @@ def GetHeterozygosity(allele_freqs):
     if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
     return 1-sum([freq**2 for freq in allele_freqs.values()])
+
+def getMean(allele_freqs):
+    r"""Compute the mean of the allele frequencies 
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    mean: float
+          Return mean if allele frequencies dictionary is valid 
+
+    Examples
+    --------
+    >>> getMean({0:0, 1:1})
+    0.5
+    """
+    if not ValidateAlleleFreqs(allele_freqs): 
+        return np.nan 
+    return sum(allele_freqs.values())/len(allele_freqs.values())
+
+def getMode(allele_freqs):
+    r"""Compute the mode of the allele frequencies
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    mode: float
+          Return mode if allele frequencies dictionary is valid
+
+    Examples
+    --------
+    >>> getMode({0:0.5, 1:0.5})
+    0.5
+    """
+    if not ValidateAlleleFreqs(allele_freqs):
+        return np.nan 
+    values = [] 
+    for key in allele_freqs: 
+        values.append(allele_freqs[key]) 
+    print(values) 
+    return statistics.mode(values) 
+
+def getVariance(allele_freqs):
+    r"""Compute the variance of the allele frequencies
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    variance: float
+          Return variance if allele frequencies dictionary is valid
+
+    Examples
+    --------
+    >>> getVariance({0:0, 1:1})
+    0.25
+    """
+    if not ValidateAlleleFreqs(allele_freqs):
+        return np.nan 
+    mean = sum(allele_freqs.values())/len(allele_freqs.values())
+    return sum((freq-mean)**2 for freq in allele_freqs.values())/len(allele_freqs.values())
+
+def getNumSamples(allele_freqs):
+    r"""Compute the number of samples 
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    numSamples: int
+          Return number of samples if allele frequencies dictionary is valid
+
+    Examples
+    --------
+    >>> getNumSamples({0:0, 1:1})
+    2
+    """ 
+    return len(allele_freqs.values()) 
 
 def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
     r"""Compute Hardy Weinberg p-value
