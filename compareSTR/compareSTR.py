@@ -7,6 +7,7 @@ Tool for comparing two STR callsets
 import argparse
 import os
 import numpy as np
+import pandas as pd
 import sys
 import vcf
 
@@ -85,8 +86,57 @@ def getargs():  # pragma: no cover
     ### Optional args ###
     option_group = parser.add_argument_group("Optional arguments")
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
+    option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
     args = parser.parse_args()
     return args
+
+def UpdateComparisonResults(record1, record2, format_fields, samples, results_dir):
+    r"""Extract comparable results from a pair of VCF records
+
+    Parameters
+    ----------
+    record1 : trh.TRRecord
+       First record to compare
+    record2 : trh.TRRecord
+       Second record to compare
+    format_fields : list of str
+       List of format fields to extract
+    samples : list of str
+       List of samples to consider
+    results_dir : dict
+       Results dictionary to update. Need to update:
+       chrom, start, period, sample, gtstring1, gtstring2
+       gtsum1, gtsum2, metric-conc-seq, metric-conc-len
+       for each matching sample
+    """
+    # Extract shared info
+    chrom = record1.vcfrecord.CHROM
+    pos = record1.vcfrecord.POS
+    for sample in samples:
+        call1 = record1.vcfrecord.genotype(sample)
+        call2 = record2.vcfrecord.genotype(sample)
+        if not (call1.called and call2.called): continue # Skip if not called in both
+        gt_string_1 = record1.GetStringGenotype(call1)
+        gt_len_1 = record1.GetLengthGenotype(call1)
+        gt_string_2 = record2.GetStringGenotype(call2)
+        gt_len_2 = record2.GetLengthGenotype(call2)
+        # Make sure gts are same ploidy. If not give up
+        if len(gt_string_1) != len(gt_string_2) or len(gt_len_1) != len(gt_len_2):
+            raise ValueError("Found sample %s of different ploidy at %s:%s"%(sample, chrom, pos))
+        # Update results_dir
+        results_dir["chrom"].append(chrom)
+        results_dir["start"].append(pos)
+        results_dir["period"].append(len(record1.motif))
+        results_dir["sample"].append(sample)
+        results_dir["gtstring1"].append(",".join(gt_string_1))
+        results_dir["gtstring2"].append(",".join(gt_string_2))
+        results_dir["gtsum1"].append(sum(gt_len_1))
+        results_dir["gtsum2"].append(sum(gt_len_2))
+        results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
+        results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
+        for ff in format_fields:
+            results_dir[ff+"1"].append("TODO") # TODO
+            results_dir[ff+"2"].append("TODO") # TODO
 
 def main(args):
     ### Check and load VCF files ###
@@ -97,14 +147,12 @@ def main(args):
     ### Check inferred type of each is the same
     vcftype = mergeutils.GetVCFType(vcfreaders, args.vcftype)
 
-    ### Walk through sorted readers, merging records as we go ###
-    current_records = [next(reader) for reader in vcfreaders]
-    is_min = mergeutils.GetMinRecords(current_records, chroms)
-    done = mergeutils.DoneReading(current_records)
+    ### Set up harmonizers ###
+    tr_harmonizers = [trh.TRRecordHarmonizer(args.vcf1, vcftype=vcftype), \
+                      trh.TRRecordHarmonizer(args.vcf2, vcftype=vcftype)]
 
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
-    print(samples)
 
     ### Determine FORMAT fields we should look for ###
     format_fields, format_binsizes = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
@@ -119,21 +167,33 @@ def main(args):
         "gtstring2": [],
         "gtsum1": [],
         "gtsum2": [],
-        "metric-conc": [],
-        "metric-alleleconc": []
+        "metric-conc-seq": [],
+        "metric-conc-len": [],
     }
     for ff in format_fields:
         results_dir[ff+"1"] = []
         results_dir[ff+"2"] = []
 
+    ### Walk through sorted readers, merging records as we go ###
+    current_records = [next(reader) for reader in vcfreaders]
+    is_min = mergeutils.GetMinRecords(current_records, chroms)
+    done = mergeutils.DoneReading(current_records)
+    num_records = 0
     while not done:
+        if args.numrecords is not None and num_records > args.numrecords: break
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
-        # TODO, take info in for each of them and add to results_dir
+        if all([is_min]):
+            UpdateComparisonResults(tr_harmonizers[0].HarmonizeRecord(current_records[0]), \
+                                    tr_harmonizers[1].HarmonizeRecord(current_records[1]), \
+                                    format_fields, samples, results_dir)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
+        num_records += 1
 
+    data = pd.DataFrame(results_dir)
+    print(data.head())
     # TODO load results_dir to pandas dataframe
     # TODO make all outputs base on the df
     return 0 
