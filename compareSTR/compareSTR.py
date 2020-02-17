@@ -8,6 +8,7 @@ import argparse
 import os
 import numpy as np
 import pandas as pd
+import scipy.stats
 import sys
 import vcf
 
@@ -64,6 +65,84 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
         if format_fileoption == 2 and not check2:
             raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2"%fmt)
     return formats, binsizes
+
+def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, period, outprefix):
+    r"""
+    Output overall accuracy metrics
+
+    Output metrics overall, by period, and by FORMAT bins
+    Output results to outprefix+"-overall.tab"
+
+    Parameters
+    ----------
+    data : pd.Dataframe 
+        Call comparison results
+    format_fields : list of str
+        List of FORMAT fields to stratify by
+    format_binsizes : list of float,float,float
+        List of min,max,binsize to stratify formats
+    stratify_file : {0, 1, 2}
+        Specify whether to apply FORMAT stratification to both files (0), or only (1) or (2)
+    period : bool
+        If True, also stratify results by period
+    outprefix : str
+        Prefix to name output file
+    """
+    f = open(outprefix+"-overall.tab", "w")
+    header = ["period"]
+    for ff in format_fields: header.append(ff)
+    header.extend(["concordance-seq","concordance-len","r2","numcalls"])
+    f.write("\t".join(header)+"\n")
+
+    useperiods = ["ALL"]
+    if period: useperiods.extend(list(set(data["period"])))
+    for period in useperiods:
+        if period == "ALL":
+            usedata = data
+        else: usedata = data[data["period"]==period]
+        # Overall
+        items = [period] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
+                                                scipy.stats.pearsonr(usedata["gtsum1"], usedata["gtsum2"])[0],
+                                                usedata.shape[0]]
+        f.write("\t".join([str(item) for item in items])+"\n")
+        
+        # By format fields (each separately)
+        for i in range(len(format_fields)):
+            ff = format_fields[i]
+            minval, maxval, binsize = format_binsizes[i]
+            bins = np.arange(minval, maxval+binsize, binsize)
+            for j in range(len(bins)-1):
+                lb = bins[j]
+                ub = bins[j+1]
+                if stratify_file == 0:
+                    ffdata = usedata[(usedata[ff+"1"]>=lb) & (usedata[ff+"1"]<ub) & \
+                                     (usedata[ff+"2"]>=lb) & (usedata[ff+"2"]<ub)]
+                elif stratify_file == 1:
+                    ffdata = usedata[(usedata[ff+"1"]>=lb) & (usedata[ff+"1"]<ub)]
+                else:
+                    ffdata = usedata[(usedata[ff+"2"]>=lb) & (usedata[ff+"2"]<ub)]
+                if ffdata.shape[0] < 2: continue
+                ff_vals = ["NA"]*len(format_fields)
+                ff_vals[i] = "%s-%s"%(lb,ub)
+                items = [period]+ff_vals+[np.mean(ffdata["metric-conc-seq"]), np.mean(ffdata["metric-conc-len"]), \
+                                                        scipy.stats.pearsonr(ffdata["gtsum1"], ffdata["gtsum2"])[0],
+                                                        ffdata.shape[0]]
+                f.write("\t".join([str(item) for item in items])+"\n")
+    f.close()
+
+def OutputBubblePlot(data, period, outprefix):
+    r"""Output bubble plot of gtsum1 vs. gtsum2
+
+    Parameters
+    ----------
+    data : pd.Dataframe 
+        Call comparison results
+    period : bool
+        If True, also stratify results by period
+    outprefix : str
+        Prefix to name output file
+    """
+    pass # TODO
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
@@ -135,8 +214,14 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
         results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
         results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
         for ff in format_fields:
-            results_dir[ff+"1"].append("TODO") # TODO
-            results_dir[ff+"2"].append("TODO") # TODO
+            try:
+                val1 = call1[ff]
+            except: val1 = np.nan
+            try:
+                val2 = call2[ff]
+            except: val2 = np.nan
+            results_dir[ff+"1"].append(val1)
+            results_dir[ff+"2"].append(val2)
 
 def main(args):
     ### Check and load VCF files ###
@@ -155,6 +240,9 @@ def main(args):
     samples = mergeutils.GetSharedSamples(vcfreaders)
 
     ### Determine FORMAT fields we should look for ###
+    if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
+        common.MSG("--stratify-file must be 0,1, or 2")
+        return 1
     format_fields, format_binsizes = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
 
     ### Keep track of data to summarize at the end ###
@@ -192,10 +280,22 @@ def main(args):
         done = mergeutils.DoneReading(current_records)
         num_records += 1
 
+    ### Load all results to a dataframe and output full results ###
     data = pd.DataFrame(results_dir)
-    print(data.head())
-    # TODO load results_dir to pandas dataframe
-    # TODO make all outputs base on the df
+    data.to_csv(args.out + "-callcompare.tab", sep="\t", index=False)
+
+    ### Overall metrics ###
+    OutputOverallMetrics(data, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
+    OutputBubblePlot(data, args.period, args.out)
+
+    ### Per-locus metrics ###
+    # TODO: per-locus, chrom, start, period, numsamples, metrics
+    # TODO: plot for per-locus acc
+
+    ### Per-sample metrics ###
+    # TODO: for each sample: metrics, numcalls
+    # TODO: plot for overall acc for each sample
+
     return 0 
 
 if __name__ == "__main__":  # pragma: no cover
