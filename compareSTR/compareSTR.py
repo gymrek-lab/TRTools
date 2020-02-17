@@ -3,10 +3,15 @@
 Tool for comparing two STR callsets
 """
 
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
 # Load external libraries
 import argparse
-import os
+import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import scipy.stats
 import sys
@@ -96,12 +101,12 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
 
     useperiods = ["ALL"]
     if period: useperiods.extend(list(set(data["period"])))
-    for period in useperiods:
-        if period == "ALL":
+    for per in useperiods:
+        if per == "ALL":
             usedata = data
-        else: usedata = data[data["period"]==period]
+        else: usedata = data[data["period"]==per]
         # Overall
-        items = [period] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
+        items = [per] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
                                                 scipy.stats.pearsonr(usedata["gtsum1"], usedata["gtsum2"])[0],
                                                 usedata.shape[0]]
         f.write("\t".join([str(item) for item in items])+"\n")
@@ -124,9 +129,9 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
                 if ffdata.shape[0] < 2: continue
                 ff_vals = ["NA"]*len(format_fields)
                 ff_vals[i] = "%s-%s"%(lb,ub)
-                items = [period]+ff_vals+[np.mean(ffdata["metric-conc-seq"]), np.mean(ffdata["metric-conc-len"]), \
-                                                        scipy.stats.pearsonr(ffdata["gtsum1"], ffdata["gtsum2"])[0],
-                                                        ffdata.shape[0]]
+                items = [per]+ff_vals+[np.mean(ffdata["metric-conc-seq"]), np.mean(ffdata["metric-conc-len"]), \
+                                       scipy.stats.pearsonr(ffdata["gtsum1"], ffdata["gtsum2"])[0],
+                                       ffdata.shape[0]]
                 f.write("\t".join([str(item) for item in items])+"\n")
     f.close()
 
@@ -142,7 +147,26 @@ def OutputBubblePlot(data, period, outprefix):
     outprefix : str
         Prefix to name output file
     """
-    pass # TODO
+    useperiods = ["ALL"]
+    if period: useperiods.extend(list(set(data["period"])))
+    for per in useperiods:
+        if per == "ALL":
+            usedata = data
+        else: usedata = data[data["period"]==per]
+        bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
+        scale = np.mean(bubble_counts["sample"])*1000
+        minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
+        maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        scatter = ax.scatter(bubble_counts["gtsum1"], bubble_counts["gtsum2"], s=np.sqrt(bubble_counts["sample"]*scale), color="darkblue")
+        ax.set_xlabel("GT sum - file 1", size=15)
+        ax.set_ylabel("GT sum - file 2", size=15)
+        ax.plot([minval, maxval], [minval, maxval], linestyle="dashed", color="gray")
+        # plot dummy points for legend
+        handles, labels = scatter.legend_elements(prop="sizes", color="darkblue")
+        ax.legend(handles, [int(round((float(item.split("{")[1].split("}")[0])**2/scale))) for item in labels], loc="upper left", title="Num. calls")
+        fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
