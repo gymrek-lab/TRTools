@@ -39,7 +39,11 @@ The following options can be specified to compute various per-locus statistics:
 | `--afreq` | Output allele frequences. (Output column="afreq"). Comma-separated list of allele:freq | 
 | `--acount` | Output allele counts. (Output column="acount"). Comma-separated list of allele:count | 
 | `--hwep` | Output Hardy Weinberg p-values oer locus. (Output column="hwep") |
-| `--het` | Output observed heterozygote counts used for HWE per locus. (Output column="het") |
+| `--het` | Output heterozygosity of each locus. (Output column="het") |
+| `--mean` | Output mean allele length. (Output column="mean") |
+| `--mode` | Output mode allele length. (Output column="mode") |
+| `--var` | Output variance of allele length. (Output column="var") |
+| `--numcalled` | Output number of called samples. (Output column="numcalled") |
 
 Specifying `--use-length` will collapse alleles by length (only relevant for HipSTR, which outputs sequence differences in TR alleles).
 

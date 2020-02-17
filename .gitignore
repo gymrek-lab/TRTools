@@ -15,6 +15,7 @@ test/common/*.vcf~
 test/common/dump/
 .coverage
 coverage.xml
+*test_run.vcf*
 
 # Build files
 *egg-info*

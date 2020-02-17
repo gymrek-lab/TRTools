@@ -32,35 +32,33 @@ def test_GetHeterozygosity():
 # GetMean
 def test_GetMean(): 
     afreqs = {0:1}
-    assert(utils.getMean(afreqs)==1)
+    assert(utils.GetMean(afreqs)==0)
     afreqs = {0:0.5, 1:0.5}
-    assert(utils.getMean(afreqs)==0.5)
+    assert(utils.GetMean(afreqs)==0.5)
     afreqs = {0:0.5, 1:0.2, 2:0.3}
-    assert(utils.getMean(afreqs)==(1/3))
+    assert(utils.GetMean(afreqs)==0.8)
     afreqs = {}
-    assert(np.isnan(utils.getMean(afreqs)))
+    assert(np.isnan(utils.GetMean(afreqs)))
 
 # GetMode
 def test_GetMode():
     afreqs = {0:1}
-    assert(utils.getMode(afreqs)==1)
-    afreqs = {0:0.5, 1:0.5}
-    assert(utils.getMode(afreqs)==0.5)
+    assert(utils.GetMode(afreqs)==0)
+    afreqs = {0:0.49, 1:0.51}
+    assert(utils.GetMode(afreqs)==1)
     afreqs = {0:0.1, 1:0.1, 2:0.3, 3:0.5}
-    assert(utils.getMode(afreqs)==0.1)
+    assert(utils.GetMode(afreqs)==3)
     afreqs = {}
-    assert(np.isnan(utils.getMode(afreqs)))
+    assert(np.isnan(utils.GetMode(afreqs)))
 
 # GetVariance 
 def test_GetVariance(): 
     afreqs = {0:1}
-    assert(utils.getVariance(afreqs)==0)
+    assert(utils.GetVariance(afreqs)==0)
     afreqs = {0:0.5, 1:0.5}
-    assert(utils.getVariance(afreqs)==0)
-    afreqs = {0:0.1, 1:0.1, 2:0.3, 3:0.5}
-    assert(utils.getVariance(afreqs)==0.0275)
+    assert(utils.GetVariance(afreqs)==0.25)
     afreqs = {}
-    assert(np.isnan(utils.getVariance(afreqs)))
+    assert(np.isnan(utils.GetVariance(afreqs)))
 
 # GetHardyWeinbergBinomialTest
 def test_GetHardyWeinbergBinomialTest():

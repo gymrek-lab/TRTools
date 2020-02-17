@@ -69,14 +69,14 @@ def GetHeterozygosity(allele_freqs):
         return np.nan
     return 1-sum([freq**2 for freq in allele_freqs.values()])
 
-def getMean(allele_freqs):
-    r"""Compute the mean of the allele frequencies 
+def GetMean(allele_freqs):
+    r"""Compute the mean allele length
 
     Parameters
     ----------
     allele_freqs : dict of object: float
           Dictionary of allele frequencies for each allele.
-          Alleles are typically strings (sequences) or floats (num. repeats)
+          Alleles must be given in lengths (numbers, not strings)
 
     Returns
     -------
@@ -85,21 +85,21 @@ def getMean(allele_freqs):
 
     Examples
     --------
-    >>> getMean({0:0, 1:1})
+    >>> GetMean({0:0, 1:1})
     0.5
     """
     if not ValidateAlleleFreqs(allele_freqs): 
-        return np.nan 
-    return sum(allele_freqs.values())/len(allele_freqs.values())
+        return np.nan
+    return sum([key*allele_freqs[key] for key in allele_freqs])
 
-def getMode(allele_freqs):
-    r"""Compute the mode of the allele frequencies
+def GetMode(allele_freqs):
+    r"""Compute the mode allele length
 
     Parameters
     ----------
     allele_freqs : dict of object: float
           Dictionary of allele frequencies for each allele.
-          Alleles are typically strings (sequences) or floats (num. repeats)
+          Alleles must be given in lengths (numbers, not strings)
 
     Returns
     -------
@@ -108,25 +108,27 @@ def getMode(allele_freqs):
 
     Examples
     --------
-    >>> getMode({0:0.5, 1:0.5})
-    0.5
+    >>> GetMode({0:0.1, 1:0.9})
+    1
     """
     if not ValidateAlleleFreqs(allele_freqs):
-        return np.nan 
-    values = [] 
-    for key in allele_freqs: 
-        values.append(allele_freqs[key]) 
-    print(values) 
-    return statistics.mode(values) 
+        return np.nan
+    mode_allele = None
+    mode_freq = -1
+    for key in allele_freqs.keys():
+        if allele_freqs[key] > mode_freq:
+            mode_allele = key
+            mode_freq = allele_freqs[key]
+    return mode_allele
 
-def getVariance(allele_freqs):
-    r"""Compute the variance of the allele frequencies
+def GetVariance(allele_freqs):
+    r"""Compute the variance of the allele lengths
 
     Parameters
     ----------
     allele_freqs : dict of object: float
           Dictionary of allele frequencies for each allele.
-          Alleles are typically strings (sequences) or floats (num. repeats)
+          Alleles must be given in lengths (numbers, not strings)
 
     Returns
     -------
@@ -135,34 +137,13 @@ def getVariance(allele_freqs):
 
     Examples
     --------
-    >>> getVariance({0:0, 1:1})
-    0.25
+    >>> GetVariance({0:1})
+    0
     """
     if not ValidateAlleleFreqs(allele_freqs):
-        return np.nan 
-    mean = sum(allele_freqs.values())/len(allele_freqs.values())
-    return sum((freq-mean)**2 for freq in allele_freqs.values())/len(allele_freqs.values())
-
-def getNumSamples(allele_freqs):
-    r"""Compute the number of samples 
-
-    Parameters
-    ----------
-    allele_freqs : dict of object: float
-          Dictionary of allele frequencies for each allele.
-          Alleles are typically strings (sequences) or floats (num. repeats)
-
-    Returns
-    -------
-    numSamples: int
-          Return number of samples if allele frequencies dictionary is valid
-
-    Examples
-    --------
-    >>> getNumSamples({0:0, 1:1})
-    2
-    """ 
-    return len(allele_freqs.values()) 
+        return np.nan
+    mean = GetMean(allele_freqs)
+    return sum([allele_freqs[key]*(key-mean)**2 for key in allele_freqs.keys()])
 
 def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
     r"""Compute Hardy Weinberg p-value
