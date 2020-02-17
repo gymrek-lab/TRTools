@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Tool for computing stats on STR VCF files
 """
@@ -17,10 +16,10 @@ if __name__ == "statSTR" or __name__ == '__main__' or __package__ is None:
     import common
     import tr_harmonizer as trh
     import utils
-else:
-    import strtools.utils.common as common
-    import strtools.utils.tr_harmonizer as trh
-    import strtools.utils.utils as utils
+else: # pragma: no cover
+    import strtools.utils.common as common  # pragma: no cover
+    import strtools.utils.tr_harmonizer as trh  # pragma: no cover
+    import strtools.utils.utils as utils  # pragma: no cover
 
 def GetThresh(trrecord, samplelist=[]):
     return trrecord.GetMaxAllele(self, samplelist=samplelist)
@@ -192,7 +191,7 @@ def GetNumSamples(trrecord, samplelist=[], uselength=True):
     allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
     return utils.getNumSamples(allele_freqs)
 
-def getargs(): 
+def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
@@ -215,9 +214,7 @@ def getargs():
     args = parser.parse_args()
     return args 
 
-def main(args=None):
-    if args is None:
-        args = getargs()
+def main(args):
     if not os.path.exists(args.vcf):
         common.WARNING("%s does not exist"%args.vcf)
         return 1
@@ -272,7 +269,7 @@ def main(args=None):
     outf.close()
     return 0 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     # Set up args
     args = getargs()
     # Run main function
