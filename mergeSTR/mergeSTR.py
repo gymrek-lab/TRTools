@@ -83,31 +83,6 @@ def GetFormatString(fmt):
     """
     return '##FORMAT=<ID=%s,Number=%s,Type=%s,Description="%s">'%(fmt.id, fmt.num, fmt.type, fmt.desc)
 
-def GetSamples(readers, usefilenames=False):
-    r"""Get list of samples used in all files being merged
-
-    Parameters
-    ----------
-    readers : list of vcf.Reader objects
-    usefilenames : bool, optional
-       If True, add filename to sample names.
-       Useful if sample names overlap across files
-
-    Returns
-    -------
-    samples : list of str
-       List of samples in merged list
-    """
-    samples = []
-    for r in readers:
-        if usefilenames:
-            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
-        else: samples = samples + r.samples
-    if len(set(samples))!=len(samples):
-        common.WARNING("Duplicate samples found.")
-        return []
-    return samples
-
 def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     r"""Write merged header for VCFs in args.vcfs
 
@@ -168,7 +143,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
             vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
             useformat.append(field)
     # Write sample list
-    samples = GetSamples(readers, usefilenames=args.update_sample_from_file)
+    samples = mergeutils.GetSamples(readers, usefilenames=args.update_sample_from_file)
     if len(samples) == 0:
         return None, None
     header_fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"]

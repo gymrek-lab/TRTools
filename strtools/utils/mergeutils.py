@@ -16,13 +16,15 @@ else:
     import strtools.utils.common as common # pragma: no cover
     import strtools.utils.tr_harmonizer as trh # pragma: no cover
 
-def LoadReaders(vcffiles):
+def LoadReaders(vcffiles, region=None):
     r"""Return list of VCF readers
 
     Parameters
     ----------
     vcffiles : list of str
         List of VCF files to merge
+    region : str, optional
+        Chrom:start-end to restrict to
     
     Returns
     -------
@@ -36,7 +38,54 @@ def LoadReaders(vcffiles):
             raise ValueError("Could not find VCF file %s"%f)
         if not os.path.isfile(f+".tbi"):
             raise ValueError("Could not find VCF index %s.tbi"%f)
-    return [vcf.Reader(open(f, "rb")) for f in vcffiles]
+    readers = [vcf.Reader(open(f, "rb")) for f in vcffiles]
+    if region is None:
+        return readers
+    else: return [r.fetch(region) for r in readers]
+
+def GetSharedSamples(readers, usefilenames=False):
+    r"""Get list of samples used in all files being merged
+
+    Parameters
+    ----------
+    readers : list of vcf.Reader objects
+
+    Returns
+    -------
+    samples : list of str
+        Samples present in all readers
+    """
+    if len(readers) == 0: return set()
+    samples = set(readers[0].samples)
+    if len(readers) == 1: return samples
+    for r in readers[1:]:
+        samples = samples.intersection(set(r.samples))
+    return samples
+
+def GetSamples(readers, usefilenames=False):
+    r"""Get list of samples used in all files being merged
+
+    Parameters
+    ----------
+    readers : list of vcf.Reader objects
+    usefilenames : bool, optional
+       If True, add filename to sample names.
+       Useful if sample names overlap across files
+
+    Returns
+    -------
+    samples : list of str
+       List of samples in merged list
+    """
+    samples = []
+    for r in readers:
+        if usefilenames:
+            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
+        else: samples = samples + r.samples
+    if len(set(samples))!=len(samples):
+        common.WARNING("Duplicate samples found.")
+        return []
+    return samples
 
 def GetVCFType(vcfreaders, vcftype):
     """Infer vcf type of readers

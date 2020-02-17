@@ -40,12 +40,13 @@ def getargs():  # pragma: no cover
     stats_group.add_argument("--stratify-fields", help="Comma-separated list of FORMAT fields to stratify by", type=str)
     stats_group.add_argument("--stratify-binsizes", help="Comma-separated list of binsizes to stratify each field on. Must be same length as --stratify-fields.", type=str)
     stats_group.add_argument("--stratify-file", help="Set to 1 to stratify based on --vcf1. Set to 2 to stratify based on --vcf2. Set to 0 to apply stratification to both --vcf1 and --vcf2", default=0, type=int)
+    stats_group.add_argument("--period", help="Report results overall and also stratified by repeat unit length (period)", action="store_true")
     args = parser.parse_args()
     return ags
 
 def main(args):
     ### Check and load VCF files ###
-    vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2])
+    vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
@@ -57,13 +58,40 @@ def main(args):
     is_min = GetMinRecords(current_records, chroms)
     done = DoneReading(current_records)
 
+    ### Load shared samples ###
+    samples = mergeutils.GetSharedSamples(readers)
+
+    ### Determine FORMAT fields we should look for ###
+    # TODO
+    format_fields = []
+
+    ### Keep track of data to summarize at the end ###
+    results_dir = {
+        "chrom": [],
+        "start": [],
+        "period": [],
+        "sample": [],
+        "gtstring1": [],
+        "gtstring2": [],
+        "gtsum1": [],
+        "gtsum2": [],
+        "metric-conc": [],
+        "metric-alleleconc": []
+    }
+    for ff in format_fields:
+        results_dir[ff+"1"] = []
+        results_dir[ff+"2"] = []
+
     while not done:
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
-        # TODO, take info in for each of them
+        # TODO, take info in for each of them and add to results_dir
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
+
+    # TODO load results_dir to pandas dataframe
+    # TODO make all outputs base on the df
     return 0 
 
 if __name__ == "__main__":  # pragma: no cover
