@@ -17,6 +17,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 import argparse
 import numpy as np
 import os
+import pandas as pd
 import sys
 import vcf
 
@@ -63,7 +64,18 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
     fname : str
         Filename of output plot
     """
-    pass # TODO
+    data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
+    summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref") # median or mean?
+    summ = summ[summ["count"]>=5] # exclude small counts
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(summ["ref"], summ["diff"], marker="o", color="darkblue")
+    ax.axhline(y=0, linestyle="dashed", color="gray")
+    ax.set_xlabel("Reference length (bp)", size=15)
+    ax.set_ylabel("Median diff from ref (bp)", size=15)
+    fig.tight_layout()
+    fig.savefig(fname)
+    plt.close()
 
 def OutputSampleCallrate(sample_calls, fname):
     r"""Plot number of calls per sample
@@ -75,7 +87,18 @@ def OutputSampleCallrate(sample_calls, fname):
     fname : str
         Filename of output plot
     """
-    pass # TODO
+    samples = sample_calls.keys()
+    data = pd.DataFrame({"sample": samples, "numcalls": [sample_calls[key] for key in samples]})
+    data = data.sort_values("numcalls")
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.bar(range(data.shape[0]), data["numcalls"])
+    ax.set_xticks(range(data.shape[0]))
+    ax.set_xticklabels(samples, rotation=90)
+    ax.set_ylabel("Number of calls", size=15)
+    fig.tight_layout()
+    fig.savefig(fname)
+    plt.close()
 
 def OutputChromCallrate(chrom_calls, fname):
     r"""Plot number of calls per chromosome
@@ -87,7 +110,17 @@ def OutputChromCallrate(chrom_calls, fname):
     fname : str
         Filename of output plot
     """
-    pass # TODO
+    chroms = sorted(chrom_calls.keys())
+    counts = [chrom_calls[chrom] for chrom in chroms]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.bar(range(len(counts)), counts)
+    ax.set_xticks(range(len(counts)))
+    ax.set_xticklabels(chroms, rotation=90)
+    ax.set_ylabel("Number of calls", size=15)
+    fig.tight_layout()
+    fig.savefig(fname)
+    plt.close()
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
