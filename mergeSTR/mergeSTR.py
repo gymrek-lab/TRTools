@@ -14,10 +14,12 @@ import vcf
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
     import common
+    import mergeutils
     import tr_harmonizer as trh
     import utils
 else: # pragma: no cover
     import strtools.utils.common as common  # pragma: no cover
+    import strtools.utils.mergeutils as mergeutils  # pragma: no cover
     import strtools.utils.tr_harmonizer as trh # pragma: no cover
     import strtools.utils.utils as utils  # pragma: no cover
 
@@ -52,27 +54,6 @@ FORMATFIELDS = {
     "advntr": ["DP","SR","FR","ML"]
 }
 
-def LoadReaders(vcffiles):
-    r"""Return list of VCF readers
-
-    Parameters
-    ----------
-    vcffiles : list of str
-        List of VCF files to merge
-    
-    Returns
-    -------
-    readers : list of vcf.Reader
-        VCF readers list for all files to merge
-    """
-    for f in vcffiles:
-        if not f.endswith(".vcf.gz"):
-            raise ValueError("Make sure %s is bgzipped and indexed"%f)
-        if not os.path.isfile(f):
-            raise ValueError("Could not find VCF file %s"%f)
-        if not os.path.isfile(f+".tbi"):
-            raise ValueError("Could not find VCF index %s.tbi"%f)
-    return [vcf.Reader(open(f, "rb")) for f in vcffiles]
 
 def GetInfoString(info):
     r"""Create a VCF INFO header string
@@ -101,131 +82,6 @@ def GetFormatString(fmt):
        Formatted format string for header
     """
     return '##FORMAT=<ID=%s,Number=%s,Type=%s,Description="%s">'%(fmt.id, fmt.num, fmt.type, fmt.desc)
-
-def GetSamples(readers, usefilenames=False):
-    r"""Get list of samples used in all files being merged
-
-    Parameters
-    ----------
-    readers : list of vcf.Reader objects
-    usefilenames : bool, optional
-       If True, add filename to sample names.
-       Useful if sample names overlap across files
-
-    Returns
-    -------
-    samples : list of str
-       List of samples in merged list
-    """
-    samples = []
-    for r in readers:
-        if usefilenames:
-            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
-        else: samples = samples + r.samples
-    if len(set(samples))!=len(samples):
-        common.WARNING("Duplicate samples found.")
-        return []
-    return samples
-
-def GetChromOrder(r, chroms):
-    r"""Get the chromosome order of a record
-
-    Parameters
-    ----------
-    r : vcf.Record
-    chroms : list of str
-       Ordered list of chromosomes
-
-    Returns
-    -------
-    order : int
-       Index of r.CHROM in chroms
-       Return np.inf if can't find r.CHROM
-    """
-    if r is None: return np.inf
-    else: return chroms.index(r.CHROM)
-
-def GetPos(r):
-    r"""Get the position of a record
-
-    Parameters
-    ----------
-    r : vcf.Record
-
-    Returns
-    -------
-    pos : int
-       If r is None, returns np.inf
-    """
-    if r is None: return np.inf
-    else: return r.POS
-
-def CheckPos(record, chrom, pos):
-    r"""Check a record is at the specified position
-    
-    Parameters
-    ----------
-    r : vcf.Record
-       VCF Record being checked
-    chrom : str
-       Chromosome name
-    pos : int
-       Chromosome position
-
-    Returns
-    -------
-    check : bool
-       Return True if the current record is at this position
-    """
-    if record is None: return False
-    return record.CHROM==chrom and record.POS==pos
-
-def GetChromOrderEqual(chrom_order, min_chrom):
-    r"""Check chrom order
-
-    Parameters
-    ----------
-    chrom_order : int
-       Chromosome order
-    min_chrom : int
-       Current chromosome order
-
-    Returns
-    -------
-    equal : bool
-       Return True if chrom_order==min_chrom and chrom_order != np.inf
-    """
-    if chrom_order == np.inf: return False
-    return chrom_order == min_chrom
-
-def GetMinRecords(record_list, chroms):
-    r"""Check if each record is next up in sort order
-
-    Return a vector of boolean set to true if
-    the record is in lowest sort order of all the records
-    Use order in chroms to determine sort order of chromosomes
-
-    Parameters
-    ----------
-    record_list : list of vcf.Record
-       list of current records from each file being merged
-    chroms : list of str
-       Ordered list of all chromosomes
-    
-    Returns
-    -------
-    checks : list of bool
-       Set to True for records that are first in sort order
-    """
-    chrom_order = [GetChromOrder(r, chroms) for r in record_list]
-    pos = [GetPos(r) for r in record_list]
-    min_chrom = min(chrom_order)
-    allpos = [pos[i] for i in range(len(pos)) if GetChromOrderEqual(chrom_order[i], min_chrom)]
-    if len(allpos) > 0:
-        min_pos = min(allpos)
-    else:
-        return [False]*len(record_list)
-    return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     r"""Write merged header for VCFs in args.vcfs
@@ -287,7 +143,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
             vcfw.write(GetFormatString(readers[0].formats[field])+"\n")
             useformat.append(field)
     # Write sample list
-    samples = GetSamples(readers, usefilenames=args.update_sample_from_file)
+    samples = mergeutils.GetSamples(readers, usefilenames=args.update_sample_from_file)
     if len(samples) == 0:
         return None, None
     header_fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"]
@@ -532,92 +388,6 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, usefo
             output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
 
-def DoneReading(records):
-    r"""Check if all records are at the end of the file
-
-    Parameters
-    ----------
-    records : list of vcf.Record
-       List of records from files to merge
- 
-    Returns
-    -------
-    check : list of bool
-       Set to True if all record is None
-       indicating we're done reading the file
-    """
-    return all([item is None for item in records])
-
-def GetNextRecords(readers, current_records, increment):
-    r"""Increment readers of each file
-
-    Increment readers[i] if increment[i] set to true
-    Else keep current_records[i]
-
-    Parameters
-    ----------
-    readers : list of vcf.Reader
-       List of readers for all files being merged
-    current_records : list of vcf.Record
-       List of current records for all readers
-    increment : list of bool
-       List indicating if each file should be incremented
-
-    Returns
-    -------
-    new_records : list of vcf.Record
-       List of next records for each file
-    """
-    new_records = []
-    for i in range(len(readers)):
-        if increment[i]:
-            try:
-                new_records.append(next(readers[i]))
-            except: new_records.append(None)
-        else: new_records.append(current_records[i])
-    return new_records
-
-def PrintCurrentRecords(current_records, is_min):
-    r"""Debug function to print current records for each file
-
-    Parameters
-    ----------
-    current_records : list of vcf.Record
-       List of current records from merged files
-    is_min : list of bool
-       List of check for if record is first in sort order
-    """
-    info = []
-    for i in range(len(is_min)):
-#        if 'CHROM' in current_records[i].__dict__ and 'POS' in current_records[i].__dict__:
-        try:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
-        except:
-#        else:
-            chrom = None
-            pos = None
-            common.WARNING("Missing CHROM and POS in record.")
-        info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
-    common.MSG("\t".join(info)+"\n")
-
-def CheckMin(is_min):
-    r"""Check if we're progressing through VCFs
-
-    Parameters
-    ----------
-    is_min : list of bool
-        List indicating if each record is first in sort order
-
-    Returns
-    -------
-    check : bool
-        Set to True if something went wrong
-    """
-    if sum(is_min)==0:
-        raise ValueError("Unexpected error. Stuck in infinite loop and exiting.")
-    return False
-
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
@@ -636,45 +406,16 @@ def getargs():  # pragma: no cover
     args = parser.parse_args()
     return args
 
-def GetVCFType(vcfreaders, vcftype):
-    """Infer vcf type of readers
-
-    If vcftype is "auto", try to infer types of each reader.
-    If it is not auto, just return that string.
-    If they are all the same, return that type
-    If not, return error
-
-    Parameters
-    ----------
-    vcfreaders : list of vcf.Reader
-      Readers being merged
-    vcftype : str
-      Type of VCF
-
-    Returns
-    -------
-    vcftype : str
-      Inferred VCF type
-    """
-    if vcftype != "auto": return vcftype
-    types = []
-    for reader in vcfreaders:
-        tr_harmonizer = trh.TRRecordHarmonizer(reader)
-        types.append(tr_harmonizer.vcftype.name)
-    if len(set(types)) == 1: 
-        return types[0]
-    else: raise ValueError("VCF files are of mixed types.")
-
 def main(args):    
     ### Check and Load VCF files ###
     vcfs = args.vcfs.split(",")
-    vcfreaders = LoadReaders(args.vcfs.split(","))
+    vcfreaders = mergeutils.LoadReaders(args.vcfs.split(","))
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
     ### Check inferred type of each is the same
-    vcftype = GetVCFType(vcfreaders, args.vcftype)
+    vcftype = mergeutils.GetVCFType(vcfreaders, args.vcftype)
 
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
@@ -683,15 +424,15 @@ def main(args):
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
-    is_min = GetMinRecords(current_records, chroms)
-    done = DoneReading(current_records)
+    is_min = mergeutils.GetMinRecords(current_records, chroms)
+    done = mergeutils.DoneReading(current_records)
     while not done:
-        if args.verbose: PrintCurrentRecords(current_records, is_min)
-        if CheckMin(is_min): return 1
+        if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
+        if mergeutils.CheckMin(is_min): return 1
         MergeRecords(vcfreaders, current_records, is_min, vcfw, args, useinfo, useformat)
-        current_records = GetNextRecords(vcfreaders, current_records, is_min)
-        is_min = GetMinRecords(current_records, chroms)
-        done = DoneReading(current_records)
+        current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
+        is_min = mergeutils.GetMinRecords(current_records, chroms)
+        done = mergeutils.DoneReading(current_records)
     return 0 
 
 if __name__ == "__main__":  # pragma: no cover
