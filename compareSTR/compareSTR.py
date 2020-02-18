@@ -212,7 +212,7 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
                 f.write("\t".join([str(item) for item in items])+"\n")
     f.close()
 
-def OutputBubblePlot(data, period, outprefix):
+def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
     r"""Output bubble plot of gtsum1 vs. gtsum2
 
     Parameters
@@ -232,14 +232,18 @@ def OutputBubblePlot(data, period, outprefix):
         else: usedata = data[data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
         scale = np.mean(bubble_counts["sample"])*500
-        minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
-        maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
+        if minval is None:
+            minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
+        if maxval is None:
+            maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
         fig = plt.figure()
         ax = fig.add_subplot(111)
         scatter = ax.scatter(bubble_counts["gtsum1"], bubble_counts["gtsum2"], s=np.sqrt(bubble_counts["sample"]*scale), color="white", edgecolors="darkblue")
         ax.set_xlabel("GT sum - file 1", size=15)
         ax.set_ylabel("GT sum - file 2", size=15)
         ax.plot([minval, maxval], [minval, maxval], linestyle="dashed", color="gray")
+        ax.set_xlim(left=minval, right=maxval)
+        ax.set_ylim(bottom=minval, top=maxval)
         ax.axhline(y=0, linestyle="dashed", color="gray")
         ax.axvline(x=0, linestyle="dashed", color="gray")
         # plot dummy points for legend
@@ -265,6 +269,10 @@ def getargs():  # pragma: no cover
     stats_group.add_argument("--stratify-binsizes", help="Comma-separated list of min:max:binsize to stratify each field on. Must be same length as --stratify-fields.", type=str)
     stats_group.add_argument("--stratify-file", help="Set to 1 to stratify based on --vcf1. Set to 2 to stratify based on --vcf2. Set to 0 to apply stratification to both --vcf1 and --vcf2", default=0, type=int)
     stats_group.add_argument("--period", help="Report results overall and also stratified by repeat unit length (period)", action="store_true")
+    ### Plotting args ###
+    plot_group = parser.add_argument_group("Plotting options")
+    plot_group.add_argument("--bubble-min", help="Minimum x/y axis value to display on bubble plots", type=int)
+    plot_group.add_argument("--bubble-max", help="Maximum x/y axis value to display on bubble plots", type=int)
     ### Optional args ###
     option_group = parser.add_argument_group("Optional arguments")
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
@@ -328,7 +336,6 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
             results_dir[ff+"1"].append(val1)
             results_dir[ff+"2"].append(val2)
 
-# TODO: pass in minval, maxval for bubble plot
 def main(args):
     ### Check and load VCF files ###
     vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
@@ -392,7 +399,7 @@ def main(args):
 
     ### Overall metrics ###
     OutputOverallMetrics(data, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
-    if not args.noplot: OutputBubblePlot(data, args.period, args.out)
+    if not args.noplot: OutputBubblePlot(data, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
     OutputLocusMetrics(data, args.out, args.noplot)
