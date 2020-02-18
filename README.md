@@ -31,6 +31,7 @@ STRTools includes the following tools.
 * dumpSTR: a tool for filtering VCF files with STR/VNTR genotypes
 * mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
 * statSTR: a tool for computing various statistics on VCF files
+* compareSTR: a tool for comparing TR callsets
 
 Type `<command> --help` to see a full set of options.
 

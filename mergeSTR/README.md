@@ -1,7 +1,6 @@
 # MergeSTR 
 <a href="#usage">Usage</a> | <a href="#example">Example</a> | <a href="#supported">Supported Fields</a> 
 
-
 MergeSTR is a tool for merging VCF files from supported TR genotyping tools.
 
 If TR genotyping was performed separately on different samples or batches of samples, mergeSTR can be used to combine the resulting VCFs into one file. This is often necessary for downstream steps such as: computing per-locus statistics, performing per-locus filtering, and association testing.
@@ -16,7 +15,7 @@ To run mergeSTR use the following command:
 ```
 mergeSTR \
   --vcfs <vcf file1, vcf file2> \
-  --out test
+  --out test \
   [additional options]
 ```
 

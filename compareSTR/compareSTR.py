@@ -16,6 +16,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 # Load external libraries
 import argparse
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import os
 import pandas as pd
@@ -111,6 +112,7 @@ def OutputLocusMetrics(data, outprefix, noplot):
         ax.set_xlabel("TR Locus", size=15)
     plt.tight_layout()
     fig.savefig(outprefix+"-locuscompare.pdf")
+    plt.close()
 
 def OutputSampleMetrics(data, outprefix, noplot):
     r"""Output per-sample metrics
@@ -147,6 +149,7 @@ def OutputSampleMetrics(data, outprefix, noplot):
         ax.set_xlabel("Sample", size=15)
     plt.tight_layout()
     fig.savefig(outprefix+"-samplecompare.pdf")
+    plt.close()
 
 def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, period, outprefix):
     r"""Output overall accuracy metrics
@@ -212,6 +215,40 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
                 f.write("\t".join([str(item) for item in items])+"\n")
     f.close()
 
+def GetBubbleLegend(sample_counts):
+    r"""Get three good bubble legend sizes to use
+    
+    They should be nice round numbers spanning the orders of magnitude of the dataset
+
+    Parameters
+    ----------
+    sample_counts : array-like of int
+        Sample counts for each bubble size
+
+    Returns
+    -------
+    legend_values : list of int
+        List of three or fewer representative sample sizes to use for bubble legend
+    """
+    values = set(sample_counts)
+    if len(values) <= 3: return list(values) # if only three values, return three of them
+    # Determine if we do log10 or linear scale
+    minval = min(values)
+    maxval = max(values)
+    if maxval/minval > 10:
+        # Do log10 scale
+        # Find max power of 10
+        max10 = int(np.log10(maxval))
+        # Find min power of 10
+        min10 = int(np.log10(minval))
+        # Find power of 10 in between
+        mid10 = int((max10+min10)/2)
+        return sorted(list(set([10**min10, 10**mid10, 10**max10])))
+    else:
+        # Do linear scale
+        mid = int((minval+maxval)/2)
+        return sorted(list(set([minval, mid, maxval])))
+
 def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
     r"""Output bubble plot of gtsum1 vs. gtsum2
 
@@ -231,14 +268,18 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
             usedata = data
         else: usedata = data[data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
-        scale = np.mean(bubble_counts["sample"])*500
+        scale = 1000/np.mean(bubble_counts["sample"])
         if minval is None:
             minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
         if maxval is None:
             maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        scatter = ax.scatter(bubble_counts["gtsum1"], bubble_counts["gtsum2"], s=np.sqrt(bubble_counts["sample"]*scale), color="white", edgecolors="darkblue")
+        # Plot (0,0) separately
+        b00 = bubble_counts[(bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0)]
+        brest = bubble_counts[~((bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0))]
+        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="white", edgecolors="darkblue")
+        scatter = ax.scatter(brest["gtsum1"], brest["gtsum2"], s=np.sqrt(brest["sample"]*scale), color="darkblue", alpha=0.5)
         ax.set_xlabel("GT sum - file 1", size=15)
         ax.set_ylabel("GT sum - file 2", size=15)
         ax.plot([minval, maxval], [minval, maxval], linestyle="dashed", color="gray")
@@ -247,16 +288,24 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
         ax.axhline(y=0, linestyle="dashed", color="gray")
         ax.axvline(x=0, linestyle="dashed", color="gray")
         # plot dummy points for legend
-        handles, labels = scatter.legend_elements(prop="sizes", color="white", num=4, markeredgecolor="darkblue")
-        ax.legend(handles, [int(round((float(item.split("{")[1].split("}")[0])**2/scale))) for item in labels], loc="upper left", title="Num. calls")
+        legend_values = GetBubbleLegend(bubble_counts["sample"])
+        handles = []
+        xval = (maxval-minval)/10+minval
+        for i in range(len(legend_values)):
+            val = legend_values[i]
+            step=(maxval-minval)/15
+            yval = step*(i+3)
+            ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val*scale))
+            ax.annotate(val, xy=(xval+step,yval))
         fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
+        plt.close()
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
-    req_group.add_argument("--vcf2", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
+    req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
     req_group.add_argument("--vcftype", help="--vcf1 and --vcf2 must be of the same type. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
     ### Options for filtering input ###
@@ -316,14 +365,15 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
         if len(gt_string_1) != len(gt_string_2) or len(gt_len_1) != len(gt_len_2):
             raise ValueError("Found sample %s of different ploidy at %s:%s"%(sample, chrom, pos))
         # Update results_dir
+        period = len(record1.motif)
         results_dir["chrom"].append(chrom)
         results_dir["start"].append(pos)
-        results_dir["period"].append(len(record1.motif))
+        results_dir["period"].append(period)
         results_dir["sample"].append(sample)
         results_dir["gtstring1"].append(",".join(gt_string_1))
         results_dir["gtstring2"].append(",".join(gt_string_2))
-        results_dir["gtsum1"].append(sum(gt_len_1)-reflen)
-        results_dir["gtsum2"].append(sum(gt_len_2)-reflen)
+        results_dir["gtsum1"].append((sum(gt_len_1)-reflen)/period)
+        results_dir["gtsum2"].append((sum(gt_len_2)-reflen)/period)
         results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
         results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
         for ff in format_fields:
@@ -351,6 +401,12 @@ def main(args):
 
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
+    if args.samples:
+        usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
+        samples = list(set(samples).intersection(usesamples))
+    if len(samples) == 0:
+        common.MSG("No shared samples found between files")
+        return 1
 
     ### Determine FORMAT fields we should look for ###
     if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
