@@ -297,7 +297,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
             yval = step*(i+3)
             ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val*scale))
             ax.annotate(val, xy=(xval+step,yval))
-        fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
+        fig.savefig(outprefix + "-bubble-period%s.png"%per)
         plt.close()
 
 def getargs():  # pragma: no cover

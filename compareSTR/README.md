@@ -87,3 +87,7 @@ compareSTR \
   --bubble-min -50 --bubble-max 50 \
   --out test-compare
 ```
+
+Below is an example bubble plot output by the above command:
+
+![bubbleplot](test-compare-bubble-periodALL.png)
