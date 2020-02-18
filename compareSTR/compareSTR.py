@@ -3,9 +3,15 @@
 Tool for comparing two STR callsets
 """
 
+# Allow making plots even with no x-forward
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+
+# Allow plots to be editable in Adobe Illustrator
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 # Load external libraries
 import argparse
@@ -71,9 +77,79 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
             raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2"%fmt)
     return formats, binsizes
 
+def OutputLocusMetrics(data, outprefix, noplot):
+    r"""Output per-locus metrics
+
+    Outputs text file and plot of per-locus metrics
+    outprefix + "-locuscompare.tab"
+    outprefix + "-locuscompare.pdf"
+
+    Parameters
+    ----------
+    data : pd.Dataframe 
+        Call comparison results
+    outprefix : str
+        Prefix to name output file
+    noplot : bool
+        If True, don't output plots
+    """
+    # collapse data by locus and output
+    perloc = data.groupby(["chrom","start"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "sample": len})
+    perloc = perloc.sort_values("metric-conc-len", ascending=False)
+    perloc.to_csv(outprefix+"-locuscompare.tab", sep="\t", index=False)
+
+    # Create per-locus plot
+    if noplot: return
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter([item for item in range(perloc.shape[0])], perloc["metric-conc-len"], color="darkblue")
+    ax.set_ylabel("Concordance", size=15)
+    if perloc.shape[0]<=20:
+        ax.set_xticks([item for item in range(perloc.shape[0])])
+        ax.set_xticklabels(perloc.apply(lambda x: "%s:%s"%(x["chrom"],x["start"]), 1), size=12, rotation=90)
+    else:
+        ax.set_xlabel("TR Locus", size=15)
+    plt.tight_layout()
+    fig.savefig(outprefix+"-locuscompare.pdf")
+
+def OutputSampleMetrics(data, outprefix, noplot):
+    r"""Output per-sample metrics
+
+    Outputs text file and plot of per-sample metrics
+    outprefix + "-samplecompare.tab"
+    outprefix + "-samplecompare.pdf"
+
+    Parameters
+    ----------
+    data : pd.Dataframe 
+        Call comparison results
+    outprefix : str
+        Prefix to name output file
+    noplot : bool
+        If True, don't output plots
+    """
+    # collapse data by locus and output
+    persamp = data.groupby(["sample"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "start": len})
+    persamp.columns = ["sample","metric-conc-seq","metric-conc-len","numcalls"]
+    persamp = persamp.sort_values("metric-conc-len", ascending=False)
+    persamp.to_csv(outprefix+"-samplecompare.tab", sep="\t", index=False)
+
+    # Create per-locus plot
+    if noplot: return
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter([item for item in range(persamp.shape[0])], persamp["metric-conc-len"], color="darkblue")
+    ax.set_ylabel("Concordance", size=15)
+    if persamp.shape[0]<=20:
+        ax.set_xticks([item for item in range(persamp.shape[0])])
+        ax.set_xticklabels(persamp["sample"], size=12, rotation=90)
+    else:
+        ax.set_xlabel("Sample", size=15)
+    plt.tight_layout()
+    fig.savefig(outprefix+"-samplecompare.pdf")
+
 def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, period, outprefix):
-    r"""
-    Output overall accuracy metrics
+    r"""Output overall accuracy metrics
 
     Output metrics overall, by period, and by FORMAT bins
     Output results to outprefix+"-overall.tab"
@@ -105,6 +181,7 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
         if per == "ALL":
             usedata = data
         else: usedata = data[data["period"]==per]
+        if usedata.shape[0] < 2: continue
         # Overall
         items = [per] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
                                                 scipy.stats.pearsonr(usedata["gtsum1"], usedata["gtsum2"])[0],
@@ -190,6 +267,7 @@ def getargs():  # pragma: no cover
     option_group = parser.add_argument_group("Optional arguments")
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
     option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
+    option_group.add_argument("--noplot", help="Don't output any plots. Only produce text output", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -310,15 +388,13 @@ def main(args):
 
     ### Overall metrics ###
     OutputOverallMetrics(data, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
-    OutputBubblePlot(data, args.period, args.out)
+    if not args.noplot: OutputBubblePlot(data, args.period, args.out)
 
     ### Per-locus metrics ###
-    # TODO: per-locus, chrom, start, period, numsamples, metrics
-    # TODO: plot for per-locus acc
+    OutputLocusMetrics(data, args.out, args.noplot)
 
     ### Per-sample metrics ###
-    # TODO: for each sample: metrics, numcalls
-    # TODO: plot for overall acc for each sample
+    OutputSampleMetrics(data, args.out, args.noplot)
 
     return 0 
 
