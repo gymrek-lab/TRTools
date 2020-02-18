@@ -110,8 +110,6 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat: list of str
        List of format field strings to use downstream
     """
-    # TODO: Check this for all readers, not just 0
-
     # Check contigs the same for all readers
     contigs = readers[0].contigs
     for i in range(1, len(readers)):

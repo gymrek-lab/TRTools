@@ -32,6 +32,7 @@ STRTools includes the following tools.
 * mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
 * statSTR: a tool for computing various statistics on VCF files
 * compareSTR: a tool for comparing TR callsets
+* qcSTR: a tool for generating various quality control plots for a TR callset
 
 Type `<command> --help` to see a full set of options.
 
