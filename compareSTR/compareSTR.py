@@ -231,17 +231,19 @@ def OutputBubblePlot(data, period, outprefix):
             usedata = data
         else: usedata = data[data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
-        scale = np.mean(bubble_counts["sample"])*1000
+        scale = np.mean(bubble_counts["sample"])*500
         minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
         maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        scatter = ax.scatter(bubble_counts["gtsum1"], bubble_counts["gtsum2"], s=np.sqrt(bubble_counts["sample"]*scale), color="darkblue")
+        scatter = ax.scatter(bubble_counts["gtsum1"], bubble_counts["gtsum2"], s=np.sqrt(bubble_counts["sample"]*scale), color="white", edgecolors="darkblue")
         ax.set_xlabel("GT sum - file 1", size=15)
         ax.set_ylabel("GT sum - file 2", size=15)
         ax.plot([minval, maxval], [minval, maxval], linestyle="dashed", color="gray")
+        ax.axhline(y=0, linestyle="dashed", color="gray")
+        ax.axvline(x=0, linestyle="dashed", color="gray")
         # plot dummy points for legend
-        handles, labels = scatter.legend_elements(prop="sizes", color="darkblue")
+        handles, labels = scatter.legend_elements(prop="sizes", color="white", num=4, markeredgecolor="darkblue")
         ax.legend(handles, [int(round((float(item.split("{")[1].split("}")[0])**2/scale))) for item in labels], loc="upper left", title="Num. calls")
         fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
 
@@ -293,6 +295,7 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
     # Extract shared info
     chrom = record1.vcfrecord.CHROM
     pos = record1.vcfrecord.POS
+    reflen = len(record1.ref_allele)
     for sample in samples:
         call1 = record1.vcfrecord.genotype(sample)
         call2 = record2.vcfrecord.genotype(sample)
@@ -311,8 +314,8 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
         results_dir["sample"].append(sample)
         results_dir["gtstring1"].append(",".join(gt_string_1))
         results_dir["gtstring2"].append(",".join(gt_string_2))
-        results_dir["gtsum1"].append(sum(gt_len_1))
-        results_dir["gtsum2"].append(sum(gt_len_2))
+        results_dir["gtsum1"].append(sum(gt_len_1)-reflen)
+        results_dir["gtsum2"].append(sum(gt_len_2)-reflen)
         results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
         results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
         for ff in format_fields:
@@ -325,6 +328,7 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
             results_dir[ff+"1"].append(val1)
             results_dir[ff+"2"].append(val2)
 
+# TODO: pass in minval, maxval for bubble plot
 def main(args):
     ### Check and load VCF files ###
     vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
@@ -370,7 +374,7 @@ def main(args):
     done = mergeutils.DoneReading(current_records)
     num_records = 0
     while not done:
-        if args.numrecords is not None and num_records > args.numrecords: break
+        if args.numrecords is not None and num_records >= args.numrecords: break
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all([is_min]):
