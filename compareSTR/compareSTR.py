@@ -30,12 +30,10 @@ if __name__ == "compareSTR" or __name__ == '__main__' or __package__ is None:
     import common
     import mergeutils
     import tr_harmonizer as trh
-    import utils
 else: # pragma: no cover
     import strtools.utils.common as common  # pragma: no cover
     import strtools.utils.mergeutils as mergeutils  # pragma: no cover
     import strtools.utils.tr_harmonizer as trh # pragma: no cover
-    import strtools.utils.utils as utils  # pragma: no cover
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on
@@ -297,7 +295,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
             yval = step*(i+3)
             ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val*scale))
             ax.annotate(val, xy=(xval+step,yval))
-        fig.savefig(outprefix + "-bubble-period%s.png"%per)
+        fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
         plt.close()
 
 def getargs():  # pragma: no cover

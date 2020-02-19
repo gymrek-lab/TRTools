@@ -29,7 +29,8 @@ setup(name=NAME,
               'dumpSTR=dumpSTR.dumpSTR:main',
               'mergeSTR=mergeSTR.mergeSTR:main',
               'statSTR=statSTR.statSTR:main',
-              'compareSTR=compareSTR.compareSTR:main'
+              'compareSTR=compareSTR.compareSTR:main',
+              'qcSTR=qcSTR.qcSTR:main'
           ],
       },
       install_requires=['argparse',
