@@ -16,7 +16,7 @@ def base_argparse():
     args.vcftype = "auto"
     args.samples = None 
     args.sample_prefixes = None
-    args.plot_afreqs = False
+    args.plot_afreq = False
     args.region = None
     args.thresh = False
     args.afreq = False

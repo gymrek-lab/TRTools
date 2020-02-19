@@ -3,11 +3,24 @@
 Tool for computing stats on STR VCF files
 """
 
+# Allow making plots even with no x-forward
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
+# Allow plots to be editable in Adobe Illustrator
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 # Imports
 import argparse
+import numpy as np
 import os
 import sys
 import vcf
+
+MAXPLOTS = 10 # don't plot more than this many allele freqs
 
 # Load local libraries
 if __name__ == "statSTR" or __name__ == '__main__' or __package__ is None:
@@ -19,6 +32,47 @@ else: # pragma: no cover
     import strtools.utils.common as common  # pragma: no cover
     import strtools.utils.tr_harmonizer as trh  # pragma: no cover
     import strtools.utils.utils as utils  # pragma: no cover
+
+def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
+    r"""Plot allele frequencies for a locus
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object 
+          The record that we are computing the statistic for
+    outprefix : str
+          Prefix for output file
+    samplelists: list of list of str, optional
+          List of lists of the samples that we include when compute the statistic 
+    sampleprefixes : list of str, optional
+          Prefixes for each sample list to use in legend
+    """
+    if len(samplelists)==0: samplelists.append([])
+    allele_freqs_list = []
+    allele_set = set()
+    for sl in samplelists:
+        afreqs = trrecord.GetAlleleFreqs(uselength=True, samplelist=sl)
+        allele_freqs_list.append(afreqs)
+        allele_set = allele_set.union(afreqs.keys())
+    min_allele = min(allele_set)-2
+    max_allele = max(allele_set)+2
+    bins = np.arange(min_allele, max_allele, 1)
+    
+    fname = args.out + "-%s-%s.pdf"%(trrecord.vcfrecord.CHROM, trrecord.vcfrecord.POS)
+    w = 1.0/(len(samplelists)+0.3)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for i in range(len(samplelists)):
+        ax.bar([item+i*w for item in bins], [allele_freqs_list[i].get(item, 0) for item in bins],
+               label=sampleprefixes[i], width=w*1.1)
+    ax.legend()
+    ax.set_xlabel("TR allele (num. rpts)", size=15)
+    ax.set_ylabel("Frequency", size=15)
+    ax.set_xticklabels([int(item) for item in ax.get_xticks()], size=12)
+    ax.set_yticklabels(["%.2f"%item for item in ax.get_yticks()], size=12)
+    fig.tight_layout()
+    fig.savefig(fname)
+    plt.close()
 
 def GetHeader(header, sample_prefixes):
     r"""Return header items for a column
@@ -289,7 +343,7 @@ def main(args):
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
     if args.out == "stdout":
-        if args.plot_afreqs:
+        if args.plot_afreq:
             common.MSG("Cannot use --out stdout when generating plots")
             return 1
         outf = sys.stdout
@@ -303,8 +357,12 @@ def main(args):
             return 1
         regions = invcf.fetch(args.region)
     else: regions = invcf
+    num_plotted = 0
     for record in regions:
         trrecord = tr_harmonizer.HarmonizeRecord(record)
+        if args.plot_afreq and num_plotted <= MAXPLOTS:
+            PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
+            num_plotted += 1
         items = [record.CHROM, record.POS, record.INFO["END"]]
         if args.thresh:
             items.extend(GetThresh(trrecord, samplelists=sample_lists))
