@@ -46,7 +46,7 @@ def OutputDiffRefHistogram(diffs_from_ref, fname):
     bins = np.arange(-1*extremeval, extremeval, 1)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.hist(diffs_from_ref, bins=bins, color="black", edgecolor="white")
+    ax.hist(diffs_from_ref, bins=bins, color="black", edgecolor="white", log=True)
     ax.set_xlabel("Difference from ref (rpt. units)", size=15)
     ax.set_ylabel("Number of alleles", size=15)
     fig.savefig(fname)
@@ -189,7 +189,7 @@ def main(args):
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
-    OutputChromCallrate(chrom_calls, args.out+"-sample-chromnum.pdf")
+    OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
 
 if __name__ == "__main__":  # pragma: no cover
     # Set up args

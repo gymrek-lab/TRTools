@@ -63,6 +63,7 @@ compareSTR outputs the following text files and plots:
 * outprefix+"-samplecompare.pdf": Plots the length concordance metric for each sample considered.
 
 <a name="examples">Examples</a>
+## Example compareSTR command
 
 Compare two callsets:
 ```
