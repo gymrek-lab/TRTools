@@ -1,5 +1,7 @@
 # Editor files
 *.swp
+.pydocstyle
+.mypy_cache/
 
 # Python files
 *~
