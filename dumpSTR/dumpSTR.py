@@ -852,7 +852,7 @@ def main(args):
     invcf.infos["HRUN"] = _Info("HRUN", 1, "Integer", "Length of longest homopolymer run", source=None, version=None)
 
     # Set up output files
-    if not os.path.exists(os.path.dirname(args.out)):
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Output directory does not exist")
         return 1
     outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
