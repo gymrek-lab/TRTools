@@ -31,7 +31,7 @@ Optional Parameters:
 qcSTR outputs the following plots:
 * outprefix+"xx-sample-callnum.pdf": a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
 * outprefix+"xx-chrom-callnum.pdf": a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
-* outprefix+"-diffref-histogram.pdf": a histogram of the difference from the reference allele (in number of repeat units) for each allele called. Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem.
+* outprefix+"-diffref-histogram.pdf": a histogram of the difference from the reference allele (in number of repeat units) for each allele called. Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. The red line gives the cumulative fraction of TRs below each reference length.
 * outprefix+"xx-diffref-bias.pdf": plots reference length (bp) vs. the mean difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality.
 
 <a name="examples"></a>

@@ -40,8 +40,9 @@ def OutputDiffRefHistogram(diffs_from_ref, fname):
     fname : str
         Filename of output plot
     """
-    minval = min(diffs_from_ref)
-    maxval = max(diffs_from_ref)
+    MAXPOSS = 50 # don't let histogram go beyond this
+    minval = max(-1*MAXPOSS, min(diffs_from_ref))
+    maxval = min(MAXPOSS, max(diffs_from_ref))
     extremeval = max(abs(minval), abs(maxval))
     bins = np.arange(-1*extremeval, extremeval, 1)
     fig = plt.figure()
@@ -65,14 +66,20 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
         Filename of output plot
     """
     data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
+    data["ref"] = data["ref"].apply(lambda x: int(x/5)*5) # bin by 5bp
     summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref") # median or mean?
-    summ = summ[summ["count"]>=5] # exclude small counts
+    summ = summ[summ["count"]>=25] # exclude small counts
+    trcounts = np.cumsum(summ["count"])
+    trfreqs = trcounts/np.sum(summ["count"])
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(summ["ref"], summ["diff"], marker="o", color="darkblue")
     ax.axhline(y=0, linestyle="dashed", color="gray")
     ax.set_xlabel("Reference length (bp)", size=15)
     ax.set_ylabel("Median diff from ref (bp)", size=15)
+    ax1 = ax.twinx()
+    ax1.plot(summ["ref"], trfreqs, color="darkred")
+    ax1.set_ylabel("Cumulative fraction of alleles", size=15)
     fig.tight_layout()
     fig.savefig(fname)
     plt.close()
