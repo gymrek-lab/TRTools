@@ -15,6 +15,8 @@ def base_argparse():
     args.out = os.path.join(DUMPDIR, "test")
     args.vcftype = "auto"
     args.samples = None 
+    args.sample_prefixes = None
+    args.plot_afreqs = False
     args.region = None
     args.thresh = False
     args.afreq = False

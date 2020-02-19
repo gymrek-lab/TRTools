@@ -16,13 +16,14 @@ statSTR
 ```
 
 Required Parameters: 
-* `--vcf`: input the STR VCF file 
+* `--vcf <string>`: input the STR VCF file 
 * `--vcftype <string>`: Type of VCF file being processed. Default='auto'. Must be one of: 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr'.
-* `--out`: prefix to name output files. Set to stdout to write to standard output.
+* `--out <string>`: prefix to name output files. Set to stdout to write to standard output.
 
 Filtering Group parameters: 
-* `--samples`: A file containing a list of samples to include in computing statistics. If not given, all samples are used.
-* `--region`: restrict to specific regions (chrom:start-end). 
+* `--samples <string>`: A file containing a list of samples to include in computing statistics. If not given, all samples are used. To compute statistics for multiple groups of samples, you can give a comma-separated list of samples files.
+* `--sample-prefixes <string>`: Prefixes to name output for each samples group. By default uses 1,2,3 etc. Must be sample length as `--samples`.
+* `--region <string>`: restrict to specific regions (chrom:start-end). 
 
 For specific statistics available, see below.
 
