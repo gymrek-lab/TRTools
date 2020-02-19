@@ -66,7 +66,7 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
         ax.bar([item+i*w for item in bins], [allele_freqs_list[i].get(item, 0) for item in bins],
                label=sampleprefixes[i], width=w*1.1)
     ax.legend()
-    ax.set_xlabel("TR allele (num. rpts)", size=15)
+    ax.set_xlabel("TR allele (num. %s rpts)"%trrecord.motif, size=15)
     ax.set_ylabel("Frequency", size=15)
     ax.set_xticklabels([int(item) for item in ax.get_xticks()], size=12)
     ax.set_yticklabels(["%.2f"%item for item in ax.get_yticks()], size=12)
