@@ -29,7 +29,7 @@ NOCALLSTRING = "."
 # fail when all records don't have identical values for that field
 INFOFIELDS = {
     "gangstr": [("END", True), ("RU", True), ("PERIOD", True), ("REF", True), \
-                ("GRID", False), ("EXPTHRESH", True), ("STUTTERUP", False), \
+                ("EXPTHRESH", True), ("STUTTERUP", False), \
                 ("STUTTERDOWN", False), ("STUTTERP", False)],
     "hipstr": [("INFRAME_PGEOM", False), ("INFRAME_UP", False), ("INFRAME_DOWN", False), \
                ("OUTFRAME_PGEOM", False), ("OUTFRAME_UP", False), ("OUTFRAME_DOWN", False), \
