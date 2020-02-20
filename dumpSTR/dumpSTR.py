@@ -871,9 +871,11 @@ def main(args):
 
     # Go through each record
     record_counter = 0
+    tr_iter = iter(tr_harmonizer)
     while True:
         try:
-            record = next(invcf)
+            trrecord = next(tr_iter)
+            record = trrecord.vcfrecord
         except IndexError:
             common.WARNING("Skipping TR that couldn't be parsed by PyVCF. Check VCF format")
             if args.die_on_warning: return 1
@@ -898,7 +900,6 @@ def main(args):
         if args.drop_filtered:
             if record.call_rate == 0: output_record = False
         if output_record:
-            trrecord = tr_harmonizer.HarmonizeRecord(record)
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
             if record.num_called > 0:
@@ -906,7 +907,7 @@ def main(args):
                 genotype_counts = trrecord.GetGenotypeCounts(uselength=args.use_length)
                 record.INFO["HET"] = utils.GetHeterozygosity(allele_freqs)
                 record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
-                record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
+                record.INFO["AC"] = [int(item*(3*record.num_called)) for item in record.aaf]
                 record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
             else:
                 record.INFO["HET"] = -1
