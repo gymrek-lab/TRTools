@@ -180,8 +180,11 @@ def InferVCFType(vcffile):
                 possible_vcf_types.add(VCFTYPES.advntr)
             if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
                 possible_vcf_types.add(VCFTYPES.popstr)
-            if key.upper() == 'ALT' and re.find(r'STR\d+', value.upper()):
+        for key in vcffile.alts:
+            if re.search(r'STR\d+', key.upper()):
                 possible_vcf_types.add(VCFTYPES.eh)
+
+        print(key, values)
 
     if len(possible_vcf_types) == 0:
         raise ValueError('Could not identify the type of this vcf')
@@ -489,7 +492,7 @@ class TRRecordHarmonizer:
     def __iter__(self):
         """Iterate over TRRecords produced from the underlying vcf."""
         for record in self.vcffile:
-            yield self._HarmonizeRecord(record)
+            yield HarmonizeRecord(self.vcftype, record)
 
 
 class TRRecord:

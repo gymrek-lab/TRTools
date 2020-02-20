@@ -2,6 +2,7 @@
 *.swp
 .pydocstyle
 .mypy_cache/
+.bandit
 
 # Python files
 *~
