@@ -27,6 +27,391 @@ else:
 VCFTYPES = enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr'])
 
 
+def MayHaveImpureRepeats(vcftype: VCFTYPES):
+    """
+    Determine if any of the alleles in this VCF may contain impure repeats.
+
+    Specifically, impure repeats include:
+    * impurities in the underlying sequence (e.g. AAATAAAAA)
+    * partial repeats (e.g. AATAATAATAA)
+
+    This is a guarantee that the caller attempted to call impure repeats,
+    not that it found any. It also does not guarantee that
+    all impurities present were identified and called.
+
+    Returns
+    -------
+    bool
+    """
+    if vcftype == VCFTYPES.gangstr:
+        return False
+    if vcftype == VCFTYPES.hipstr:
+        return True
+    if vcftype == VCFTYPES.advntr:
+        return True  # TODO check this
+    if vcftype == VCFTYPES.popstr:
+        return True
+    if vcftype == VCFTYPES.eh:
+        return True  # TODO check this
+
+    _UnexpectedTypeError(vcftype)
+
+
+def HasLengthRefGenotype(vcftype: VCFTYPES):
+    """
+    Determine if the reference alleles of variants are given by length.
+
+    If True, then reference alleles for all variants produced by this
+    caller are specified by length and not by sequence. Sequences are
+    fabricated according to Utils.FabricateAllele().
+
+    If True, then HasLengthAltGenotypes() will also be true
+
+    Returns
+    -------
+    bool
+    """
+    if vcftype == VCFTYPES.gangstr:
+        return False
+    if vcftype == VCFTYPES.hipstr:
+        return False
+    if vcftype == VCFTYPES.advntr:
+        return False
+    if vcftype == VCFTYPES.popstr:
+        return False
+    if vcftype == VCFTYPES.eh:
+        return True  # TODO check this
+
+    _UnexpectedTypeError(vcftype)
+
+
+def HasLengthAltGenotypes(vcftype: VCFTYPES):
+    """
+    Determine if the alt alleles of variants are given by length.
+
+    If True, then alt alleles for all variants produced by this
+    caller are specified by length and not by sequence. Sequences are
+    fabricated according to Utils.FabricateAllele().
+
+    Returns
+    -------
+    bool
+    """
+    if vcftype == VCFTYPES.gangstr:
+        return False
+    if vcftype == VCFTYPES.hipstr:
+        return False
+    if vcftype == VCFTYPES.advntr:
+        return False
+    if vcftype == VCFTYPES.popstr:
+        return True
+    if vcftype == VCFTYPES.eh:
+        return True
+
+    _UnexpectedTypeError(vcftype)
+
+
+def _UnexpectedTypeError(vcftype: VCFTYPES):
+    raise ValueError("self.vcftype is the unexpected type {}"
+                     .format(vcftype))
+
+
+def InferVCFType(vcffile):
+    """
+    Infer the genotyping tool used to create the VCF.
+
+    When we can, infer from header metadata.
+    Otherwise, try to infer the type from the ALT field.
+
+    Parameters
+    ----------
+    vcffile : vcf.Reader
+
+    Returns
+    -------
+    vcftype : enum
+       Type of the VCF file. Must be included in VCFTYPES
+
+    Notes
+    -----
+    Some notes on the pecularities of each VCF type:
+    GangSTR:
+       Does not include sequence impurities or partial repeats.
+       Full REF and ALT strings given
+    HipSTR:
+       Full REF and ALT strings given
+       May contain sequence impurities and partial repeats
+       Sometimes includes non-repeat flanks in the original genotypes,
+       which are trimmed off during harmonization.
+       In that case, the original alleles can be accessed through
+       the GetFullStringGenotype() method on the returned
+       TRRecord objects.
+       If the alt alleles have differently sized flanks than the ref allele
+       then those alt alleles will be improperly trimmed.
+       HipSTR reports the motif length but not the motif itself,
+       so the motif is inferred from the sequences. This is usually
+       but not always the correct motif.
+    adVNTR:
+       Full REF and ALT strings given.
+       Uses its own ID convention that can change from run to run.
+       May contain impurities or partial repeats?
+    popSTR:
+       Includes full REF string, which can contain impurities.
+       Alt alleles are only reported as lengths, sequences are
+       fabricated with Utils.FabricateAllele
+    EH:
+       Both REF and ALT alleles are only reported as lengths.
+       Sequences are fabricated with Utils.FabricateAllele
+    """
+    possible_vcf_types = set()
+    for key, value in vcffile.metadata.items():
+        # Sometimes value is a list of values,
+        # other times it is the value itself
+        if type(value) == list:
+            values = value
+        else:
+            values = {value}
+        for value in values:
+            if key.upper() == 'COMMAND' and 'GANGSTR' in value.upper():
+                possible_vcf_types.add(VCFTYPES.gangstr)
+            if key.upper() == 'COMMAND' and 'HIPSTR' in value.upper():
+                possible_vcf_types.add(VCFTYPES.hipstr)
+            if key.upper() == 'SOURCE' and 'ADVNTR' in value.upper():
+                possible_vcf_types.add(VCFTYPES.advntr)
+            if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
+                possible_vcf_types.add(VCFTYPES.popstr)
+            if key.upper() == 'ALT' and re.find(r'STR\d+', value.upper()):
+                possible_vcf_types.add(VCFTYPES.eh)
+
+    if len(possible_vcf_types) == 0:
+        raise ValueError('Could not identify the type of this vcf')
+
+    if len(possible_vcf_types) > 1:
+        raise ValueError(('Confused - this vcf looks like it could have '
+                         'been any of the types: {}'
+                          .format(possible_vcf_types)))
+
+    return next(iter(possible_vcf_types))
+
+
+def HarmonizeRecord(vcftype: VCFTYPES, vcfrecord):
+    """
+    Harmonize VCF record to the allele string representation.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+        A PyVCF record object
+
+    Returns
+    -------
+    TRRecord
+        A harmonized TRRecord object
+    """
+    if vcftype == VCFTYPES.gangstr:
+        return _HarmonizeGangSTRRecord(vcfrecord)
+    if vcftype == VCFTYPES.hipstr:
+        return _HarmonizeHipSTRRecord(vcfrecord)
+    if vcftype == VCFTYPES.advntr:
+        return _HarmonizeAdVNTRRecord(vcfrecord)
+    if vcftype == VCFTYPES.eh:
+        raise _HarmonizeEHRecord(vcfrecord)
+    if vcftype == VCFTYPES.popstr:
+        return _HarmonizePopSTRRecord(vcfrecord)
+
+    _UnexpectedTypeError(vcftype)
+
+
+def _HarmonizeGangSTRRecord(vcfrecord):
+    """
+    Turn a vcf.model._Record with GangSTR content into a TRRecord.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+
+    Returns
+    -------
+    TRRecord
+    """
+    ref_allele = vcfrecord.REF.upper()
+    if vcfrecord.ALT[0] is not None:
+        alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
+    else:
+        alt_alleles = []
+    motif = vcfrecord.INFO["RU"].upper()
+    record_id = vcfrecord.ID
+
+    return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id)
+
+
+def _HarmonizeHipSTRRecord(vcfrecord):
+    """
+    Turn a vcf.model._Record with HipSTR content into a TRRecord.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+
+    Returns
+    -------
+    TRRecord
+    """
+    # determine full alleles and trimmed alleles
+    pos = int(vcfrecord.POS)
+    start_offset = int(vcfrecord.INFO['START']) - pos
+    pos_end_offset = int(vcfrecord.INFO['END']) - pos
+    neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
+
+    if start_offset == 0 and neg_end_offset == 0:
+        full_alleles = None
+    else:
+        if vcfrecord.ALT[0] is None:
+            full_alts = []
+        else:
+            full_alts = _UpperCaseAlleles(vcfrecord.ALT)
+
+        full_alleles = (vcfrecord.REF.upper(),
+                        full_alts)
+
+    # neg_end_offset is the number of flanking non repeat bp to remove
+    # from the end of each allele
+    # e.g. 'AAAT'[0:-1] == 'AAA'
+    # however, if neg_end_offset == 0, then we would get
+    # 'AAAA'[1:0] == '' which is not the intent
+    # so we need an if statement to instead write 'AAAA'[0:]
+    # which gives us 'AAAA'
+    if neg_end_offset == 0:
+        ref_allele = vcfrecord.REF[start_offset:].upper()
+        if vcfrecord.ALT[0] is not None:
+            alt_alleles = []
+            for alt in vcfrecord.ALT:
+                alt_alleles.append(str(alt)[start_offset:].upper())
+        else:
+            alt_alleles = []
+    else:
+        ref_allele = vcfrecord.REF[start_offset:neg_end_offset].upper()
+        if vcfrecord.ALT[0] is not None:
+            alt_alleles = []
+            for alt in vcfrecord.ALT:
+                alt_alleles.append(
+                    str(alt)[start_offset:neg_end_offset].upper()
+                )
+        else:
+            alt_alleles = []
+
+    # Get the motif.
+    # Hipstr doesn't tell us this explicitly, so figure it out
+    motif = utils.InferRepeatSequence(ref_allele[start_offset:],
+                                      vcfrecord.INFO["PERIOD"])
+    record_id = vcfrecord.ID
+
+    return TRRecord(vcfrecord,
+                    ref_allele,
+                    alt_alleles,
+                    motif,
+                    record_id,
+                    full_alleles=full_alleles)
+
+
+def _HarmonizeAdVNTRRecord(vcfrecord):
+    """
+    Turn a vcf.model._Record with adVNTR content into a TRRecord.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+
+    Returns
+    -------
+    TRRecord
+    """
+    ref_allele = vcfrecord.REF.upper()
+    if vcfrecord.ALT[0] is not None:
+        alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
+    else:
+        alt_alleles = []
+    motif = vcfrecord.INFO["RU"].upper()
+    record_id = vcfrecord.INFO["VID"]
+
+    return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id)
+
+
+def _HarmonizePopSTRRecord(vcfrecord):
+    """
+    Turn a vcf.model._Record with popSTR content into a TRRecord.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+
+    Returns
+    -------
+    TRRecord
+    """
+    ref_allele = vcfrecord.REF.upper()
+    motif = vcfrecord.INFO["Motif"].upper()
+    record_id = vcfrecord.ID
+
+    if vcfrecord.ALT[0] is not None:
+        alt_allele_lengths = []
+        for alt in vcfrecord.ALT:
+            alt = str(alt)
+            if alt[0] != "<" or alt[-1] != ">":
+                raise ValueError("PopSTR alt alleles were not formatted"
+                                 " as expected")
+            alt_allele_lengths.append(float(alt[1:-1]))
+    else:
+        alt_allele_lengths = []
+
+    return TRRecord(vcfrecord,
+                    ref_allele,
+                    None,
+                    motif,
+                    record_id,
+                    alt_allele_lengths=alt_allele_lengths)
+
+
+def _HarmonizeEHRecord(vcfrecord):
+    """
+    Turn a vcf.model._Record with EH content into a TRRecord.
+
+    Parameters
+    ----------
+    vcfrecord : vcf.model._Record
+
+    Returns
+    -------
+    TRRecord
+    """
+    record_id = vcfrecord.INFO["VARID"]
+    motif = vcfrecord.INFO["RU"].upper()
+    ref_allele_length = int(vcfrecord.INFO["RL"])/len(motif)
+    if vcfrecord.ALT[0] is not None:
+        alt_allele_lengths = []
+        for alt in vcfrecord.ALT:
+            alt = str(alt)
+            if alt[:4] != "<STR" or alt[-1] != ">":
+                raise ValueError("EH alt alleles were not formatted"
+                                 " as expected")
+
+            alt_allele_lengths.append(float(alt[1:-1]))
+    else:
+        alt_allele_lengths = []
+
+    return TRRecord(vcfrecord, None, None, motif, record_id,
+                    ref_allele_length=ref_allele_length,
+                    alt_allele_lengths=alt_allele_lengths)
+
+
+def _UpperCaseAlleles(alleles):
+    """Convert the list of allele strings to upper case."""
+    upper_alleles = []
+    for allele in alleles:
+        upper_alleles.append(str(allele).upper())
+    return upper_alleles
+
+
 class TRRecordHarmonizer:
     """
     Class producing a uniform interface for accessing TR VCF records.
@@ -37,6 +422,11 @@ class TRRecordHarmonizer:
     The main purpose of this class is to infer which tool
     a VCF came from, and appropriately convert its records
     to TRRecord objects.
+
+    This class provides the object oriented paradigm for iterating
+    through a TR vcf. If you wish to use the functional paradigm and
+    provide the vcf.model._Record objects yourself, use the top-level
+    functions in this module.
 
     Parameters
     ----------
@@ -55,7 +445,7 @@ class TRRecordHarmonizer:
     def __init__(self, vcffile, vcftype="auto"):
         self.vcffile = vcffile
         if vcftype == "auto":
-            self.vcftype = self._InferVCFType()
+            self.vcftype = InferVCFType(vcffile)
         else:
             if vcftype not in VCFTYPES.__members__:
                 raise ValueError(("{} is not an excepted TR vcf type. "
@@ -67,367 +457,39 @@ class TRRecordHarmonizer:
         """
         Determine if any of the alleles in this VCF may contain impure repeats.
 
-        Specifically, impure repeats include:
-        * impurities in the underlying sequence (e.g. AAATAAAAA)
-        * partial repeats (e.g. AATAATAATAA)
-
-        This is a guarantee that the caller attempted to call impure repeats,
-        not that it found any. It also does not guarantee that
-        all impurities present were identified and called.
-
-        Returns
-        -------
-        bool
+        See Also
+        --------
+        tr_harmonizer.MayHaveImpureRepeats
         """
-        if self.vcftype == VCFTYPES.gangstr:
-            return False
-        if self.vcftype == VCFTYPES.hipstr:
-            return True
-        if self.vcftypes == VCFTYPES.advntr:
-            return True  # TODO check this
-        if self.vcftypes == VCFTYPES.popstr:
-            return True
-        if self.vcftypes == VCFTYPES.eh:
-            return True  # TODO check this
-
-        self.UnexpectedTypeError()
+        global MayHaveImpureRepeats
+        return MayHaveImpureRepeats(self.vcftype)
 
     def HasLengthRefGenotype(self):
         """
         Determine if the reference alleles of variants are given by length.
 
-        If True, then reference alleles for all variants produced by this
-        caller are specified by length and not by sequence. Sequences are
-        fabricated according to Utils.FabricateAllele().
-
-        If True, then HasLengthAltGenotypes() will also be true
-
-        Returns
-        -------
-        bool
+        See Also
+        --------
+        tr_harmonizer.HasLengthRefGenotype
         """
-        if self.vcftype == VCFTYPES.gangstr:
-            return False
-        if self.vcftype == VCFTYPES.hipstr:
-            return False
-        if self.vcftypes == VCFTYPES.advntr:
-            return False
-        if self.vcftypes == VCFTYPES.popstr:
-            return False
-        if self.vcftypes == VCFTYPES.eh:
-            return True  # TODO check this
-
-        self.UnexpectedTypeError()
+        global HasLengthRefGenotype
+        return HasLengthRefGenotype(self.vcftype)
 
     def HasLengthAltGenotypes(self):
         """
         Determine if the alt alleles of variants are given by length.
 
-        If True, then alt alleles for all variants produced by this
-        caller are specified by length and not by sequence. Sequences are
-        fabricated according to Utils.FabricateAllele().
-
-        Returns
-        -------
-        bool
+        See Also
+        --------
+        tr_harmonizer.HasLengthAltGenotypes
         """
-        if self.vcftype == VCFTYPES.gangstr:
-            return False
-        if self.vcftype == VCFTYPES.hipstr:
-            return False
-        if self.vcftypes == VCFTYPES.advntr:
-            return False
-        if self.vcftypes == VCFTYPES.popstr:
-            return True
-        if self.vcftypes == VCFTYPES.eh:
-            return True
-
-        self.UnexpectedTypeError()
+        global HasLengthAltGenotypes
+        return HasLengthAltGenotypes(self.vcftype)
 
     def __iter__(self):
         """Iterate over TRRecords produced from the underlying vcf."""
         for record in self.vcffile:
             yield self._HarmonizeRecord(record)
-
-    def _UnexpectedTypeError(self):
-        raise ValueError("self.vcftype is the unexpected type {}"
-                         .format(self.vcftype))
-
-    def _InferVCFType(self):
-        """
-        Infer the genotyping tool used to create the VCF.
-
-        When we can, infer from header metadata.
-        Otherwise, try to infer the type from the ALT field.
-
-        Returns
-        -------
-        vcftype : enum
-           Type of the VCF file. Must be included in VCFTYPES
-
-        Notes
-        -----
-        Some notes on the pecularities of each VCF type:
-        GangSTR:
-           Does not include sequence impurities or partial repeats.
-           Full REF and ALT strings given
-        HipSTR:
-           Full REF and ALT strings given
-           May contain sequence impurities and partial repeats
-           Sometimes includes non-repeat flanks in the original genotypes,
-           which are trimmed off during harmonization.
-           In that case, the original alleles can be accessed through
-           the GetFullStringGenotype() method on the returned
-           TRRecord objects.
-           If the alt alleles have differently sized flanks than the ref allele
-           then those alt alleles will be improperly trimmed.
-           HipSTR reports the motif length but not the motif itself,
-           so the motif is inferred from the sequences. This is usually
-           but not always the correct motif.
-        adVNTR:
-           Full REF and ALT strings given.
-           Uses its own ID convention that can change from run to run.
-           May contain impurities or partial repeats?
-        popSTR:
-           Includes full REF string, which can contain impurities.
-           Alt alleles are only reported as lengths, sequences are
-           fabricated with Utils.FabricateAllele
-        EH:
-           Both REF and ALT alleles are only reported as lengths.
-           Sequences are fabricated with Utils.FabricateAllele
-        """
-        possible_vcf_types = set()
-        for key, value in self.vcffile.metadata.items():
-            # Sometimes value is a list of values,
-            # other times it is the value itself
-            if type(value) == list:
-                values = value
-            else:
-                values = {value}
-            for value in values:
-                if key.upper() == 'COMMAND' and 'GANGSTR' in value.upper():
-                    possible_vcf_types.add(VCFTYPES.gangstr)
-                if key.upper() == 'COMMAND' and 'HIPSTR' in value.upper():
-                    possible_vcf_types.add(VCFTYPES.hipstr)
-                if key.upper() == 'SOURCE' and 'ADVNTR' in value.upper():
-                    possible_vcf_types.add(VCFTYPES.advntr)
-                if key.upper() == 'SOURCE' and 'POPSTR' in value.upper():
-                    possible_vcf_types.add(VCFTYPES.popstr)
-                if key.upper() == 'ALT' and re.find(r'STR\d+', value.upper()):
-                    possible_vcf_types.add(VCFTYPES.eh)
-
-        if len(possible_vcf_types) == 0:
-            raise ValueError('Could not identify the type of this vcf')
-
-        if len(possible_vcf_types) > 1:
-            raise ValueError(('Confused - this vcf looks like it could have '
-                             'been any of the types: {}'
-                              .format(possible_vcf_types)))
-
-        return next(iter(possible_vcf_types))
-
-    def _HarmonizeRecord(self, vcfrecord):
-        """
-        Harmonize VCF record to the allele string representation.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-            A PyVCF record object
-
-        Returns
-        -------
-        TRRecord
-            A harmonized TRRecord object
-        """
-        if self.vcftype == VCFTYPES.gangstr:
-            return self._HarmonizeGangSTRRecord(vcfrecord)
-        if self.vcftype == VCFTYPES.hipstr:
-            return self._HarmonizeHipSTRRecord(vcfrecord)
-        if self.vcftype == VCFTYPES.advntr:
-            return self._HarmonizeAdVNTRRecord(vcfrecord)
-        if self.vcftype == VCFTYPES.eh:
-            raise self._HarmonizeEHRecord(vcfrecord)
-        if self.vcftype == VCFTYPES.popstr:
-            return self._HarmonizePopSTRRecord(vcfrecord)
-
-        self._UnexpectedTypeError()
-
-    def _HarmonizeGangSTRRecord(self, vcfrecord):
-        """
-        Turn a vcf.model._Record with GangSTR content into a TRRecord.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-
-        Returns
-        -------
-        TRRecord
-        """
-        ref_allele = vcfrecord.REF.upper()
-        if vcfrecord.ALT[0] is not None:
-            alt_alleles = self._UpperCaseAlleles(vcfrecord.ALT)
-        else:
-            alt_alleles = []
-        motif = vcfrecord.INFO["RU"].upper()
-        record_id = vcfrecord.ID
-
-        return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id)
-
-    def _HarmonizeHipSTRRecord(self, vcfrecord):
-        """
-        Turn a vcf.model._Record with HipSTR content into a TRRecord.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-
-        Returns
-        -------
-        TRRecord
-        """
-        # determine full alleles and trimmed alleles
-        pos = int(vcfrecord.POS)
-        start_offset = int(vcfrecord.INFO['START']) - pos
-        pos_end_offset = int(vcfrecord.INFO['END']) - pos
-        neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
-
-        if start_offset == 0 and neg_end_offset == 0:
-            full_alleles = None
-        else:
-            full_alleles = {vcfrecord.REF.upper(),
-                            self._UpperCaseAlleles(vcfrecord.ALT)}
-
-        # neg_end_offset is the number of flanking non repeat bp to remove
-        # from the end of each allele
-        # e.g. 'AAAT'[0:-1] == 'AAA'
-        # however, if neg_end_offset == 0, then we would get
-        # 'AAAA'[0:0] == '' which is not the intent
-        # so we need an if statement to instead write 'AAAA'[0:]
-        # which gives us 'AAAA'
-        if neg_end_offset == 0:
-            ref_allele = vcfrecord.REF[start_offset:].upper()
-            if vcfrecord.ALT[0] is not None:
-                alt_alleles = []
-                for alt in vcfrecord.ALT:
-                    alt_alleles.append(str(alt)[start_offset:].upper())
-            else:
-                alt_alleles = []
-        else:
-            ref_allele = vcfrecord.REF[start_offset:neg_end_offset].upper()
-            if vcfrecord.ALT[0] is not None:
-                alt_alleles = []
-                for alt in vcfrecord.ALT:
-                    alt_alleles.append(
-                        str(alt)[start_offset:neg_end_offset].upper()
-                    )
-            else:
-                alt_alleles = []
-
-        # Get the motif.
-        # Hipstr doesn't tell us this explicitly, so figure it out
-        motif = utils.InferRepeatSequence(ref_allele[start_offset:],
-                                          vcfrecord.INFO["PERIOD"])
-        record_id = vcfrecord.ID
-
-        return TRRecord(vcfrecord,
-                        ref_allele,
-                        alt_alleles,
-                        motif,
-                        record_id,
-                        full_alleles=full_alleles)
-
-    def _HarmonizeAdVNTRRecord(self, vcfrecord):
-        """
-        Turn a vcf.model._Record with adVNTR content into a TRRecord.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-
-        Returns
-        -------
-        TRRecord
-        """
-        ref_allele = vcfrecord.REF.upper()
-        if vcfrecord.ALT[0] is not None:
-            alt_alleles = self._UpperCaseAlleles(vcfrecord.ALT)
-        else:
-            alt_alleles = []
-        motif = vcfrecord.INFO["RU"].upper()
-        record_id = vcfrecord.INFO["VID"]
-
-        return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id)
-
-    def _HarmonizePopSTRRecord(self, vcfrecord):
-        """
-        Turn a vcf.model._Record with popSTR content into a TRRecord.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-
-        Returns
-        -------
-        TRRecord
-        """
-        ref_allele = vcfrecord.REF.upper()
-        motif = vcfrecord.INFO["Motif"].upper()
-        record_id = vcfrecord.ID
-
-        if vcfrecord.ALT[0] is not None:
-            alt_allele_lengths = []
-            for alt in vcfrecord.ALT:
-                if alt[0] != "<" or alt[-1] != ">":
-                    raise ValueError("PopSTR alt alleles were not formatted"
-                                     " as expected")
-                alt_allele_lengths.append(float(str(alt)[1:-1]))
-        else:
-            alt_allele_lengths = []
-
-        return TRRecord(vcfrecord,
-                        ref_allele,
-                        None,
-                        motif,
-                        record_id,
-                        alt_allele_lengths=alt_allele_lengths)
-
-    def _HarmonizeEHRecord(self, vcfrecord):
-        """
-        Turn a vcf.model._Record with EH content into a TRRecord.
-
-        Parameters
-        ----------
-        vcfrecord : vcf.model._Record
-
-        Returns
-        -------
-        TRRecord
-        """
-        record_id = vcfrecord.INFO["VARID"]
-        motif = vcfrecord.INFO["RU"].upper()
-        ref_allele_length = int(vcfrecord.INFO["RL"])/len(motif)
-        if vcfrecord.ALT[0] is not None:
-            alt_allele_lengths = []
-            for alt in vcfrecord.ALT:
-                if alt[:4] != "<STR" or alt[-1] != ">":
-                    raise ValueError("EH alt alleles were not formatted"
-                                     " as expected")
-
-                alt_allele_lengths.append(float(str(alt)[1:-1]))
-        else:
-            alt_allele_lengths = []
-
-        return TRRecord(vcfrecord, None, None, motif, record_id,
-                        ref_allele_length=ref_allele_length,
-                        alt_allele_lengths=alt_allele_lengths)
-
-    def _UpperCaseAlleles(self, alleles):
-        """Convert the list of allele strings to upper case."""
-        upper_alleles = []
-        for allele in alleles:
-            upper_alleles.append(str(allele).upper())
 
 
 class TRRecord:
@@ -523,10 +585,13 @@ class TRRecord:
             for length in alt_allele_lengths:
                 self.alt_alleles.append(utils.FabricateAllele(motif, length))
 
-        if not self._CheckRecord():
-            raise ValueError("Invalid TRRecord.")
+        try:
+            self._CheckRecord()
+        except ValueError as e:
+            raise ValueError(("Invalid TRRecord. TRRecord: {} Original record:"
+                             " {}").format(str(self), str(self.vcfrecord)), e)
 
-    def _CheckRecord(self):
+    def _CheckRecord(self) -> None:
         """
         Check that this record is properly constructed.
 
@@ -546,20 +611,27 @@ class TRRecord:
             gts = sample.gt_alleles
             for al in gts:
                 if int(al) > num_alleles - 1:
-                    return False
+                    raise ValueError("Found a sample with an allele index"
+                                     " greater than the number of alleles"
+                                     " present for this variant.")
 
         if self.full_alleles:
             if len(self.full_alleles) != 2:
-                return False
+                raise ValueError("full_alleles doesn't have both"
+                                 " a ref allele and alt alleles")
             full_ref, full_alts = self.full_alleles
             if len(full_alts) != len(self.alt_alleles):
-                return False
+                raise ValueError("full alternate alleles have a different"
+                                 " length the normal alt alleles")
             if self.ref_allele not in full_ref:
-                return False
-            for full_alt, alt in zip(full_alts, self.alt_alleles):
-                if alt not in full_alt:
-                    return False
-        return True
+                raise ValueError("could not find ref allele inside "
+                                 "full ref allele")
+            for idx, (full_alt, alt) \
+                    in enumerate(zip(full_alts, self.alt_alleles)):
+                if alt not in (full_alt):
+                    raise ValueError(("Could not find alt allele {} "
+                                      "inside its full alt "
+                                      "allele").format(idx))
 
     def __iter__(self):
         """
@@ -708,7 +780,7 @@ class TRRecord:
                 lengths = [self.ref_allele_length]
             else:
                 lengths = [len(self.ref_allele) / len(self.motif)]
-            lengths.append(self.alt_allele_lengths)
+            lengths.extend(self.alt_allele_lengths)
             gts = sample.gt_alleles
             gts_bases = [lengths[int(gt)] for gt in gts]
             return gts_bases
@@ -785,6 +857,7 @@ class TRRecord:
 
     def GetAlleleCounts(self,
                         samplelist=[],
+                        *,
                         uselength=True,
                         fullgenotypes=False):
         """
@@ -827,8 +900,9 @@ class TRRecord:
 
     def GetAlleleFreqs(self,
                        samplelist=[],
+                       *,
                        uselength=True,
-                       fullgenotypes=True):
+                       fullgenotypes=False):
         """
         Get the frequencies of each allele for a record.
 
