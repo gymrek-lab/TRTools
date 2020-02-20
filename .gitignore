@@ -10,13 +10,17 @@
 
 # Extras
 nohup.out
-\#*
+*\#*
 
 # Testing
 test/common/*.vcf~
 test/common/dump/
 .coverage
 coverage.xml
+*test_run.vcf*
+xx-*
+test-*
+c57*
 
 # Build files
 *egg-info*

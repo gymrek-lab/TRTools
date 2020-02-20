@@ -2,7 +2,6 @@
 """
 Tool for computing stats on STR VCF files
 """
-# TODO add arguments for other stats here: mean, mode, variance, nheterozygosity
 
 # Imports
 import argparse
@@ -22,24 +21,174 @@ else: # pragma: no cover
     import strtools.utils.utils as utils  # pragma: no cover
 
 def GetThresh(trrecord, samplelist=[]):
-    return trrecord.GetMaxAllele(self, samplelist=samplelist)
+    r"""Return the maximum TR allele length observed
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object 
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic 
+
+    Returns
+    -------
+    thresh: float
+          Maximum allele length observed
+    """
+    return trrecord.GetMaxAllele(samplelist=samplelist)
 
 def GetAFreq(trrecord, samplelist=[], count=False, uselength=True):
+    r"""Return allele frequency for a TR
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object 
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic 
+    count: bool
+          If True, return allele counts rather than allele frequencies
+    uselength: bool 
+          Whether we should collapse alleles by length
+
+    Returns
+    -------
+    allele_freqs: str
+          Format: allele1:freq1,allele2:freq2,etc.
+    """
     if count:
-        allele_counts = trrecord.GetAlleleCcounts(samplelist=samplelist, uselength=uselength)
-        return ",".join(["%s:%i"%(a, acounts.get(a, 0)) for a in sorted(allele_counts.keys())])
+        allele_counts = trrecord.GetAlleleCounts(samplelist=samplelist, uselength=uselength)
+        return ",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())])
     else:
         allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
-        return ",".join(["%s:%.3f"%(a, acounts.get(a, 0)*1.0/total) for a in sorted(allele_freqs.keys())])
+        return ",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())])
 
 def GetHWEP(trrecord, samplelist=[], uselength=True):
+    r"""Compute Hardy Weinberg p-value 
+
+    Tests whether the number of observed heterozygous vs.
+    homozygous individuals is different than expected
+    under Hardy Weinberg Equilibrium given the observed
+    allele frequencies, based on a binomial test.
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+    uselength: bool
+          Whether we should collapse alleles by length 
+
+    Returns 
+    -------
+    p-value: float 
+          The two-sided p-value returned by a binomial test (scipy.stats.binom_test) 
+          If the allele frequencies dictionary is invalid, return np.nan 
+          If the genotype alleles not included in frequencies dictionary, return np.nan
+    """
     allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
     genotype_counts = trrecord.GetGenotypeCounts(samplelist=samplelist, uselength=uselength)
     return utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
 
 def GetHet(trrecord, samplelist=[], uselength=True):
+    r"""Compute heterozygosity of a locus 
+
+    Heterozygosity is defined as the probability 
+    that two randomly drawn allele are different. 
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+    uselength: bool
+          Whether we should collapse alleles by length
+
+    Returns 
+    -------
+    heterozygosity: float
+          The heterozygosity of the locus
+          If the allele frequencies dictionary is invalid, return np.nan 
+    """
     allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=uselength)
     return utils.GetHeterozygosity(allele_freqs)
+
+def GetMean(trrecord, samplelist=[], uselength=True):
+    r"""Compute the mean allele length
+
+    Parameters 
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+
+    Returns 
+    -------
+    mean: float 
+          The mean allele length
+          If the allele frequencies dictionary is invalid, return np.nan 
+    """
+    allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=True)
+    return utils.GetMean(allele_freqs)
+
+def GetMode(trrecord, samplelist=[]):
+    r"""Compute the mode of the allele frequencies 
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+
+    Returns 
+    -------
+    mode: float 
+	  The mode of the allele frequencies 
+          If the allele frequencies dictionary is invalid, return np.nan 
+    """
+    allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=True)
+    return utils.GetMode(allele_freqs)
+
+def GetVariance(trrecord, samplelist=[]):
+    r"""Compute the variance of the allele lengths
+
+    Parameters 
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+
+    Returns 
+    -------
+    variance: float 
+          The variance of the allele lengths
+          If the allele frequencies dictionary is invalid, return np.nan 
+    """
+    allele_freqs = trrecord.GetAlleleFreqs(samplelist=samplelist, uselength=True)
+    return utils.GetVariance(allele_freqs)
+
+def GetNumSamples(trrecord, samplelist=[]):
+    r"""Compute the number of samples 
+
+    Parameters 
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of str
+          List of the samples that we include when compute the statistic
+
+    Returns
+    -------
+    numSamples: int 
+          The number of samples 
+          If the allele frequencies dictionary is invalid, return np.nan 
+    """ 
+    return sum(trrecord.GetGenotypeCounts(samplelist=samplelist).values())
 
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
@@ -55,7 +204,11 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
-    stat_group.add_argument("--het", help="Output observed heterozygote counts used for HWE per loci.", action="store_true")
+    stat_group.add_argument("--het", help="Output heterozygosity of each locus.", action="store_true")
+    stat_group.add_argument("--mean", help="Output mean of allele frequencies.", action="store_true")
+    stat_group.add_argument("--mode", help="Output mode of allele frequencies.", action="store_true")
+    stat_group.add_argument("--var", help="Output variance of allele frequencies.", action="store_true")
+    stat_group.add_argument("--numcalled", help="Output number of samples called.", action="store_true")
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
     args = parser.parse_args()
     return args 
@@ -77,14 +230,22 @@ def main(args):
     if args.afreq: header.append("afreq")
     if args.acount: header.append("acount")
     if args.hwep: header.append("hwep")
-    if args.het: header.append("obs_het")
+    if args.het: header.append("het")
+    if args.mean: header.append("mean")
+    if args.mode: header.append("mode")
+    if args.var: header.append("var")
+    if args.numcalled: header.append("numcalled")
     if args.out == "stdout":
         outf = sys.stdout
     else:
         outf = open(args.out, "w")
     outf.write("\t".join(header)+"\n")
 
-    if args.region: regions = invcf.fetch(args.region)
+    if args.region:
+        if not os.path.isfile(args.vcf+".tbi"):
+            common.MSG("Make sure %s is bgzipped and indexed"%args.vcf)
+            return 1
+        regions = invcf.fetch(args.region)
     else: regions = invcf
     for record in regions:
         trrecord = tr_harmonizer.HarmonizeRecord(record)
@@ -92,16 +253,24 @@ def main(args):
         if args.thresh:
             items.append(GetThresh(trrecord, samplelist=samplelist))
         if args.afreq:
-            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.uselength))
+            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.use_length))
         if args.acount:
-            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.uselength, count=True))
+            items.append(GetAFreq(trrecord, samplelist=samplelist, uselength=args.use_length, count=True))
         if args.hwep:
-            items.append(GetHWEP(trrecord, samplelist=samplelist, uselength=args.uselength))
+            items.append(GetHWEP(trrecord, samplelist=samplelist, uselength=args.use_length))
         if args.het:
-            items.append(GetHet(trrecord, samplelist=samplelist, uselength=args.uselength))
+            items.append(GetHet(trrecord, samplelist=samplelist, uselength=args.use_length))
+        if args.mean: 
+            items.append(GetMean(trrecord, samplelist=samplelist))
+        if args.mode:
+            items.append(GetMode(trrecord, samplelist=samplelist))
+        if args.var:
+            items.append(GetVariance(trrecord, samplelist=samplelist))
+        if args.numcalled:
+            items.append(GetNumSamples(trrecord, samplelist=samplelist))
         outf.write("\t".join([str(item) for item in items])+"\n")
     outf.close()
-    return 0 
+    return 0
 
 if __name__ == "__main__":  # pragma: no cover
     # Set up args
