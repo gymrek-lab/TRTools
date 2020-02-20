@@ -4,6 +4,7 @@
 CompareSTR is a tool for comparing TR callsets. Example use cases include:
 * Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data
 * Comparing calls for the same tool using different parameter settings
+* Comparing calls for different tools. This only works if they used the same set of reference TRs.
 
 It outputs overall, per-locus, and per-sample concordance information. It optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and by repeat motif length.
 
@@ -25,7 +26,8 @@ Required Parameters:
 * `--out <string>`: Prefix to name output files
 
 Recommended Parameters:
-* `--vcftype <string>`: Type of VCF files being merged. Default='auto'. Must be one of: 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr'. If using `auto`, compareSTR will try to figure out the VCF type. This might not work for VCF files not from one of the supported types. e.g. if you are comparing to an experimental ground truth dataset. Therefore you must make sure `--vcf1` and `--vcf2` have alleles specified in the same way, then set `--vcftype` to whatever tool was used to generate `--vcf1` or `--vcf2`.
+* `--vcftype1 <string>`: Type of VCF file 1.
+* `--vcftype2 <string>`: Type of VCF file 2.
 
 Filtering Options:
 * `--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
