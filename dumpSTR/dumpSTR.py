@@ -3,9 +3,15 @@
 Tool for filtering and QC of STR genotypes
 """
 
+# Load external libraries
+import argparse
+import inspect
+import os
 # Imports
 import sys
-import os
+
+import vcf
+from vcf.parser import _Filter, _Format, _Info
 
 # Handle STRTools imports differently depending on where we're calling this from
 if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
@@ -20,15 +26,7 @@ else:  # pragma: no cover
     import strtools.utils.common as common # pragma: no cover
     import strtools.utils.tr_harmonizer as trh # pragma: no cover
     import strtools.utils.utils as utils # pragma: no cover
-    
-# Load external libraries
-import argparse
-import inspect
-import sys
-import vcf
-from vcf.parser import _Filter
-from vcf.parser import _Format
-from vcf.parser import _Info
+
 
 def MakeWriter(outfile, invcf, command):
     r"""Create a VCF writer with a dumpSTR header
@@ -71,8 +69,8 @@ def CheckLocusFilters(args, vcftype):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.min_locus_hwep is not None:
         if args.min_locus_hwep < 0 or args.min_locus_hwep > 1:
@@ -116,8 +114,8 @@ def CheckHipSTRFilters(invcf, args):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.hipstr_max_call_flank_indel is not None:
         if args.hipstr_max_call_flank_indel < 0 or args.hipstr_max_call_flank_indel > 1:
@@ -168,8 +166,8 @@ def CheckGangSTRFilters(invcf, args):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.gangstr_min_call_DP is not None:
         if args.gangstr_min_call_DP < 0:
@@ -231,8 +229,8 @@ def CheckAdVNTRFilters(invcf, args):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.advntr_min_call_DP is not None:
         if args.advntr_min_call_DP < 0:
@@ -279,8 +277,8 @@ def CheckEHFilters(invcf, args): # pragma: no cover
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.eh_min_ADFL is not None:
         if args.eh_min_ADFL < 0:
@@ -326,8 +324,8 @@ def CheckPopSTRFilters(invcf, args):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if args.popstr_min_call_DP is not None:
         if args.popstr_min_call_DP < 0:
@@ -366,8 +364,8 @@ def CheckFilters(invcf, args, vcftype):
     Returns
     -------
     checks : bool
-        Set to True if all filters look ok. 
-        Set to False if filters are invalid 
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
     """
     if not CheckLocusFilters(args, vcftype):
         return False
@@ -385,7 +383,7 @@ def CheckFilters(invcf, args, vcftype):
         else:
             if not CheckHipSTRFilters(invcf, args):
                 return False
-        
+
     # Check GangSTR specific filters
     if args.gangstr_min_call_DP is not None or \
        args.gangstr_max_call_DP is not None or \
@@ -475,7 +473,7 @@ def WriteLocLog(loc_info, fname):
 
 def WriteSampLog(sample_info, reasons, fname):
     r"""Write sample-level features to log file
-    
+
     Parameters
     ----------
     sample_info : dict of str->value
@@ -493,7 +491,7 @@ def WriteSampLog(sample_info, reasons, fname):
     header = ["sample", "numcalls","meanDP"] + reasons
     f = open(fname, "w")
     f.write("\t".join(header)+"\n")
-    for s in sample_info:        
+    for s in sample_info:
         assert "numcalls" in sample_info[s] and "totaldp" in sample_info[s]
         numcalls = sample_info[s]["numcalls"]
         if numcalls > 0:
@@ -507,7 +505,7 @@ def WriteSampLog(sample_info, reasons, fname):
 
 def GetAllCallFilters(call_filters):
     r"""List all possible call filters
-    
+
     Parameters
     ----------
     call_filters : list of filters.Reason
@@ -548,7 +546,7 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
 
     Returns a new record with FILTER populated for each sample.
     Also updates sample_info with sample level stats
-    
+
     Parameters
     ----------
     record : vcf._Record
@@ -627,14 +625,14 @@ def BuildCallFilters(args):
     ----------
     args : argparse namespace
        User input arguments used to decide on filters
-    
+
     Returns
     -------
     filter_list : list of filters.Filter
        List of call-level filters to apply
     """
     filter_list = []
-    
+
     # HipSTR call-level filters
     if args.hipstr_max_call_flank_indel is not None:
         filter_list.append(filters.HipSTRCallFlankIndels(args.hipstr_max_call_flank_indel))
@@ -704,7 +702,7 @@ def BuildCallFilters(args):
         filter_list.append(filters.PopSTRCallRequireSupport(args.popstr_require_support))
     return filter_list
 
-def BuildLocusFilters(args, tr_harm):
+def BuildLocusFilters(args, vcftype: trh.VCFTYPES):
     r"""Build list of locus-level filters to include.
 
     These filters should in general not be tool specific
@@ -713,8 +711,8 @@ def BuildLocusFilters(args, tr_harm):
     ---------
     args : argparse namespace
        User input arguments used to decide on filters
-    tr_harm : trh.TRRecordHarmonizer
-       Used to harmonize records across genotypers
+    vcftype:
+        the type of the vcf we're working with
 
     Returns
     -------
@@ -725,11 +723,14 @@ def BuildLocusFilters(args, tr_harm):
     if args.min_locus_callrate is not None:
         filter_list.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
     if args.min_locus_hwep is not None:
-        filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep, tr_harm, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep,
+                                                       vcftype, args.use_length))
     if args.min_locus_het is not None:
-        filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het, tr_harm, args.use_length))
+        filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het,
+                                                      vcftype, args.use_length))
     if args.max_locus_het is not None:
-        filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het, tr_harm, args.use_length))
+        filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het,
+                                                      vcftype, args.use_length))
     if args.filter_hrun:
         filter_list.append(filters.Filter_LocusHrun())
     if args.filter_regions is not None:
@@ -772,12 +773,12 @@ def getargs(): # pragma: no cover
     hipstr_call_group.add_argument("--hipstr-min-supp-reads", help="Minimum supporting reads for each allele", type=int)
     hipstr_call_group.add_argument("--hipstr-min-call-DP", help="Minimum call coverage", type=int)
     hipstr_call_group.add_argument("--hipstr-max-call-DP", help="Maximum call coverage", type=int)
-    hipstr_call_group.add_argument("--hipstr-min-call-Q", help="Minimum call quality score", type=float)    
+    hipstr_call_group.add_argument("--hipstr-min-call-Q", help="Minimum call quality score", type=float)
 
     gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
     gangstr_call_group.add_argument("--gangstr-min-call-DP", help="Minimum call coverage", type=int)
     gangstr_call_group.add_argument("--gangstr-max-call-DP", help="Maximum call coverage", type=int)
-    gangstr_call_group.add_argument("--gangstr-min-call-Q", help="Minimum call quality score", type=float)    
+    gangstr_call_group.add_argument("--gangstr-min-call-Q", help="Minimum call quality score", type=float)
     gangstr_call_group.add_argument("--gangstr-expansion-prob-het", help="Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--gangstr-expansion-prob-hom", help="Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this", type=float)
     gangstr_call_group.add_argument("--gangstr-expansion-prob-total", help="Expansion prob-value threshold. Filters calls with probability of total expansion less than this", type=float)
@@ -822,17 +823,16 @@ def main(args):
         common.WARNING("%s does not exist"%args.vcf)
         return 1
     invcf = vcf.Reader(filename=args.vcf)
-    
+
     # Set up record harmonizer and infer VCF type
-    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
-    vcftype = tr_harmonizer.vcftype
+    vcftype = trh.InferVCFType(invcf)
 
     # Check filters all make sense
     if not CheckFilters(invcf, args, vcftype): return 1
 
     # Set up locus-level filter list
     try:
-        filter_list = BuildLocusFilters(args, tr_harmonizer)
+        filter_list = BuildLocusFilters(args, vcftype)
     except ValueError:
         return 1
     invcf.filters = {}
@@ -870,7 +870,7 @@ def main(args):
         for r in all_reasons: sample_info[s][r]  = 0
 
     # Set up locus info
-    loc_info = {"totalcalls": 0, "PASS": 0} 
+    loc_info = {"totalcalls": 0, "PASS": 0}
     for filt in filter_list: loc_info[filt.filter_name()] = 0
 
     # Go through each record
@@ -902,7 +902,7 @@ def main(args):
         if args.drop_filtered:
             if record.call_rate == 0: output_record = False
         if output_record:
-            trrecord = tr_harmonizer.HarmonizeRecord(record)
+            trrecord = trh.HarmonizeRecord(vcftype, record)
             # Recalculate locus-level INFO fields
             record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
             if record.num_called > 0:
@@ -910,7 +910,7 @@ def main(args):
                 genotype_counts = trrecord.GetGenotypeCounts(uselength=args.use_length)
                 record.INFO["HET"] = utils.GetHeterozygosity(allele_freqs)
                 record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
-                record.INFO["AC"] = [int(item*(2*record.num_called)) for item in record.aaf]
+                record.INFO["AC"] = [int(item*(3*record.num_called)) for item in record.aaf]
                 record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
             else:
                 record.INFO["HET"] = -1
@@ -937,4 +937,3 @@ if __name__ == "__main__": # pragma: no cover
     # Run main function
     retcode = main(args)
     sys.exit(retcode)
-

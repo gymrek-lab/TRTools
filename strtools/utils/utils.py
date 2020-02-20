@@ -3,10 +3,10 @@ Util functions for calculating summary STR statistics
 and performing basic string operations on STR alleles.
 """
 import itertools
+import math
+
 import numpy as np
 import scipy.stats
-import sys
-import statistics 
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
@@ -81,14 +81,14 @@ def GetMean(allele_freqs):
     Returns
     -------
     mean: float
-          Return mean if allele frequencies dictionary is valid 
+          Return mean if allele frequencies dictionary is valid
 
     Examples
     --------
     >>> GetMean({0:0, 1:1})
     0.5
     """
-    if not ValidateAlleleFreqs(allele_freqs): 
+    if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
     return sum([key*allele_freqs[key] for key in allele_freqs])
 
@@ -310,6 +310,7 @@ def ReverseComplement(seq):
 
 def InferRepeatSequence(seq, period):
     """
+    TODO change to dynamic programming approach
     Infer the repeated sequence in a string
 
     Parameters
@@ -323,7 +324,7 @@ def InferRepeatSequence(seq, period):
     -------
     repseq : str
         The inferred repeat unit (motif).
-        If the input sequence is smaller than the period, 
+        If the input sequence is smaller than the period,
         repseq consists of all N's.
 
     Examples
@@ -351,3 +352,41 @@ def InferRepeatSequence(seq, period):
                 best_kmer = current_best_kmer
                 best_copies = current_best_copies
     return GetCanonicalOneStrand(best_kmer)
+
+def FabricateAllele(motif, length):
+    """
+    Fabricate an allele with the given motif and length.
+
+    Parameters
+    ----------
+    motif : str
+        the motif to build the allele from
+    length : float
+        the number of times to copy the motif
+        (noninteger implies partial repeats).
+        This does NOT specify the desired length of the
+        returned string.
+
+    Return
+    ------
+    str
+        the fabricated allele string
+
+    Notes
+    -----
+    The allele is fabricated with the given motif orientation
+    (e.g. motif = 'ACG' could produce 'ACGACGACG' but not 'CGACGACGA').
+    Fabricated alleles will contain no impurities nor flanking base pairs.
+    In the case of length being a noninteger float (because of partial
+    repeats) and where it is unclear if the last nucleotide should be
+    included in the fabricated repeat or not due to imprecision in the
+    length float, the last nucleotide will always be left off (the
+    length of the returned string will always be rounded down).
+    """
+    fab = math.floor(length) * motif
+    idx = 0
+    while (len(fab) + 1) / len(motif) < length:
+        fab += motif[idx]
+        idx += 1
+
+    return fab
