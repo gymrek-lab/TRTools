@@ -322,13 +322,17 @@ def InferRepeatSequence(seq, period):
     Returns
     -------
     repseq : str
-        The inferred repeat unit (motif)
+        The inferred repeat unit (motif).
+        If the input sequence is smaller than the period, 
+        repseq consists of all N's.
 
     Examples
     --------
-    >>> InferRepeatSequence('ATATATAT')
+    >>> InferRepeatSequence('ATATATAT', 2)
     'AT'
     """
+    if period > len(seq):
+        return "N"*len(seq)
     best_kmer = None
     best_copies = 0
     for offset in range(0, period):
