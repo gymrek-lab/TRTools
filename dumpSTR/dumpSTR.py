@@ -606,7 +606,11 @@ def ApplyCallFilters(record, reader, call_filters, sample_info):
                     else: sampdat.append(None)
         else:
             sample_info[sample.sample]["numcalls"] += 1
-            sample_info[sample.sample]["totaldp"] += sample["DP"]
+            try:
+                sample_info[sample.sample]["totaldp"] += sample["DP"]
+            except AttributeError:
+                sample_info[sample.sample]["totaldp"] += sample["LC"] # EH has LC field
+            except AttributeError: pass # If no DP, or LC, no coverage data available
             for i in range(len(samp_fmt._fields)):
                 key = samp_fmt._fields[i]
                 if key == "FILTER": sampdat.append("PASS")
