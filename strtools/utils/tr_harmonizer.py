@@ -48,11 +48,11 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.hipstr:
         return True
     if vcftype == VCFTYPES.advntr:
-        return True  # TODO check this
+        return True
     if vcftype == VCFTYPES.popstr:
         return True
     if vcftype == VCFTYPES.eh:
-        return True  # TODO check this
+        return False # TODO check this
 
     _UnexpectedTypeError(vcftype)
 
@@ -183,8 +183,6 @@ def InferVCFType(vcffile):
         for key in vcffile.alts:
             if re.search(r'STR\d+', key.upper()):
                 possible_vcf_types.add(VCFTYPES.eh)
-
-        print(key, values)
 
     if len(possible_vcf_types) == 0:
         raise ValueError('Could not identify the type of this vcf')

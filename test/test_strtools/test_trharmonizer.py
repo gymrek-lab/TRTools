@@ -325,22 +325,32 @@ def test_trh_init_and_type_infer():
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
     assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
     assert trh.InferVCFType(gangstr_vcf) == trh.VCFTYPES.gangstr
+    assert (not gangstr_trh.MayHaveImpureRepeats()
+            and not trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
     assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
     assert trh.InferVCFType(hipstr_vcf) == trh.VCFTYPES.hipstr
+    assert (hipstr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VCFTYPES.hipstr))
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VCFTYPES.popstr
     assert trh.InferVCFType(popstr_vcf) == trh.VCFTYPES.popstr
+    assert (popstr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VCFTYPES.popstr))
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf, vcftype='advntr')
     assert advntr_trh.vcftype == trh.VCFTYPES.advntr
     assert trh.InferVCFType(advntr_vcf) == trh.VCFTYPES.advntr
+    assert (advntr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VCFTYPES.advntr))
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
     assert eh_trh.vcftype == trh.VCFTYPES.eh
     assert trh.InferVCFType(eh_vcf) == trh.VCFTYPES.eh
+    assert (not eh_trh.MayHaveImpureRepeats()
+            and not trh.MayHaveImpureRepeats(trh.VCFTYPES.eh))
 
 
 def test_HarmonizeRecord():
