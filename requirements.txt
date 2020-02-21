@@ -1,0 +1,10 @@
+PyVcf
+pandas
+numpy
+pybedtools
+pytest
+scipy
+argparse
+matplotlib
+statsmodels
+pysam
