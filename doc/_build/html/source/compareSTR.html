@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>compareSTR package &#8212; STRTools 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="comparestr-package">
+<h1>compareSTR package<a class="headerlink" href="#comparestr-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-compareSTR.compareSTR">
+<span id="comparestr-comparestr-module"></span><h2>compareSTR.compareSTR module<a class="headerlink" href="#module-compareSTR.compareSTR" title="Permalink to this headline">¶</a></h2>
+<p>Tool for comparing two STR callsets</p>
+<dl class="function">
+<dt id="compareSTR.compareSTR.GetBubbleLegend">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">GetBubbleLegend</code><span class="sig-paren">(</span><em class="sig-param">sample_counts</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.GetBubbleLegend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get three good bubble legend sizes to use</p>
+<p>They should be nice round numbers spanning the orders of magnitude of the dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sample_counts</strong> (<em>array-like of int</em>) – Sample counts for each bubble size</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>legend_values</strong> – List of three or fewer representative sample sizes to use for bubble legend</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.GetFormatFields">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">GetFormatFields</code><span class="sig-paren">(</span><em class="sig-param">format_fields</em>, <em class="sig-param">format_binsizes</em>, <em class="sig-param">format_fileoption</em>, <em class="sig-param">vcfreaders</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.GetFormatFields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get which FORMAT fields to stratify on</p>
+<p>Also perform some checking on user arguments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format_fields</strong> (<em>str</em>) – Comma-separated list of FORMAT fields to stratify on</p></li>
+<li><p><strong>format_binsizes</strong> (<em>str</em>) – Comma-separated list of min:max:binsize, one for each FORMAT field.</p></li>
+<li><p><strong>format_fileoption</strong> (<em>{0</em><em>, </em><em>1</em><em>, </em><em>2}</em>) – Whether each format field needs to be in both readers (0), reader 1 (1) or reader 2 (2)</p></li>
+<li><p><strong>vcfreaders</strong> (<em>list of vcf.Reader</em>) – List of readers. Needed to check if required FORMAT fields are present</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>formats</strong> (<em>list of str</em>) – List of FORMAT fields to stratify on</p></li>
+<li><p><strong>binsizes</strong> (<em>list of float</em>) – List of binsizes for each FORMAT field</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.OutputBubblePlot">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">OutputBubblePlot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">period</em>, <em class="sig-param">outprefix</em>, <em class="sig-param">minval=None</em>, <em class="sig-param">maxval=None</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.OutputBubblePlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output bubble plot of gtsum1 vs. gtsum2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Dataframe</em>) – Call comparison results</p></li>
+<li><p><strong>period</strong> (<em>bool</em>) – If True, also stratify results by period</p></li>
+<li><p><strong>outprefix</strong> (<em>str</em>) – Prefix to name output file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.OutputLocusMetrics">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">OutputLocusMetrics</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">outprefix</em>, <em class="sig-param">noplot</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.OutputLocusMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output per-locus metrics</p>
+<p>Outputs text file and plot of per-locus metrics
+outprefix + “-locuscompare.tab”
+outprefix + “-locuscompare.pdf”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Dataframe</em>) – Call comparison results</p></li>
+<li><p><strong>outprefix</strong> (<em>str</em>) – Prefix to name output file</p></li>
+<li><p><strong>noplot</strong> (<em>bool</em>) – If True, don’t output plots</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.OutputOverallMetrics">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">OutputOverallMetrics</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">format_fields</em>, <em class="sig-param">format_binsizes</em>, <em class="sig-param">stratify_file</em>, <em class="sig-param">period</em>, <em class="sig-param">outprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.OutputOverallMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output overall accuracy metrics</p>
+<p>Output metrics overall, by period, and by FORMAT bins
+Output results to outprefix+”-overall.tab”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Dataframe</em>) – Call comparison results</p></li>
+<li><p><strong>format_fields</strong> (<em>list of str</em>) – List of FORMAT fields to stratify by</p></li>
+<li><p><strong>format_binsizes</strong> (<em>list of float</em><em>,</em><em>float</em><em>,</em><em>float</em>) – List of min,max,binsize to stratify formats</p></li>
+<li><p><strong>stratify_file</strong> (<em>{0</em><em>, </em><em>1</em><em>, </em><em>2}</em>) – Specify whether to apply FORMAT stratification to both files (0), or only (1) or (2)</p></li>
+<li><p><strong>period</strong> (<em>bool</em>) – If True, also stratify results by period</p></li>
+<li><p><strong>outprefix</strong> (<em>str</em>) – Prefix to name output file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.OutputSampleMetrics">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">OutputSampleMetrics</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">outprefix</em>, <em class="sig-param">noplot</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.OutputSampleMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output per-sample metrics</p>
+<p>Outputs text file and plot of per-sample metrics
+outprefix + “-samplecompare.tab”
+outprefix + “-samplecompare.pdf”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Dataframe</em>) – Call comparison results</p></li>
+<li><p><strong>outprefix</strong> (<em>str</em>) – Prefix to name output file</p></li>
+<li><p><strong>noplot</strong> (<em>bool</em>) – If True, don’t output plots</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.UpdateComparisonResults">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">UpdateComparisonResults</code><span class="sig-paren">(</span><em class="sig-param">record1</em>, <em class="sig-param">record2</em>, <em class="sig-param">format_fields</em>, <em class="sig-param">samples</em>, <em class="sig-param">results_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.UpdateComparisonResults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract comparable results from a pair of VCF records</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record1</strong> (<em>trh.TRRecord</em>) – First record to compare</p></li>
+<li><p><strong>record2</strong> (<em>trh.TRRecord</em>) – Second record to compare</p></li>
+<li><p><strong>format_fields</strong> (<em>list of str</em>) – List of format fields to extract</p></li>
+<li><p><strong>samples</strong> (<em>list of str</em>) – List of samples to consider</p></li>
+<li><p><strong>results_dir</strong> (<em>dict</em>) – Results dictionary to update. Need to update:
+chrom, start, period, sample, gtstring1, gtstring2
+gtsum1, gtsum2, metric-conc-seq, metric-conc-len
+for each matching sample</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.getargs">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">getargs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.getargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="compareSTR.compareSTR.main">
+<code class="sig-prename descclassname">compareSTR.compareSTR.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="headerlink" href="#compareSTR.compareSTR.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-compareSTR">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-compareSTR" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">STRTools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Gymreklab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/compareSTR.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
