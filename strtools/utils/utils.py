@@ -333,7 +333,7 @@ def InferRepeatSequence(seq, period):
     'AT'
     """
     if period > len(seq):
-        return "N"*len(seq)
+        return "N"*period
     best_kmer = None
     best_copies = 0
     for offset in range(0, period):

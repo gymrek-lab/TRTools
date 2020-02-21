@@ -121,3 +121,4 @@ def test_InferRepeatSequence():
     assert(utils.InferRepeatSequence("ATATATATATA", 2)=="AT")
     assert(utils.InferRepeatSequence("ATATATACATA", 2)=="AT")
     assert(utils.InferRepeatSequence("ATATATACATAAAAAAAAAAAAAAA", 1)=="A")
+    assert(utils.InferRepeatSequence("ATATAT", 10)=="NNNNNNNNNN")
