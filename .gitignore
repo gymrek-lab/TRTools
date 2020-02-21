@@ -5,7 +5,7 @@
 .bandit
 
 # Docs
-docs/_build/
+*_build/*
 
 # Python files
 *~

@@ -12,15 +12,6 @@ mergeSTR.mergeSTR module
    :undoc-members:
    :show-inheritance:
 
-mergeSTR.test\_mergeSTR module
-------------------------------
-
-.. automodule:: mergeSTR.test_mergeSTR
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 Module contents
 ---------------
 

@@ -12,15 +12,6 @@ statSTR.statSTR module
    :undoc-members:
    :show-inheritance:
 
-statSTR.test\_statSTR module
-----------------------------
-
-.. automodule:: statSTR.test_statSTR
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 Module contents
 ---------------
 

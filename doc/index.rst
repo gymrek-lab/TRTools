@@ -3,14 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to STRTools's documentation!
+STRTools: a tool for genome-wide tandem repeat analysis
 ====================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
+   INTRO
+   API
+   UTILITIES
 
 Indices and tables
 ==================

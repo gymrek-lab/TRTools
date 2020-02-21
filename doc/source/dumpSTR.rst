@@ -20,15 +20,6 @@ dumpSTR.filters module
    :undoc-members:
    :show-inheritance:
 
-dumpSTR.test\_dumpSTR module
-----------------------------
-
-.. automodule:: dumpSTR.test_dumpSTR
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 Module contents
 ---------------
 
