@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>strtools.utils package &#8212; STRTools 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="strtools-utils-package">
+<h1>strtools.utils package<a class="headerlink" href="#strtools-utils-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-strtools.utils.common">
+<span id="strtools-utils-common-module"></span><h2>strtools.utils.common module<a class="headerlink" href="#module-strtools.utils.common" title="Permalink to this headline">¶</a></h2>
+<p>Common util functions</p>
+<dl class="function">
+<dt id="strtools.utils.common.MSG">
+<code class="sig-prename descclassname">strtools.utils.common.</code><code class="sig-name descname">MSG</code><span class="sig-paren">(</span><em class="sig-param">msg</em>, <em class="sig-param">debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.common.MSG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a status message to standard error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>str</em>) – A descriptive message</p></li>
+<li><p><strong>debug</strong> (<em>bool</em><em>, </em><em>optional</em>) – Only print the message if debug is True</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">MSG</span><span class="p">(</span><span class="s2">&quot;Something unexpected happened&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.common.WARNING">
+<code class="sig-prename descclassname">strtools.utils.common.</code><code class="sig-name descname">WARNING</code><span class="sig-paren">(</span><em class="sig-param">msg</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.common.WARNING" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a warning message to standard error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>str</em>) – A descriptive warning message</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WARNING</span><span class="p">(</span><span class="s2">&quot;Something unexpected happened&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-strtools.utils.utils">
+<span id="strtools-utils-utils-module"></span><h2>strtools.utils.utils module<a class="headerlink" href="#module-strtools.utils.utils" title="Permalink to this headline">¶</a></h2>
+<p>Util functions for calculating summary STR statistics
+and performing basic string operations on STR alleles.</p>
+<dl class="function">
+<dt id="strtools.utils.utils.FabricateAllele">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">FabricateAllele</code><span class="sig-paren">(</span><em class="sig-param">motif</em>, <em class="sig-param">length</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.FabricateAllele" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fabricate an allele with the given motif and length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>motif</strong> (<em>str</em>) – the motif to build the allele from</p></li>
+<li><p><strong>length</strong> (<em>float</em>) – the number of times to copy the motif
+(noninteger implies partial repeats).
+This does NOT specify the desired length of the
+returned string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the fabricated allele string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The allele is fabricated with the given motif orientation
+(e.g. motif = ‘ACG’ could produce ‘ACGACGACG’ but not ‘CGACGACGA’).
+Fabricated alleles will contain no impurities nor flanking base pairs.
+In the case of length being a noninteger float (because of partial
+repeats) and where it is unclear if the last nucleotide should be
+included in the fabricated repeat or not due to imprecision in the
+length float, the last nucleotide will always be left off (the
+length of the returned string will always be rounded down).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetCanonicalMotif">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetCanonicalMotif</code><span class="sig-paren">(</span><em class="sig-param">repseq</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetCanonicalMotif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get canonical STR sequence, considering both strands</p>
+<p>The canonical sequence is the first alphabetically
+out of all possible rotations on + and - strands
+of the sequence. e.g. “TG” canonical sequence is “AC”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>repseq</strong> (<em>str</em>) – String giving a STR motif (repeat unit sequence)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>canon</strong> – The canonical sequence of the STR motif</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetCanonicalMotif</span><span class="p">(</span><span class="s2">&quot;TG&quot;</span><span class="p">)</span>
+<span class="go">&quot;AC&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetCanonicalOneStrand">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetCanonicalOneStrand</code><span class="sig-paren">(</span><em class="sig-param">repseq</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetCanonicalOneStrand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get canonical STR sequence, considering one strand</p>
+<p>The canonical sequence is the first alphabetically
+out of all possible rotations. e.g. CAG -&gt; AGC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>repseq</strong> (<em>str</em>) – String giving a STR motif (repeat unit sequence)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>canon</strong> – The canonical sequence of the STR motif</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetCanonicalOneStrand</span><span class="p">(</span><span class="s2">&quot;CAG&quot;</span><span class="p">)</span>
+<span class="go">&quot;AGC&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetHardyWeinbergBinomialTest">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetHardyWeinbergBinomialTest</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em>, <em class="sig-param">genotype_counts</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetHardyWeinbergBinomialTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Hardy Weinberg p-value</p>
+<p>Tests whether the number of observed heterozygous vs.
+homozygous individuals is different than expected
+under Hardy Weinberg Equilibrium given the observed
+allele frequencies, based on a binomial test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles are typically strings (sequences) or floats (num. repeats)</p></li>
+<li><p><strong>genotype_counts</strong> (<em>dict of</em><em> (</em><em>object</em><em>, </em><em>object</em><em>)</em><em>: int</em>) – Dictionary of counts of each genotype. Genotypes are defined
+as tuples of alleles. Alleles must be the same as those given in
+allele_freqs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>p-value</strong> – The two-sided p-value returned by a binomial test (scipy.stats.binom_test)
+If the allele frequencies dictionary is invalid, return np.nan
+If genotype alleles not included in frequencies dictionary, return np.nan</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetHeterozygosity">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetHeterozygosity</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetHeterozygosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute heterozygosity of a locus</p>
+<p>Heterozygosity is defined as the probability
+that two randomly drawn alleles are different.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles are typically strings (sequences) or floats (num. repeats)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>heterozygosity</strong> – The heterozygosity of the locus.
+If the allele frequencies dictionary is invalid, return np.nan</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Heterzygosity is computed as:</p>
+<div class="math notranslate nohighlight">
+\[H = 1-\sum_{i=1..n} p_i^2\]</div>
+<p>where <cite>p_i</cite> is the frequency of allele <cite>i</cite> and <cite>n</cite> is the number of alleles.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetHeterozygosity</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mf">0.5</span><span class="p">})</span>
+<span class="go">0.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetHomopolymerRun">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetHomopolymerRun</code><span class="sig-paren">(</span><em class="sig-param">seq</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetHomopolymerRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the maximum homopolymer run length in a sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seq</strong> (<em>str</em>) – String giving a sequence of nucleotides</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>runlength</strong> – The length of the longest homopolymer run</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetHomopolymerRun</span><span class="p">(</span><span class="s2">&quot;AATAAAATAAAAAT&quot;</span><span class="p">)</span>
+<span class="go">5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetMean">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetMean</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetMean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean allele length</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles must be given in lengths (numbers, not strings)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mean</strong> – Return mean if allele frequencies dictionary is valid</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetMean</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+<span class="go">0.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetMode">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetMode</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mode allele length</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles must be given in lengths (numbers, not strings)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mode</strong> – Return mode if allele frequencies dictionary is valid</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetMode</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mf">0.9</span><span class="p">})</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.GetVariance">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">GetVariance</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.GetVariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the variance of the allele lengths</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles must be given in lengths (numbers, not strings)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>variance</strong> – Return variance if allele frequencies dictionary is valid</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GetVariance</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.InferRepeatSequence">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">InferRepeatSequence</code><span class="sig-paren">(</span><em class="sig-param">seq</em>, <em class="sig-param">period</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.InferRepeatSequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO change to dynamic programming approach
+Infer the repeated sequence in a string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq</strong> (<em>str</em>) – A string of nucleotides</p></li>
+<li><p><strong>period</strong> (<em>int</em>) – Length of the repeat unit</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>repseq</strong> – The inferred repeat unit (motif).
+If the input sequence is smaller than the period,
+repseq consists of all N’s.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">InferRepeatSequence</span><span class="p">(</span><span class="s1">&#39;ATATATAT&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;AT&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.ReverseComplement">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">ReverseComplement</code><span class="sig-paren">(</span><em class="sig-param">seq</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.ReverseComplement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get reverse complement of a sequence.</p>
+<p>Converts everything to uppsercase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seq</strong> (<em>str</em>) – String of nucleotides.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>revcompseq</strong> – Reverse complement of the input sequence.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ReverseComplement</span><span class="p">(</span><span class="s2">&quot;AGGCT&quot;</span><span class="p">)</span>
+<span class="go">&quot;AGCCT&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="strtools.utils.utils.ValidateAlleleFreqs">
+<code class="sig-prename descclassname">strtools.utils.utils.</code><code class="sig-name descname">ValidateAlleleFreqs</code><span class="sig-paren">(</span><em class="sig-param">allele_freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#strtools.utils.utils.ValidateAlleleFreqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the allele frequency distribution is valid.</p>
+<p>Allele frequencies must sum to 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_freqs</strong> (<em>dict of object: float</em>) – Dictionary of allele frequencies for each allele.
+Alleles are typically strings (sequences) or floats (num. repeats)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>is_valid</strong> – Return True if the distribution is valid, else False</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ValidateAlleleFreqs</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mf">0.5</span><span class="p">})</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-strtools.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-strtools.utils" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">STRTools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Gymreklab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/strtools.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
