@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/STRTools'
 LICENSE = 'MIT'
 
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 setup(name=NAME,
       version=VERSION,
