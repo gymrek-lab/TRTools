@@ -58,8 +58,8 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
     ----------
     min_locus_hwep : float
        Filters calls with HWE p-value lower than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
 
@@ -67,8 +67,8 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
     ----------
     threshold : float
        Filters calls with HWE p-value lower than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
     name : str
@@ -76,13 +76,13 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
     """
 
     name = 'HWE'
-    def __init__(self, min_locus_hwep, tr_harmonizer, uselength=False):
+    def __init__(self, min_locus_hwep, vcftype, uselength=False):
         self.threshold = min_locus_hwep
-        self.tr_harmonizer = tr_harmonizer
+        self.vcftype = vcftype
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(self.vcftype, record)
         allele_freqs = trrecord.GetAlleleFreqs(uselength=self.uselength)
         genotype_counts = trrecord.GetGenotypeCounts(uselength=self.uselength)
         hwep = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
@@ -99,8 +99,8 @@ class Filter_MinLocusHet(vcf.filters.Base):
     ----------
     min_locus_het : float
        Filters calls with heterozygosity lower than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
 
@@ -108,8 +108,8 @@ class Filter_MinLocusHet(vcf.filters.Base):
     ----------
     threshold : float
        Filters calls with heterozygosity lower than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
     name : str
@@ -117,13 +117,13 @@ class Filter_MinLocusHet(vcf.filters.Base):
     """
 
     name = 'HETLOW'
-    def __init__(self, min_locus_het, tr_harmonizer, uselength=False):
+    def __init__(self, min_locus_het, vcftype, uselength=False):
         self.threshold = min_locus_het
-        self.tr_harmonizer = tr_harmonizer
+        self.vcftype = vcftype
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(self.vcftype, record)
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het < self.threshold:
             return het
@@ -139,8 +139,8 @@ class Filter_MaxLocusHet(vcf.filters.Base):
     ----------
     max_locus_het : float
        Filters calls with heterozygosity greater than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
 
@@ -148,8 +148,8 @@ class Filter_MaxLocusHet(vcf.filters.Base):
     ----------
     threshold : float
        Filters calls with heterozygosity greater than this
-    tr_harmonizer : trh.TRRecordHarmonizer object
-       Used to harmonize VCF records across genotyping tools
+    vcftype: trh.VCFTYPES
+        the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
     name : str
@@ -157,13 +157,13 @@ class Filter_MaxLocusHet(vcf.filters.Base):
     """
 
     name = 'HETHIGH'
-    def __init__(self, max_locus_het, tr_harmonizer, uselength=False):
+    def __init__(self, max_locus_het, vcftype, uselength=False):
         self.threshold = max_locus_het
-        self.tr_harmonizer = tr_harmonizer
+        self.vcftype = vcftype
         self.uselength = uselength
 
     def __call__(self, record):
-        trrecord = self.tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(self.vcftype, record)
         het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
         if het > self.threshold:
             return het

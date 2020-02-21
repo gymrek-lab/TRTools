@@ -305,7 +305,8 @@ def getargs():  # pragma: no cover
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
-    req_group.add_argument("--vcftype", help="--vcf1 and --vcf2 must be of the same type. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
     ### Options for filtering input ###
     filter_group = parser.add_argument_group("Filtering options")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
@@ -390,12 +391,9 @@ def main(args):
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
-    ### Check inferred type of each is the same
-    vcftype = mergeutils.GetVCFType(vcfreaders, args.vcftype)
-
     ### Set up harmonizers ###
-    tr_harmonizers = [trh.TRRecordHarmonizer(args.vcf1, vcftype=vcftype), \
-                      trh.TRRecordHarmonizer(args.vcf2, vcftype=vcftype)]
+    tr_harmonizers = [trh.TRRecordHarmonizer(vcfreaders[0], vcftype=args.vcftype1), \
+                      trh.TRRecordHarmonizer(vcfreaders[1], vcftype=args.vcftype2)]
 
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)

@@ -330,7 +330,10 @@ def main(args):
             sample_lists.append([item.strip() for item in open(sf, "r").readlines()])
 
     invcf = vcf.Reader(filename=args.vcf)
-    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
+    if args.vcftype != 'auto':
+        vcftype = trh.VCFTYPES[args.vcftype]
+    else:
+        vcftype = trh.InferVCFType(invcf)
 
     header = ["chrom","start","end"]
     if args.thresh: header.extend(GetHeader("thresh", sample_prefixes))
@@ -359,7 +362,7 @@ def main(args):
     else: regions = invcf
     num_plotted = 0
     for record in regions:
-        trrecord = tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(vcftype, record)
         if args.plot_afreq and num_plotted <= MAXPLOTS:
             PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
             num_plotted += 1
