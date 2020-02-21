@@ -351,7 +351,8 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
     # Extract shared info
     chrom = record1.vcfrecord.CHROM
     pos = record1.vcfrecord.POS
-    reflen = len(record1.ref_allele)
+    period = len(record1.motif)
+    reflen = len(record1.ref_allele)/period
     for sample in samples:
         call1 = record1.vcfrecord.genotype(sample)
         call2 = record2.vcfrecord.genotype(sample)
@@ -364,15 +365,14 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
         if len(gt_string_1) != len(gt_string_2) or len(gt_len_1) != len(gt_len_2):
             raise ValueError("Found sample %s of different ploidy at %s:%s"%(sample, chrom, pos))
         # Update results_dir
-        period = len(record1.motif)
         results_dir["chrom"].append(chrom)
         results_dir["start"].append(pos)
         results_dir["period"].append(period)
         results_dir["sample"].append(sample)
         results_dir["gtstring1"].append(",".join(gt_string_1))
         results_dir["gtstring2"].append(",".join(gt_string_2))
-        results_dir["gtsum1"].append((sum(gt_len_1)-reflen)/period)
-        results_dir["gtsum2"].append((sum(gt_len_2)-reflen)/period)
+        results_dir["gtsum1"].append((sum(gt_len_1)-reflen*2))
+        results_dir["gtsum2"].append((sum(gt_len_2)-reflen*2))
         results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
         results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
         for ff in format_fields:
@@ -432,17 +432,20 @@ def main(args):
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
     is_min = mergeutils.GetMinRecords(current_records, chroms)
+
     done = mergeutils.DoneReading(current_records)
     num_records = 0
     while not done:
-        if args.numrecords is not None and num_records >= args.numrecords: break
         if any([item is None for item in current_records]): break
+        if args.numrecords is not None and num_records >= args.numrecords: break
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all([is_min]):
-            UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
-                                    trh.HarmonizeRecord(vcftype2, current_records[1]), \
-                                    format_fields, samples, results_dir)
+            if (current_records[0].CHROM == current_records[1].CHROM and \
+                current_records[0].POS == current_records[1].POS):
+                UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
+                                        trh.HarmonizeRecord(vcftype2, current_records[1]), \
+                                        format_fields, samples, results_dir)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
