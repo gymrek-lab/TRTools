@@ -4,6 +4,9 @@
 .mypy_cache/
 .bandit
 
+# Docs
+*_build/*
+
 # Python files
 *~
 *.pyc
