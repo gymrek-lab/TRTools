@@ -216,7 +216,7 @@ def HarmonizeRecord(vcftype: VCFTYPES, vcfrecord):
     if vcftype == VCFTYPES.advntr:
         return _HarmonizeAdVNTRRecord(vcfrecord)
     if vcftype == VCFTYPES.eh:
-        raise _HarmonizeEHRecord(vcfrecord)
+        return _HarmonizeEHRecord(vcfrecord)
     if vcftype == VCFTYPES.popstr:
         return _HarmonizePopSTRRecord(vcfrecord)
 
@@ -396,7 +396,7 @@ def _HarmonizeEHRecord(vcfrecord):
                 raise ValueError("EH alt alleles were not formatted"
                                  " as expected")
 
-            alt_allele_lengths.append(float(alt[1:-1]))
+            alt_allele_lengths.append(float(alt[4:-1]))
     else:
         alt_allele_lengths = []
 
@@ -569,8 +569,11 @@ class TRRecord:
         self.ref_allele_length = ref_allele_length
         self.alt_allele_lengths = alt_allele_lengths
 
-        if (alt_allele_lengths is not None
-                and (alt_alleles is not None or full_alleles is not None)):
+        if full_alleles is not None and alt_alleles is None:
+            raise ValueError("Cannot set full alleles without setting "
+                             "regular alleles")
+
+        if alt_allele_lengths is not None and alt_alleles is not None:
             raise ValueError("Must specify only the sequences or the lengths"
                              " of the alt alleles, not both.")
 
@@ -749,9 +752,9 @@ class TRRecord:
         """
         Find allele indicies corresponding to the unique alleles.
 
-        Equivalent to calling set(UniqueStringGenotypeMapping.values())
+        Equivalent to calling set(UniqueStringGenotypeMapping().values())
         """
-        return set(self.UniqueStringGenotypeMapping.values())
+        return set(self.UniqueStringGenotypeMapping().values())
 
     def GetLengthGenotype(self, sample):
         """
@@ -785,6 +788,42 @@ class TRRecord:
             gts = sample.gt_alleles
             gts_bases = [lengths[int(gt)] for gt in gts]
             return gts_bases
+
+    def UniqueLengthGenotypeMapping(self):
+        """
+        Get a mapping whose values are unique string genotype indicies.
+
+        Return
+        ------
+        { int : int }
+            A mapping allele idx -> allele idx
+            whose keys are all allele indicies and whose values are a
+            subset of indicies which represents all the unique
+            length alleles for this variant. For variants where
+            multiple alleles have the same length, all will map to
+            a single index from among those alleles.
+        """
+        mapping = {}
+        allele_to_idx = {}
+        alleles = [self.ref_allele]
+        alleles.extend(self.alt_alleles)
+        for idx, allele in enumerate(alleles):
+            allele = len(allele)
+            if allele not in allele_to_idx:
+                allele_to_idx[allele] = idx
+                mapping[idx] = idx
+            else:
+                mapping[idx] = allele_to_idx[allele]
+
+        return mapping
+
+    def UniqueLengthGenotypes(self):
+        """
+        Find allele indicies corresponding to the unique length alleles.
+
+        Equivalent to calling set(UniqueLengthGenotypeMapping().values())
+        """
+        return set(self.UniqueLengthGenotypeMapping().values())
 
     def HasFullStringGenotypes(self):
         """
