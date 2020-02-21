@@ -1,0 +1,1 @@
+.. include:: ../../compareSTR/README.rst

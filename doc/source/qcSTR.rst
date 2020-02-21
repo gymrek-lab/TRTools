@@ -1,0 +1,1 @@
+.. include:: ../../qcSTR/README.rst

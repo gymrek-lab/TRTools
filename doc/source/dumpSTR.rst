@@ -1,4 +1,1 @@
-dumpSTR package
-===============
-
-.. mdinclude:: ../../dumpSTR/README.md
+.. include:: ../../dumpSTR/README.rst
