@@ -73,3 +73,10 @@ def test_Stats():
     args.vcf = os.path.join(VCFDIR, "mergeSTR_vcfs", "test_file_gangstr1.vcf.gz")
     args.region = "chr1:3045469-3045470"
     assert main(args)==0
+
+def test_PlotAfreq():
+    args = base_argparse()
+    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+    args.vcf = fname
+    args.plot_afreq = True
+    assert main(args)==0

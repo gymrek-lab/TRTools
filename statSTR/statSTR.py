@@ -47,7 +47,9 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
     sampleprefixes : list of str, optional
           Prefixes for each sample list to use in legend
     """
-    if len(samplelists)==0: samplelists.append([])
+    if len(samplelists)==0:
+        samplelists.append([])
+        sampleprefixes.append("sample")
     allele_freqs_list = []
     allele_set = set()
     for sl in samplelists:
@@ -58,7 +60,7 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
     max_allele = max(allele_set)+2
     bins = np.arange(min_allele, max_allele, 1)
     
-    fname = args.out + "-%s-%s.pdf"%(trrecord.vcfrecord.CHROM, trrecord.vcfrecord.POS)
+    fname = outprefix + "-%s-%s.pdf"%(trrecord.vcfrecord.CHROM, trrecord.vcfrecord.POS)
     w = 1.0/(len(samplelists)+0.3)
     fig = plt.figure()
     ax = fig.add_subplot(111)
