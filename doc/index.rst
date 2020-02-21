@@ -10,8 +10,8 @@ STRTools: a tool for genome-wide tandem repeat analysis
    :maxdepth: 2
 
    INTRO
-   API
    UTILITIES
+   API
 
 Indices and tables
 ==================
