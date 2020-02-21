@@ -391,12 +391,11 @@ def main(args):
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
-    ### Set up harmonizers ###
-    tr_harmonizers = [trh.TRRecordHarmonizer(vcfreaders[0], vcftype=args.vcftype1), \
-                      trh.TRRecordHarmonizer(vcfreaders[1], vcftype=args.vcftype2)]
-
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
+    if len(samples) == 0:
+        common.MSG("No shared smaples found between vcf readers")
+        return 1
     if args.samples:
         usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
         samples = list(set(samples).intersection(usesamples))
@@ -427,6 +426,9 @@ def main(args):
         results_dir[ff+"1"] = []
         results_dir[ff+"2"] = []
 
+    vcftype1 = trh.VCFTYPES[args.vcftype1]
+    vcftype2 = trh.VCFTYPES[args.vcftype2]
+
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
     is_min = mergeutils.GetMinRecords(current_records, chroms)
@@ -434,11 +436,12 @@ def main(args):
     num_records = 0
     while not done:
         if args.numrecords is not None and num_records >= args.numrecords: break
+        if any([item is None for item in current_records]): break
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all([is_min]):
-            UpdateComparisonResults(tr_harmonizers[0].HarmonizeRecord(current_records[0]), \
-                                    tr_harmonizers[1].HarmonizeRecord(current_records[1]), \
+            UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
+                                    trh.HarmonizeRecord(vcftype2, current_records[1]), \
                                     format_fields, samples, results_dir)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
