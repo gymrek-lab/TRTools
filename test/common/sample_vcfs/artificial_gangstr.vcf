@@ -1,0 +1,50 @@
+##fileformat=VCFv4.1
+##FILTER=<ID=PASS,Description="All filters passed">
+##command=GangSTR-2.4.2.12-9da7 --bam /scratch/bams/drive3/4512-JFI-0366_BXD196_phased_possorted_bam.bam --regions /scratch/regions/0705_mm10.bed --ref /scratch/ref/mm10.fa --str-info /scratch/strinfo/100519_mm10_strinfo_wo_stutt_recalc_many_samples.bed --chrom chr1 --trim-to-readlength 128 --drop-dupes --out result/4512-JFI-0366_BXD196/res_chr1
+##contig=<ID=chr10,length=130694993>
+##contig=<ID=chr11,length=122082543>
+##contig=<ID=chr12,length=120129022>
+##contig=<ID=chr13,length=120421639>
+##contig=<ID=chr14,length=124902244>
+##contig=<ID=chr15,length=104043685>
+##contig=<ID=chr16,length=98207768>
+##contig=<ID=chr17,length=94987271>
+##contig=<ID=chr18,length=90702639>
+##contig=<ID=chr19,length=61431566>
+##contig=<ID=chr1,length=195471971>
+##contig=<ID=chr2,length=182113224>
+##contig=<ID=chr3,length=160039680>
+##contig=<ID=chr4,length=156508116>
+##contig=<ID=chr5,length=151834684>
+##contig=<ID=chr6,length=149736546>
+##contig=<ID=chr7,length=145441459>
+##contig=<ID=chr8,length=129401213>
+##contig=<ID=chr9,length=124595110>
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of variant">
+##INFO=<ID=RU,Number=1,Type=String,Description="Repeat motif">
+##INFO=<ID=PERIOD,Number=1,Type=Integer,Description="Repeat period (length of motif)">
+##INFO=<ID=REF,Number=1,Type=Float,Description="Reference copy number">
+##INFO=<ID=GRID,Number=2,Type=Integer,Description="Range of optimization grid">
+##INFO=<ID=EXPTHRESH,Number=1,Type=Integer,Description="Threshold for calling expansions">
+##INFO=<ID=STUTTERUP,Number=1,Type=Float,Description="Stutter model - up prob">
+##INFO=<ID=STUTTERDOWN,Number=1,Type=Float,Description="Stutter model - down prob">
+##INFO=<ID=STUTTERP,Number=1,Type=Float,Description="Stutter model - p">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##FORMAT=<ID=Q,Number=1,Type=Float,Description="Quality Score (posterior probability)">
+##FORMAT=<ID=REPCN,Number=2,Type=Integer,Description="Genotype given in number of copies of the repeat motif">
+##FORMAT=<ID=REPCI,Number=1,Type=String,Description="Confidence intervals">
+##FORMAT=<ID=RC,Number=1,Type=String,Description="Number of reads in each class (enclosing, spanning, FRR, bounding)">
+##FORMAT=<ID=ENCLREADS,Number=1,Type=String,Description="Summary of reads in enclosing class. Keys are number of copies and values show number of reads with that many copies.">
+##FORMAT=<ID=FLNKREADS,Number=1,Type=String,Description="Summary of reads in flanking class. Keys are number of copies and values show number of reads with that many copies.">
+##FORMAT=<ID=ML,Number=1,Type=Float,Description="Maximum likelihood">
+##FORMAT=<ID=INS,Number=2,Type=Float,Description="Insert size mean and stddev">
+##FORMAT=<ID=STDERR,Number=2,Type=Float,Description="Bootstrap standard error of each allele">
+##FORMAT=<ID=QEXP,Number=3,Type=Float,Description="Prob. of no expansion, 1 expanded allele, both expanded alleles">
+##bcftools_filterVersion=1.6-49-ga2ffda9-dirty+htslib-1.7-1-gaf40c73
+##bcftools_filterCommand=filter -r chr1:3000000-10000000 /storage/mikhail/100919_BXD_all_drive1_drive3_rep_stutt_model/result/4512-JFI-0366_BXD196/res_chr1.vcf.gz; Date=Sun Nov 24 18:06:49 2019
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	BXD196_0366
+chr1	3004986	.	tctgtctgtctg	.	.	PASS	END=3004997;RU=tctg;PERIOD=4;REF=3;GRID=1,6;STUTTERUP=0.000632591;STUTTERDOWN=0.000632591;STUTTERP=0.953462;EXPTHRESH=3	GT:DP:Q:REPCN:REPCI:RC:ENCLREADS:FLNKREADS:ML:INS:STDERR:QEXP	0/0:31:0.999912:3,3:3-3,3-3:17,12,0,2:3,17:2,2:193.56:366.612,131.36:0,0:0,5.1188e-05,0.999949
+chr1	3005549	.	aaaacaaaacaaaacaaaac	.	.	PASS	END=3005568;RU=aaaac;PERIOD=5;REF=4;GRID=1,7;STUTTERUP=0.000661;STUTTERDOWN=0.00264397;STUTTERP=0.987382;EXPTHRESH=5	GT:DP:Q:REPCN:REPCI:RC:ENCLREADS:FLNKREADS:ML:INS:STDERR:QEXP	0/0:11:1:4,4:4-4,4-4:0,11,0,0:4,20:NULL:181.959:366.612,131.36:0,0:0.8,0.2,0
+chr1	3009351	.	tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg	tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg	.	PASS	END=3009402;RU=tg;PERIOD=2;REF=26;GRID=19,27;STUTTERUP=0.0752532;STUTTERDOWN=0.287761;STUTTERP=0.73575;EXPTHRESH=26	GT:DP:Q:REPCN:REPCI:RC:ENCLREADS:FLNKREADS:ML:INS:STDERR:QEXP	1/1:20:0.597778:24,24:22-24,22-24:0,10,0,10:23,2|24,5:5,1|6,2|7,1|8,3|9,1|11,1|12,1:204.961:366.612,131.36:0.647588,0.647588:0.977848,0.0221963,7.63327e-09
+chr1	3011925	.	tatatatatatatatatatatatatatatatatatatatatatata	tatatatatatatatatatatatata,tatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatatata	.	PASS	END=3011970;RU=ta;PERIOD=2;REF=23;GRID=8,17;STUTTERUP=0.159106;STUTTERDOWN=0.180648;STUTTERP=0.664826;EXPTHRESH=23	GT:DP:Q:REPCN:REPCI:RC:ENCLREADS:FLNKREADS:ML:INS:STDERR:QEXP	1/2:24:0.941159:13,200:11-13,150-250:9,12,0,0:13,9:NULL:154.4:366.612,131.36:0.623055,0.623055:1,0,0

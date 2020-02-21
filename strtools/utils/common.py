@@ -5,12 +5,32 @@ Common util functions
 import sys
 
 def WARNING(msg):
-    sys.stderr.write(msg.strip()+"\n")
+    r"""Write a warning message to standard error
 
-def ERROR(msg):
+    Parameters
+    ----------
+    msg : str
+          A descriptive warning message
+
+    Examples
+    --------
+    >>> WARNING("Something unexpected happened")
+    """
     sys.stderr.write(msg.strip()+"\n")
-    sys.exit(1)
 
 def MSG(msg, debug=False):
+    r"""Write a status message to standard error
+
+    Parameters
+    ----------
+    msg : str
+          A descriptive message
+    debug : bool, optional
+          Only print the message if debug is True  
+
+    Examples
+    --------
+    >>> MSG("Something unexpected happened")
+    """
     if debug:
         sys.stderr.write(msg.strip()+"\n")

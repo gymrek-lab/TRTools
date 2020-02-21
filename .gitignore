@@ -1,3 +1,9 @@
+# Editor files
+*.swp
+.pydocstyle
+.mypy_cache/
+.bandit
+
 # Python files
 *~
 *.pyc
@@ -5,10 +11,17 @@
 
 # Extras
 nohup.out
-\#*
+*\#*
 
 # Testing
-test.*
+test/common/*.vcf~
+test/common/dump/
+.coverage
+coverage.xml
+*test_run.vcf*
+xx-*
+test-*
+c57*
 
 # Build files
 *egg-info*

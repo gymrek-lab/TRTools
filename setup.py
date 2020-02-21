@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/STRTools'
 LICENSE = 'MIT'
 
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 setup(name=NAME,
       version=VERSION,
@@ -29,12 +29,17 @@ setup(name=NAME,
               'dumpSTR=dumpSTR.dumpSTR:main',
               'mergeSTR=mergeSTR.mergeSTR:main',
               'statSTR=statSTR.statSTR:main',
+              'compareSTR=compareSTR.compareSTR:main',
+              'qcSTR=qcSTR.qcSTR:main'
           ],
       },
       install_requires=['argparse',
+                        'matplotlib',
                         'numpy',
+                        'pandas',
                         'pybedtools',
                         'pyvcf',
+                        'scipy',
                         'statsmodels',
                         'pysam'],
       classifiers=['Development Status :: 4 - Beta',\
