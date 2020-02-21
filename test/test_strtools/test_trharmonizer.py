@@ -42,8 +42,10 @@ class DummyVCFRecord:
 
 # Set up dummy VCF records which are just lists of genotypes
 dummy_record1 = DummyVCFRecord()  # Example record with real data
-dummy_record1 += DummyVCFSample(['0', '1'], True, 'S1')
-dummy_record1 += DummyVCFSample(['1', '1'], True, 'S2')
+dummy_sample1 = DummyVCFSample(['0', '1'], True, 'S1')
+dummy_sample2 = DummyVCFSample(['1', '1'], True, 'S2')
+dummy_record1 += dummy_sample1
+dummy_record1 += dummy_sample2
 dummy_record1 += DummyVCFSample(['1', '1'], True, 'S3')
 dummy_record1 += DummyVCFSample(['1', '2'], True, 'S4')
 dummy_record1 += DummyVCFSample(['2', '2'], True, 'S5')
@@ -57,6 +59,106 @@ dummy_record3 += DummyVCFSample(['0', '0', '0'], True, 'S8')
 # Example record not called (not sure what gt field should look like)
 dummy_record4 = DummyVCFRecord()
 dummy_record4 += DummyVCFSample(['0'], False, 'S9')
+
+
+def test_TRRecord_iter():
+    record = trh.TRRecord(dummy_record1, "ACG", ["A", "C", "G", "T"],
+                          "FOO", "BAR")
+    record_iter = iter(record)
+    assert next(record_iter) == dummy_sample1
+    assert next(record_iter) == dummy_sample2
+
+
+def test_TRRecord_allele_lengths():
+    ref_allele = "CAGCAGCAG"
+    alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
+    motif = 'FOO'
+    ID = 'BAR'
+
+    # alt alleles
+    with pytest.raises(ValueError):
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                     alt_allele_lengths=[4, 6])
+    record = trh.TRRecord(dummy_record1, ref_allele, None, motif, ID,
+                          alt_allele_lengths=[4, 5.5])
+    assert record.alt_alleles == [motif * 4, motif * 5 + "F"]
+
+    # ref allele
+    with pytest.raises(ValueError):
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                     ref_allele_length=5)
+    with pytest.raises(ValueError):
+        trh.TRRecord(dummy_record1, None, alt_alleles, motif, ID,
+                     ref_allele_length=5)
+    record = trh.TRRecord(dummy_record1, None, None, motif, ID,
+                          ref_allele_length=5.5, alt_allele_lengths=[4, 5.5])
+    assert record.ref_allele == motif*5 + 'F'
+
+
+def test_TRRecord_unique_lengths():
+    record = trh.TRRecord(
+        dummy_record2,
+        "ACGACGACG",
+        [
+            "ACGAAGACG",
+            "ACGACGACGACG",
+            "ACGACGACAACG"
+        ],
+        "ACG",
+        "ACG-repeat"
+    )
+
+    assert record.UniqueLengthGenotypes() == {0, 2}
+    assert record.UniqueLengthGenotypeMapping() == {
+        0: 0,
+        1: 0,
+        2: 2,
+        3: 2
+    }
+
+
+def test_TRRecord_full_alleles():
+    full_ref = "TCAGCAGCAGA"
+    full_alts = [
+        "ACAGCAGCAGCAGC",
+        "ACAGCAGCAGCAGCAGCAGG",
+        "ACAGCAGCAGCAGG",
+        "ACAGCAGCAGG",
+        "TCAGCAGG",
+    ]
+    ref_allele = full_ref[1:-1]
+    alt_alleles = []
+    for allele in full_alts:
+        alt_alleles.append(allele[1:-1])
+    motif = 'FOO'
+    ID = 'BAR'
+
+    with pytest.raises(ValueError):
+        trh.TRRecord(dummy_record1, None, None, motif, ID,
+                     full_alleles=(full_ref, full_alts))
+    with pytest.raises(ValueError):
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                     full_alleles=(["CAGCAGCAQQQQQQQQQQQQQQQ"], full_alts))
+    with pytest.raises(ValueError):
+        bad_alts = [
+            "CAGCAGCAQQQQQQQQQQQQQQQ",
+            full_alts[1]
+        ]
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                     full_alleles=(ref_allele, bad_alts))
+
+    record = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                          full_alleles=(ref_allele, alt_alleles))
+
+    assert record.UniqueStringGenotypes() == {0, 1, 2, 5}
+    assert record.UniqueStringGenotypeMapping() == {
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 1,
+        4: 0,
+        5: 5
+    }
 
 
 def test_TRRecord_GetGenotypes():
@@ -305,15 +407,20 @@ advntr_path = os.path.join(VCFDIR, "test_advntr.vcf")
 eh_path = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
 snps_path = os.path.join(VCFDIR, "snps.vcf")
 
-gangstr_vcf = vcf.Reader(filename=gangstr_path)
-hipstr_vcf = vcf.Reader(filename=hipstr_path)
-popstr_vcf = vcf.Reader(filename=popstr_path)
-advntr_vcf = vcf.Reader(filename=advntr_path)
-eh_vcf = vcf.Reader(filename=eh_path)
-snps_vcf = vcf.Reader(filename=snps_path)
+
+def reset_vcfs():
+    global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
+    gangstr_vcf = vcf.Reader(filename=gangstr_path)
+    hipstr_vcf = vcf.Reader(filename=hipstr_path)
+    popstr_vcf = vcf.Reader(filename=popstr_path)
+    advntr_vcf = vcf.Reader(filename=advntr_path)
+    eh_vcf = vcf.Reader(filename=eh_path)
+    snps_vcf = vcf.Reader(filename=snps_path)
 
 
 def test_trh_init_and_type_infer():
+    reset_vcfs()
+
     # Test example with unknown VCF type given
     with pytest.raises(ValueError):
         trh.TRRecordHarmonizer(gangstr_vcf, vcftype='unknownvcf')
@@ -321,74 +428,124 @@ def test_trh_init_and_type_infer():
     with pytest.raises(ValueError):
         trh.TRRecordHarmonizer(snps_vcf)
 
+    with pytest.raises(ValueError):
+        trh.MayHaveImpureRepeats('foo')
+    with pytest.raises(ValueError):
+        trh.HasLengthRefGenotype('foo')
+    with pytest.raises(ValueError):
+        trh.HasLengthAltGenotypes('foo')
+
     # Test examples with correct preset VCF type
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
     assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
     assert trh.InferVCFType(gangstr_vcf) == trh.VCFTYPES.gangstr
     assert (not gangstr_trh.MayHaveImpureRepeats()
             and not trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
+    assert (not gangstr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VCFTYPES.gangstr))
+    assert (not gangstr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.gangstr))
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
     assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
     assert trh.InferVCFType(hipstr_vcf) == trh.VCFTYPES.hipstr
     assert (hipstr_trh.MayHaveImpureRepeats()
             and trh.MayHaveImpureRepeats(trh.VCFTYPES.hipstr))
+    assert (not hipstr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VCFTYPES.hipstr))
+    assert (not hipstr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.hipstr))
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VCFTYPES.popstr
     assert trh.InferVCFType(popstr_vcf) == trh.VCFTYPES.popstr
     assert (popstr_trh.MayHaveImpureRepeats()
             and trh.MayHaveImpureRepeats(trh.VCFTYPES.popstr))
+    assert (not popstr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VCFTYPES.popstr))
+    assert (popstr_trh.HasLengthAltGenotypes()
+            and trh.HasLengthAltGenotypes(trh.VCFTYPES.popstr))
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf, vcftype='advntr')
     assert advntr_trh.vcftype == trh.VCFTYPES.advntr
     assert trh.InferVCFType(advntr_vcf) == trh.VCFTYPES.advntr
     assert (advntr_trh.MayHaveImpureRepeats()
             and trh.MayHaveImpureRepeats(trh.VCFTYPES.advntr))
+    assert (not advntr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VCFTYPES.advntr))
+    assert (not advntr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.advntr))
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
     assert eh_trh.vcftype == trh.VCFTYPES.eh
     assert trh.InferVCFType(eh_vcf) == trh.VCFTYPES.eh
     assert (not eh_trh.MayHaveImpureRepeats()
             and not trh.MayHaveImpureRepeats(trh.VCFTYPES.eh))
+    assert (eh_trh.HasLengthRefGenotype()
+            and trh.HasLengthRefGenotype(trh.VCFTYPES.eh))
+    assert (eh_trh.HasLengthAltGenotypes()
+            and trh.HasLengthAltGenotypes(trh.VCFTYPES.eh))
 
 
 def test_HarmonizeRecord():
+    reset_vcfs()
+
+    # Unknown type
+    with pytest.raises(ValueError):
+        trh.HarmonizeRecord("foo", next(snps_vcf))
+
     # Gangstr
-    gangstr_vcf = vcf.Reader(filename=gangstr_path)
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
 
     tr_rec1 = next(iter(gangstr_trh))
     assert tr_rec1.ref_allele == 'tctgtctgtctg'.upper()
     assert tr_rec1.alt_alleles == []
     assert tr_rec1.motif == 'tctg'.upper()
+    assert not tr_rec1.HasFullStringGenotypes()
+    assert not tr_rec1.HasFabricatedRefAllele()
+    assert not tr_rec1.HasFabricatedAltAlleles()
     tr_rec2 = next(iter(gangstr_trh))
     tr_rec3 = next(iter(gangstr_trh))
-    assert tr_rec3.ref_allele == 'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()
-    assert tr_rec3.alt_alleles == ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()]
+    assert (tr_rec3.ref_allele ==
+            'tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper())
+    assert (tr_rec3.alt_alleles ==
+            ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()])
     assert tr_rec3.motif == 'tg'.upper()
 
-
-
-    ## hipstr
-    hipstr_vcf = vcf.Reader(filename=hipstr_path)
+    # hipstr
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
 
-    # TODO check if these hipstr examples are correct and if they cover corner cases
-    tr_rec1 = next(iter(hipstr_trh))
+    str_iter = iter(hipstr_trh)
+    tr_rec1 = next(str_iter)
     assert tr_rec1.ref_allele == 'GGTGGTGGTGGGGGCGGTGGGGGTGGTG'
     assert tr_rec1.alt_alleles == ['GGTGGTGGTGGGGGCGGTGGTGGTGCTG']
     assert tr_rec1.motif == 'GGT'
     assert tr_rec1.record_id == 'STR_2'
-    tr_rec2 = next(iter(hipstr_trh))
-    tr_rec3 = next(iter(hipstr_trh))
+    assert not tr_rec1.HasFullStringGenotypes()
+    assert not tr_rec1.HasFabricatedRefAllele()
+    assert not tr_rec1.HasFabricatedAltAlleles()
+    tr_rec2 = next(str_iter)
+    tr_rec3 = next(str_iter)
     assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTT'
     assert tr_rec3.alt_alleles == []
     assert tr_rec3.motif == 'T'.upper()
     assert tr_rec3.record_id == 'STR_4'
+    record = next(str_iter)
+    while record.record_id != "STR_125":
+        record = next(str_iter)
+    assert record.HasFullStringGenotypes()
+    # TODO this isn't really the correct behavior -
+    # we're trimming off an extra repeat from the alt allele
+    assert record.full_alleles == (
+        "TGCATATATGTATAATATATATTATATATGGA",
+        ["TCCATATATGCATAATATATATTATATATATG"],
+    )
+    assert (record.ref_allele ==
+            "ATATATGTATAATATATATTATATAT")
+    assert (record.alt_alleles ==
+            ["ATATATGCATAATATATATTATATAT"])
 
-    ##  popstr
-    popstr_vcf = vcf.Reader(filename=popstr_path)
+    # popstr
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
 
     tr_rec1 = next(iter(popstr_trh))
@@ -396,7 +553,9 @@ def test_HarmonizeRecord():
     assert tr_rec1.alt_alleles == ['G' * 14, 'G' * 17]
     assert tr_rec1.motif == 'G'
     assert tr_rec1.record_id == 'chr21:5020351:M'
-
+    assert not tr_rec1.HasFullStringGenotypes()
+    assert not tr_rec1.HasFabricatedRefAllele()
+    assert tr_rec1.HasFabricatedAltAlleles()
     tr_rec2 = next(iter(popstr_trh))
     tr_rec3 = next(iter(popstr_trh))
     assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTTTTTTTTT'
@@ -404,19 +563,33 @@ def test_HarmonizeRecord():
     assert tr_rec3.motif == 'T'
     assert tr_rec3.record_id == 'chr21:5031126:M'
 
-
-    ## advntr
-    advntr_vcf = vcf.Reader(filename=advntr_path)
+    # advntr
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
 
     tr_rec1 = next(iter(advntr_trh))
     assert tr_rec1.ref_allele == 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG'
     assert tr_rec1.alt_alleles == ['GCGCGGGGCGGGGCGCGGGGCGGG', 'GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG']
     assert tr_rec1.motif == 'GCGCGGGGCGGG'
+    assert not tr_rec1.HasFullStringGenotypes()
+    assert not tr_rec1.HasFabricatedRefAllele()
+    assert not tr_rec1.HasFabricatedAltAlleles()
 
+    # advntr
+    eh_trh = trh.TRRecordHarmonizer(eh_vcf)
+
+    tr_rec1 = next(iter(eh_trh))
+    motif = 'CAG'
+    assert tr_rec1.ref_allele == motif*19
+    assert tr_rec1.alt_alleles == [motif*16, motif*18]
+    assert tr_rec1.motif == motif
+    assert tr_rec1.record_id == 'HTT'
+    assert not tr_rec1.HasFullStringGenotypes()
+    assert tr_rec1.HasFabricatedRefAllele()
+    assert tr_rec1.HasFabricatedAltAlleles()
 
     ## TODO Fix this test
     # Test examples with incorrect preset VCF type
     #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
     #with pytest.raises(ValueError):
     #    tr_rec1 = next(iter(ic_gangstr_trh)) # We need to raise a value error if we don't find the correct keys and report that vcf type is probably input incorrectly
+
