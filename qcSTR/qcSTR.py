@@ -96,7 +96,7 @@ def OutputSampleCallrate(sample_calls, fname):
     """
     samples = sample_calls.keys()
     data = pd.DataFrame({"sample": samples, "numcalls": [sample_calls[key] for key in samples]})
-    data = data.sort_values("numcalls")
+    #data = data.sort_values("numcalls") # Commented because the order would be incorrect if sorted
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.bar(range(data.shape[0]), data["numcalls"])
@@ -197,7 +197,7 @@ def main(args):
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
     OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
-
+    return 0
 if __name__ == "__main__":  # pragma: no cover
     # Set up args
     args = getargs()
