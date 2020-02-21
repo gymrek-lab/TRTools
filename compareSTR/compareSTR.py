@@ -266,7 +266,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
             usedata = data
         else: usedata = data[data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
-        scale = 1000/np.mean(bubble_counts["sample"])
+        scale = 10000/np.mean(bubble_counts["sample"])
         if minval is None:
             minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
         if maxval is None:
@@ -276,7 +276,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
         # Plot (0,0) separately
         b00 = bubble_counts[(bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0)]
         brest = bubble_counts[~((bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0))]
-        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="white", edgecolors="darkblue")
+        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="darkblue", alpha=0.5)
         scatter = ax.scatter(brest["gtsum1"], brest["gtsum2"], s=np.sqrt(brest["sample"]*scale), color="darkblue", alpha=0.5)
         ax.set_xlabel("GT sum - file 1", size=15)
         ax.set_ylabel("GT sum - file 2", size=15)

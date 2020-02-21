@@ -395,7 +395,6 @@ def _HarmonizeEHRecord(vcfrecord):
             if alt[:4] != "<STR" or alt[-1] != ">":
                 raise ValueError("EH alt alleles were not formatted"
                                  " as expected")
-
             alt_allele_lengths.append(float(alt[4:-1]))
     else:
         alt_allele_lengths = []
