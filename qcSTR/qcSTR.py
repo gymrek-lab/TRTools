@@ -150,7 +150,10 @@ def main(args):
         return 1
     # Set up reader and harmonizer
     invcf = vcf.Reader(filename=args.vcf)
-    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
+    if args.vcftype != 'auto':
+        vcftype = trh.VCFTYPES[args.vcftype]
+    else:
+        vcftype = trh.InferVCFType(invcf)
 
     # Load samples
     if args.samples:
@@ -171,7 +174,7 @@ def main(args):
     for record in invcf:
         if args.numrecords is not None and numrecords >= args.numrecords: break
         chrom = record.CHROM
-        trrecord = tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(vcftype, record)
         if args.period is not None and len(trrecord.motif) != args.period: continue
         # Extract stats
         rl = len(trrecord.ref_allele)
