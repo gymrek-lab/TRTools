@@ -1,4 +1,12 @@
-Introduction
+
+.. image:: https://travis-ci.org/gymreklab/STRTools.svg?branch=master
+    :target: https://travis-ci.org/gymreklab/STRTools
+
+.. image:: https://codecov.io/gh/gymreklab/STRTools/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/gymreklab/STRTools
+
+
+STRTools
 ============
 
 STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
