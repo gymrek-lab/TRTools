@@ -11,6 +11,8 @@ STRTools
 
 STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
+See full documentation and examples at https://strtools.readthedocs.io/en/latest/.
+
 Install
 -------
 
