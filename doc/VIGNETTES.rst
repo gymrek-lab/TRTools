@@ -9,4 +9,3 @@ The following vignettes show example usecases of STRTools.
    VIGNETTE-STATSTR.rst
    VIGNETTE-AFREQ.rst
    VIGNETTE-COMPARE.rst
-   VIGNETTE-REFBIAS.rst
