@@ -15,7 +15,7 @@ To run dumpSTR use the following command::
 Required parameters:
 
 * :code:`--vcf <VCF>` VCF file output by a supported genotyping tool.
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default=:code:'auto'. Must be one of: :code:'gangstr', :code:'advntr', :code:'hipstr', :code:'eh', :code:'popstr'.
+* :code:`--vcftype <string>`: Type of VCF files being merged. Default=:code:'auto'. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>` prefix to name output files.
 
 DumpSTR will output a new VCF file named :code:`$out.vcf`, a sample log file :code:`$out.samplog.tab`, and a locus log file :code:`$out.loclog.tab`. See a description of output files below.
