@@ -1,0 +1,13 @@
+##fileformat=VCFv4.3
+##source=adVNTR ver. 1.3.3
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of variant">
+##INFO=<ID=VID,Number=1,Type=Integer,Description="VNTR ID">
+##INFO=<ID=RU,Number=1,Type=String,Description="Repeat motif">
+##INFO=<ID=RC,Number=1,Type=Integer,Description="Reference repeat unit count">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+##FORMAT=<ID=SR,Number=1,Type=Integer,Description="Spanning read count">
+##FORMAT=<ID=FR,Number=1,Type=Integer,Description="Flanking read count">
+##FORMAT=<ID=ML,Number=1,Type=Float,Description="Maximum likelihood">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	CSTB_2_5_testdata.bam
+chr21	45196323	.	GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG	GCGCGGGGCGGGGCGCGGGGCGGG,GCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGGGCGCGGGGCGGG	.	.	END=45196359;VID=301645;RU=GCGCGGGGCGGG;RC=3	GT:DP:SR:FR:ML	1/2:60:39:21:1.0
