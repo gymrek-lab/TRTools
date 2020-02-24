@@ -50,9 +50,7 @@ Let's go through what each option did:
 
 Here, since we have two labeled sample lists, columns will be named: :code:`<stat>-YRI` and :code:`<stat>-CEU`, where stat is either mean, het, or acount.
 
-The above command outputs the following:
-
-.. code-block::
+The above command outputs the following::
 
 	chrom	start	end	acount-YRI	acount-CEU	het-YRI	het-CEU	mean-YRI	mean-CEU
 	chr21	34351482	34351499	9.0:190,10.0:24	9.0:192,10.0:4	0.19914403004629233	0.03998334027488548	9.11214953271028	9.020408163265305
