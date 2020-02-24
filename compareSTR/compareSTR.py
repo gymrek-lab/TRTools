@@ -266,7 +266,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
             usedata = data
         else: usedata = data[data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
-        scale = 1000/np.mean(bubble_counts["sample"])
+        scale = 10000/np.mean(bubble_counts["sample"])
         if minval is None:
             minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
         if maxval is None:
@@ -276,7 +276,7 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
         # Plot (0,0) separately
         b00 = bubble_counts[(bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0)]
         brest = bubble_counts[~((bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0))]
-        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="white", edgecolors="darkblue")
+        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="darkblue", alpha=0.5)
         scatter = ax.scatter(brest["gtsum1"], brest["gtsum2"], s=np.sqrt(brest["sample"]*scale), color="darkblue", alpha=0.5)
         ax.set_xlabel("GT sum - file 1", size=15)
         ax.set_ylabel("GT sum - file 2", size=15)
@@ -305,8 +305,8 @@ def getargs():  # pragma: no cover
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
-    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
-    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
+    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
     ### Options for filtering input ###
     filter_group = parser.add_argument_group("Filtering options")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
@@ -351,7 +351,8 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
     # Extract shared info
     chrom = record1.vcfrecord.CHROM
     pos = record1.vcfrecord.POS
-    reflen = len(record1.ref_allele)
+    period = len(record1.motif)
+    reflen = len(record1.ref_allele)/period
     for sample in samples:
         call1 = record1.vcfrecord.genotype(sample)
         call2 = record2.vcfrecord.genotype(sample)
@@ -364,15 +365,14 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
         if len(gt_string_1) != len(gt_string_2) or len(gt_len_1) != len(gt_len_2):
             raise ValueError("Found sample %s of different ploidy at %s:%s"%(sample, chrom, pos))
         # Update results_dir
-        period = len(record1.motif)
         results_dir["chrom"].append(chrom)
         results_dir["start"].append(pos)
         results_dir["period"].append(period)
         results_dir["sample"].append(sample)
         results_dir["gtstring1"].append(",".join(gt_string_1))
         results_dir["gtstring2"].append(",".join(gt_string_2))
-        results_dir["gtsum1"].append((sum(gt_len_1)-reflen)/period)
-        results_dir["gtsum2"].append((sum(gt_len_2)-reflen)/period)
+        results_dir["gtsum1"].append((sum(gt_len_1)-reflen*2))
+        results_dir["gtsum2"].append((sum(gt_len_2)-reflen*2))
         results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
         results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
         for ff in format_fields:
@@ -391,12 +391,11 @@ def main(args):
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
 
-    ### Set up harmonizers ###
-    tr_harmonizers = [trh.TRRecordHarmonizer(vcfreaders[0], vcftype=args.vcftype1), \
-                      trh.TRRecordHarmonizer(vcfreaders[1], vcftype=args.vcftype2)]
-
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
+    if len(samples) == 0:
+        common.MSG("No shared smaples found between vcf readers")
+        return 1
     if args.samples:
         usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
         samples = list(set(samples).intersection(usesamples))
@@ -427,19 +426,26 @@ def main(args):
         results_dir[ff+"1"] = []
         results_dir[ff+"2"] = []
 
+    vcftype1 = trh.VCFTYPES[args.vcftype1]
+    vcftype2 = trh.VCFTYPES[args.vcftype2]
+
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
     is_min = mergeutils.GetMinRecords(current_records, chroms)
+
     done = mergeutils.DoneReading(current_records)
     num_records = 0
     while not done:
+        if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all([is_min]):
-            UpdateComparisonResults(tr_harmonizers[0].HarmonizeRecord(current_records[0]), \
-                                    tr_harmonizers[1].HarmonizeRecord(current_records[1]), \
-                                    format_fields, samples, results_dir)
+            if (current_records[0].CHROM == current_records[1].CHROM and \
+                current_records[0].POS == current_records[1].POS):
+                UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
+                                        trh.HarmonizeRecord(vcftype2, current_records[1]), \
+                                        format_fields, samples, results_dir)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
@@ -461,10 +467,11 @@ def main(args):
 
     return 0 
 
-if __name__ == "__main__":  # pragma: no cover
-    # Set up args
+def run(): # pragma: no cover
     args = getargs()
-    # Run main function
     retcode = main(args)
     sys.exit(retcode)
+
+if __name__ == "__main__": # pragma: no cover
+    run()
 

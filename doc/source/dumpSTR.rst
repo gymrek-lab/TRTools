@@ -1,0 +1,1 @@
+.. include:: ../../dumpSTR/README.rst

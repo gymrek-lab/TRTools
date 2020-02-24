@@ -96,7 +96,7 @@ def OutputSampleCallrate(sample_calls, fname):
     """
     samples = sample_calls.keys()
     data = pd.DataFrame({"sample": samples, "numcalls": [sample_calls[key] for key in samples]})
-    data = data.sort_values("numcalls")
+    #data = data.sort_values("numcalls") # Commented because the order would be incorrect if sorted
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.bar(range(data.shape[0]), data["numcalls"])
@@ -135,7 +135,7 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
@@ -150,7 +150,10 @@ def main(args):
         return 1
     # Set up reader and harmonizer
     invcf = vcf.Reader(filename=args.vcf)
-    tr_harmonizer = trh.TRRecordHarmonizer(invcf, vcftype=args.vcftype)
+    if args.vcftype != 'auto':
+        vcftype = trh.VCFTYPES[args.vcftype]
+    else:
+        vcftype = trh.InferVCFType(invcf)
 
     # Load samples
     if args.samples:
@@ -171,7 +174,7 @@ def main(args):
     for record in invcf:
         if args.numrecords is not None and numrecords >= args.numrecords: break
         chrom = record.CHROM
-        trrecord = tr_harmonizer.HarmonizeRecord(record)
+        trrecord = trh.HarmonizeRecord(vcftype, record)
         if args.period is not None and len(trrecord.motif) != args.period: continue
         # Extract stats
         rl = len(trrecord.ref_allele)
@@ -197,11 +200,12 @@ def main(args):
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
     OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+    return 0
 
-if __name__ == "__main__":  # pragma: no cover
-    # Set up args
+def run(): # pragma: no cover
     args = getargs()
-    # Run main function
     retcode = main(args)
     sys.exit(retcode)
 
+if __name__ == "__main__": # pragma: no cover
+    run()

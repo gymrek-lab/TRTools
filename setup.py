@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/STRTools'
 LICENSE = 'MIT'
 
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 setup(name=NAME,
       version=VERSION,
@@ -26,11 +26,11 @@ setup(name=NAME,
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'dumpSTR=dumpSTR.dumpSTR:main',
-              'mergeSTR=mergeSTR.mergeSTR:main',
-              'statSTR=statSTR.statSTR:main',
-              'compareSTR=compareSTR.compareSTR:main',
-              'qcSTR=qcSTR.qcSTR:main'
+              'dumpSTR=dumpSTR.dumpSTR:run',
+              'mergeSTR=mergeSTR.mergeSTR:run',
+              'statSTR=statSTR.statSTR:run',
+              'compareSTR=compareSTR.compareSTR:run',
+              'qcSTR=qcSTR.qcSTR:run'
           ],
       },
       install_requires=['argparse',

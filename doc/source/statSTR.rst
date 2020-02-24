@@ -1,0 +1,1 @@
+.. include:: ../../statSTR/README.rst

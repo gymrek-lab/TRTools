@@ -5,6 +5,9 @@
 .bandit
 .pylintrc
 
+# Docs
+*_build/*
+
 # Python files
 *~
 *.pyc

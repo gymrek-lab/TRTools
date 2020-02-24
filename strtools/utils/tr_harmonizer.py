@@ -42,6 +42,7 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     Returns
     -------
     bool
+      Indicates whether repeat sequences may be impure
     """
     if vcftype == VCFTYPES.gangstr:
         return False
@@ -70,6 +71,7 @@ def HasLengthRefGenotype(vcftype: VCFTYPES):
     Returns
     -------
     bool
+      Indicates whether ref alleles are specified by length
     """
     if vcftype == VCFTYPES.gangstr:
         return False
@@ -96,6 +98,7 @@ def HasLengthAltGenotypes(vcftype: VCFTYPES):
     Returns
     -------
     bool
+      Indicates whether alt alleles are specified by length
     """
     if vcftype == VCFTYPES.gangstr:
         return False
@@ -395,7 +398,6 @@ def _HarmonizeEHRecord(vcfrecord):
             if alt[:4] != "<STR" or alt[-1] != ">":
                 raise ValueError("EH alt alleles were not formatted"
                                  " as expected")
-
             alt_allele_lengths.append(float(alt[4:-1]))
     else:
         alt_allele_lengths = []
