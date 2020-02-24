@@ -5,11 +5,9 @@ qcSTR is a tool for generating various plots that are useful for diagnosing issu
 
 Usage
 -----
-qcSTR takes as input a VCF file and outputs several plots in pdf format. To run qcSTR, use the following command:
+qcSTR takes as input a VCF file and outputs several plots in pdf format. To run qcSTR, use the following command::
 
-.. code-block::
-
-	qcSTR \
+    qcSTR \
   	--vcf <vcf file> \
    	--out test \
    	[additional options]
@@ -22,7 +20,7 @@ Required Parameters:
 
 Recommended Parameters:
 
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default=:code:'auto'. Must be one of: :code:'gangstr', :code:'advntr', :code:'hipstr', :code:'eh', :code:'popstr'.
+* :code:`--vcftype <string>`: Type of VCF files being merged. Default=:code:'auto'. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 
 Optional Parameters:
 
@@ -42,7 +40,7 @@ qcSTR outputs the following plots:
 Example qcSTR command
 ---------------------
 
-.. code-block::
+Example::
 
 	FILE=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
 	qcSTR \
