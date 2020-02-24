@@ -752,7 +752,7 @@ def getargs(): # pragma: no cover
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
-    inout_group.add_argument("--vcftype", help="Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
 
     # Locus-level filters are not specific to any tool
     locus_group = parser.add_argument_group("Locus-level filters (tool agnostic)")
@@ -931,9 +931,10 @@ def main(args):
 
     return 0
 
-if __name__ == "__main__": # pragma: no cover
-    # Set up args
+def run(): # pragma: no cover
     args = getargs()
-    # Run main function
     retcode = main(args)
     sys.exit(retcode)
+
+if __name__ == "__main__": # pragma: no cover
+    run()

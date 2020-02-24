@@ -12,6 +12,7 @@ STRTools: a tool for genome-wide tandem repeat analysis
    INTRO
    UTILITIES
    API
+   VIGNETTES
 
 Indices and tables
 ==================

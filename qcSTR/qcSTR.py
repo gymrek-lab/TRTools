@@ -135,7 +135,7 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
@@ -201,10 +201,11 @@ def main(args):
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
     OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
     return 0
-if __name__ == "__main__":  # pragma: no cover
-    # Set up args
+
+def run(): # pragma: no cover
     args = getargs()
-    # Run main function
     retcode = main(args)
     sys.exit(retcode)
 
+if __name__ == "__main__": # pragma: no cover
+    run()
