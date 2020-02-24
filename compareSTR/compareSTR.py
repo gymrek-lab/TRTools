@@ -305,8 +305,8 @@ def getargs():  # pragma: no cover
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
-    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
-    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%trh.VCFTYPES.__members__, type=str, default="auto")
+    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
+    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
     ### Options for filtering input ###
     filter_group = parser.add_argument_group("Filtering options")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
