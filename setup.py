@@ -26,11 +26,11 @@ setup(name=NAME,
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'dumpSTR=dumpSTR.dumpSTR:main',
-              'mergeSTR=mergeSTR.mergeSTR:main',
-              'statSTR=statSTR.statSTR:main',
-              'compareSTR=compareSTR.compareSTR:main',
-              'qcSTR=qcSTR.qcSTR:main'
+              'dumpSTR=dumpSTR.dumpSTR:run',
+              'mergeSTR=mergeSTR.mergeSTR:run',
+              'statSTR=statSTR.statSTR:run',
+              'compareSTR=compareSTR.compareSTR:run',
+              'qcSTR=qcSTR.qcSTR:run'
           ],
       },
       install_requires=['argparse',

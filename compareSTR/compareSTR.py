@@ -467,10 +467,11 @@ def main(args):
 
     return 0 
 
-if __name__ == "__main__":  # pragma: no cover
-    # Set up args
+def run(): # pragma: no cover
     args = getargs()
-    # Run main function
     retcode = main(args)
     sys.exit(retcode)
+
+if __name__ == "__main__": # pragma: no cover
+    run()
 
