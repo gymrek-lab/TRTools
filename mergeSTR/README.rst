@@ -11,13 +11,12 @@ Usage
 -----
 MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines.
 
-To run mergeSTR use the following command: 
-.. code-block::
-	mergeSTR \
-  	--vcfs <vcf file1, vcf file2> \
-  	--out test \
-  	[additional options]
+To run mergeSTR use the following command::
 
+	mergeSTR \
+  	  --vcfs <vcf file1, vcf file2> \
+  	  --out test \
+  	  [additional options]
 
 Required Parameters: 
 
@@ -37,9 +36,8 @@ Optional Additional Parameters:
 Example MergeSTR command
 ------------------------
 
-If you have installed the STRTools package, you can run an example mergeSTR command using files in this repository.
+If you have installed the STRTools package, you can run an example mergeSTR command using files in this repository::
 
-.. code-block::
 	FILE1=${REPODIR}/test/common/sample_vcfs/mergeSTR_vcfs/test_file_gangstr1.vcf.gz
 	FILE2=${REPODIR}/test/common/sample_vcfs/mergeSTR_vcfs/test_file_gangstr2.vcf.gz
 	mergeSTR \
@@ -48,9 +46,9 @@ If you have installed the STRTools package, you can run an example mergeSTR comm
 
 where :code:`$REPODIR` points to the root path of this repository.
 
-If you are testing from source, you can run:
-.. code-block::
-	python mergeSTR.py \
+If you are testing from source, you can run::
+
+     python mergeSTR.py \
    	--vcfs ${FILE1},${FILE2} \
    	--out test_run
 
