@@ -32,7 +32,7 @@ def ValidateAlleleFreqs(allele_freqs):
     True
     """
     if len(allele_freqs.keys()) == 0: return False
-    return sum(allele_freqs.values()) == 1
+    return abs(1-sum(allele_freqs.values())) <= 0.001
 
 def GetHeterozygosity(allele_freqs):
     r"""Compute heterozygosity of a locus
