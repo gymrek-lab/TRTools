@@ -13,8 +13,8 @@ Usage
 -----
 CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags.
 
-To run compareSTR use the following command:
-.. code-block::
+To run compareSTR use the following command::
+
   compareSTR \
     --vcf1 <vcf file> --vcf2 <vcf file> \
     --out test \
@@ -72,8 +72,8 @@ compareSTR outputs the following text files and plots:
 Example compareSTR command
 --------------------------
 
-Compare two callsets:
-.. code-block::
+Compare two callsets::
+
   FILE1=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
   FILE2=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf2.vcf.gz
   compareSTR \
@@ -82,9 +82,8 @@ Compare two callsets:
 
 where :code:`$REPODIR` points to the root path of this repository.
 
-Similarly, to compare two callsets, but stratify by the DP and Q format fields in the first VCF file and output metrics separately by period (and also modify the bubble plot dimensions):
+Similarly, to compare two callsets, but stratify by the DP and Q format fields in the first VCF file and output metrics separately by period (and also modify the bubble plot dimensions)::
 
-.. code-block::
   FILE1=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
   FILE2=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf2.vcf.gz
   compareSTR \
