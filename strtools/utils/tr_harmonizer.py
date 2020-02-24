@@ -52,7 +52,7 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.popstr:
         return True
     if vcftype == VCFTYPES.eh:
-        return False # TODO check this
+        return False  # TODO check this
 
     _UnexpectedTypeError(vcftype)
 
@@ -189,7 +189,7 @@ def InferVCFType(vcffile):
 
     if len(possible_vcf_types) > 1:
         raise ValueError(('Confused - this vcf looks like it could have '
-                         'been any of the types: {}'
+                          'been any of the types: {}'
                           .format(possible_vcf_types)))
 
     return next(iter(possible_vcf_types))
@@ -1020,9 +1020,9 @@ class TRRecord:
             return string
 
         if self.HasFabricatedRefAllele():
-            string = "{} {} len:{} ".format(self.record_id,
-                                            self.motif,
-                                            self.ref_allele_length)
+            string = "{} {} n_reps:{} ".format(self.record_id,
+                                               self.motif,
+                                               self.ref_allele_length)
         else:
             string = "{} {} {} ".format(self.record_id,
                                         self.motif,
@@ -1031,8 +1031,8 @@ class TRRecord:
         if len(self.alt_alleles) == 0:
             string += '.'
         elif self.HasFabricatedAltAlleles():
-            string += ", ".join("len:" + str(length) for length
-                                in self.alt_allele_lengths)
+            string += ",".join("n_reps:" + str(length) for length
+                               in self.alt_allele_lengths)
         else:
             string += ','.join(self.alt_alleles)
 

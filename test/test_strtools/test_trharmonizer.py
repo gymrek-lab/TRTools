@@ -3,12 +3,12 @@ import sys
 
 import numpy as np
 import pytest
-import tr_harmonizer as trh
 import vcf
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '..', '..', 'strtools')
 )
+import tr_harmonizer as trh
 
 
 COMMDIR = os.path.join(
@@ -59,6 +59,27 @@ dummy_record3 += DummyVCFSample(['0', '0', '0'], True, 'S8')
 # Example record not called (not sure what gt field should look like)
 dummy_record4 = DummyVCFRecord()
 dummy_record4 += DummyVCFSample(['0'], False, 'S9')
+
+
+def test_TRRecord_print():
+    ref = "ABC"
+    alt = ["DEF", "GHI"]
+    motif = "foo"
+    ID = "bar"
+    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID)
+    assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
+                                                  alt[1])
+    record = trh.TRRecord(dummy_record1, "B", ["E", "H"], motif, ID,
+                          full_alleles=(ref, alt))
+    assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
+                                                  alt[1])
+    record = trh.TRRecord(dummy_record1, ref, None, motif, ID,
+                          alt_allele_lengths=[3, 5.5])
+    assert str(record) == "{} {} {} n_reps:3,n_reps:5.5".format(ID, motif, ref)
+    record = trh.TRRecord(dummy_record1, None, None, motif, ID,
+                          ref_allele_length=7,
+                          alt_allele_lengths=[3, 5.5])
+    assert str(record) == "{} {} n_reps:7 n_reps:3,n_reps:5.5".format(ID, motif)
 
 
 def test_TRRecord_iter():

@@ -3,6 +3,7 @@
 .pydocstyle
 .mypy_cache/
 .bandit
+.pylintrc
 
 # Python files
 *~
