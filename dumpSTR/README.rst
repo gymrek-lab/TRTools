@@ -8,9 +8,9 @@ Usage
 To run dumpSTR use the following command::
 
 	dumpSTR \
-  		--vcf <VCF> \
-  		--out <string> \
-  		[filter options]
+  	  --vcf <VCF> \
+  	  --out <string> \
+  	  [filter options]
 
 Required parameters:
 
