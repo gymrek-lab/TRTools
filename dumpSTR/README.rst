@@ -8,7 +8,7 @@ Usage
 To run dumpSTR use the following command::
 
 	dumpSTR \
-  	  --vcf <VCF> \
+  	  --vcf <vcf file> \
   	  --out <string> \
   	  [filter options]
 
