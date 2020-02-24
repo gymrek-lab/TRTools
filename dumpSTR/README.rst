@@ -5,12 +5,12 @@ DumpSTR is a tool for filtering VCF file with TR genotypes produced by supported
 
 Usage
 -----
-To run dumpSTR use the following command:
-.. code-block::
+To run dumpSTR use the following command::
+
 	dumpSTR \
-  	--vcf <VCF> \
-  	--out <string> \
-  	[filter options]
+  		--vcf <VCF> \
+  		--out <string> \
+  		[filter options]
 
 Required parameters:
 
