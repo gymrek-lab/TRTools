@@ -16,15 +16,11 @@ See full documentation and examples at https://strtools.readthedocs.io/en/latest
 Install
 -------
 
-You can obtain STRTools from pip:
-
-.. code-block::
+You can obtain STRTools from pip::
 
 	pip install strtools
 
-Or, to install from source, run the following command from the base directory of the STRTools repo:
-
-.. code-block::
+Or, to install from source, run the following command from the base directory of the STRTools repo::
 
 	python setup.py install [--prefix=PREFIX]
 
@@ -42,9 +38,7 @@ STRTools includes the following tools.
 
 Type :code:`<command> --help` to see a full set of options.
 
-It additionally includes a python library, :code:`strtools`, which can be accessed from within Python scripts. e.g.:
-
-.. code-block::
+It additionally includes a python library, :code:`strtools`, which can be accessed from within Python scripts. e.g.::
 
 	import strtools.utils.utils as stls
 	allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
