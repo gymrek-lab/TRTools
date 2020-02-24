@@ -9,7 +9,7 @@ After downloading the VCF files, we can use :code:`mergeSTR` to merge them into 
 
 	mergeSTR --vcfs ceu_ex.vcf.gz,yri_ex.vcf.gz --out merged
 
-This will create the output `merged.vcf`. We should zip and index the file::
+This will create the output :code:`merged.vcf`. We should zip and index the file::
 
 	bgzip merged.vcf
 	tabix -p vcf merged.vcf.gz
