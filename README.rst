@@ -21,6 +21,8 @@ You can obtain TRTools from pip::
 
 	pip install trtools
 
+Note, :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
+
 Or, to install from source, run the following command from the base directory of the TRTools repo::
 
 	python setup.py install [--prefix=PREFIX]
