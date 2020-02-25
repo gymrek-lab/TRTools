@@ -1,26 +1,26 @@
 
-.. image:: https://travis-ci.org/gymreklab/STRTools.svg?branch=master
-    :target: https://travis-ci.org/gymreklab/STRTools
+.. image:: https://travis-ci.org/gymreklab/TRTools.svg?branch=master
+    :target: https://travis-ci.org/gymreklab/TRTools
 
-.. image:: https://codecov.io/gh/gymreklab/STRTools/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/gymreklab/STRTools
+.. image:: https://codecov.io/gh/gymreklab/TRTools/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/gymreklab/TRTools
 
 
-STRTools
+TRTools
 ============
 
-STRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
+TRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
-See full documentation and examples at https://strtools.readthedocs.io/en/latest/.
+See full documentation and examples at https://trtools.readthedocs.io/en/latest/.
 
 Install
 -------
 
-You can obtain STRTools from pip::
+You can obtain TRTools from pip::
 
-	pip install strtools
+	pip install trtools
 
-Or, to install from source, run the following command from the base directory of the STRTools repo::
+Or, to install from source, run the following command from the base directory of the TRTools repo::
 
 	python setup.py install [--prefix=PREFIX]
 
@@ -28,7 +28,7 @@ to install locally, set :code:`--prefix=$HOME` and ensure :code:`$HOME` is on yo
 
 Tools
 -----
-STRTools includes the following tools.
+TRTools includes the following tools.
 
 * dumpSTR: a tool for filtering VCF files with STR/VNTR genotypes
 * mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
@@ -38,9 +38,9 @@ STRTools includes the following tools.
 
 Type :code:`<command> --help` to see a full set of options.
 
-It additionally includes a python library, :code:`strtools`, which can be accessed from within Python scripts. e.g.::
+It additionally includes a python library, :code:`trtools`, which can be accessed from within Python scripts. e.g.::
 
-	import strtools.utils.utils as stls
+	import trtools.utils.utils as stls
 	allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
 	stls.GetHeterozygosity(allele_freqs) # should return 0.5
 
@@ -51,7 +51,7 @@ See the README in each subdirectory for usage details.
 
 Supported Tools
 ---------------
-STRTools supports VCFs from the following STR/VNTR genotyping tools:
+TRTools supports VCFs from the following STR/VNTR genotyping tools:
 
 * GangSTR_ version 2.4 or higher.
 * HipSTR_ 
@@ -68,7 +68,7 @@ STRTools supports VCFs from the following STR/VNTR genotyping tools:
 Contributing
 ------------
 
-If you would like to contribute a fix or new tool to STRTools, follow these guidelines:
+If you would like to contribute a fix or new tool to TRTools, follow these guidelines:
 
 * Fork the repository.
 * Make your changes. 

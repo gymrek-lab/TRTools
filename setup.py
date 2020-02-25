@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
-NAME = "strtools"
+NAME = "trtools"
 AUTHOR = "Melissa Gymrek"
 AUTHOR_EMAIL = "mgymrek@ucsd.edu"
 MAINTAINER = "Melissa Gymrek"
 MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
-DOWNLOAD_URL = 'http://github.com/gymreklab/STRTools'
+DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
 VERSION = '2.0.0'
