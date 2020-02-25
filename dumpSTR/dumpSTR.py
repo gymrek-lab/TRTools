@@ -13,7 +13,7 @@ import sys
 import vcf
 from vcf.parser import _Filter, _Format, _Info
 
-# Handle STRTools imports differently depending on where we're calling this from
+# Handle TRTools imports differently depending on where we're calling this from
 if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))

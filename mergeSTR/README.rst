@@ -36,7 +36,7 @@ Optional Additional Parameters:
 Example MergeSTR command
 ------------------------
 
-If you have installed the STRTools package, you can run an example mergeSTR command using files in this repository::
+If you have installed the TRTools package, you can run an example mergeSTR command using files in this repository::
 
 	FILE1=${REPODIR}/test/common/sample_vcfs/mergeSTR_vcfs/test_file_gangstr1.vcf.gz
 	FILE2=${REPODIR}/test/common/sample_vcfs/mergeSTR_vcfs/test_file_gangstr2.vcf.gz
