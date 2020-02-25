@@ -13,8 +13,8 @@ if __name__ == "mergeutils" or __package__ is None:
     import common
     import tr_harmonizer as trh
 else:
-    import strtools.utils.common as common # pragma: no cover
-    import strtools.utils.tr_harmonizer as trh # pragma: no cover
+    import trtools.utils.common as common # pragma: no cover
+    import trtools.utils.tr_harmonizer as trh # pragma: no cover
 
 def LoadReaders(vcffiles, region=None):
     r"""Return list of VCF readers

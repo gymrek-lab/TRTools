@@ -49,7 +49,7 @@ Specifying :code:`--use-length` will collapse alleles by length (only relevant f
 Example command
 ---------------
 
-If you have installed the STRTools package, you can run an example statSTR command using files in this repository::
+If you have installed the TRTools package, you can run an example statSTR command using files in this repository::
 
   statSTR \
     --vcf $REPODIR/test/common/sample_vcfs/test_hipstr.vcf \

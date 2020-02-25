@@ -41,9 +41,9 @@ RUN ./install-gangstr.sh
 RUN ldconfig
 WORKDIR ..
 
-# Download and install STRTools
-RUN git clone https://github.com/gymreklab/STRTools
-WORKDIR STRTools
+# Download and install TRTools
+RUN git clone https://github.com/gymreklab/TRTools
+WORKDIR TRTools
 RUN python3 setup.py install
 WORKDIR ..
 

@@ -6,7 +6,7 @@ import pytest
 import vcf
 
 sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..', '..', 'strtools')
+    os.path.dirname(os.path.abspath(__file__)), '..', '..', 'trtools')
 )
 import tr_harmonizer as trh
 

@@ -1,7 +1,7 @@
-STRTools Vignettes
+TRTools Vignettes
 ==================
 
-The following vignettes show example usecases of STRTools.
+The following vignettes show example usecases of TRTools.
 
 .. toctree::
    :maxdepth: 1
