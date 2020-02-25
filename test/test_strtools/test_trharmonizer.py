@@ -79,7 +79,8 @@ def test_TRRecord_print():
     record = trh.TRRecord(dummy_record1, None, None, motif, ID,
                           ref_allele_length=7,
                           alt_allele_lengths=[3, 5.5])
-    assert str(record) == "{} {} n_reps:7 n_reps:3,n_reps:5.5".format(ID, motif)
+    assert str(record) == ("{} {} n_reps:7 n_reps:3,n_reps:5.5"
+                           .format(ID, motif))
 
 
 def test_TRRecord_iter():
@@ -113,7 +114,7 @@ def test_TRRecord_allele_lengths():
                      ref_allele_length=5)
     record = trh.TRRecord(dummy_record1, None, None, motif, ID,
                           ref_allele_length=5.5, alt_allele_lengths=[4, 5.5])
-    assert record.ref_allele == motif*5 + 'F'
+    assert record.ref_allele == motif * 5 + 'F'
 
 
 def test_TRRecord_unique_lengths():
@@ -417,7 +418,6 @@ def test_GetMaxAllele():
     assert np.isnan(al_max) == True
 
 
-
 #### Test TRRecordHarmonizer on different files ####
 # TODO: test input a VCF that came from something else e.g. SNP calls from samtools
 
@@ -442,13 +442,14 @@ def reset_vcfs():
 def test_trh_init_and_type_infer():
     reset_vcfs()
 
-    # Test example with unknown VCF type given
+    # Test example with a meaningless VCF type given
     with pytest.raises(ValueError):
         trh.TRRecordHarmonizer(gangstr_vcf, vcftype='unknownvcf')
     # Test example with unsupported VCF
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         trh.TRRecordHarmonizer(snps_vcf)
 
+    # Test methods not passing in a vcftype
     with pytest.raises(ValueError):
         trh.MayHaveImpureRepeats('foo')
     with pytest.raises(ValueError):
@@ -506,6 +507,57 @@ def test_trh_init_and_type_infer():
             and trh.HasLengthRefGenotype(trh.VCFTYPES.eh))
     assert (eh_trh.HasLengthAltGenotypes()
             and trh.HasLengthAltGenotypes(trh.VCFTYPES.eh))
+
+
+def all_types():
+    for vcftype in trh.VCFTYPES:
+        yield vcftype
+    yield "snps"
+
+
+def get_vcf(vcftype):
+    if vcftype == trh.VCFTYPES.gangstr:
+        return gangstr_vcf
+    if vcftype == trh.VCFTYPES.hipstr:
+        return hipstr_vcf
+    if vcftype == trh.VCFTYPES.popstr:
+        return popstr_vcf
+    if vcftype == trh.VCFTYPES.advntr:
+        return advntr_vcf
+    if vcftype == trh.VCFTYPES.eh:
+        return eh_vcf
+    if vcftype == "snps":
+        return snps_vcf
+    raise ValueError("Unexpected vcftype")
+        # TODO add Beagle
+
+
+def test_wrong_vcftype():
+    # an iterator that includes both tr caller types
+    # and error file types
+    for correct_type in trh.VCFTYPES:
+        reset_vcfs()
+        for incorrect_type in all_types():
+            if incorrect_type == correct_type:
+                # make sure the incorrect_type is actually incorrect
+                continue
+
+            invcf = get_vcf(incorrect_type)
+            with pytest.raises(TypeError):
+                print(correct_type, incorrect_type)
+                trh.TRRecordHarmonizer(invcf, vcftype=correct_type)
+
+        reset_vcfs()
+        for incorrect_type in all_types():
+            if incorrect_type == correct_type:
+                # make sure the incorrect_type is actually incorrect
+                continue
+
+            invcf = get_vcf(incorrect_type)
+            record = next(invcf)
+            with pytest.raises(TypeError):
+                print(correct_type, incorrect_type)
+                trh.HarmonizeRecord(correct_type, record)
 
 
 def test_HarmonizeRecord():
@@ -614,3 +666,5 @@ def test_HarmonizeRecord():
     #with pytest.raises(ValueError):
     #    tr_rec1 = next(iter(ic_gangstr_trh)) # We need to raise a value error if we don't find the correct keys and report that vcf type is probably input incorrectly
 
+
+#TODO test vcftype and/or string usage 

@@ -19,4 +19,38 @@ See https://strtools.readthedocs.io/en/latest/strtools.utils.utils.html for a co
 TR Harmonization across tools
 -----------------------------
 
-TODO
+The module :code:`strtools.utils.tr_harmonizer` is responsible for providing a caller agnostic view of a VCF containing TR records. The class you will work with that provides this functionality is :code:`strtools.utils.tr_harmonizer.TRRecord`. There are two coding paradigms for accessing this API. If you just want to iterate through the TRRecords in a vcf, use the TRRecordHarmonizer::
+
+  import vcf
+  import strtools.utils.tr_harmonizer as trh
+  
+  invcf = vcf.Reader(filename = ...)
+  harmonizer = trh.TRRecordHarmonizer(invcf)
+  for trrecord in harmonizer:
+        # do something with the trrecord 
+        for sample in trrecord:
+                print(sample, trrecord.GetLengthGenotype(sample))
+
+If you want to first work with the underlying record that pyvcf returns, and then later convert it to a TRRecord, use the module method HarmonizeRecord::
+
+  import vcf
+  import strtools.utils.tr_harmonizer as trh
+
+  invcf = vcf.Reader(filename = ...)
+  #make sure to grab the vcf's filetype
+  vcftype = trh.InferVCFType(invcf)
+  for record in invcf:
+    # do some filtering on the record
+    passesFilters = filter(record)
+
+    # later on, convert the record to a trrecord
+    if not passesFilters:
+       continue
+
+    trrecord = trh.HarmonizeRecord(vcftype, record)
+    # do something with the tr record
+    for sample in trrecord:
+       print(sample, trrecord.GetLengthGenotype(sample))
+
+See https://strtools.readthedocs.io/en/latest/strtools.utils.tr_harmonizer.html for a complete list of all functions used for inspecting vcfs and TRRecords.
+

@@ -149,7 +149,8 @@ def test_PopSTRFile():
     args.popstr_min_call_DP = 5
     args.popstr_max_call_DP = 100
     args.popstr_require_support = 2
-    retcode = main(args)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
     assert retcode==0
 
 # Test invalid options
