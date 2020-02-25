@@ -408,7 +408,7 @@ def main(args):
         common.MSG("--stratify-file must be 0,1, or 2")
         return 1
     format_fields, format_binsizes = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
-
+    
     ### Keep track of data to summarize at the end ###
     results_dir = {
         "chrom": [],
