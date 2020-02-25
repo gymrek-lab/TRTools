@@ -26,9 +26,13 @@ if __name__ == "qcSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
     import common
     import tr_harmonizer as trh
+    import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh  # pragma: no cover
+    import trtools.utils.version as version
+
+__version__ = version.__version__
 
 def OutputDiffRefHistogram(diffs_from_ref, fname):
     r"""Plot histogram of difference in bp from reference allele
@@ -141,6 +145,8 @@ def getargs():  # pragma: no cover
     filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
+    ver_group = parser.add_argument_group("Version")
+    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 

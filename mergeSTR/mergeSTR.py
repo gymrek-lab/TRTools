@@ -17,12 +17,14 @@ if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
     import mergeutils
     import tr_harmonizer as trh
     import utils
+    import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.mergeutils as mergeutils  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
-
+    import trtools.utils.version as version
+__version__ = version.__version__
 NOCALLSTRING = "."
 
 # Tool-specific fields to merge. (FIELDNAME, req'd). req'd is True if merge should
@@ -400,6 +402,9 @@ def getargs():  # pragma: no cover
     opt_group = parser.add_argument_group("Optional arguments")
     opt_group.add_argument("--verbose", help="Print out extra info", action="store_true")
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
+    ## Version argument ##
+    ver_group = parser.add_argument_group("Version")
+    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
     ### Parse args ###
     args = parser.parse_args()
     return args
