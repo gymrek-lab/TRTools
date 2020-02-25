@@ -21,11 +21,14 @@ if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     import common
     import tr_harmonizer as trh
     import utils
+    import version
 else:  # pragma: no cover
     import dumpSTR.filters as filters  # pragma: no cover
     import trtools.utils.common as common # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.utils.utils as utils # pragma: no cover
+    import trtools.utils.version as version
+__version__ = version.__version__
 
 
 def MakeWriter(outfile, invcf, command):
@@ -813,7 +816,9 @@ def getargs(): # pragma: no cover
     debug_group.add_argument("--num-records", help="Only process this many records", type=int)
     debug_group.add_argument("--die-on-warning", help="Quit if a record can't be parsed", action="store_true")
     debug_group.add_argument("--verbose", help="Print out extra info", action="store_true")
-
+    # Version option
+    ver_group = parser.add_argument_group("Version")
+    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 

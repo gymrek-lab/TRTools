@@ -30,10 +30,14 @@ if __name__ == "compareSTR" or __name__ == '__main__' or __package__ is None:
     import common
     import mergeutils
     import tr_harmonizer as trh
+    import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.mergeutils as mergeutils  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
+    import trtools.utils.version as version
+
+__version__ = version.__version__
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on
@@ -326,6 +330,8 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
     option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
     option_group.add_argument("--noplot", help="Don't output any plots. Only produce text output", action="store_true")
+    ver_group = parser.add_argument_group("Version")
+    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 

@@ -10,7 +10,8 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
-VERSION = '2.0.1'
+version_file = open('_version')
+VERSION = version_file.read().strip()
 
 setup(name=NAME,
       version=VERSION,
@@ -24,6 +25,7 @@ setup(name=NAME,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
       packages=find_packages(),
+      data_files=[('',['_version'])],
       entry_points={
           'console_scripts': [
               'dumpSTR=dumpSTR.dumpSTR:run',

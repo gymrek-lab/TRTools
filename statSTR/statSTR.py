@@ -28,10 +28,14 @@ if __name__ == "statSTR" or __name__ == '__main__' or __package__ is None:
     import common
     import tr_harmonizer as trh
     import utils
+    import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh  # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
+    import trtools.utils.version as version
+
+__version__ = version.__version__
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     r"""Plot allele frequencies for a locus
@@ -309,6 +313,8 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
     plot_group = parser.add_argument_group("Plotting group")
     plot_group.add_argument("--plot-afreq", help="Output allele frequency plot. Will only do for a maximum of 10 TRs.", action="store_true")
+    ver_group = parser.add_argument_group("Version")
+    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=version.__version__))
     args = parser.parse_args()
     return args 
 
