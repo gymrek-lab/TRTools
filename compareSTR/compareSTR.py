@@ -26,14 +26,14 @@ import vcf
 
 # Load local libraries
 if __name__ == "compareSTR" or __name__ == '__main__' or __package__ is None:
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "strtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
     import common
     import mergeutils
     import tr_harmonizer as trh
 else: # pragma: no cover
-    import strtools.utils.common as common  # pragma: no cover
-    import strtools.utils.mergeutils as mergeutils  # pragma: no cover
-    import strtools.utils.tr_harmonizer as trh # pragma: no cover
+    import trtools.utils.common as common  # pragma: no cover
+    import trtools.utils.mergeutils as mergeutils  # pragma: no cover
+    import trtools.utils.tr_harmonizer as trh # pragma: no cover
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on

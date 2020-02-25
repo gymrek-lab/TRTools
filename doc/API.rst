@@ -5,7 +5,7 @@ API
    :maxdepth: 3
 
    APIOVERVIEW.rst
-   strtools.utils.utils.rst
-   strtools.utils.tr_harmonizer.rst
-   strtools.utils.mergeutils.rst
-   strtools.utils.common.rst
+   trtools.utils.utils.rst
+   trtools.utils.tr_harmonizer.rst
+   trtools.utils.mergeutils.rst
+   trtools.utils.common.rst
