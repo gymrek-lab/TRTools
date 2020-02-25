@@ -30,6 +30,8 @@ class DummyVCFSample:
 class DummyVCFRecord:
     def __init__(self):
         self.samples = []
+        self.POS = 42
+        self.CHROM = '1984'
 
     def __iadd__(self, other: DummyVCFSample):
         self.samples.append(other)
@@ -61,6 +63,11 @@ dummy_record4 = DummyVCFRecord()
 dummy_record4 += DummyVCFSample(['0'], False, 'S9')
 
 
+def test_unexpected_vcf_type():
+    with pytest.raises(ValueError):
+        trh._UnexpectedTypeError(trh.VCFTYPES.gangstr)  # pylint: disable=W0212
+
+
 def test_TRRecord_print():
     ref = "ABC"
     alt = ["DEF", "GHI"]
@@ -69,6 +76,13 @@ def test_TRRecord_print():
     record = trh.TRRecord(dummy_record1, ref, alt, motif, ID)
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
+
+    record = trh.TRRecord(dummy_record1, ref, alt, motif, None)
+    assert str(record) == "{}:{} {} {} {},{}".format(dummy_record1.CHROM,
+                                                     dummy_record1.POS,
+                                                     motif, ref, alt[0],
+                                                     alt[1])
+
     record = trh.TRRecord(dummy_record1, "B", ["E", "H"], motif, ID,
                           full_alleles=(ref, alt))
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
@@ -419,7 +433,6 @@ def test_GetMaxAllele():
 
 
 #### Test TRRecordHarmonizer on different files ####
-# TODO: test input a VCF that came from something else e.g. SNP calls from samtools
 
 gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
 hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
@@ -439,6 +452,13 @@ def reset_vcfs():
     snps_vcf = vcf.Reader(filename=snps_path)
 
 
+def test_multitype_vcf():
+    with pytest.raises(TypeError):
+        reader = vcf.Reader(filename=os.path.join(VCFDIR,
+                                                  "test_multitype.vcf"))
+        trh.TRRecordHarmonizer(reader)
+
+
 def test_trh_init_and_type_infer():
     reset_vcfs()
 
@@ -456,9 +476,14 @@ def test_trh_init_and_type_infer():
         trh.HasLengthRefGenotype('foo')
     with pytest.raises(ValueError):
         trh.HasLengthAltGenotypes('foo')
+    with pytest.raises(TypeError):
+        trh.MayHaveImpureRepeats({}) # give a meaningless argument type
 
     # Test examples with correct preset VCF type
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
+    assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
+    gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf,
+                                         vcftype=trh.VCFTYPES.gangstr)
     assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
     assert trh.InferVCFType(gangstr_vcf) == trh.VCFTYPES.gangstr
     assert (not gangstr_trh.MayHaveImpureRepeats()
@@ -470,6 +495,9 @@ def test_trh_init_and_type_infer():
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
     assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
+    hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf,
+                                        vcftype=trh.VCFTYPES.hipstr)
+    assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
     assert trh.InferVCFType(hipstr_vcf) == trh.VCFTYPES.hipstr
     assert (hipstr_trh.MayHaveImpureRepeats()
             and trh.MayHaveImpureRepeats(trh.VCFTYPES.hipstr))
@@ -479,6 +507,9 @@ def test_trh_init_and_type_infer():
             and not trh.HasLengthAltGenotypes(trh.VCFTYPES.hipstr))
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
+    assert popstr_trh.vcftype == trh.VCFTYPES.popstr
+    popstr_trh = trh.TRRecordHarmonizer(popstr_vcf,
+                                        vcftype=trh.VCFTYPES.popstr)
     assert popstr_trh.vcftype == trh.VCFTYPES.popstr
     assert trh.InferVCFType(popstr_vcf) == trh.VCFTYPES.popstr
     assert (popstr_trh.MayHaveImpureRepeats()
@@ -490,6 +521,9 @@ def test_trh_init_and_type_infer():
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf, vcftype='advntr')
     assert advntr_trh.vcftype == trh.VCFTYPES.advntr
+    advntr_trh = trh.TRRecordHarmonizer(advntr_vcf,
+                                        vcftype=trh.VCFTYPES.advntr)
+    assert advntr_trh.vcftype == trh.VCFTYPES.advntr
     assert trh.InferVCFType(advntr_vcf) == trh.VCFTYPES.advntr
     assert (advntr_trh.MayHaveImpureRepeats()
             and trh.MayHaveImpureRepeats(trh.VCFTYPES.advntr))
@@ -500,6 +534,8 @@ def test_trh_init_and_type_infer():
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
     assert eh_trh.vcftype == trh.VCFTYPES.eh
+    eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype=trh.VCFTYPES.eh)
+    assert eh_trh.vcftype == trh.VCFTYPES.eh
     assert trh.InferVCFType(eh_vcf) == trh.VCFTYPES.eh
     assert (not eh_trh.MayHaveImpureRepeats()
             and not trh.MayHaveImpureRepeats(trh.VCFTYPES.eh))
@@ -507,6 +543,21 @@ def test_trh_init_and_type_infer():
             and trh.HasLengthRefGenotype(trh.VCFTYPES.eh))
     assert (eh_trh.HasLengthAltGenotypes()
             and trh.HasLengthAltGenotypes(trh.VCFTYPES.eh))
+
+
+def test_string_or_vcftype():
+    assert (trh.HasLengthAltGenotypes("gangstr")
+            == trh.HasLengthAltGenotypes(trh.VCFTYPES.gangstr))
+    assert (trh.HasLengthRefGenotype("gangstr")
+            == trh.HasLengthRefGenotype(trh.VCFTYPES.gangstr))
+    assert (trh.MayHaveImpureRepeats("gangstr")
+            == trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
+    reset_vcfs()
+    assert (trh.HarmonizeRecord("gangstr", next(gangstr_vcf)).GetMaxAllele()
+            == len("tctgtctgtctg") / len("tctg"))
+    assert (trh.HarmonizeRecord(trh.VCFTYPES.gangstr,
+                                next(gangstr_vcf)).GetMaxAllele()
+            == len("aaaacaaaacaaaacaaaac") / len("aaaac"))
 
 
 def all_types():
@@ -660,11 +711,3 @@ def test_HarmonizeRecord():
     assert tr_rec1.HasFabricatedRefAllele()
     assert tr_rec1.HasFabricatedAltAlleles()
 
-    ## TODO Fix this test
-    # Test examples with incorrect preset VCF type
-    #ic_gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='advntr')
-    #with pytest.raises(ValueError):
-    #    tr_rec1 = next(iter(ic_gangstr_trh)) # We need to raise a value error if we don't find the correct keys and report that vcf type is probably input incorrectly
-
-
-#TODO test vcftype and/or string usage 

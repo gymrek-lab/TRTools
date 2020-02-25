@@ -78,7 +78,10 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.eh:
         return False  # TODO check this
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def HasLengthRefGenotype(vcftype: VCFTYPES):
@@ -108,7 +111,10 @@ def HasLengthRefGenotype(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.eh:
         return True  # TODO check this
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def HasLengthAltGenotypes(vcftype: VCFTYPES):
@@ -136,7 +142,10 @@ def HasLengthAltGenotypes(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.eh:
         return True
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def _UnexpectedTypeError(vcftype: VCFTYPES):
@@ -249,7 +258,10 @@ def HarmonizeRecord(vcftype: VCFTYPES, vcfrecord):
     if vcftype == VCFTYPES.popstr:
         return _HarmonizePopSTRRecord(vcfrecord)
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def _HarmonizeGangSTRRecord(vcfrecord):
@@ -1061,7 +1073,8 @@ class TRRecord:
         """Generate a summary of the variant described by this record."""
         record_id = self.record_id
         if record_id is None:
-            record_id = "{self.vcfrecord.CHR:self.vcfrecord.POS}"
+            record_id = "{}:{}".format(self.vcfrecord.CHROM,
+                                       self.vcfrecord.POS)
         if self.HasFullStringGenotypes():
             string = "{} {} {} ".format(record_id,
                                         self.motif,
