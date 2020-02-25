@@ -58,24 +58,28 @@ def test_main():
     # correct vcf
     args = base_argparse()
     args.vcf = os.path.join(QCDIR, "test_popstr.vcf")
-    retcode = main(args)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
     assert retcode == 0
 
     # vcf file with no contig
     args = base_argparse()
     args.vcf = os.path.join(QCDIR, "test_popstr_nocontig.vcf")
-    retcode = main(args)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
     assert retcode == 0
     
     # Set sample list 
     args.samples = os.path.join(QCDIR, "test_samplelist.txt")
-    retcode = main(args)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
     assert retcode == 0
 
     # Trying to test line 186 but seems to not work. TODO update with something else
     # Set sample list with sample that doesn't exist in VCF (should skip it)
     args.samples = os.path.join(QCDIR, "test_samplelist.txt")
-    retcode = main(args)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
     assert retcode == 0
 
     # Non existent vcf

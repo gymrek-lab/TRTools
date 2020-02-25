@@ -33,7 +33,7 @@ else: # pragma: no cover
     import trtools.utils.tr_harmonizer as trh  # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
 
-def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
+def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     r"""Plot allele frequencies for a locus
 
     Parameters
@@ -47,9 +47,9 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=[], sampleprefixes=[]):
     sampleprefixes : list of str, optional
           Prefixes for each sample list to use in legend
     """
-    if len(samplelists)==0:
-        samplelists.append([])
-        sampleprefixes.append("sample")
+    if samplelists is None or samplelists == []:
+        samplelists = [None]
+        sampleprefixes = ["sample"]
     allele_freqs_list = []
     allele_set = set()
     for sl in samplelists:

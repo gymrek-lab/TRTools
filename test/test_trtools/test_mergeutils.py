@@ -56,7 +56,7 @@ def test_CheckVCFType():
         print(mergeutils.GetVCFType([gangstr_vcf, hipstr_vcf], "auto"))
     assert "VCF files are of mixed types." in str(info.value)
     
-    with pytest.raises(ValueError) as info:
+    with pytest.raises(TypeError) as info:
         print(mergeutils.GetVCFType([gangstr_vcf, snps_vcf], "auto"))
     assert "Could not identify the type of this vcf" in str(info.value)
 

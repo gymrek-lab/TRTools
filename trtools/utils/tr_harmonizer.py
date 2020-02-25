@@ -9,6 +9,7 @@ import os
 import re
 import sys
 import warnings
+from typing import Union
 
 import numpy as np
 
@@ -25,6 +26,27 @@ else:
 # TODO: add support for tool version numbers
 # TODO: add EH support for getting ref allele sequence genotypes from fasta
 VCFTYPES = enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr'])
+
+
+def _ToVCFType(vcftype: Union[str, VCFTYPES]):
+    """
+    Convert the input to a VCFTYPE object.
+
+    If it is a string, look up the VCFTYPE object.
+    If it is already a VCFTYPE, return it.
+    Otherwise, error
+    """
+    if isinstance(vcftype, str):
+        if vcftype not in VCFTYPES.__members__:
+            raise ValueError(("{} is not an excepted TR vcf type. "
+                              "Expected one of {}").format(
+                                  vcftype, list(VCFTYPES.__members__)))
+        return VCFTYPES[vcftype]
+    elif isinstance(vcftype, VCFTYPES):
+        return vcftype
+    else:
+        raise TypeError(("{} (of type {}) is not a vcftype"
+                        .format(vcftype, type(vcftype))))
 
 
 def MayHaveImpureRepeats(vcftype: VCFTYPES):
@@ -44,6 +66,7 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     bool
       Indicates whether repeat sequences may be impure
     """
+    vcftype = _ToVCFType(vcftype)
     if vcftype == VCFTYPES.gangstr:
         return False
     if vcftype == VCFTYPES.hipstr:
@@ -53,9 +76,12 @@ def MayHaveImpureRepeats(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.popstr:
         return True
     if vcftype == VCFTYPES.eh:
-        return False # TODO check this
+        return False  # TODO check this
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def HasLengthRefGenotype(vcftype: VCFTYPES):
@@ -73,6 +99,7 @@ def HasLengthRefGenotype(vcftype: VCFTYPES):
     bool
       Indicates whether ref alleles are specified by length
     """
+    vcftype = _ToVCFType(vcftype)
     if vcftype == VCFTYPES.gangstr:
         return False
     if vcftype == VCFTYPES.hipstr:
@@ -84,7 +111,10 @@ def HasLengthRefGenotype(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.eh:
         return True  # TODO check this
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def HasLengthAltGenotypes(vcftype: VCFTYPES):
@@ -100,6 +130,7 @@ def HasLengthAltGenotypes(vcftype: VCFTYPES):
     bool
       Indicates whether alt alleles are specified by length
     """
+    vcftype = _ToVCFType(vcftype)
     if vcftype == VCFTYPES.gangstr:
         return False
     if vcftype == VCFTYPES.hipstr:
@@ -111,7 +142,10 @@ def HasLengthAltGenotypes(vcftype: VCFTYPES):
     if vcftype == VCFTYPES.eh:
         return True
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def _UnexpectedTypeError(vcftype: VCFTYPES):
@@ -188,11 +222,11 @@ def InferVCFType(vcffile):
                 possible_vcf_types.add(VCFTYPES.eh)
 
     if len(possible_vcf_types) == 0:
-        raise ValueError('Could not identify the type of this vcf')
+        raise TypeError('Could not identify the type of this vcf')
 
     if len(possible_vcf_types) > 1:
-        raise ValueError(('Confused - this vcf looks like it could have '
-                         'been any of the types: {}'
+        raise TypeError(('Confused - this vcf looks like it could have '
+                          'been any of the types: {}'
                           .format(possible_vcf_types)))
 
     return next(iter(possible_vcf_types))
@@ -212,6 +246,7 @@ def HarmonizeRecord(vcftype: VCFTYPES, vcfrecord):
     TRRecord
         A harmonized TRRecord object
     """
+    vcftype = _ToVCFType(vcftype)
     if vcftype == VCFTYPES.gangstr:
         return _HarmonizeGangSTRRecord(vcfrecord)
     if vcftype == VCFTYPES.hipstr:
@@ -223,7 +258,10 @@ def HarmonizeRecord(vcftype: VCFTYPES, vcfrecord):
     if vcftype == VCFTYPES.popstr:
         return _HarmonizePopSTRRecord(vcfrecord)
 
-    _UnexpectedTypeError(vcftype)
+    # Can't cover this line because it is future proofing.
+    # (It explicitly is not reachable now,
+    # would only be reachable if VCFTYPES is expanded in the future)
+    _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
 def _HarmonizeGangSTRRecord(vcfrecord):
@@ -238,13 +276,19 @@ def _HarmonizeGangSTRRecord(vcfrecord):
     -------
     TRRecord
     """
+    if 'RU' not in vcfrecord.INFO:
+        raise TypeError("This is not a GangSTR record")
+    if 'VID' in vcfrecord.INFO:
+        raise TypeError("Trying to read an AdVNTR record as a GangSTR record")
+    if 'VARID' in vcfrecord.INFO:
+        raise TypeError("Trying to read an EH record as a GangSTR record")
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
     else:
         alt_alleles = []
     motif = vcfrecord.INFO["RU"].upper()
-    record_id = vcfrecord.ID
+    record_id = None
 
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id)
 
@@ -261,6 +305,11 @@ def _HarmonizeHipSTRRecord(vcfrecord):
     -------
     TRRecord
     """
+    if ('START' not in vcfrecord.INFO
+            or 'END' not in vcfrecord.INFO
+            or 'PERIOD' not in vcfrecord.INFO):
+        raise TypeError("This is not a HipSTR record")
+
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
     start_offset = int(vcfrecord.INFO['START']) - pos
@@ -330,6 +379,8 @@ def _HarmonizeAdVNTRRecord(vcfrecord):
     -------
     TRRecord
     """
+    if 'RU' not in vcfrecord.INFO or 'VID' not in vcfrecord.INFO:
+        raise TypeError("This is not an AdVNTR record")
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -353,6 +404,8 @@ def _HarmonizePopSTRRecord(vcfrecord):
     -------
     TRRecord
     """
+    if 'Motif' not in vcfrecord.INFO:
+        raise TypeError("This is not a PopSTR record")
     ref_allele = vcfrecord.REF.upper()
     motif = vcfrecord.INFO["Motif"].upper()
     record_id = vcfrecord.ID
@@ -362,8 +415,9 @@ def _HarmonizePopSTRRecord(vcfrecord):
         for alt in vcfrecord.ALT:
             alt = str(alt)
             if alt[0] != "<" or alt[-1] != ">":
-                raise ValueError("PopSTR alt alleles were not formatted"
-                                 " as expected")
+                raise TypeError("This record does not look like a PopSTR"
+                                " record. Alt alleles were not formatted"
+                                " as expected")
             alt_allele_lengths.append(float(alt[1:-1]))
     else:
         alt_allele_lengths = []
@@ -388,16 +442,19 @@ def _HarmonizeEHRecord(vcfrecord):
     -------
     TRRecord
     """
+    if 'VARID' not in vcfrecord.INFO or 'RU' not in vcfrecord.INFO:
+        raise TypeError("This is not an ExpansionHunter record")
     record_id = vcfrecord.INFO["VARID"]
     motif = vcfrecord.INFO["RU"].upper()
-    ref_allele_length = int(vcfrecord.INFO["RL"])/len(motif)
+    ref_allele_length = int(vcfrecord.INFO["RL"]) / len(motif)
     if vcfrecord.ALT[0] is not None:
         alt_allele_lengths = []
         for alt in vcfrecord.ALT:
             alt = str(alt)
             if alt[:4] != "<STR" or alt[-1] != ">":
-                raise ValueError("EH alt alleles were not formatted"
-                                 " as expected")
+                raise TypeError("This record does not look like an EH "
+                                " record. Alt alleles were not formatted"
+                                " as expected")
             alt_allele_lengths.append(float(alt[4:-1]))
     else:
         alt_allele_lengths = []
@@ -445,16 +502,16 @@ class TRRecordHarmonizer:
        Type of the VCF file. Must be included in VCFTYPES
     """
 
-    def __init__(self, vcffile, vcftype="auto"):
+    def __init__(self, vcffile: Union[str, VCFTYPES], vcftype="auto"):
         self.vcffile = vcffile
         if vcftype == "auto":
             self.vcftype = InferVCFType(vcffile)
         else:
-            if vcftype not in VCFTYPES.__members__:
-                raise ValueError(("{} is not an excepted TR vcf type. "
-                                 "Expected one of {}").format(
-                                     vcftype, list(VCFTYPES.__members__)))
-            self.vcftype = VCFTYPES[vcftype]
+            self.vcftype = _ToVCFType(vcftype)
+            inferred_type = InferVCFType(vcffile)
+            if inferred_type != self.vcftype:
+                raise TypeError("Trying to read a {} vcf as a {} vcf".format(
+                    inferred_type, self.vcftype))
 
     def MayHaveImpureRepeats(self):
         """
@@ -856,7 +913,7 @@ class TRRecord:
         return self.alt_allele_lengths is not None
 
     def GetGenotypeCounts(self,
-                          samplelist=[],
+                          samplelist=None,
                           uselength=True,
                           fullgenotypes=False):
         """
@@ -884,7 +941,7 @@ class TRRecord:
 
         genotype_counts = {}
         for sample in self:
-            if len(samplelist) > 0 and sample.sample not in samplelist:
+            if samplelist is not None and sample.sample not in samplelist:
                 continue
             if sample.called:
                 if uselength:
@@ -898,7 +955,7 @@ class TRRecord:
         return genotype_counts
 
     def GetAlleleCounts(self,
-                        samplelist=[],
+                        samplelist=None,
                         *,
                         uselength=True,
                         fullgenotypes=False):
@@ -927,7 +984,7 @@ class TRRecord:
 
         allele_counts = {}
         for sample in self:
-            if len(samplelist) > 0 and sample.sample not in samplelist:
+            if samplelist is not None and sample.sample not in samplelist:
                 continue
             if sample.called:
                 if uselength:
@@ -941,7 +998,7 @@ class TRRecord:
         return allele_counts
 
     def GetAlleleFreqs(self,
-                       samplelist=[],
+                       samplelist=None,
                        *,
                        uselength=True,
                        fullgenotypes=False):
@@ -975,7 +1032,7 @@ class TRRecord:
         return allele_freqs
 
     def GetMaxAllele(self,
-                     samplelist=[],
+                     samplelist=None,
                      fullgenotypes=False):
         """
         Get the maximum allele length called in a record.
@@ -1014,27 +1071,31 @@ class TRRecord:
 
     def __str__(self):
         """Generate a summary of the variant described by this record."""
+        record_id = self.record_id
+        if record_id is None:
+            record_id = "{}:{}".format(self.vcfrecord.CHROM,
+                                       self.vcfrecord.POS)
         if self.HasFullStringGenotypes():
-            string = "{} {} {} ".format(self.record_id,
+            string = "{} {} {} ".format(record_id,
                                         self.motif,
                                         self.full_alleles[0])
             string += ",".join(self.full_alleles[1])
             return string
 
         if self.HasFabricatedRefAllele():
-            string = "{} {} len:{} ".format(self.record_id,
-                                            self.motif,
-                                            self.ref_allele_length)
+            string = "{} {} n_reps:{} ".format(record_id,
+                                               self.motif,
+                                               self.ref_allele_length)
         else:
-            string = "{} {} {} ".format(self.record_id,
+            string = "{} {} {} ".format(record_id,
                                         self.motif,
                                         self.ref_allele)
 
         if len(self.alt_alleles) == 0:
             string += '.'
         elif self.HasFabricatedAltAlleles():
-            string += ", ".join("len:" + str(length) for length
-                                in self.alt_allele_lengths)
+            string += ",".join("n_reps:" + str(length) for length
+                               in self.alt_allele_lengths)
         else:
             string += ','.join(self.alt_alleles)
 
