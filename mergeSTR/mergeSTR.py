@@ -404,7 +404,7 @@ def getargs():  # pragma: no cover
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
     ## Version argument ##
     ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
+    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     ### Parse args ###
     args = parser.parse_args()
     return args
