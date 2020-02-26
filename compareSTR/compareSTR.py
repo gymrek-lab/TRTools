@@ -331,7 +331,7 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
     option_group.add_argument("--noplot", help="Don't output any plots. Only produce text output", action="store_true")
     ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
+    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 

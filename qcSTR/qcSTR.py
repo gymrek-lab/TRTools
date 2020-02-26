@@ -146,7 +146,7 @@ def getargs():  # pragma: no cover
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
     ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=__version__))
+    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 

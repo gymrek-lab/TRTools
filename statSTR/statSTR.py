@@ -314,7 +314,7 @@ def getargs(): # pragma: no cover
     plot_group = parser.add_argument_group("Plotting group")
     plot_group.add_argument("--plot-afreq", help="Output allele frequency plot. Will only do for a maximum of 10 TRs.", action="store_true")
     ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '%(prog)s {version}'.format(version=version.__version__))
+    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=version.__version__))
     args = parser.parse_args()
     return args 
 
