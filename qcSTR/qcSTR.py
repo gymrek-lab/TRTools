@@ -34,6 +34,7 @@ else: # pragma: no cover
 
 __version__ = version.__version__
 
+
 def OutputDiffRefHistogram(diffs_from_ref, fname):
     r"""Plot histogram of difference in bp from reference allele
 

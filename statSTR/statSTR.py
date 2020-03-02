@@ -37,6 +37,7 @@ else: # pragma: no cover
 
 __version__ = version.__version__
 
+
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     r"""Plot allele frequencies for a locus
 

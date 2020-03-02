@@ -39,6 +39,7 @@ else: # pragma: no cover
 
 __version__ = version.__version__
 
+
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on
 
