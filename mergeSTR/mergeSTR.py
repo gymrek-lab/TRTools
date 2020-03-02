@@ -25,6 +25,7 @@ else: # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
     import trtools.utils.version as version
 __version__ = version.__version__
+
 NOCALLSTRING = "."
 
 # Tool-specific fields to merge. (FIELDNAME, req'd). req'd is True if merge should
