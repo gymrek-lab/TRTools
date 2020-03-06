@@ -143,7 +143,7 @@ def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
           Format: allele1:freq1,allele2:freq2,etc. for each sample group
     """
     if len(samplelists) == 0:
-        samplelists.append([])
+        samplelists.append(None)
     allele_freqs_strs = []
     for sl in samplelists:
         if count:
@@ -179,7 +179,7 @@ def GetHWEP(trrecord, samplelists=[], uselength=True):
           If the genotype alleles not included in frequencies dictionary, return np.nan
           One value returned for each samplelist
     """
-    if len(samplelists)==0: samplelists.append([])
+    if len(samplelists)==0: samplelists.append(None)
     pvals = []
     for sl in samplelists:
         allele_freqs = trrecord.GetAlleleFreqs(samplelist=sl, uselength=uselength)
@@ -208,7 +208,7 @@ def GetHet(trrecord, samplelists=[], uselength=True):
           The heterozygosity of the locus. One value for each sample list.
           If the allele frequencies dictionary is invalid, return np.nan 
     """
-    if len(samplelists) == 0: samplelists.append([])
+    if len(samplelists) == 0: samplelists.append(None)
     hetvals = []
     for sl in samplelists:
         allele_freqs = trrecord.GetAlleleFreqs(samplelist=sl, uselength=uselength)
@@ -231,7 +231,7 @@ def GetMean(trrecord, samplelists=[], uselength=True):
           The mean allele length. One value for each sample list
           If the allele frequencies dictionary is invalid, return np.nan 
     """
-    if len(samplelists) == 0: samplelists.append([])
+    if len(samplelists) == 0: samplelists.append(None)
     return [utils.GetMean(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
 
 def GetMode(trrecord, samplelists=[]):
@@ -250,7 +250,7 @@ def GetMode(trrecord, samplelists=[]):
 	  The mode of the allele frequencies. One value for each sample list
           If the allele frequencies dictionary is invalid, return np.nan 
     """
-    if len(samplelists) == 0: samplelists.append([])
+    if len(samplelists) == 0: samplelists.append(None)
     return [utils.GetMode(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
 
 def GetVariance(trrecord, samplelists=[]):
@@ -269,7 +269,7 @@ def GetVariance(trrecord, samplelists=[]):
           The variance of the allele lengths. One value for each sample list
           If the allele frequencies dictionary is invalid, return np.nan 
     """
-    if len(samplelists) == 0: samplelists.append([])
+    if len(samplelists) == 0: samplelists.append(None)
     return [utils.GetVariance(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
 
 def GetNumSamples(trrecord, samplelists=[]):
@@ -288,7 +288,7 @@ def GetNumSamples(trrecord, samplelists=[]):
           The number of samples. One value for each sample list
           If the allele frequencies dictionary is invalid, return np.nan 
     """ 
-    if len(samplelists) == 0: samplelists.append([])
+    if len(samplelists) == 0: samplelists.append(None)
     return [sum(trrecord.GetGenotypeCounts(samplelist=sl).values()) for sl in samplelists]
 
 def getargs(): # pragma: no cover
