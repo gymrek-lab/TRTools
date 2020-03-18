@@ -397,19 +397,19 @@ def main(args):
     vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
-
+    
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
     if len(samples) == 0:
-        common.MSG("No shared smaples found between vcf readers")
+        common.WARNING("No shared smaples found between vcf readers")
         return 1
     if args.samples:
         usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
         samples = list(set(samples).intersection(usesamples))
     if len(samples) == 0:
-        common.MSG("No shared samples found between files")
+        common.WARNING("No shared samples found between files")
         return 1
-
+    
     ### Determine FORMAT fields we should look for ###
     if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
         common.MSG("--stratify-file must be 0,1, or 2")
