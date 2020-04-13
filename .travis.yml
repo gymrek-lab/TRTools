@@ -1,22 +1,30 @@
 language: python
 
-os:
-  - linux
-  - osx
+jobs:
+  include:
+    - os: linux
+      python: 3.5
+      env: TOXENV=py35
+    - os: linux
+      python: 3.6
+      env: TOXENV=py36
+    - os: osx
+      language: generic
+      env: TOXENV=py35
+    - os: osx
+      language: generic
+      env: TOXENV=py36
 
-python:
-  - 3.5
-  - 3.6
-  
 before_install:
-  - python --version
-  - pip install -U pip
-  - pip install -U pytest
-  - pip install -U pytest-cov
-  - pip install -U codecov
+  - .travis/before_install.sh
+#  - python --version
+#  - pip install -U pip
+#  - pip install -U pytest
+#  - pip install -U pytest-cov
+#  - pip install -U codecov
 
 install:
-  - pip install .
+#  - pip install .
   
 script: pytest --cov=.
 
