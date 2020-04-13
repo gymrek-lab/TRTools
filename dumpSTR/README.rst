@@ -66,7 +66,7 @@ GangSTR call-level filters
 HipSTR call-level filters
 **************************
 * :code:`--hipstr-max-call-flank-indel <float>`: Maximum call flank indel rate. Computed as DFLANKINDEL/DP 
-* :code:`--hipstr-max-call-stutter <float>`: Maximum call stutter rate. Computed as DSTUTTER/DP 
+* :code:`--hipstr-max-call-stutter <float>`: Maximum call stutter rate. PCR stutter artifacts add or remove copies of an STR's motif to sequencing reads, resulting in observed STR sizes that differ from the size of the underlying genotype. (`Source <https://www.nature.com/articles/nmeth.4267>`_). Computed as DSTUTTER/DP 
 * :code:`--hipstr-min-supp-reads <int>`: Minimum supporting reads for each allele. Based on ALLREADS and GB fields 
 * :code:`--hipstr-min-call-DP <int>`: Minimum call coverage. Based on DP field. 
 * :code:`--hipstr-max-call-DP <int>`: Maximum call coverage. Based on DP field. 
