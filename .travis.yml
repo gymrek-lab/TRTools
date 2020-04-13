@@ -25,7 +25,7 @@ before_install:
   - bash .travis/before_install.sh
 
 install:
-  - pip install .
+  - pip install -U .
   
 script: pytest --cov=.
 
