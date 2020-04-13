@@ -21,6 +21,7 @@ before_install:
   - pip install -U pytest
   - pip install -U pytest-cov
   - pip install -U codecov
+  - pip install -U virtualenv
   - bash .travis/before_install.sh
 
 install:
