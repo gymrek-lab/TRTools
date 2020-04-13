@@ -7,4 +7,5 @@ scipy
 argparse
 matplotlib
 statsmodels
+cython
 pysam
