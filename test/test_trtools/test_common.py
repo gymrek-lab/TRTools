@@ -1,8 +1,8 @@
 import os, sys
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','trtools'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
-import common
+import trtools.utils.common as common
 
 def test_MSG():
     common.MSG("Writing a test message", debug=False)

@@ -5,10 +5,11 @@ import numpy as np
 import pytest
 import vcf
 
-sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..', '..', 'trtools')
+sys.path.insert(
+    0, os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), '..', '..')
 )
-import tr_harmonizer as trh
+import trtools.utils.tr_harmonizer as trh  # pylint: disable=C0413
 
 
 COMMDIR = os.path.join(

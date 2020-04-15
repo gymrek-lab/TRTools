@@ -2,9 +2,9 @@ import os, sys
 import numpy as np
 import pytest
 import vcf
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','trtools'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
-import mergeutils
+import trtools.utils.mergeutils as mergeutils
 
 COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
 VCFDIR = os.path.join(COMMDIR, "sample_vcfs")

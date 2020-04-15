@@ -4,6 +4,7 @@
 .mypy_cache/
 .bandit
 .pylintrc
+mypy.ini
 
 # Docs
 *_build/*
