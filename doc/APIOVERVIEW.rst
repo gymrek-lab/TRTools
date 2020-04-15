@@ -8,21 +8,21 @@ TR String Utilities
 
 The module :code:`trtools.utils.utils` contains various helpful functions, e.g. for inferring a repeat sequence motif from a string, converting repeat motifs to canonical representations, or computing functions like heterozygosity from allele frequency distributions::
 
-  import trtools.utils.utils as strutils  
-  strutils.InferRepeatSequence('ATATATATATATA', 2) # returns 'AT'
-  strutils.GetCanonicalMotif('CAG') # returns 'ACG'
+  import trtools.utils.utils as trutils  
+  trutils.InferRepeatSequence('ATATATATATATA', 2) # returns 'AT'
+  trutils.GetCanonicalMotif('CAG') # returns 'ACG'
   afreqs = {10:0.25, 11:0.5, 12: 0.25} # frequency of each length
-  strutils.GetHeterozygosity(afreqs) # returns 0.625
+  trutils.GetHeterozygosity(afreqs) # returns 0.625
 
 See https://trtools.readthedocs.io/en/latest/trtools.utils.utils.html for a complete list of utility functions.
 
 TR Harmonization across tools
 -----------------------------
 
-The module :code:`strtools.utils.tr_harmonizer` is responsible for providing a caller agnostic view of a VCF containing TR records. The class you will work with that provides this functionality is :code:`strtools.utils.tr_harmonizer.TRRecord`. There are two coding paradigms for accessing this API. If you just want to iterate through the TRRecords in a vcf, use the TRRecordHarmonizer::
+The module :code:`trtools.utils.tr_harmonizer` is responsible for providing a caller agnostic view of a VCF containing TR records. The class you will work with that provides this functionality is :code:`trtools.utils.tr_harmonizer.TRRecord`. There are two coding paradigms for accessing this API. If you just want to iterate through the TRRecords in a vcf, use the TRRecordHarmonizer::
 
   import vcf
-  import strtools.utils.tr_harmonizer as trh
+  import trtools.utils.tr_harmonizer as trh
   
   invcf = vcf.Reader(filename = ...)
   harmonizer = trh.TRRecordHarmonizer(invcf)
@@ -34,7 +34,7 @@ The module :code:`strtools.utils.tr_harmonizer` is responsible for providing a c
 If you want to first work with the underlying record that pyvcf returns, and then later convert it to a TRRecord, use the module method HarmonizeRecord::
 
   import vcf
-  import strtools.utils.tr_harmonizer as trh
+  import trtools.utils.tr_harmonizer as trh
 
   invcf = vcf.Reader(filename = ...)
   #make sure to grab the vcf's filetype
@@ -52,5 +52,5 @@ If you want to first work with the underlying record that pyvcf returns, and the
     for sample in trrecord:
        print(sample, trrecord.GetLengthGenotype(sample))
 
-See https://strtools.readthedocs.io/en/latest/strtools.utils.tr_harmonizer.html for a complete list of all functions used for inspecting vcfs and TRRecords.
+See https://trtools.readthedocs.io/en/latest/trtools.utils.tr_harmonizer.html for a complete list of all functions used for inspecting vcfs and TRRecords.
 
