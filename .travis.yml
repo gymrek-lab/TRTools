@@ -17,6 +17,7 @@ jobs:
 
 before_install:
   - bash .travis/before_install.sh
+  - source venv/bin/activate
   - python --version
   - pip install -U --upgrade pip
   - pip install -U pytest
