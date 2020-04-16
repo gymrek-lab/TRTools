@@ -2,12 +2,12 @@ language: python
 
 jobs:
   include:
-#     - os: linux
-#       python: 3.5
-#       env: TOXENV=py35
-#     - os: linux
-#       python: 3.6
-#       env: TOXENV=py36
+    - os: linux
+      python: 3.5
+      env: TOXENV=py35
+    - os: linux
+      python: 3.6
+      env: TOXENV=py36
     - os: osx
       language: sh
       env: TOXENV=py3
@@ -25,11 +25,8 @@ jobs:
         - pip install -U pytest-cov
         - pip install -U codecov
         - pip install -U virtualenv
-#     - os: osx
-#       language: generic
-#       env: TOXENV=py36
 
-before_install:
+before_install: # for linux jobs
 #   - bash .travis/before_install.sh
   - python --version
   - pip install -U --upgrade pip
