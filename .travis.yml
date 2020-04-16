@@ -16,13 +16,13 @@ jobs:
       env: TOXENV=py36
 
 before_install:
+  - bash .travis/before_install.sh
   - python --version
   - pip install -U --upgrade pip
   - pip install -U pytest
   - pip install -U pytest-cov
   - pip install -U codecov
   - pip install -U virtualenv
-  - bash .travis/before_install.sh
 
 install:
   - pip install .
