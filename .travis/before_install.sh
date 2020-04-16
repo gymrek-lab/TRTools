@@ -6,8 +6,8 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   brew update;
   brew unlink python@2;
   brew upgrade python;
-  virtualenv venv -p python3;
-  source venv/bin/activate;
+#   virtualenv venv -p python3;
+#   source venv/bin/activate;
 fi
 
 if [ "$TRAVIS_OS_NAME" = linux ]; then
