@@ -2,9 +2,9 @@ language: python
 
 jobs:
   include:
-    - os: linux
-      python: 3.5
-      env: TOXENV=py35
+#     - os: linux
+#       python: 3.5
+#       env: TOXENV=py35
 #     - os: linux
 #       python: 3.6
 #       env: TOXENV=py36
@@ -19,6 +19,12 @@ jobs:
         - pip3 install virtualenv
         - virtualenv -p python3 ~/venv
         - source ~/venv/bin/activate
+        - python --version
+        - pip install -U --upgrade pip
+        - pip install -U pytest
+        - pip install -U pytest-cov
+        - pip install -U codecov
+        - pip install -U virtualenv
 #     - os: osx
 #       language: generic
 #       env: TOXENV=py36
