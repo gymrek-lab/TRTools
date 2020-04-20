@@ -19,7 +19,10 @@ Install
 
 You can obtain TRTools from pip::
 
+        pip install --upgrade pip
 	pip install trtools
+
+(Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
 
 Or, to install from source, run the following command from the base directory of the TRTools repo::
 
@@ -71,9 +74,12 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 Contributing
 ------------
 
-If you would like to contribute a fix or new tool to TRTools, follow these guidelines:
+We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
+* Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
 * Fork the repository.
+* Install it into a clean environment
+* Additionally, install `pytest` in your environment.
 * Make your changes. 
 * Ensure all functions, modules, classes etc. conform to Numpy docstring standards (https://numpydoc.readthedocs.io/en/latest/format.html).
 * Add tests (see :code:`tests/` folder to find the appropriate location for new tests) to test any new functionality. To make sure pytest knows about them, you may need to edit :code:`pytest.ini`.
