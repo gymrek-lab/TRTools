@@ -7,3 +7,4 @@ scipy=1.4.1
 argparse=1.1
 matplotlib=3.0.3
 pysam=0.15.4
+cython=0.29.13

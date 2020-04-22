@@ -25,7 +25,6 @@ setup(name=NAME,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
       packages=find_packages(),
-      data_files=[('',['_version'])],
       entry_points={
           'console_scripts': [
               'dumpSTR=dumpSTR.dumpSTR:run',
