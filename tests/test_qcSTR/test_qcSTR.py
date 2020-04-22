@@ -2,7 +2,7 @@ import argparse
 import os, sys
 import numpy as np
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','qcSTR'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 from qcSTR import * 
 
 TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")

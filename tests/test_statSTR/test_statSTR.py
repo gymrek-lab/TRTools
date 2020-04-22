@@ -1,7 +1,7 @@
 import argparse
 import os, sys
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','statSTR'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 from statSTR import *
 
 COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")

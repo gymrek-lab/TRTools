@@ -41,7 +41,6 @@ setup(name=NAME,
                         'pybedtools',
                         'pyvcf',
                         'scipy',
-                        'statsmodels',
                         'pysam'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.2',\

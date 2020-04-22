@@ -1,9 +1,9 @@
 import os, sys
 import numpy as np
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..','trtools'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
-import utils
+import trtools.utils.utils as utils
 
 # ValidateAlleleFreqs
 def test_ValidateAlleleFreqs():
