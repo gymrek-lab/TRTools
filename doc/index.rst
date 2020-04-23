@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 TRTools: a tool for genome-wide tandem repeat analysis
-====================================
+======================================================
 
 .. toctree::
    :maxdepth: 2

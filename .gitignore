@@ -7,7 +7,7 @@
 mypy.ini
 
 # Docs
-*_build/*
+*/_build/*
 
 # Python files
 *~

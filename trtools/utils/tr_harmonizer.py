@@ -171,7 +171,7 @@ def InferVCFType(vcffile):
 
     Notes
     -----
-    Some notes on the pecularities of each VCF type:
+    Some notes on the pecularities of each VCF type
     GangSTR:
        Does not include sequence impurities or partial repeats.
        Full REF and ALT strings given

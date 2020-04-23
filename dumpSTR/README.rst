@@ -79,7 +79,7 @@ PopSTR call-level filters
 * :code:`--popstr-require-support <int>`: Require each allele call to have at least n supporting reads. Based on AD field.
 
 ExpansionHunter call-level filters
-**************************
+**********************************
 * :code:`--eh-min-ADFL <int>`: Minimum number of flanking reads consistent with the allele. Based on ADFL field. 
 * :code:`--eh-min-ADIR <int>`: Minimum number of in-repeat reads consistent with the allele. Based on ADIR field. 
 * :code:`--eh-min-ADSP <int>`: Minimum number of spanning reads consistent with the allele. Based on ADSP field. 
