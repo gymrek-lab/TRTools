@@ -73,7 +73,6 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 
 Contributing
 ------------
-
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 * Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
@@ -83,7 +82,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 * Make your changes. 
 * Ensure all functions, modules, classes etc. conform to Numpy docstring standards (https://numpydoc.readthedocs.io/en/latest/format.html).
 * Add tests (see :code:`tests/` folder to find the appropriate location for new tests) to test any new functionality. To make sure pytest knows about them, you may need to edit :code:`pytest.ini`.
-* Run :code:`pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests.
+* Run :code:`pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. ( [pytest-cov](https://anaconda.org/conda-forge/pytest-cov) package is required to calculate testing coverage)
 * If applicable, update REAMDEs with new usage information.
 * Submit a pull request, with a reasonably descriptive message of what changes you have made.
 
