@@ -43,7 +43,7 @@ setup(name=NAME,
                         'scipy',
                         'pysam'],
       classifiers=['Development Status :: 4 - Beta',\
-                       'Programming Language :: Python :: 3.2',\
+                       'Programming Language :: Python :: 3.5',\
                        'License :: OSI Approved :: MIT License',\
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\
