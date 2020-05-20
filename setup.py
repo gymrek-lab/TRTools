@@ -11,7 +11,7 @@ DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
 #version_file = open('_version')
-VERSION = "2.0.12" #version_file.read().strip()
+VERSION = "2.0.13" #version_file.read().strip()
 
 setup(name=NAME,
       version=VERSION,
