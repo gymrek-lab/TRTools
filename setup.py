@@ -11,7 +11,7 @@ DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
 #version_file = open('_version')
-VERSION = "2.0.14" #version_file.read().strip()
+VERSION = "2.0.15" #version_file.read().strip()
 
 setup(name=NAME,
       version=VERSION,
@@ -24,8 +24,9 @@ setup(name=NAME,
       url=DOWNLOAD_URL,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
-	  python_requires='>=3.5',
+      python_requires='>=3.5',
       packages=find_packages(),
+      scripts = ['test_trtools.sh'],
       entry_points={
           'console_scripts': [
               'dumpSTR=dumpSTR.dumpSTR:run',
@@ -49,7 +50,7 @@ setup(name=NAME,
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\
                        'Topic :: Scientific/Engineering :: Bio-Informatics'],
-	  data_files=[
-		('', ['LICENSE.txt'])
-	  ]
+      data_files=[
+        ('', ['LICENSE.txt'])
+      ]
      )
