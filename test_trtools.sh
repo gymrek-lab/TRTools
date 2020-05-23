@@ -18,13 +18,8 @@ if [ ! -d "$containing_dir/tests/common/sample_regions" ]  ; then
 		.git/info/sparse-checkout
 	git pull origin master
 	popd
-    for dir in tests/common/sample_regions tests/common/sample_vcfs ; do
-        mv $TMP/$dir $dir
-	done
-	rm $TMP
 	echo "Download done"
 fi
 
-cd $containing_dir
-pytest .
+pytest . --datadir $TMP/tests/common
 
