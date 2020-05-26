@@ -26,7 +26,6 @@ setup(name=NAME,
       license=LICENSE,
       python_requires='>=3.5',
       packages=find_packages(),
-      scripts = ['test_trtools.sh'],
       entry_points={
           'console_scripts': [
               'dumpSTR=dumpSTR.dumpSTR:run',

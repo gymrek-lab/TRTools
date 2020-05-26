@@ -1,4 +1,4 @@
-test_trtools.sh
+include test_trtools.sh
 graft tests
 prune tests/common/sample_vcfs
 prune tests/common/sample_regions
