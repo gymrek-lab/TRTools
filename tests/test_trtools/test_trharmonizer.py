@@ -12,11 +12,6 @@ sys.path.insert(
 import trtools.utils.tr_harmonizer as trh  # pylint: disable=C0413
 
 
-COMMDIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "common"
-)
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-
 #### Test TRRecord using dummy info ####
 
 
@@ -435,33 +430,26 @@ def test_GetMaxAllele():
 
 #### Test TRRecordHarmonizer on different files ####
 
-gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
-hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
-popstr_path = os.path.join(VCFDIR, "test_popstr.vcf")
-advntr_path = os.path.join(VCFDIR, "test_advntr.vcf")
-eh_path = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
-snps_path = os.path.join(VCFDIR, "snps.vcf")
 
-
-def reset_vcfs():
+def reset_vcfs(vcfdir):
     global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
-    gangstr_vcf = vcf.Reader(filename=gangstr_path)
-    hipstr_vcf = vcf.Reader(filename=hipstr_path)
-    popstr_vcf = vcf.Reader(filename=popstr_path)
-    advntr_vcf = vcf.Reader(filename=advntr_path)
-    eh_vcf = vcf.Reader(filename=eh_path)
-    snps_vcf = vcf.Reader(filename=snps_path)
+    gangstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_gangstr.vcf"))
+    hipstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_hipstr.vcf"))
+    popstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_popstr.vcf"))
+    advntr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_advntr.vcf"))
+    eh_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
+    snps_vcf = vcf.Reader(filename=os.path.join(vcfdir, "snps.vcf"))
 
 
-def test_multitype_vcf():
+def test_multitype_vcf(vcfdir):
     with pytest.raises(TypeError):
-        reader = vcf.Reader(filename=os.path.join(VCFDIR,
+        reader = vcf.Reader(filename=os.path.join(vcfdir,
                                                   "test_multitype.vcf"))
         trh.TRRecordHarmonizer(reader)
 
 
-def test_trh_init_and_type_infer():
-    reset_vcfs()
+def test_trh_init_and_type_infer(vcfdir):
+    reset_vcfs(vcfdir)
 
     # Test example with a meaningless VCF type given
     with pytest.raises(ValueError):
@@ -546,14 +534,14 @@ def test_trh_init_and_type_infer():
             and trh.HasLengthAltGenotypes(trh.VCFTYPES.eh))
 
 
-def test_string_or_vcftype():
+def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")
             == trh.HasLengthAltGenotypes(trh.VCFTYPES.gangstr))
     assert (trh.HasLengthRefGenotype("gangstr")
             == trh.HasLengthRefGenotype(trh.VCFTYPES.gangstr))
     assert (trh.MayHaveImpureRepeats("gangstr")
             == trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
-    reset_vcfs()
+    reset_vcfs(vcfdir)
     assert (trh.HarmonizeRecord("gangstr", next(gangstr_vcf)).GetMaxAllele()
             == len("tctgtctgtctg") / len("tctg"))
     assert (trh.HarmonizeRecord(trh.VCFTYPES.gangstr,
@@ -584,11 +572,11 @@ def get_vcf(vcftype):
         # TODO add Beagle
 
 
-def test_wrong_vcftype():
+def test_wrong_vcftype(vcfdir):
     # an iterator that includes both tr caller types
     # and error file types
     for correct_type in trh.VCFTYPES:
-        reset_vcfs()
+        reset_vcfs(vcfdir)
         for incorrect_type in all_types():
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
@@ -599,7 +587,7 @@ def test_wrong_vcftype():
                 print(correct_type, incorrect_type)
                 trh.TRRecordHarmonizer(invcf, vcftype=correct_type)
 
-        reset_vcfs()
+        reset_vcfs(vcfdir)
         for incorrect_type in all_types():
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
@@ -612,8 +600,8 @@ def test_wrong_vcftype():
                 trh.HarmonizeRecord(correct_type, record)
 
 
-def test_HarmonizeRecord():
-    reset_vcfs()
+def test_HarmonizeRecord(vcfdir):
+    reset_vcfs(vcfdir)
 
     # Unknown type
     with pytest.raises(ValueError):

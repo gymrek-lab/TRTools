@@ -5,17 +5,13 @@ import vcf
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 from dumpSTR import *
 
-COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
-DUMPDIR = os.path.join(COMMDIR, "dump")
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-REGIONDIR = os.path.join(COMMDIR, "sample_regions")
-
 # Set up base argparser
-def base_argparse():
+@pytest.fixture
+def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
     args.vcftype = "auto"
-    args.out = os.path.join(DUMPDIR, "test")
+    args.out = str(tmpdir / "test")
     args.min_locus_callrate = None
     args.min_locus_hwep = None
     args.min_locus_het = None
@@ -61,9 +57,8 @@ def base_argparse():
     return args
 
 # Test no such file or directory
-def test_WrongFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_non_existent.vcf")
+def test_WrongFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_non_existent.vcf")
     if os.path.exists(fname):
         os.remove(fname)
     args.vcf = fname
@@ -71,9 +66,8 @@ def test_WrongFile():
     assert retcode==1
 
 # Test if basic inputs and threshold filters work for each file
-def test_GangSTRFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+def test_GangSTRFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_gangstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.gangstr_min_call_DP = 10
@@ -103,9 +97,8 @@ def test_GangSTRFile():
     retcode = main(args)
     assert retcode==0
 
-def test_HipSTRFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_hipstr.vcf")
+def test_HipSTRFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_hipstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_min_call_DP = 10
@@ -117,9 +110,8 @@ def test_HipSTRFile():
     retcode = main(args)
     assert retcode==0
 
-def test_AdVNTRFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_advntr.vcf")
+def test_AdVNTRFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_advntr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.advntr_min_call_DP = 10
@@ -132,18 +124,16 @@ def test_AdVNTRFile():
 
 # TODO: uncomment. EH not implemented yet in TR Harmonizer
 """
-def test_EHFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+def test_EHFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
     args.vcf = fname
     args.num_records = 10
     retcode = main(args)
     assert retcode==0
 """
 
-def test_PopSTRFile():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+def test_PopSTRFile(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_popstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.popstr_min_call_DP = 5
@@ -154,9 +144,8 @@ def test_PopSTRFile():
     assert retcode==0
 
 # Test invalid options
-def test_InvalidOptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+def test_InvalidOptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_popstr.vcf")
     args.vcf = fname
     # HWE
     args.min_locus_hwep = -1
@@ -186,10 +175,9 @@ def test_InvalidOptions():
     assert retcode==1
 
 # Test locus-level filters
-def test_LocusLevel():
-    args = base_argparse()
+def test_LocusLevel(args, vcfdir):
     for tool in ["hipstr","gangstr","popstr","advntr"]:
-        fname = os.path.join(VCFDIR, "test_%s.vcf"%tool)
+        fname = os.path.join(vcfdir, "test_%s.vcf"%tool)
         args.vcf = fname
         args.num_records = 10
         args.min_locus_callrate = 0.8
@@ -203,20 +191,19 @@ def test_LocusLevel():
         args.drop_filtered = True
         assert main(args)==0
 
-def test_RegionFilters():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+def test_RegionFilters(args, regiondir, vcfdir):
+    fname = os.path.join(vcfdir, "test_gangstr.vcf")
     args.vcf = fname
     args.num_records = 10
     # Correct filters
-    args.filter_regions = os.path.join(REGIONDIR, "test_regions1.bed.gz")
+    args.filter_regions = os.path.join(regiondir, "test_regions1.bed.gz")
     retcode = main(args)
     assert retcode==0
     args.filter_regions_names = "test"
     retcode = main(args)
     assert retcode==0
     # Correct filters, multiple regions
-    args.filter_regions = os.path.join(REGIONDIR, "test_regions1.bed.gz") + "," + os.path.join(REGIONDIR, "test_regions2.bed.gz")
+    args.filter_regions = os.path.join(regiondir, "test_regions1.bed.gz") + "," + os.path.join(regiondir, "test_regions2.bed.gz")
     args.filter_regions_names = "test1,test2"
     retcode = main(args)
     assert retcode==0
@@ -225,21 +212,20 @@ def test_RegionFilters():
     retcode = main(args)
     assert retcode==1
     # Nonexistent regions file
-    args.filter_regions = os.path.join(REGIONDIR, "test_nonexistent.bed")
+    args.filter_regions = os.path.join(regiondir, "test_nonexistent.bed")
     retcode = main(args)
     assert retcode==1
     # File missing tabix
-    args.filter_regions = os.path.join(REGIONDIR, "test_regions3.bed.gz")
+    args.filter_regions = os.path.join(regiondir, "test_regions3.bed.gz")
     assert main(args)==1
     # File with no chr
-    args.filter_regions = os.path.join(REGIONDIR, "test_regions4.bed.gz")
+    args.filter_regions = os.path.join(regiondir, "test_regions4.bed.gz")
     assert main(args)==0
-    args.vcf = os.path.join(VCFDIR, "test_gangstr_nochr.vcf")
+    args.vcf = os.path.join(vcfdir, "test_gangstr_nochr.vcf")
     assert main(args)==0
 
-def test_InvalidHipstrOptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_hipstr.vcf")
+def test_InvalidHipstrOptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_hipstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_max_call_flank_indel = -1
@@ -276,9 +262,8 @@ def test_InvalidHipstrOptions():
     args.hipstr_min_call_Q = 2
     assert main(args)==1
 
-def test_InvalidGangSTROptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+def test_InvalidGangSTROptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_gangstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.gangstr_min_call_DP = -1
@@ -318,9 +303,8 @@ def test_InvalidGangSTROptions():
     args.gangstr_readlen = 1
     assert main(args)==1
 
-def test_InvalidAdVNTROptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_advntr.vcf")
+def test_InvalidAdVNTROptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_advntr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.advntr_min_call_DP = -1
@@ -342,17 +326,15 @@ def test_InvalidAdVNTROptions():
     assert main(args)==1
 
 """
-def test_InvalidEHOptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_ExpansionHunter.vcf")
+def test_InvalidEHOptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
     args.vcf = fname
     args.num_records = 10
     # TODO add once EH is implemented
 """ 
 
-def test_InvalidPopSTROptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+def test_InvalidPopSTROptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_popstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.popstr_min_call_DP = -1
@@ -368,9 +350,8 @@ def test_InvalidPopSTROptions():
     args.popstr_require_support = -1
     assert main(args)==1
 
-def test_InvalidGenotyperOptions():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+def test_InvalidGenotyperOptions(args, vcfdir):
+    fname = os.path.join(vcfdir, "test_popstr.vcf")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_min_call_DP = 10
@@ -381,7 +362,7 @@ def test_InvalidGenotyperOptions():
     assert main(args)==1
     args.gangstr_min_call_DP = None
 
-    fname = os.path.join(VCFDIR, "test_hipstr.vcf")
+    fname = os.path.join(vcfdir, "test_hipstr.vcf")
     args.vcf = fname
     args.popstr_min_call_DP = 10
     assert main(args)==1
@@ -393,39 +374,44 @@ def test_InvalidGenotyperOptions():
     assert main(args)==1
     args.eh_min_call_LC = None
 
-def test_InvalidOutput():
-    args = base_argparse()
-    fname = os.path.join(VCFDIR, "test_popstr.vcf")
+def test_InvalidOutput(capsys, args, vcfdir, tmpdir):
+    fname = os.path.join(vcfdir, "test_popstr.vcf")
     args.vcf = fname
-    args.out = "/notadirectory"
-    assert main(args)==1
-    args.out = os.path.join(DUMPDIR, "dummydir","test")
-    assert main(args)==1
 
-def test_TwoDumpSTRRounds():
-    args = base_argparse()
+    # Fail when trying to output inside a nonexistant directory
+    args.out = str(tmpdir / "notadirectory" / "somefilename")
+    assert main(args) == 1
+
+    # To simulate a permissions issue: fail when trying to write a file in a location
+    # that is already a directory
+    capsys.readouterr()
+    (tmpdir / "foo.vcf").mkdir()
+    args.out = str(tmpdir / "foo")
+    assert main(args) == 1
+    # Make sure we produce a meaningful error message for this issue
+    assert 'Is a directory:' in str(capsys.readouterr())
+
+def test_TwoDumpSTRRounds(args, vcfdir, tmpdir):
     args.num_records = 10
-    fname = os.path.join(VCFDIR, "test_gangstr.vcf")
+    fname = os.path.join(vcfdir, "test_gangstr.vcf")
     args.vcf = fname
     args.min_locus_callrate = 0
     main(args) # produces DUMPDIR/test.vcf
-    args.vcf = os.path.join(DUMPDIR, "test.vcf")
-    args.out = os.path.join(DUMPDIR, "test2")
+    args.vcf = str(tmpdir / "test.vcf")
+    args.out = str(tmpdir / "test2")
     assert main(args)==0
 
-def test_BrokenVCF():
-    args = base_argparse()
+def test_BrokenVCF(args, vcfdir):
     args.num_records = 10
-    fname = os.path.join(VCFDIR, "test_broken.vcf")
+    fname = os.path.join(vcfdir, "test_broken.vcf")
     args.vcf = fname
     args.die_on_warning = True
     args.verbose = True
     assert main(args)==1
 
 """
-def test_Filters(): 
-    args = base_argparse() 
-    fname = os.path.join(VCFDIR, "artificial_gangstr.vcf")
+def test_Filters(args, vcfdir): 
+    fname = os.path.join(vcfdir, "artificial_gangstr.vcf")
     args.vcf = fname
     args.vcftype = "gangstr"
     artificial_vcf = vcf.Reader(filename=args.vcf)
