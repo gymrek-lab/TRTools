@@ -826,7 +826,7 @@ def getargs(): # pragma: no cover
 
 def main(args):
     # Load VCF file
-    invcf = utils.LoadReader(args.vcf, checkgz = False)
+    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
     if invcf is None:
         return 1
     # Set up record harmonizer and infer VCF type

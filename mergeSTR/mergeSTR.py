@@ -414,7 +414,9 @@ def getargs():  # pragma: no cover
 def main(args):    
     ### Check and Load VCF files ###
     vcfs = args.vcfs.split(",")
-    vcfreaders = mergeutils.LoadReaders(args.vcfs.split(","))
+    vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
+    if vcfreaders is None:
+        return 1
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)

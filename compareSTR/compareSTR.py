@@ -30,11 +30,13 @@ if __name__ == "compareSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import common
     import mergeutils
+    import utils
     import tr_harmonizer as trh
     import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.mergeutils as mergeutils  # pragma: no cover
+    import trtools.utils.utils as utils  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.version as version
 
@@ -395,7 +397,9 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
 
 def main(args):
     ### Check and load VCF files ###
-    vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
+    vcfreaders = utils.LoadReaders([args.vcf1, args.vcf2], checkgz=True, region=args.region)
+    if vcfreaders is None or len(vcfreaders) != 2:
+        return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
     

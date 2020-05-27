@@ -7,13 +7,18 @@ import math
 
 import numpy as np
 import scipy.stats
-import os
+import os, sys
 import vcf
 
-import common
+if __name__ == "utils" or __package__ is None:
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    import common
+else:
+    import trtools.utils.common as common # pragma: no cover
+
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
-def LoadReader(vcffile, checkgz=True, region=None):
+def LoadSingleReader(vcffile, checkgz=True, region=None):
     r"""Return VCF reader
 
     Parameters
@@ -49,6 +54,31 @@ def LoadReader(vcffile, checkgz=True, region=None):
         return reader
     else: return reader.fetch(region)
 
+def LoadReaders(vcffiles, checkgz=True, region=None):
+    r"""Return list of VCF readers
+
+    Parameters
+    ----------
+    vcffiles : list of str
+        List of VCF files to merge
+    checkgz: bool, optional
+        Check if each VCF file is gzipped and indexed
+    region : str, optional
+        Chrom:start-end to restrict to
+    
+    Returns
+    -------
+    readers : list of vcf.Reader
+        VCF readers list for all files to merge
+    """
+    readers = []
+    for f in vcffiles:
+        rdr = LoadSingleReader(f, checkgz, region)
+        if rdr is None:
+            return None
+        readers.append(rdr)
+
+    return readers
 
 def ValidateAlleleFreqs(allele_freqs):
     r"""Check that the allele frequency distribution is valid.

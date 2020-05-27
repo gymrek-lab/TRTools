@@ -339,7 +339,9 @@ def main(args):
         for sf in sfiles:
             sample_lists.append([item.strip() for item in open(sf, "r").readlines()])
 
-    invcf = vcf.Reader(filename=args.vcf)
+    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
+    if invcf is None:
+        return 1
     if args.vcftype != 'auto':
         vcftype = trh.VCFTYPES[args.vcftype]
     else:
