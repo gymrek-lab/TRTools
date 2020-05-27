@@ -742,7 +742,7 @@ def BuildLocusFilters(args, vcftype: trh.VCFTYPES):
         filter_region_files = args.filter_regions.split(",")
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
-        else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
+        else: filter_region_names = ['FILTER' + str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
             region_filter = filters.create_region_filter(filter_region_names[i], filter_region_files[i])
             if region_filter is not None:
