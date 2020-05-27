@@ -83,3 +83,11 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 
 * Supported INFO fields: END, RU, RC
 * Supported FORMAT fields: DP, SR, FL, ML
+
+Instruction on Compressing and Indexing VCF files
+-------------------------------------------------
+MergeSTR requires the input file to be compressed and indexed. Use the following commands to create compressed and indexed vcf file::
+  bgzip file.vcf
+  tabix -p vcf file.vcf.gz
+
+

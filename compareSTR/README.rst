@@ -94,3 +94,9 @@ Similarly, to compare two callsets, but stratify by the DP and Q format fields i
     --period \
     --bubble-min -50 --bubble-max 50 \
     --out test-compare
+
+Instruction on Compressing and Indexing VCF files
+-------------------------------------------------
+CompareSTR requires input files to be compressed and indexed. Use the following commands to create compressed and indexed vcf files::
+  bgzip file.vcf
+  tabix -p vcf file.vcf.gz
