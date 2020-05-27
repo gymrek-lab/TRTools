@@ -21,8 +21,7 @@ To merge develop branch into master:
 
 
 ## Git Tagging
-Git tags are used to mark specific commits with certain names (i.e. v1.2.0). Please not that tags are assigned to commits,
-not branches. You can tag a commit in two different ways. 
+Git tags are used to mark specific commits with certain names (i.e. v1.2.0). Please note that tags are assigned to commits, not branches. You can tag a commit in two different ways. 
 A) Command line:
 $ git tag -a <tag-name> -m <tag-description>
 $ git push --tags
