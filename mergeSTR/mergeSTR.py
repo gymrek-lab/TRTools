@@ -13,6 +13,7 @@ import vcf
 # Load local libraries
 if __name__ == "mergeSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import common
     import mergeutils
     import tr_harmonizer as trh
@@ -23,7 +24,7 @@ else: # pragma: no cover
     import trtools.utils.mergeutils as mergeutils  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
-    import trtools.utils.version as version
+    import trtools.version as version
 __version__ = version.__version__
 
 NOCALLSTRING = "."

@@ -17,6 +17,7 @@ from vcf.parser import _Filter, _Format, _Info
 if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import filters # If running from source code
     import common
     import tr_harmonizer as trh
@@ -27,7 +28,7 @@ else:  # pragma: no cover
     import trtools.utils.common as common # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.utils.utils as utils # pragma: no cover
-    import trtools.utils.version as version
+    import trtools.version as version
 __version__ = version.__version__
 
 
