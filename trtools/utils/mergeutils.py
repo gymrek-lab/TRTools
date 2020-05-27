@@ -32,7 +32,7 @@ def LoadReaders(vcffiles, region=None):
         VCF readers list for all files to merge
     """
     for f in vcffiles:
-        if not f.endswith(".vcf.gz"):
+        if not f.endswith(".vcf.gz") or not f.endswith(".vcf.bgz"):
             raise ValueError("Make sure %s is bgzipped and indexed"%f)
         if not os.path.isfile(f):
             raise ValueError("Could not find VCF file %s"%f)
