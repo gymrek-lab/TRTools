@@ -55,7 +55,8 @@ def MakeWriter(outfile, invcf, command):
     invcf.metadata["command-DumpSTR"] = [command]
     try:
         writer = vcf.Writer(open(outfile, "w"), invcf)
-    except OSError:
+    except OSError as e:
+        common.WARNING(str(e))
         writer = None
     return writer
 

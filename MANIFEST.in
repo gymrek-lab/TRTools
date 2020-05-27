@@ -1,0 +1,6 @@
+test_trtools.sh
+graft tests
+prune tests/common/sample_vcfs
+prune tests/common/sample_regions
+prune tests/common/dump
+

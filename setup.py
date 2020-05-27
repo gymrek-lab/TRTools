@@ -11,12 +11,12 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
-##
+
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
 MAJ = 2
 MIN = 0
-REV = 6
+REV = 16
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
@@ -25,7 +25,8 @@ with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
                        "version = '{version}'",
                        "__version__ = version"]).format(version=VERSION)
         )
-##
+
+
 
 setup(name=NAME,
       version=VERSION,
@@ -38,7 +39,9 @@ setup(name=NAME,
       url=DOWNLOAD_URL,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
+      python_requires='>=3.5',
       packages=find_packages(),
+      scripts = ['test_trtools.sh'],
       entry_points={
           'console_scripts': [
               'dumpSTR=dumpSTR.dumpSTR:run',
@@ -57,9 +60,12 @@ setup(name=NAME,
                         'scipy',
                         'pysam'],
       classifiers=['Development Status :: 4 - Beta',\
-                       'Programming Language :: Python :: 3.2',\
+                       'Programming Language :: Python :: 3.5',\
                        'License :: OSI Approved :: MIT License',\
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\
-                       'Topic :: Scientific/Engineering :: Bio-Informatics']
+                       'Topic :: Scientific/Engineering :: Bio-Informatics'],
+      data_files=[
+        ('', ['LICENSE.txt'])
+      ]
      )

@@ -393,14 +393,23 @@ def test_InvalidGenotyperOptions():
     assert main(args)==1
     args.eh_min_call_LC = None
 
-def test_InvalidOutput():
+def test_InvalidOutput(capsys):
     args = base_argparse()
     fname = os.path.join(VCFDIR, "test_popstr.vcf")
     args.vcf = fname
-    args.out = "/notadirectory"
-    assert main(args)==1
-    args.out = os.path.join(DUMPDIR, "dummydir","test")
-    assert main(args)==1
+
+    # Fail when trying to output inside a nonexistant directory
+    args.out = os.path.join(DUMPDIR, "notadirectory","somefilename")
+    assert main(args) == 1
+
+    # To simulate a permissions issue: fail when trying to write a file in a location
+    # that is already a directory
+    capsys.readouterr()
+    os.makedirs(os.path.join(DUMPDIR, "foo.vcf"), exist_ok=True)
+    args.out = os.path.join(DUMPDIR, "foo")
+    assert main(args) == 1
+    # Make sure we produce a meaningful error message for this issue
+    assert 'Is a directory:' in str(capsys.readouterr())
 
 def test_TwoDumpSTRRounds():
     args = base_argparse()

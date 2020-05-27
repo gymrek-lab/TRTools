@@ -5,7 +5,7 @@ CompareSTR is a tool for comparing TR callsets. Example use cases include:
 
 * Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data
 * Comparing calls for the same tool using different parameter settings
-* Comparing calls for different tools. This only works if they used the same set of reference TRs.
+* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR uses matching chromosomes and positions to compare TRs. Therefore, our method is not able to compare TRs if the starting coordinates is changed by TR calling method (e.g., due to phasing with nearby variant).
 
 It outputs overall, per-locus, and per-sample concordance information. It optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and by repeat motif length.
 
