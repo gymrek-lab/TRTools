@@ -842,6 +842,7 @@ def main(args):
         filter_list = BuildLocusFilters(args, vcftype)
     except ValueError:
         return 1
+    filter_list = BuildLocusFilters(args, vcftype)
     invcf.filters = {}
     for f in filter_list:
         short_doc = f.__doc__ or ''
