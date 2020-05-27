@@ -826,11 +826,9 @@ def getargs(): # pragma: no cover
 
 def main(args):
     # Load VCF file
-    if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+    invcf = utils.LoadReader(args.vcf, checkgz = False)
+    if invcf is None:
         return 1
-    invcf = vcf.Reader(filename=args.vcf)
-
     # Set up record harmonizer and infer VCF type
     vcftype = trh.InferVCFType(invcf)
 
