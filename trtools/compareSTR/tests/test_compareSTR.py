@@ -47,7 +47,7 @@ def test_main(tmpdir, vcfdir):
     assert retcode == 0
 
     # Two GangSTR VCFs, types set to auto
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcf2 = GangSTR_VCF2
     retcode = main(args)

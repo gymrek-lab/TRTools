@@ -27,7 +27,7 @@ import vcf
 import trtools.utils.common as common
 import trtools.utils.mergeutils as mergeutils
 import trtools.utils.tr_harmonizer as trh
-import trtools.utils.utils. as utils
+import trtools.utils.utils as utils
 from trtools import __version__
 
 
