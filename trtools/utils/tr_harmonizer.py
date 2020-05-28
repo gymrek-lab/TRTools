@@ -13,19 +13,40 @@ from typing import Union
 
 import numpy as np
 
-if __name__ == "tr_harmonizer":
-    sys.path.insert(0, os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils")
-    )
-    import utils
-else:
-    import trtools.utils.utils as utils  # pragma: no cover
+import trtools.utils.utils as utils
 
 # List of supported VCF types
 # TODO: add Beagle
 # TODO: add support for tool version numbers
 # TODO: add EH support for getting ref allele sequence genotypes from fasta
 VCFTYPES = enum.Enum('Types', ['gangstr', 'advntr', 'hipstr', 'eh', 'popstr'])
+
+def GetVCFType(vcfreader, vcftype = "auto"):
+    """Infer vcf type of reader
+
+    If vcftype is "auto", try to infer types of reader.
+    If it is not auto, check to make sure vcftype is correct and return that string.
+
+    Parameters
+    ----------
+    vcfreader : vcf.Reader
+      VCF Reader object
+    vcftype : str
+      Type of VCF
+
+    Returns
+    -------
+    vcftype : str
+      Inferred VCF type
+    """
+    tr_harmonizer = TRRecordHarmonizer(vcfreader)
+    if vcftype != "auto":
+        if vcftype == tr_harmonizer.vcftype.name:
+            return vcftype
+        else:
+            return None
+    else:
+        return tr_harmonizer.vcftype.name
 
 
 def _ToVCFType(vcftype: Union[str, VCFTYPES]):
