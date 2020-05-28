@@ -25,7 +25,14 @@ if [ ! -d "$TMP" ] ; then
 fi
 
 # Figure out where trtools is installed
-
+# Note: cd to an arbitrary directory before doing this so that in case
+# the current local directory is a copy of the trtools repo,
+# python reports the location of the trtools installation and not the
+# current location
+# (python would find the current one because the local directory is always added 
+# to the python path on startup, and is on the path before other installations)
+mkdir -p /tmp/trtools_tmp
+cd /tmp/trtools_tmp
 loc=$(dirname $(python -c "import trtools;print(trtools.__file__)"))
 
 cd "$loc"
