@@ -2,19 +2,14 @@ import argparse
 import os,sys
 import pytest
 import vcf
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
-from dumpSTR import *
+from ..dumpSTR import *
 
-COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
-DUMPDIR = os.path.join(COMMDIR, "dump")
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-
-def base_argparse():
+def base_argparse(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
     args.vcftype = "auto"
-    args.out = os.path.join(DUMPDIR, "test")
+    args.out = str(tmpdir / "test")
     args.min_locus_callrate = None
     args.min_locus_hwep = None
     args.min_locus_het = None
@@ -59,9 +54,9 @@ def base_argparse():
     args.verbose = False
     return args
     
-def test_GangSTRFilters(): 
-    args = base_argparse() 
-    fname = os.path.join(VCFDIR, "artificial_gangstr.vcf")
+def test_GangSTRFilters(tmpdir, vcfdir): 
+    args = base_argparse(tmpdir) 
+    fname = os.path.join(vcfdir, "artificial_gangstr.vcf")
     args.vcf = fname
     args.vcftype = "gangstr"
     artificial_vcf = vcf.Reader(filename=args.vcf)
@@ -88,7 +83,7 @@ def test_GangSTRFilters():
 
     ## Test2: call filter: GangSTRCallMinDepth
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_min_call_DP = 50
     call_filters = BuildCallFilters(args)
     reasons2 = FilterCall(vcfcall, call_filters)
@@ -96,7 +91,7 @@ def test_GangSTRFilters():
     
     ## Test3: call filter: GangSTRCallMaxDepth
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_max_call_DP = 10
     call_filters = BuildCallFilters(args)
     reasons3 = FilterCall(vcfcall, call_filters)
@@ -104,7 +99,7 @@ def test_GangSTRFilters():
 
     ## Test4: call filter: GangSTRCallMinQ
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_min_call_Q = 1
     call_filters = BuildCallFilters(args)
     reasons4 = FilterCall(vcfcall, call_filters)
@@ -112,7 +107,7 @@ def test_GangSTRFilters():
 
     ## Test5: call filter: GangSTRCallExpansionProbHom
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_expansion_prob_hom = 1
     call_filters = BuildCallFilters(args)
     reasons5 = FilterCall(vcfcall, call_filters)
@@ -120,13 +115,13 @@ def test_GangSTRFilters():
 
     ## Test6: call filter: ProbHet
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_expansion_prob_het = 0.8
     call_filters = BuildCallFilters(args)
     reasons6 = FilterCall(vcfcall, call_filters)
     assert reasons6==['GangSTRCallExpansionProbHet']
 
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_expansion_prob_het = 0.0
     call_filters = BuildCallFilters(args)
     reasons61 = FilterCall(vcfcall, call_filters)
@@ -148,7 +143,7 @@ def test_GangSTRFilters():
 
     ## Test7: call filter: GangSTRCallExpansionProTotal
     vcfcall = call2
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_expansion_prob_total = 1
     call_filters = BuildCallFilters(args)
     reasons7 = FilterCall(vcfcall, call_filters)
@@ -156,14 +151,14 @@ def test_GangSTRFilters():
 
     ## Test8: call filter: filter span only
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.filter_span_only = True
     call_filters = BuildCallFilters(args)
     reasons71 = FilterCall(vcfcall, call_filters)
     assert reasons71==[]
 
     vcfcall = call2
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_filter_span_only = True
     call_filters = BuildCallFilters(args)
     reasons72 = FilterCall(vcfcall, call_filters)
@@ -183,21 +178,21 @@ def test_GangSTRFilters():
  
     ## Test8: call filter: filter span-bound only
     vcfcall = call1
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_filter_spanbound_only = True
     call_filters = BuildCallFilters(args)
     reasons81 = FilterCall(vcfcall, call_filters)
     assert reasons81==[]
 
     vcfcall = call2
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_filter_spanbound_only = True
     call_filters = BuildCallFilters(args)
     reasons82 = FilterCall(vcfcall, call_filters)
     assert reasons82==['GangSTRCallSpanBoundOnly']
 
     vcfcall = call3    
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_filter_spanbound_only = True
     call_filters = BuildCallFilters(args)
     reasons83 = FilterCall(vcfcall, call_filters)
@@ -211,7 +206,7 @@ def test_GangSTRFilters():
     # Check min supporting reads
     # long compared to read length
     vcfcall = call4
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_require_support = 2
     args.gangstr_readlen = 20
     call_filters = BuildCallFilters(args)
@@ -220,7 +215,7 @@ def test_GangSTRFilters():
 
     # intermediate range compared to read length
     vcfcall = call4
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_require_support = 2
     args.gangstr_readlen = 400
     call_filters = BuildCallFilters(args)
@@ -230,7 +225,7 @@ def test_GangSTRFilters():
 
     # should see enclosing for everything. ultra-long read
     vcfcall = call4
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.gangstr_require_support = 2
     args.gangstr_readlen = 10000
     call_filters = BuildCallFilters(args)

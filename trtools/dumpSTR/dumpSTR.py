@@ -13,23 +13,11 @@ import sys
 import vcf
 from vcf.parser import _Filter, _Format, _Info
 
-# Handle TRTools imports differently depending on where we're calling this from
-if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
-    import filters # If running from source code
-    import common
-    import tr_harmonizer as trh
-    import utils
-    import version
-else:  # pragma: no cover
-    import dumpSTR.filters as filters  # pragma: no cover
-    import trtools.utils.common as common # pragma: no cover
-    import trtools.utils.tr_harmonizer as trh # pragma: no cover
-    import trtools.utils.utils as utils # pragma: no cover
-    import trtools.version as version
-__version__ = version.__version__
+from . import filters as filters
+import trtools.utils.common as common
+import trtools.utils.tr_harmonizer as trh
+import trtools.utils.utils as utils
+from trtools import __version__
 
 
 def MakeWriter(outfile, invcf, command):

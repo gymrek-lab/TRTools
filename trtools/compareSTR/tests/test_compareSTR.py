@@ -2,27 +2,16 @@ import argparse
 import os, sys
 import numpy as np
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
-from compareSTR import * 
 
-TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
-COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
-DUMPDIR = os.path.join(COMMDIR, "dump")
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-VCFCOMP = os.path.join(VCFDIR, "compareSTR_vcfs")
-GangSTR_VCF1 = os.path.join(VCFCOMP, "test_gangstr1.vcf.gz")
-GangSTR_VCF2 = os.path.join(VCFCOMP, "test_gangstr2.vcf.gz")
-HipSTR_VCF = os.path.join(VCFCOMP, "test_hipstr.vcf.gz")
-PopSTR_VCF = os.path.join(VCFCOMP, "test_popstr.vcf.gz")
-EH_VCF = os.path.join(VCFCOMP, "test_eh.vcf.gz")
-SNP_VCF = os.path.join(VCFCOMP, "snps.vcf.gz")
+from ..compareSTR import * 
+
 
 # Set up base argparser
-def base_argparse():
+def base_argparse(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf1 = None
     args.vcf2 = None
-    args.out = os.path.join(DUMPDIR, "test_compare")
+    args.out = str(tmpdir / "test_compare")
     args.vcftype = "auto"
     args.samples = None
     args.numrecords = None
@@ -40,9 +29,16 @@ def base_argparse():
     return args
 
 
-def test_main():
+def test_main(tmpdir, vcfdir):
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+    GangSTR_VCF1 = os.path.join(vcfcomp, "test_gangstr1.vcf.gz")
+    GangSTR_VCF2 = os.path.join(vcfcomp, "test_gangstr2.vcf.gz")
+    HipSTR_VCF = os.path.join(vcfcomp, "test_hipstr.vcf.gz")
+    PopSTR_VCF = os.path.join(vcfcomp, "test_popstr.vcf.gz")
+    EH_VCF = os.path.join(vcfcomp, "test_eh.vcf.gz")
+
     # Two Gangstr VCFs
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -58,22 +54,22 @@ def test_main():
     assert retcode == 0
     
     # Use samples
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
     args.vcftype2 = 'gangstr'
-    args.samples = os.path.join(VCFCOMP, 'sample_list.txt')
+    args.samples = os.path.join(vcfcomp, 'sample_list.txt')
     retcode = main(args)
     assert retcode == 0
 
     # Empty sample list
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
     args.vcftype2 = 'gangstr'
-    args.samples = os.path.join(VCFCOMP, 'empty_list.txt')
+    args.samples = os.path.join(vcfcomp, 'empty_list.txt')
     retcode = main(args)
     assert retcode == 1
 
@@ -94,7 +90,7 @@ def test_main():
 
 
     # Testing custom stratification:
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -105,7 +101,7 @@ def test_main():
     assert retcode == 0
 
     # Incorrect stratification formats
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -117,7 +113,7 @@ def test_main():
     assert "--stratify-formats must be same length as --stratify-binsizes" in str(info.value)
     
     # Incorrect stratify file value
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -127,7 +123,7 @@ def test_main():
     assert retcode == 1
 
 
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -147,7 +143,7 @@ def test_main():
         main(args)
     assert "FORMAT field NONEXISTENTFIELD must be present in --vcf2 if --stratify-file=2" in str(info.value)
      # correct stratification
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
     args.vcf2 = GangSTR_VCF2
@@ -167,10 +163,10 @@ def test_main():
 
 
     # No shared samples
-    args = base_argparse()
+    args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
-    args.vcf2 = os.path.join(VCFCOMP, "test_gangstr2_wrongsamp.vcf.gz")
+    args.vcf2 = os.path.join(vcfcomp, "test_gangstr2_wrongsamp.vcf.gz")
     args.vcftype2 = 'gangstr'
     retcode = main(args)
     assert retcode == 1

@@ -2,13 +2,13 @@ import os, sys
 import numpy as np
 import pytest
 import vcf
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
 import trtools.utils.mergeutils as mergeutils
 
-COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-MRGVCFDIR = os.path.join(VCFDIR, "mergeSTR_vcfs")
+
+@pytest.fixture
+def mrgvcfdir(vcfdir):
+	return os.path.join(vcfdir, "mergeSTR_vcfs")
 
 # Set up dummy class
 class DummyRecord:
@@ -42,10 +42,10 @@ def test_CheckMin():
         mergeutils.CheckMin([False, False])
     assert "Unexpected error. Stuck in infinite loop and exiting." in str(info.value)
 
-def test_CheckVCFType():
-    snps_path = os.path.join(VCFDIR, "snps.vcf")
-    gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
-    hipstr_path = os.path.join(VCFDIR, "test_hipstr.vcf")
+def test_CheckVCFType(vcfdir):
+    snps_path = os.path.join(vcfdir, "snps.vcf")
+    gangstr_path = os.path.join(vcfdir, "test_gangstr.vcf")
+    hipstr_path = os.path.join(vcfdir, "test_hipstr.vcf")
     gangstr_vcf = vcf.Reader(filename=gangstr_path)
     hipstr_vcf = vcf.Reader(filename=hipstr_path)
     snps_vcf = vcf.Reader(filename=snps_path)
@@ -61,10 +61,10 @@ def test_CheckVCFType():
     assert "Could not identify the type of this vcf" in str(info.value)
 
 # Test no such file or directory
-def test_WrongFile():
+def test_WrongFile(mrgvcfdir):
     # Try a dummy file name. Make sure it doesn't exist before we try
-    fname1 = os.path.join(MRGVCFDIR, "test_non_existent1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_non_existent2.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_non_existent1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_non_existent2.vcf.gz")
     if os.path.exists(fname1):
         os.remove(fname1)
     if os.path.exists(fname2):
@@ -75,15 +75,15 @@ def test_WrongFile():
     assert "Could not find VCF file" in str(info.value)
 
 # test unzipped, unindexed VCFs return 1
-def test_UnzippedUnindexedFile():
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped1.vcf")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unzipped2.vcf")
+def test_UnzippedUnindexedFile(mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_unzipped1.vcf")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_unzipped2.vcf")
     with pytest.raises(ValueError) as info:
         mergeutils.LoadReaders([fname1, fname2])
     assert "is bgzipped and indexed" in str(info.value)
 
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_unindexed2.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_unindexed1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_unindexed2.vcf.gz")
     with pytest.raises(ValueError) as info:
         mergeutils.LoadReaders([fname1, fname2])
     assert "Could not find VCF index" in str(info.value)

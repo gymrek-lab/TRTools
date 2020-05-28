@@ -2,25 +2,27 @@ import argparse
 import os, sys
 import numpy as np
 import pytest
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
-from mergeSTR import * 
 
-TESTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
-COMMDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "common")
-DUMPDIR = os.path.join(COMMDIR, "dump")
-VCFDIR = os.path.join(COMMDIR, "sample_vcfs")
-MRGVCFDIR = os.path.join(VCFDIR, "mergeSTR_vcfs")
+from ..mergeSTR import * 
+
 
 # Set up base argparser
-def base_argparse():
+@pytest.fixture
+def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcfs = None
-    args.out = os.path.join(DUMPDIR, "test")
+    args.out = str(tmpdir / "test")
     args.update_sample_from_file = False 
     args.quiet = False
     args.verbose = False
     args.vcftype = "auto"
     return args
+
+
+@pytest.fixture
+def mrgvcfdir(vcfdir):
+	return os.path.join(vcfdir, "mergeSTR_vcfs")
+
 
 # Set up dummy class
 class DummyRecord:
@@ -32,10 +34,9 @@ class DummyRecord:
         self.INFO = info
 
 # Test right files or directory - GangSTR
-def test_GangSTRRightFile():
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+def test_GangSTRRightFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
     args.vcftype = "gangstr"
     args.vcfs = fname1 + "," + fname2
     assert main(args)==0
@@ -48,10 +49,9 @@ def test_GangSTRRightFile():
 
 # TODO fails bc no contig line in VCFs
 # Test right files or directory - advntr
-#def test_AdVNTRRightFile():
-#    args = base_argparse()
-#    fname1 = os.path.join(MRGVCFDIR, "test_file_advntr1.vcf.gz")
-#    fname2 = os.path.join(MRGVCFDIR, "test_file_advntr2.vcf.gz")
+#def test_AdVNTRRightFile(args, mrgvcfdir):
+#    fname1 = os.path.join(mrgvcfdir, "test_file_advntr1.vcf.gz")
+#    fname2 = os.path.join(mrgvcfdir, "test_file_advntr2.vcf.gz")
 #    args.vcftype = "advntr"
 #    args.vcfs = fname1 + "," + fname2
 #    assert main(args)==0
@@ -63,10 +63,9 @@ def test_GangSTRRightFile():
 #    assert main(args)==0
 
 # Test right files or directory - hipstr
-def test_hipSTRRightFile():
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_hipstr1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_hipstr2.vcf.gz")
+def test_hipSTRRightFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_hipstr2.vcf.gz")
     args.vcftype = "hipstr"
     args.vcfs = fname1 + "," + fname2
     assert main(args)==0
@@ -79,10 +78,9 @@ def test_hipSTRRightFile():
 
 # Test right files or directory - ExpansionHunter
 # TODO fails bc no contig line in VCFs
-#def test_ExpansionHunterRightFile():
-#    args = base_argparse()
-#    fname1 = os.path.join(MRGVCFDIR, "test_file_eh1.vcf.gz")
-#    fname2 = os.path.join(MRGVCFDIR, "test_file_eh2.vcf.gz")
+#def test_ExpansionHunterRightFile(args, mrgvcfdir):
+#    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+#    fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
 #    args.vcftype = "eh"
 #    args.vcfs = fname1 + "," + fname2
 #    assert main(args)==0
@@ -93,17 +91,15 @@ def test_hipSTRRightFile():
 #    args.verbose = True
 #    assert main(args)==0
 
-def test_GangSTRDuplicate():
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr1.vcf.gz")
+def test_GangSTRDuplicate(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
     args.vcfs = fname1 + "," + fname1
     assert main(args)==1
 
 # Test right files or directory - popstr
-def test_PopSTRRightFile():
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_popstr1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_popstr2.vcf.gz")
+def test_PopSTRRightFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_popstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_popstr2.vcf.gz")
     args.vcftype = "popstr"
     args.vcfs = fname1 + "," + fname2
     assert main(args)==0
@@ -115,33 +111,31 @@ def test_PopSTRRightFile():
     assert main(args)==0
     
 # test VCFs with different ref genome contigs return 1
-def test_WrongContigFile():
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig2.vcf.gz")
+def test_WrongContigFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
     assert "is not in list" in str(info.value)
 
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig3.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr_wrongcontig4.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig4.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
     assert "Different contigs found across VCF files." in str(info.value)
 
-def test_MissingFieldWarnings(capsys):
-    args = base_argparse()
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missinginfo1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missinginfo1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     main(args)
     captured = capsys.readouterr()
     assert "Expected info field STUTTERP not found" in captured.err
 
-    fname1 = os.path.join(MRGVCFDIR, "test_file_gangstr_missingformat1.vcf.gz")
-    fname2 = os.path.join(MRGVCFDIR, "test_file_gangstr2.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missingformat1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     main(args)
     captured = capsys.readouterr()
@@ -180,14 +174,13 @@ def test_GetInfoItem(capsys):
     retval = GetInfoItem(dummy_records, [True, True, False, False], 'END')
     assert retval == "END=120"
 
-def test_GetSampleInfo():
+def test_GetSampleInfo(args, vcfdir):
     # TODO add more in depth tests (Create a better dummy class or import from vcf files)
     
-    gangstr_path = os.path.join(VCFDIR, "test_gangstr.vcf")
+    gangstr_path = os.path.join(vcfdir, "test_gangstr.vcf")
     gangstr_vcf = vcf.Reader(filename=gangstr_path)
     record = next(gangstr_vcf)
     
-    args = base_argparse()
     
     # TODO final percent!!!
     #for sample in record:
