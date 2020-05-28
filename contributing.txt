@@ -1,0 +1,33 @@
+## Information on how to contribute to this repository
+# Contact Nima Mousavi <mousavi@ucsd.edu> if you have questions.
+
+Thank you for contributing to TRTools!
+
+We aim to follow a simplified version of git flow. We use master branch as default branch with the latest stable codebase.
+Develop branch contains the code that is in development (i.e. new features). To contribute, please create a new branch from
+develop (feature branch), and submit a pull request to develop after implementing the feature.
+
+## New releases:
+We keep the latest stable codebase in the master branch. This branch is what PyPI (and conda) use as well. We use these steps
+to ensure the integrity of the codebase on this branch, and to make sure we don't have version conflict issues.
+To merge develop branch into master:
+1. Update version number in setup.py
+2. Run setup.py (this ensures the version.py contains the updated version number)
+3. Submit pull request from develop into master.
+4. Get at least 1 reviewer to sign of on the PR.
+5. Merge to master if code review and travis checks passed.
+6. Tag the merge commit with vX.Y.Z format. (For more details on tagging, look further in this document)
+7. Publish to PyPI and/or conda.
+
+
+## Git Tagging
+Git tags are used to mark specific commits with certain names (i.e. v1.2.0). Please note that tags are assigned to commits, not branches. You can tag a commit in two different ways. 
+A) Command line:
+$ git tag -a <tag-name> -m <tag-description>
+$ git push --tags
+B) Web interface:
+You can go to the releases page of the repository and create a new release. Please use the same version number format to tag
+the release.
+
+
+
