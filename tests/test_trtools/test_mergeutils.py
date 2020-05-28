@@ -50,14 +50,14 @@ def test_CheckVCFType():
     hipstr_vcf = vcf.Reader(filename=hipstr_path)
     snps_vcf = vcf.Reader(filename=snps_path)
     # TODO add tests to infer vcf type
-    assert "gangstr" == mergeutils.GetVCFType([gangstr_vcf], "gangstr")
+    assert "gangstr" == mergeutils.GetAndCheckVCFType([gangstr_vcf], "gangstr")
 
     with pytest.raises(ValueError) as info:
-        print(mergeutils.GetVCFType([gangstr_vcf, hipstr_vcf], "auto"))
+        print(mergeutils.GetAndCheckVCFType([gangstr_vcf, hipstr_vcf], "auto"))
     assert "VCF files are of mixed types." in str(info.value)
     
     with pytest.raises(TypeError) as info:
-        print(mergeutils.GetVCFType([gangstr_vcf, snps_vcf], "auto"))
+        print(mergeutils.GetAndCheckVCFType([gangstr_vcf, snps_vcf], "auto"))
     assert "Could not identify the type of this vcf" in str(info.value)
 
 # Test no such file or directory

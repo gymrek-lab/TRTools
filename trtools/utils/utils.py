@@ -7,8 +7,78 @@ import math
 
 import numpy as np
 import scipy.stats
+import os, sys
+import vcf
+
+if __name__ == "utils" or __package__ is None:
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    import common
+else:
+    import trtools.utils.common as common # pragma: no cover
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
+    
+def LoadSingleReader(vcffile, checkgz=True, region=None):
+    r"""Return VCF reader
+
+    Parameters
+    ----------
+    vcffile : str
+        VCF files to read
+    checkgz: boolean, optional
+        Check whether VCF file is gzipped and indexed
+    region : str, optional
+        Chrom:start-end to restrict to
+    
+    Returns
+    -------
+    reader : vcf.Reader
+        VCF reader
+    """
+    if not os.path.isfile(vcffile):
+        common.WARNING("Could not find VCF file %s"%vcffile)
+        return None
+    if checkgz:
+        if not vcffile.endswith(".vcf.gz") and not vcffile.endswith(".vcf.bgz"):
+            common.WARNING("Make sure %s is bgzipped and indexed"%vcffile)
+            return None
+        if not os.path.isfile(vcffile+".tbi"):
+            common.WARNING("Could not find VCF index %s.tbi"%vcffile)
+            return None
+    if vcffile.endswith(".vcf.gz") or vcffile.endswith(".vcf.bgz"):
+        reader = vcf.Reader(open(vcffile, "rb"))
+    else:
+        reader = vcf.Reader(open(vcffile))
+    
+    if region is None:
+        return reader
+    else: return reader.fetch(region)
+
+def LoadReaders(vcffiles, checkgz=True, region=None):
+    r"""Return list of VCF readers
+
+    Parameters
+    ----------
+    vcffiles : list of str
+        List of VCF files to merge
+    checkgz: bool, optional
+        Check if each VCF file is gzipped and indexed
+    region : str, optional
+        Chrom:start-end to restrict to
+    
+    Returns
+    -------
+    readers : list of vcf.Reader
+        VCF readers list for all files to merge
+    """
+    readers = []
+    for f in vcffiles:
+        rdr = LoadSingleReader(f, checkgz, region)
+        if rdr is None:
+            return None
+        readers.append(rdr)
+
+    return readers
 
 def ValidateAlleleFreqs(allele_freqs):
     r"""Check that the allele frequency distribution is valid.

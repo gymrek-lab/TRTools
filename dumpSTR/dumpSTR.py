@@ -17,6 +17,7 @@ from vcf.parser import _Filter, _Format, _Info
 if __name__ == "dumpSTR" or __name__ == "__main__" or __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import filters # If running from source code
     import common
     import tr_harmonizer as trh
@@ -27,7 +28,7 @@ else:  # pragma: no cover
     import trtools.utils.common as common # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
     import trtools.utils.utils as utils # pragma: no cover
-    import trtools.utils.version as version
+    import trtools.version as version
 __version__ = version.__version__
 
 
@@ -741,7 +742,7 @@ def BuildLocusFilters(args, vcftype: trh.VCFTYPES):
         filter_region_files = args.filter_regions.split(",")
         if args.filter_regions_names is not None:
             filter_region_names = args.filter_regions_names.split(",")
-        else: filter_region_names = [str(item) for item in list(range(len(filter_region_files)))]
+        else: filter_region_names = ['FILTER' + str(item) for item in list(range(len(filter_region_files)))]
         for i in range(len(filter_region_names)):
             region_filter = filters.create_region_filter(filter_region_names[i], filter_region_files[i])
             if region_filter is not None:
@@ -825,11 +826,9 @@ def getargs(): # pragma: no cover
 
 def main(args):
     # Load VCF file
-    if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
+    if invcf is None:
         return 1
-    invcf = vcf.Reader(filename=args.vcf)
-
     # Set up record harmonizer and infer VCF type
     vcftype = trh.InferVCFType(invcf)
 
@@ -841,6 +840,7 @@ def main(args):
         filter_list = BuildLocusFilters(args, vcftype)
     except ValueError:
         return 1
+    filter_list = BuildLocusFilters(args, vcftype)
     invcf.filters = {}
     for f in filter_list:
         short_doc = f.__doc__ or ''

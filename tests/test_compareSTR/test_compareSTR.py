@@ -31,8 +31,8 @@ def base_argparse():
     args.stratify_file = 0
     args.stratify_fields = None
     args.stratify_binsizes = None
-    args.vcftype1 = None
-    args.vcftype2 = None
+    args.vcftype1 = "auto"
+    args.vcftype2 = "auto"
     args.verbose = False
     args.noplot = False
     args.bubble_min = -5
@@ -50,6 +50,13 @@ def test_main():
     retcode = main(args)
     assert retcode == 0
 
+    # Two GangSTR VCFs, types set to auto
+    args = base_argparse()
+    args.vcf1 = GangSTR_VCF1
+    args.vcf2 = GangSTR_VCF2
+    retcode = main(args)
+    assert retcode == 0
+    
     # Use samples
     args = base_argparse()
     args.vcf1 = GangSTR_VCF1
@@ -168,7 +175,7 @@ def test_main():
     retcode = main(args)
     assert retcode == 1
     
-def test_GetBubbleLegent():
+def test_GetBubbleLegend():
     # only 3 values
     sample_counts = [1,1,1,2,2,3,3,3,3]
     actual = GetBubbleLegend(sample_counts)

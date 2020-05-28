@@ -226,14 +226,22 @@ def create_region_filter(name, filename):
             self.pass_checks = True
             self.LoadRegions(filename)
         def LoadRegions(self, filename):
-            if not os.path.exists(filename):
+            if not filename.endswith(".bed.gz") and not filename.endswith(".bed.bgz"):
+                #raise ValueError("Make sure %s is bgzipped and indexed"%filename)
                 self.regions = None
-                common.WARNING("%s not found"%filename)
+                common.WARNING("Make sure %s is bgzipped and indexed"%filename)
                 self.pass_checks = False
                 return
-            if not os.path.exists(filename+".tbi"):
+            if not os.path.isfile(filename):
+                #raise ValueError("Could not find regions BED file %s"%filename)
                 self.regions = None
-                common.WARNING("Tabix index for %s not found"%filename)
+                common.WARNING("Could not find regions BED file %s"%filename)
+                self.pass_checks = False
+                return
+            if not os.path.isfile(filename+".tbi"):
+                #raise ValueError("Could not find tabix index %s.tbi"%filename)
+                self.regions = None
+                common.WARNING("Could not find tabix index %s.tbi"%filename)
                 self.pass_checks = False
                 return
             self.regions = BedTool(filename)

@@ -25,6 +25,7 @@ MAXPLOTS = 10 # don't plot more than this many allele freqs
 # Load local libraries
 if __name__ == "statSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import common
     import tr_harmonizer as trh
     import utils
@@ -33,7 +34,7 @@ else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh  # pragma: no cover
     import trtools.utils.utils as utils  # pragma: no cover
-    import trtools.utils.version as version
+    import trtools.version as version
 
 __version__ = version.__version__
 
@@ -338,7 +339,9 @@ def main(args):
         for sf in sfiles:
             sample_lists.append([item.strip() for item in open(sf, "r").readlines()])
 
-    invcf = vcf.Reader(filename=args.vcf)
+    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
+    if invcf is None:
+        return 1
     if args.vcftype != 'auto':
         vcftype = trh.VCFTYPES[args.vcftype]
     else:

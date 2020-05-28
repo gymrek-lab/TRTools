@@ -27,15 +27,18 @@ import vcf
 # Load local libraries
 if __name__ == "compareSTR" or __name__ == '__main__' or __package__ is None:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools"))
     import common
     import mergeutils
+    import utils
     import tr_harmonizer as trh
     import version
 else: # pragma: no cover
     import trtools.utils.common as common  # pragma: no cover
     import trtools.utils.mergeutils as mergeutils  # pragma: no cover
+    import trtools.utils.utils as utils  # pragma: no cover
     import trtools.utils.tr_harmonizer as trh # pragma: no cover
-    import trtools.utils.version as version
+    import trtools.version as version
 
 __version__ = version.__version__
 
@@ -394,7 +397,9 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
 
 def main(args):
     ### Check and load VCF files ###
-    vcfreaders = mergeutils.LoadReaders([args.vcf1, args.vcf2], region=args.region)
+    vcfreaders = utils.LoadReaders([args.vcf1, args.vcf2], checkgz=True, region=args.region)
+    if vcfreaders is None or len(vcfreaders) != 2:
+        return 1
     contigs = vcfreaders[0].contigs
     chroms = list(contigs)
     
@@ -433,8 +438,8 @@ def main(args):
         results_dir[ff+"1"] = []
         results_dir[ff+"2"] = []
 
-    vcftype1 = trh.VCFTYPES[args.vcftype1]
-    vcftype2 = trh.VCFTYPES[args.vcftype2]
+    vcftype1 = trh.GetVCFType(vcfreaders[0], args.vcftype1)
+    vcftype2 = trh.GetVCFType(vcfreaders[1], args.vcftype2)
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]

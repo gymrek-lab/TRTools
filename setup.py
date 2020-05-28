@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import os
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
@@ -10,8 +11,22 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
-#version_file = open('_version')
-VERSION = "2.0.15" #version_file.read().strip()
+
+# version-keeping code based on pybedtools
+curdir = os.path.abspath(os.path.dirname(__file__))
+MAJ = 2
+MIN = 0
+REV = 16
+VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
+with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
+        fout.write(
+            "\n".join(["",
+                       "# THIS FILE IS GENERATED FROM SETUP.PY",
+                       "version = '{version}'",
+                       "__version__ = version"]).format(version=VERSION)
+        )
+
+
 
 setup(name=NAME,
       version=VERSION,
