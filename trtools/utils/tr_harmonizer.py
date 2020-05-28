@@ -13,13 +13,7 @@ from typing import Union
 
 import numpy as np
 
-if __name__ == "tr_harmonizer":
-    sys.path.insert(0, os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils")
-    )
-    import utils
-else:
-    import trtools.utils.utils as utils  # pragma: no cover
+import trtools.utils.utils as utils
 
 # List of supported VCF types
 # TODO: add Beagle

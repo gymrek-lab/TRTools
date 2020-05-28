@@ -26,13 +26,16 @@ setup(name=NAME,
       license=LICENSE,
       python_requires='>=3.5',
       packages=find_packages(),
+      include_package_data=True,
+      license_file="LICENSE.txt",
+      scripts=["trtools/testsupport/test_trtools.sh"],
       entry_points={
           'console_scripts': [
-              'dumpSTR=dumpSTR.dumpSTR:run',
-              'mergeSTR=mergeSTR.mergeSTR:run',
-              'statSTR=statSTR.statSTR:run',
-              'compareSTR=compareSTR.compareSTR:run',
-              'qcSTR=qcSTR.qcSTR:run'
+              'dumpSTR=trtools.dumpSTR:run',
+              'mergeSTR=trtools.mergeSTR:run',
+              'statSTR=trtools.statSTR:run',
+              'compareSTR=trtools.compareSTR:run',
+              'qcSTR=trtools.qcSTR:run'
           ],
       },
       install_requires=['argparse',
@@ -48,8 +51,5 @@ setup(name=NAME,
                        'License :: OSI Approved :: MIT License',\
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\
-                       'Topic :: Scientific/Engineering :: Bio-Informatics'],
-      data_files=[
-        ('', ['LICENSE.txt'])
-      ]
+                       'Topic :: Scientific/Engineering :: Bio-Informatics']
      )

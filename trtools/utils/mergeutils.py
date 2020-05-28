@@ -8,13 +8,8 @@ import os
 import sys
 import vcf
 
-if __name__ == "mergeutils" or __package__ is None:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    import common
-    import tr_harmonizer as trh
-else:
-    import trtools.utils.common as common # pragma: no cover
-    import trtools.utils.tr_harmonizer as trh # pragma: no cover
+import trtools.utils.common as common
+import trtools.utils.tr_harmonizer as trh
 
 def LoadReaders(vcffiles, region=None):
     r"""Return list of VCF readers

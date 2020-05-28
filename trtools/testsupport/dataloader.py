@@ -3,11 +3,12 @@ import os
 import pytest
 
 # functions that all pytests have access to
+# Not for use in runtime code!
 
 # Usage based on this documentation
 # https://docs.pytest.org/en/latest/example/simple.html#pass-different-values-to-a-test-function-depending-on-command-line-options
 def pytest_addoption(parser):
-	default = os.path.join(os.path.dirname(os.path.abspath(__file__)), "common")
+	default = os.path.dirname(os.path.abspath(__file__))
 	parser.addoption(
 			"--datadir",
 			default=default,

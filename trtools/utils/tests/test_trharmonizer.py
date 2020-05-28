@@ -5,11 +5,7 @@ import numpy as np
 import pytest
 import vcf
 
-sys.path.insert(
-    0, os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), '..', '..')
-)
-import trtools.utils.tr_harmonizer as trh  # pylint: disable=C0413
+import trtools.utils.tr_harmonizer as trh
 
 
 #### Test TRRecord using dummy info ####
