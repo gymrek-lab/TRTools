@@ -23,9 +23,8 @@ import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
-import trtools.version as version
+from trtools import __version__
 
-__version__ = version.__version__
 
 def OutputDiffRefHistogram(diffs_from_ref, fname):
     r"""Plot histogram of difference in bp from reference allele

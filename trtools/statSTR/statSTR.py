@@ -25,9 +25,7 @@ MAXPLOTS = 10 # don't plot more than this many allele freqs
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
-import trtools.version as version
-
-__version__ = version.__version__
+from trtools import __version__
 
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
