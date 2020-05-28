@@ -73,17 +73,19 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 
 Contributing
 ------------
-
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 * Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-* Fork the repository.
+* Fork the repository. `develop` branch contains the latest pre-release codebase.
 * Install it into a clean environment
-* Additionally, install `pytest` in your environment.
+* Additionally, install `pytest` and `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ in your environment.
 * Make your changes. 
 * Ensure all functions, modules, classes etc. conform to Numpy docstring standards (https://numpydoc.readthedocs.io/en/latest/format.html).
-* Add tests (see the :code:`tests/` folder in the directory of the code you modified to find the appropriate location for new tests) to test any new functionality. 
-* CD to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests.
+* Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
+* :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests.
 * If applicable, update REAMDEs with new usage information.
-* Submit a pull request, with a reasonably descriptive message of what changes you have made.
+* Submit a pull request **to `develop` branch**, with a reasonably descriptive message of what changes you have made.
+
+
+More information on the procedure for new releases is available [here](contributing.txt)
 

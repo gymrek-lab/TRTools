@@ -27,6 +27,9 @@ import vcf
 import trtools.utils.common as common
 import trtools.utils.mergeutils as mergeutils
 import trtools.utils.tr_harmonizer as trh
+import trtools.version as version
+
+__version__ = version.__version__
 
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):

@@ -10,10 +10,13 @@ import numpy as np
 import sys
 import vcf
 
-import trtools.utils.common as common  # pragma: no cover
-import trtools.utils.mergeutils as mergeutils  # pragma: no cover
-import trtools.utils.tr_harmonizer as trh # pragma: no cover
-import trtools.utils.utils as utils  # pragma: no cover
+import trtools.utils.common as common
+import trtools.utils.mergeutils as mergeutils
+import trtools.utils.tr_harmonizer as trh
+import trtools.utils.utils as utils
+import trtools.version as version
+
+__version__ = version.__version__
 
 NOCALLSTRING = "."
 

@@ -17,7 +17,9 @@ from . import filters as filters
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
-import trtools.utils.version as version
+import trtools.version as version
+
+__version__ = version.__version__
 
 def MakeWriter(outfile, invcf, command):
     r"""Create a VCF writer with a dumpSTR header
