@@ -2,9 +2,8 @@ import argparse
 import os,sys
 import pytest
 import vcf
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..','..'))
 
-from dumpSTR import *
+from ..dumpSTR import *
 
 def base_argparse(tmpdir):
     args = argparse.ArgumentParser()

@@ -7,15 +7,9 @@ import os
 import sys
 import vcf.filters
 
-if __name__ == "filters":
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
-    import common
-    import tr_harmonizer as trh
-    import utils
-else: # pragma: no cover
-    import trtools.utils.common as common # pragma: no cover
-    import trtools.utils.tr_harmonizer as trh # pragma: no cover
-    import trtools.utils.utils as utils # pragma: no cover
+import trtools.utils.common as common
+import trtools.utils.tr_harmonizer as trh
+import trtools.utils.utils as utils
 
 ###################################
 # Locus level filters

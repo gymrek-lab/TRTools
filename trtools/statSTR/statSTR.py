@@ -22,20 +22,9 @@ import vcf
 
 MAXPLOTS = 10 # don't plot more than this many allele freqs
 
-# Load local libraries
-if __name__ == "statSTR" or __name__ == '__main__' or __package__ is None:
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trtools", "utils"))
-    import common
-    import tr_harmonizer as trh
-    import utils
-    import version
-else: # pragma: no cover
-    import trtools.utils.common as common  # pragma: no cover
-    import trtools.utils.tr_harmonizer as trh  # pragma: no cover
-    import trtools.utils.utils as utils  # pragma: no cover
-    import trtools.utils.version as version
-
-__version__ = version.__version__
+import trtools.utils.common as common
+import trtools.utils.tr_harmonizer as trh
+import trtools.utils.utils as utils
 
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
