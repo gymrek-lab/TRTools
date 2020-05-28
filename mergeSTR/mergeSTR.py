@@ -422,7 +422,7 @@ def main(args):
     chroms = list(contigs)
 
     ### Check inferred type of each is the same
-    vcftype = mergeutils.InferAndCheckVCFType(vcfreaders, args.vcftype)
+    vcftype = mergeutils.GetAndCheckVCFType(vcfreaders, args.vcftype)
 
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")

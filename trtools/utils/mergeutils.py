@@ -89,7 +89,7 @@ def GetSamples(readers, usefilenames=False):
         return []
     return samples
 
-def InferAndCheckVCFType(vcfreaders, vcftype):
+def GetAndCheckVCFType(vcfreaders, vcftype):
     """Infer vcf type of readers
 
     If vcftype is "auto", try to infer types of each reader.
@@ -111,7 +111,7 @@ def InferAndCheckVCFType(vcfreaders, vcftype):
     """
     types = []
     for reader in vcfreaders:
-        reader_type = utils.InferVCFType(reader, vcftype)
+        reader_type = trh.GetVCFType(reader, vcftype)
         if reader_type == None:
             raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
         types.append(reader_type)
