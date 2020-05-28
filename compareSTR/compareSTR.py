@@ -438,8 +438,8 @@ def main(args):
         results_dir[ff+"1"] = []
         results_dir[ff+"2"] = []
 
-    vcftype1 = trh.VCFTYPES[args.vcftype1]
-    vcftype2 = trh.VCFTYPES[args.vcftype2]
+    vcftype1 = utils.InferVCFType(vcfreaders[0], args.vcftype1)
+    vcftype2 = utils.InferVCFType(vcfreaders[1], args.vcftype2)
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]

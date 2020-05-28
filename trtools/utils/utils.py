@@ -13,11 +13,40 @@ import vcf
 if __name__ == "utils" or __package__ is None:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     import common
+    import tr_harmonizer as trh
 else:
     import trtools.utils.common as common # pragma: no cover
+    import trtools.utils.tr_harmonizer as trh # pragma: no cover
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
+def InferVCFType(vcfreader, vcftype = "auto"):
+    """Infer vcf type of reader
+
+    If vcftype is "auto", try to infer types of reader.
+    If it is not auto, just return that string.
+
+    Parameters
+    ----------
+    vcfreader : vcf.Reader
+      VCF Reader object
+    vcftype : str
+      Type of VCF
+
+    Returns
+    -------
+    vcftype : str
+      Inferred VCF type
+    """
+    tr_harmonizer = trh.TRRecordHarmonizer(vcfreader)
+    if vcftype != "auto":
+        if vcftype == tr_harmonizer.vcftype.name:
+            return vcftype
+        else:
+            return None
+    else:
+        return tr_harmonizer.vcftype.name
+    
 def LoadSingleReader(vcffile, checkgz=True, region=None):
     r"""Return VCF reader
 
