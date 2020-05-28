@@ -26,10 +26,7 @@ fi
 
 # Figure out where trtools is installed
 
-loc=dirname $(python -c """
-import trtools
-print trtools.__file__
-""")
+loc=$(dirname $(python -c "import trtools;print(trtools.__file__)"))
 
 cd "$loc"
 python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/tests/common
