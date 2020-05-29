@@ -2,7 +2,8 @@
 
 # Run the tests for an installed copy of trtools
 # If not already present, megabytes of test data will be downloaded before test running
-# Requires that either 
+
+echo "Running test_trtools.sh"
 
 command -v git >/dev/null 2>&1 || { echo >&2 "git is not available, but is required for downloading the test data. Aborting."; exit 1; }
 command -v pytest >/dev/null 2>&1 || { echo >&2 "pytest is not available, but is required for running the test suite. Aborting."; exit 1; }
@@ -22,7 +23,11 @@ if [ ! -d "$TMP" ] ; then
 	git pull origin master
 	popd
 	echo "Download done"
+else
+	echo "Test data already downloaded"
 fi
+
+echo "Repo with test data located at $TMP"
 
 # Figure out where trtools is installed
 # Note: cd to an arbitrary directory before doing this so that in case
@@ -34,7 +39,9 @@ fi
 mkdir -p /tmp/trtools_tmp
 cd /tmp/trtools_tmp
 loc=$(dirname $(python -c "import trtools;print(trtools.__file__)"))
+echo "Location of trtools installation: $loc"
 
+echo "Running pytest ..."
 cd "$loc"
-python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/tests/common
+python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/trtools/testsupport
 
