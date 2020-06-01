@@ -2,9 +2,9 @@ Publishing
 ----------
 
 Only maintainers of the trtools repository may publish changes to the package.
-If you are a community member and want to contribute new code, see :ref:`Contributing`.
+If you are a community member and want to contribute new code, see the contributing section in the README.
 If you are a community member and have already contributed new code and want us to publish it
-now, please :ref:`Contact Us`
+now, please Contact Us. Read the README to get our contact info.
 
 This document explains how trtools maintainers should publish new changes. Any maintainer wanting
 to publish changes should ensure that other maintainers are ready to publish before going ahead with it.
@@ -16,11 +16,11 @@ We use the master branch as the default branch with the latest stable codebase.
 The builds from this branch are distributed to PyPI and conda.
 The develop branch contains new features that have yet to make their way into master.
 
-Once changes have been made to develop that are ready to be published (see :ref:`Contributing`), first set up the environment you're going to publish TRTools from:
+Once changes have been made to develop that are ready to be published, first set up the environment you're going to publish TRTools from:
 1. Create a clean environment.
-#. Install [setuptools with version >= 40.8.0](https://setuptools.readthedocs.io/en/latest/history.html#v40-8-0)
+#. Install `setuptools with version >= 40.8.0 <https://setuptools.readthedocs.io/en/latest/history.html#v40-8-0>`_
 #. Install all the requirements in requirements.txt
-#. Additionally, install `pytest`, `wheel` and `twine`
+#. Additionally, install ``pytest``, ``wheel`` and ``twine``
 
 Then go through the steps of merging the changes into the master branch:
 1. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
