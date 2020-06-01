@@ -4,10 +4,10 @@ Publishing
 Only maintainers of the trtools repository may publish changes to the package.
 If you are a community member and want to contribute new code, see the contributing section in the README.
 If you are a community member and have already contributed new code and want us to publish it
-now, please Contact Us. Read the README to get our contact info.
+now, please contact us (our contact info is in the README)
 
-This document explains how trtools maintainers should publish new changes. Any maintainer wanting
-to publish changes should ensure that other maintainers are ready to publish before going ahead with it.
+This document explains how trtools maintainers should publish new changes. 
+Maintainers should reach consensus before going ahead with publishing changes.
 
 We use a simplified version of 
 `git flow <http://web.archive.org/web/20200520162709/https://nvie.com/posts/a-successful-git-branching-model/>`_
@@ -19,7 +19,7 @@ The develop branch contains new features that have yet to make their way into ma
 Once changes have been made to develop that are ready to be published, first set up the environment you're going to publish TRTools from:
 
 #. Create a clean environment.
-#. Install `setuptools with version >= 40.8.0 <https://setuptools.readthedocs.io/en/latest/history.html#v40-8-0>`_
+#. Install setuptools with version >= 40.8.0
 #. Install all the requirements in requirements.txt
 #. Additionally, install ``pytest``, ``wheel`` and ``twine``
 
@@ -29,7 +29,7 @@ Then go through the steps of merging the changes into the master branch:
 #. Check out the develop branch
 #. Run pytest and make sure all the tests pass
 #. Update the version number in setup.py
-#. Run `python setup.py sdist bdist_wheel` (this ensures that trtools/version.py contains the updated version number)
+#. Run ``python setup.py sdist bdist_wheel`` (this ensures that trtools/version.py contains the updated version number)
 #. Commit the changes to setup.py and trtools/version.py and push them>
 #. Submit a pull request from develop into master on the github webiste.
 #. If the code review and travis checks pass, merge the pull request.
