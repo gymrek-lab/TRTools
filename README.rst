@@ -53,7 +53,7 @@ It additionally includes a python library, :code:`trtools`, which can be accesse
 Usage
 -----
 
-See the README in each subdirectory for usage details.
+See the README in each subdirectory of <repo-root>/trtools for usage details.
 
 Supported Tools
 ---------------
@@ -71,21 +71,35 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _AdVNTR: https://github.com/mehrdadbakhtiari/adVNTR
 
+.. _Contributing 
+
 Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 * Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-* Fork the repository. `develop` branch contains the latest pre-release codebase.
-* Install it into a clean environment
+* Create a clean environment with the dependencies in requirements.txt installed.
 * Additionally, install `pytest` and `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ in your environment.
+* Fork the trtools repository. 
+* The `develop` branch contains the latest pre-release codebase. Create a branch off of `develop` titled with the name of your feature
 * Make your changes. 
-* Ensure all functions, modules, classes etc. conform to Numpy docstring standards (https://numpydoc.readthedocs.io/en/latest/format.html).
+* Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`.
 * Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
-* :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests.
-* If applicable, update REAMDEs with new usage information.
-* Submit a pull request **to `develop` branch**, with a reasonably descriptive message of what changes you have made.
+* :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+* If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
+* Submit a pull request **to `develop` branch** of the central repository with a description of what changes you have made.
+* A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
+
+Publishing
+----------
+If you are a trtools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
+please see PUBLISHING.rst.
+If you are a community member and would like that to happen, contact us (see below).
 
 
-More information on the procedure for new releases is available [here](contributing.txt)
+.. _`Contact Us`
+Contact Us
+----------
+Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
+# NOTE: I'm intentionally removing Nima's email b/c he will eventually graduate and it will go dead
 
