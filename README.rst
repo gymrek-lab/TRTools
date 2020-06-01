@@ -83,7 +83,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 * Fork the trtools repository. 
 * The `develop` branch contains the latest pre-release codebase. Create a branch off of `develop` titled with the name of your feature
 * Make your changes. 
-* Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`.
+* Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 * Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 * If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
