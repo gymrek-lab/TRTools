@@ -41,8 +41,10 @@ Then go through the steps of publishing the changed code to PyPI
 #. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
 #. Run :code:`python setup.py sdist bdist_wheel` to build the package.
 
- * This will create the warning ::
+ * This will create the warning::
+
    /storage/jmargoliash/conda/envs/my_defaults/lib/python3.8/distutils/dist.py:274: UserWarning: Unknown distribution option: 'license_file'  warnings.warn(msg)
+
  * You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
 
 #. Run :code:`twine upload dist/*` to upload the build to PyPI
@@ -54,7 +56,7 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
 #. Run `git remote add upstream https://github.com/bioconda/bioconda-recipes` so that you can pull from not only your fork but also upstream.
 #. Create a new branch from master with your package's name
 #. In `the recip for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
-#. Check the recipe by running the following: ::
+#. Check the recipe by running the following::
 
   # This will only need to be run occasionally, other times it will fail because the temporary miniconda installation it creates already exists, that's okay
   ./bootstrap.py /tmp/miniconda
@@ -84,12 +86,13 @@ Possible Issues:
 .. _tagging:
 
 Git Tagging
-__________
+-----------
+
 Git tags are used to mark specific commits with certain names (i.e. v1.2.0). 
 Please note that tags are assigned to commits, not branches. 
 You can tag a commit in two different ways.
 
-#. Command line: ::
+#. Command line::
 
   git tag -a <tag-name> -m <tag-description>
   git push --tags
