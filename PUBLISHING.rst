@@ -53,10 +53,12 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
 
 1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
 2. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
-3. Run `git remote add upstream https://github.com/bioconda/bioconda-recipes` so that you can pull from not only your fork but also upstream.
+3. Run ``git remote add upstream https://github.com/bioconda/bioconda-recipes`` so that you can pull from not only your fork but also upstream.
 4. Create a new branch from master with your package's name
-5. In `the recip for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
-6. Check the recipe by running the following::
+5. In `the recipe for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
+6. Check the recipe by running the following
+
+.. code-block:: bash
 
   # This will only need to be run occasionally, other times it will fail because the temporary miniconda installation it creates already exists, that's okay
   ./bootstrap.py /tmp/miniconda
