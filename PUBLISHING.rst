@@ -37,9 +37,9 @@ Then go through the steps of merging the changes into the master branch:
 
 Then go through the steps of publishing the changed code to PyPI
 
-#. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
-#. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-#. Run :code:`python setup.py sdist bdist_wheel` to build the package.
+1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
+2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
+3. Run :code:`python setup.py sdist bdist_wheel` to build the package.
 
  This will create the warning::
 
@@ -47,16 +47,16 @@ Then go through the steps of publishing the changed code to PyPI
 
  You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
 
-#. Run :code:`twine upload dist/*` to upload the build to PyPI
+4. Run :code:`twine upload dist/*` to upload the build to PyPI
 
 Lastly go through the following stesp to publish the changed code to bioconda (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
 
-#. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
-#. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
-#. Run `git remote add upstream https://github.com/bioconda/bioconda-recipes` so that you can pull from not only your fork but also upstream.
-#. Create a new branch from master with your package's name
-#. In `the recip for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
-#. Check the recipe by running the following::
+1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
+2. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
+3. Run `git remote add upstream https://github.com/bioconda/bioconda-recipes` so that you can pull from not only your fork but also upstream.
+4. Create a new branch from master with your package's name
+5. In `the recip for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
+6. Check the recipe by running the following::
 
   # This will only need to be run occasionally, other times it will fail because the temporary miniconda installation it creates already exists, that's okay
   ./bootstrap.py /tmp/miniconda
@@ -69,7 +69,7 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
   # build and test
   bioconda-utils build --docker --mulled-test --packages <conda package name>
 
-#. Before committing, run `git pull upstream master` to make sure you're up to date with the central repo's master branch
+7. Before committing, run `git pull upstream master` to make sure you're up to date with the central repo's master branch
 #. commit and push the changes to your fork repo
 #. Create a pull request from your new branch in your fork into master in the central repository
 #. Follow the instructions in the pull request to get the update made
