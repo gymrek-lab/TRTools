@@ -30,9 +30,9 @@ Then go through the steps of merging the changes into the master branch:
 #. Run pytest and make sure all the tests pass
 #. Update the version number in setup.py
 #. Run `python setup.py sdist bdist_wheel` (this ensures that trtools/version.py contains the updated version number)
-#. Commit the changes to setup.py and trtools/version.py and push them
+#. Commit the changes to setup.py and trtools/version.py and push them>
 #. Submit a pull request from develop into master on the github webiste.
-#  If the code review and travis checks pass, merge the pull request.
+#. If the code review and travis checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see :ref:`below <tagging>`)
 
 Then go through the steps of publishing the changed code to PyPI
