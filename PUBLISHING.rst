@@ -81,7 +81,7 @@ Possible Issues:
   * requirements.txt (list a specific version of the dependency that is up to date and that we know will work)
   * the appropriate section of the bioconda recipe
 
-.. _tagging
+.. _tagging:
 
 Git Tagging
 __________
