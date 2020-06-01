@@ -33,7 +33,7 @@ Then go through the steps of merging the changes into the master branch:
 #. Commit the changes to setup.py and trtools/version.py and push them>
 #. Submit a pull request from develop into master on the github webiste.
 #. If the code review and travis checks pass, merge the pull request.
-#. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see :ref:`below <tagging>`)
+#. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
 
 Then go through the steps of publishing the changed code to PyPI
 
@@ -41,11 +41,11 @@ Then go through the steps of publishing the changed code to PyPI
 #. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
 #. Run :code:`python setup.py sdist bdist_wheel` to build the package.
 
- * This will create the warning::
+ This will create the warning::
 
-   /storage/jmargoliash/conda/envs/my_defaults/lib/python3.8/distutils/dist.py:274: UserWarning: Unknown distribution option: 'license_file'  warnings.warn(msg)
+   UserWarning: Unknown distribution option: 'license_file'  warnings.warn(msg)
 
- * You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
+ You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
 
 #. Run :code:`twine upload dist/*` to upload the build to PyPI
 
