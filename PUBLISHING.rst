@@ -17,13 +17,13 @@ The builds from this branch are distributed to PyPI and conda.
 The develop branch contains new features that have yet to make their way into master.
 
 Once changes have been made to develop that are ready to be published, first set up the environment you're going to publish TRTools from:
-1. Create a clean environment.
+#. Create a clean environment.
 #. Install `setuptools with version >= 40.8.0 <https://setuptools.readthedocs.io/en/latest/history.html#v40-8-0>`_
 #. Install all the requirements in requirements.txt
 #. Additionally, install ``pytest``, ``wheel`` and ``twine``
 
 Then go through the steps of merging the changes into the master branch:
-1. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
+#. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
 #. Check out the develop branch
 #. Run pytest and make sure all the tests pass
 #. Update the version number in setup.py
@@ -34,16 +34,18 @@ Then go through the steps of merging the changes into the master branch:
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see :ref:`below <tagging>`)
 
 Then go through the steps of publishing the changed code to PyPI
-1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
+#. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
 #. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
 #. Run :code:`python setup.py sdist bdist_wheel` to build the package.
+
  * This will create the warning ::
    /storage/jmargoliash/conda/envs/my_defaults/lib/python3.8/distutils/dist.py:274: UserWarning: Unknown distribution option: 'license_file'  warnings.warn(msg)
  * You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
+
 #. Run :code:`twine upload dist/*` to upload the build to PyPI
 
 Lastly go through the following stesp to publish the changed code to bioconda (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
-1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
+#. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
 #. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
 #. Run `git remote add upstream https://github.com/bioconda/bioconda-recipes` so that you can pull from not only your fork but also upstream.
 #. Create a new branch from master with your package's name
