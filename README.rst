@@ -71,7 +71,7 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _AdVNTR: https://github.com/mehrdadbakhtiari/adVNTR
 
-.. _Contributing 
+.. _Contributing:
 
 Contributing
 ------------
@@ -81,13 +81,13 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 * Create a clean environment with the dependencies in requirements.txt installed.
 * Additionally, install `pytest` and `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ in your environment.
 * Fork the trtools repository. 
-* The `develop` branch contains the latest pre-release codebase. Create a branch off of `develop` titled with the name of your feature
+* The `develop` branch contains the latest pre-release codebase. Create a branch off of `develop` titled with the name of your feature.
 * Make your changes. 
 * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 * Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 * If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
-* Submit a pull request **to `develop` branch** of the central repository with a description of what changes you have made.
+* Submit a pull request **to the `develop` branch** of the central repository with a description of what changes you have made.
 * A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
@@ -97,7 +97,8 @@ please see PUBLISHING.rst.
 If you are a community member and would like that to happen, contact us (see below).
 
 
-.. _`Contact Us`
+.. _`Contact Us`:
+
 Contact Us
 ----------
 Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
