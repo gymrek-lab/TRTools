@@ -72,20 +72,18 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
   bioconda-utils build --docker --mulled-test --packages <conda package name>
 
 7. Before committing, run `git pull upstream master` to make sure you're up to date with the central repo's master branch
-#. commit and push the changes to your fork repo
+#. Commit and push the changes to your fork repo
 #. Create a pull request from your new branch in your fork into master in the central repository
-#. Follow the instructions in the pull request to get the update made
+#. Follow the instructions in the pull request to get the update published
 
 Possible Issues:
 
-* bioconda packages should not include large test files. If the .tar.gz file produced for PyPI contains any test data files, you'll need to update the MANIFEST.in file to exclude them, fix the test_trtools.sh script and the test files so that they can be downloaded and referenced from the repo, and the recommit everything. (This should not happen if new test files are just put in trtools/testsupport/sample_vcfs or trtools/testsupport/sample_regions)
+* bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them, fix the test_trtools.sh script to download them manually and point pytest to them, and then recommit everything. (This should not happen if new test files are just put in trtools/testsupport/sample_vcfs or trtools/testsupport/sample_regions)
 * If you've added dependencies to trtools or its tests, those dependencies should be listed in
 
   * setup.py
   * requirements.txt (list a specific version of the dependency that is up to date and that we know will work)
   * the appropriate section of the bioconda recipe
-
-.. _tagging:
 
 Git Tagging
 -----------
@@ -99,4 +97,4 @@ You can tag a commit in two different ways.
   git tag -a <tag-name> -m <tag-description>
   git push --tags
 
-#. Web interface: you can go to the releases page of the repository and create a new release.
+2. Web interface: you can go to the releases page of the repository and create a new release.
