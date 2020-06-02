@@ -11,8 +11,8 @@ TRTools: a tool for genome-wide tandem repeat analysis
 .. toctree::
    :maxdepth: 2
 
+   VIGNETTES
    UTILITIES
    API
-   VIGNETTES
    site_indices
 
