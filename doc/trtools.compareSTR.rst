@@ -1,7 +1,7 @@
-trtools.utils.mergeutils module
+trtools.compareSTR module
 ---------------------------
 
-.. automodule:: trtools.utils.mergeutils
+.. automodule:: trtools.compareSTR
    :members:
    :undoc-members:
    :special-members:

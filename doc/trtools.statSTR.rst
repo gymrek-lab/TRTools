@@ -1,7 +1,7 @@
-trtools.utils.mergeutils module
+trtools.statSTR module
 ---------------------------
 
-.. automodule:: trtools.utils.mergeutils
+.. automodule:: trtools.statSTR
    :members:
    :undoc-members:
    :special-members:

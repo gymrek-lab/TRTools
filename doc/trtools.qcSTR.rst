@@ -1,7 +1,7 @@
-trtools.utils.mergeutils module
+trtools.qcSTR module
 ---------------------------
 
-.. automodule:: trtools.utils.mergeutils
+.. automodule:: trtools.qcSTR
    :members:
    :undoc-members:
    :special-members:

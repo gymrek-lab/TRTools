@@ -1,7 +1,7 @@
-trtools.utils.mergeutils module
+trtools.dumpSTR module
 ---------------------------
 
-.. automodule:: trtools.utils.mergeutils
+.. automodule:: trtools.dumpSTR
    :members:
    :undoc-members:
    :special-members:
