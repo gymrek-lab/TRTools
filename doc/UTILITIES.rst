@@ -1,4 +1,4 @@
-Command-line tools
+Command-Line Tools
 ===========================
 
 TRTools offers a variety of command-line tools for performing manipulations to TR genotype VCFs.
