@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import os
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
@@ -10,8 +11,19 @@ MAINTAINER_EMAIL = "mgymrek@ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/TRTools'
 LICENSE = 'MIT'
 
-#version_file = open('_version')
-VERSION = "2.0.16" #version_file.read().strip()
+# version-keeping code based on pybedtools
+curdir = os.path.abspath(os.path.dirname(__file__))
+MAJ = 2
+MIN = 0
+REV = 18
+VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
+with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
+        fout.write(
+            "\n".join(["",
+                       "# THIS FILE IS GENERATED FROM SETUP.PY",
+                       "version = '{version}'",
+                       "__version__ = version"]).format(version=VERSION)
+        )
 
 setup(name=NAME,
       version=VERSION,
@@ -26,14 +38,16 @@ setup(name=NAME,
       license=LICENSE,
       python_requires='>=3.5',
       packages=find_packages(),
-      scripts = ['test_trtools.sh'],
+      include_package_data=True,
+      license_file="LICENSE.txt",
+      scripts=["trtools/testsupport/test_trtools.sh"],
       entry_points={
           'console_scripts': [
-              'dumpSTR=dumpSTR.dumpSTR:run',
-              'mergeSTR=mergeSTR.mergeSTR:run',
-              'statSTR=statSTR.statSTR:run',
-              'compareSTR=compareSTR.compareSTR:run',
-              'qcSTR=qcSTR.qcSTR:run'
+              'dumpSTR=trtools.dumpSTR:run',
+              'mergeSTR=trtools.mergeSTR:run',
+              'statSTR=trtools.statSTR:run',
+              'compareSTR=trtools.compareSTR:run',
+              'qcSTR=trtools.qcSTR:run'
           ],
       },
       install_requires=['argparse',
@@ -49,8 +63,5 @@ setup(name=NAME,
                        'License :: OSI Approved :: MIT License',\
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\
-                       'Topic :: Scientific/Engineering :: Bio-Informatics'],
-      data_files=[
-        ('', ['LICENSE.txt'])
-      ]
+                       'Topic :: Scientific/Engineering :: Bio-Informatics']
      )

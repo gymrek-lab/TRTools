@@ -8,13 +8,9 @@ import os
 import sys
 import vcf
 
-if __name__ == "mergeutils" or __package__ is None:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    import common
-    import tr_harmonizer as trh
-else:
-    import trtools.utils.common as common # pragma: no cover
-    import trtools.utils.tr_harmonizer as trh # pragma: no cover
+import trtools.utils.common as common
+import trtools.utils.tr_harmonizer as trh
+
 
 def LoadReaders(vcffiles, region=None):
     r"""Return list of VCF readers
@@ -32,7 +28,7 @@ def LoadReaders(vcffiles, region=None):
         VCF readers list for all files to merge
     """
     for f in vcffiles:
-        if not f.endswith(".vcf.gz"):
+        if not f.endswith(".vcf.gz") and not f.endswith(".vcf.bgz"):
             raise ValueError("Make sure %s is bgzipped and indexed"%f)
         if not os.path.isfile(f):
             raise ValueError("Could not find VCF file %s"%f)
@@ -87,7 +83,7 @@ def GetSamples(readers, usefilenames=False):
         return []
     return samples
 
-def GetVCFType(vcfreaders, vcftype):
+def GetAndCheckVCFType(vcfreaders, vcftype):
     """Infer vcf type of readers
 
     If vcftype is "auto", try to infer types of each reader.
@@ -107,11 +103,12 @@ def GetVCFType(vcfreaders, vcftype):
     vcftype : str
       Inferred VCF type
     """
-    if vcftype != "auto": return vcftype
     types = []
     for reader in vcfreaders:
-        tr_harmonizer = trh.TRRecordHarmonizer(reader)
-        types.append(tr_harmonizer.vcftype.name)
+        reader_type = trh.GetVCFType(reader, vcftype)
+        if reader_type == None:
+            raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
+        types.append(reader_type)
     if len(set(types)) == 1: 
         return types[0]
     else: raise ValueError("VCF files are of mixed types.")
