@@ -1,7 +1,10 @@
+.. |dumpSTR overview| replace:: DumpSTR is a tool for filtering VCF file with TR genotypes produced by supported genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
+
 DumpSTR
 =======
 
-DumpSTR is a tool for filtering VCF file with TR genotypes produced by supported genotyping tools. It can perform both call-level and locus-level filtering and outputs a filtered VCF file.
+|dumpSTR overview|
+
 
 Usage
 -----

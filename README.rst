@@ -53,10 +53,12 @@ It additionally includes a python library, :code:`trtools`, which can be accesse
 Usage
 -----
 
-See the README in each subdirectory of <repo-root>/trtools for usage details.
+New users are recommended to start with our `example Vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_.
+You can also read the `Command-Line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
 
-Supported Tools
----------------
+
+Supported TR Callers
+--------------------
 TRTools supports VCFs from the following STR/VNTR genotyping tools:
 
 * GangSTR_ version 2.4 or higher.
@@ -102,5 +104,4 @@ If you are a community member and would like that to happen, contact us (see bel
 Contact Us
 ----------
 Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
-# NOTE: I'm intentionally removing Nima's email b/c he will eventually graduate and it will go dead
 
