@@ -1,7 +1,11 @@
+.. overview_directive
+.. |qcSTR overview| replace:: qcSTR generates plots that are useful for diagnosing issues in TR calling.
+.. overview_directive_done
+
 qcSTR
 =====
 
-qcSTR is a tool for generating various plots that are useful for diagnosing issues in TR calling.
+|qcSTR overview|
 
 Usage
 -----
