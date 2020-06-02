@@ -73,8 +73,6 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _AdVNTR: https://github.com/mehrdadbakhtiari/adVNTR
 
-.. _Contributing:
-
 Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
@@ -97,9 +95,6 @@ Publishing
 If you are a trtools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
 please see PUBLISHING.rst.
 If you are a community member and would like that to happen, contact us (see below).
-
-
-.. _`Contact Us`:
 
 Contact Us
 ----------

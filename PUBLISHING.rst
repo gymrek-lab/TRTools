@@ -49,7 +49,7 @@ Then go through the steps of publishing the changed code to PyPI
 
 4. Run :code:`twine upload dist/*` to upload the build to PyPI
 
-Lastly go through the following stesp to publish the changed code to bioconda (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
+Lastly go through the following steps to publish the changed code to bioconda (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
 
 1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
 2. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
@@ -60,7 +60,7 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
 
 .. code-block:: bash
 
-  # This will only need to be run occasionally, other times it will fail because the temporary miniconda installation it creates already exists, that's okay
+  # This will only need to be run occasionally. Other times it will fail because it has already created a temporary miniconda installation in this location. That's okay
   ./bootstrap.py /tmp/miniconda
   
   source ~/.config/bioconda/activate
@@ -78,7 +78,7 @@ Lastly go through the following stesp to publish the changed code to bioconda (s
 
 Possible Issues:
 
-* bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them, fix the test_trtools.sh script to download them manually and point pytest to them, and then recommit everything. (This should not happen if new test files are just put in trtools/testsupport/sample_vcfs or trtools/testsupport/sample_regions)
+* bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them, fix the test_trtools.sh script to download them manually and point pytest to them, confirm the tests run in a :code:`conda build` and then restart the publishing process. (This should not happen if new test files are just put in :code:`trtools/testsupport/sample_vcfs` or :code:`trtools/testsupport/sample_regions`)
 * If you've added dependencies to trtools or its tests, those dependencies should be listed in
 
   * setup.py
