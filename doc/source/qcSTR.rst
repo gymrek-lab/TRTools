@@ -1,1 +1,1 @@
-.. include:: ../../qcSTR/README.rst
+.. include:: ../../trtools/qcSTR/README.rst

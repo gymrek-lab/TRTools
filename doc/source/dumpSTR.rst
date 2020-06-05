@@ -1,1 +1,1 @@
-.. include:: ../../dumpSTR/README.rst
+.. include:: ../../trtools/dumpSTR/README.rst
