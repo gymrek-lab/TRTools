@@ -2,10 +2,7 @@
 
 # Editor files
 *.swp
-.pydocstyle
 .mypy_cache/
-.bandit
-.pylintrc
 mypy.ini
 
 # Docs

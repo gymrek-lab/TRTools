@@ -436,7 +436,8 @@ def _ConvertPLtoQualityProb(PL: List[int]) -> float:
     by 1 - sum(probabilities of other genotypes)
     """
 
-    max_likelihood = max(PL)
+    print(PL)
+    max_likelihood = min(PL)
     if max_likelihood != 0:
         return _PHREDtoProb(max_likelihood)
     else:
@@ -887,7 +888,8 @@ class TRRecord:
             has been identified
         """
 
-        return self.quality_field is not None
+        return (self.quality_field is not None and
+                self.quality_field in self.vcfrecord.FORMAT.split(":"))
 
     def GetQualityScore(self, sample):
         """
@@ -915,7 +917,7 @@ class TRRecord:
         its phase both being correct.
         """
 
-        if self.quality_field is None:
+        if not self.HasQualityScores():
             raise TypeError(
                 "This TRRecord does not have a corresponding quality score"
                 " field"

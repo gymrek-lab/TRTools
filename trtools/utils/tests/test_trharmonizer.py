@@ -6,6 +6,7 @@ import vcf
 
 import trtools.utils.tr_harmonizer as trh
 
+# pylint: disable=C0116,C0103
 
 #### Test TRRecord using dummy info ####
 
@@ -719,4 +720,79 @@ def test_HarmonizeRecord(vcfdir):
     assert not tr_rec1.HasFullStringGenotypes()
     assert tr_rec1.HasFabricatedRefAllele()
     assert tr_rec1.HasFabricatedAltAlleles()
+
+
+def assertFEquals(f1: float, f2: float):
+    epsilon = 1e-6
+    assert abs(f1 - f2) < epsilon
+
+def test_PHREDtoProb():
+    # pylint: disable=W0212
+    assertFEquals(trh._PHREDtoProb(0), 1)
+    assertFEquals(trh._PHREDtoProb(20), .01)
+    assertFEquals(trh._PHREDtoProb(2), 0.63095734448)
+
+def test_ConvertPLToQualityProb():
+    # pylint: disable=W0212
+    assertFEquals(trh._ConvertPLtoQualityProb([0]), 1)
+    assertFEquals(trh._ConvertPLtoQualityProb([10]), .1)
+    assertFEquals(trh._ConvertPLtoQualityProb([255, 10, 246]), .1)
+    assertFEquals(trh._ConvertPLtoQualityProb([10, 0, 10]), .8)
+
+def _getVariantAndSampleFromHarominzer(harmonizer, nvar=1):
+    itr = iter(harmonizer)
+    while nvar > 0:
+        nvar -= 1
+        var = next(itr)
+    samp = next(iter(var))
+    return var, samp
+
+def test_TRRecord_Quality(vcfdir):
+    reset_vcfs(vcfdir)
+
+    gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
+    assert gangstr_trh.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(gangstr_trh)
+    assert var.HasQualityScores()
+    assert var.GetQualityScore(samp) == 0.999912
+
+    gangstr_vcf_noqual = vcf.Reader(
+        filename=os.path.join(vcfdir, "test_gangstr_noqual.vcf")
+    )
+    gangstr_trh_noqual = trh.TRRecordHarmonizer(gangstr_vcf_noqual)
+    assert not gangstr_trh_noqual.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(gangstr_trh_noqual)
+    assert not var.HasQualityScores()
+    with pytest.raises(TypeError):
+        var.GetQualityScore(samp)
+
+    hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
+    assert hipstr_trh.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(hipstr_trh, nvar=18)
+    assert var.HasQualityScores()
+    assert var.GetQualityScore(samp) == 0.93
+
+    popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
+    assert popstr_trh.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(popstr_trh)
+    assert var.HasQualityScores()
+    # test a quality score that has a genotype with a PHRED score of 0 in it
+    assertFEquals(var.GetQualityScore(samp), 0.99996018828)
+    var, samp = _getVariantAndSampleFromHarominzer(popstr_trh)
+    assert var.HasQualityScores()
+    # test a quality score with no genotypes with a PHRED score of 0
+    assertFEquals(var.GetQualityScore(samp), 0.79432823472)
+
+    advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
+    assert advntr_trh.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(advntr_trh)
+    assert var.HasQualityScores()
+    assert var.GetQualityScore(samp) == 0.863
+
+    eh_trh = trh.TRRecordHarmonizer(eh_vcf)
+    assert not eh_trh.HasQualityScore()
+    var, samp = _getVariantAndSampleFromHarominzer(eh_trh)
+    assert not var.HasQualityScores()
+    with pytest.raises(TypeError):
+        var.GetQualityScore(samp)
 
