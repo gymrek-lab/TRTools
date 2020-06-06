@@ -1,5 +1,4 @@
 import os
-import sys
 
 import numpy as np
 import pytest
@@ -13,17 +12,29 @@ import trtools.utils.tr_harmonizer as trh
 
 # Set up dummy class with gt_alleles
 class DummyVCFSample:
-    def __init__(self, gt_alleles, called, sample=''):
+    def __init__(self,
+                 gt_alleles,
+                 called,
+                 sample='',
+                 quality_field=None,
+                 quality_field_val=None):
         self.gt_alleles = gt_alleles
         self.called = called
         self.sample = sample
+        self.formats = {}
+        if quality_field is not None:
+            self.formats[quality_field] = quality_field_val
 
 
 class DummyVCFRecord:
-    def __init__(self):
+    def __init__(self,
+                 quality_field: str = None
+                 ):
         self.samples = []
         self.POS = 42
         self.CHROM = '1984'
+        self.formats = {}
+        self.quality_field = quality_field
 
     def __iadd__(self, other: DummyVCFSample):
         self.samples.append(other)
@@ -65,24 +76,30 @@ def test_TRRecord_print():
     alt = ["DEF", "GHI"]
     motif = "foo"
     ID = "bar"
-    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID)
+    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID, "some_field")
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
 
-    record = trh.TRRecord(dummy_record1, ref, alt, motif, None)
+    record = trh.TRRecord(dummy_record1, ref, alt, motif, None, None)
     assert str(record) == "{}:{} {} {} {},{}".format(dummy_record1.CHROM,
                                                      dummy_record1.POS,
                                                      motif, ref, alt[0],
                                                      alt[1])
 
-    record = trh.TRRecord(dummy_record1, "B", ["E", "H"], motif, ID,
+    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID, None)
+    assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
+                                                  alt[1])
+
+    record = trh.TRRecord(dummy_record1, "B", ["E", "H"], motif, ID, None,
                           full_alleles=(ref, alt))
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
-    record = trh.TRRecord(dummy_record1, ref, None, motif, ID,
+
+    record = trh.TRRecord(dummy_record1, ref, None, motif, ID, None,
                           alt_allele_lengths=[3, 5.5])
     assert str(record) == "{} {} {} n_reps:3,n_reps:5.5".format(ID, motif, ref)
-    record = trh.TRRecord(dummy_record1, None, None, motif, ID,
+
+    record = trh.TRRecord(dummy_record1, None, None, motif, ID, None,
                           ref_allele_length=7,
                           alt_allele_lengths=[3, 5.5])
     assert str(record) == ("{} {} n_reps:7 n_reps:3,n_reps:5.5"
@@ -91,7 +108,7 @@ def test_TRRecord_print():
 
 def test_TRRecord_iter():
     record = trh.TRRecord(dummy_record1, "ACG", ["A", "C", "G", "T"],
-                          "FOO", "BAR")
+                          "FOO", "BAR", "some_field")
     record_iter = iter(record)
     assert next(record_iter) == dummy_sample1
     assert next(record_iter) == dummy_sample2
@@ -106,19 +123,24 @@ def test_TRRecord_allele_lengths():
     # alt alleles
     with pytest.raises(ValueError):
         trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                     "some_field",
                      alt_allele_lengths=[4, 6])
+
     record = trh.TRRecord(dummy_record1, ref_allele, None, motif, ID,
+                          "some_field",
                           alt_allele_lengths=[4, 5.5])
     assert record.alt_alleles == [motif * 4, motif * 5 + "F"]
 
     # ref allele
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
                      ref_allele_length=5)
+
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, None, alt_alleles, motif, ID,
+        trh.TRRecord(dummy_record1, None, alt_alleles, motif, ID, None,
                      ref_allele_length=5)
-    record = trh.TRRecord(dummy_record1, None, None, motif, ID,
+
+    record = trh.TRRecord(dummy_record1, None, None, motif, ID, None,
                           ref_allele_length=5.5, alt_allele_lengths=[4, 5.5])
     assert record.ref_allele == motif * 5 + 'F'
 
@@ -133,7 +155,8 @@ def test_TRRecord_unique_lengths():
             "ACGACGACAACG"
         ],
         "ACG",
-        "ACG-repeat"
+        "ACG-repeat",
+        None
     )
 
     assert record.UniqueLengthGenotypes() == {0, 2}
@@ -162,20 +185,21 @@ def test_TRRecord_full_alleles():
     ID = 'BAR'
 
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, None, None, motif, ID,
+        trh.TRRecord(dummy_record1, None, None, motif, ID, None,
                      full_alleles=(full_ref, full_alts))
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(["CAGCAGCAQQQQQQQQQQQQQQQ"], full_alts))
     with pytest.raises(ValueError):
         bad_alts = [
             "CAGCAGCAQQQQQQQQQQQQQQQ",
             full_alts[1]
         ]
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(ref_allele, bad_alts))
 
     record = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+                          None,
                           full_alleles=(ref_allele, alt_alleles))
 
     assert record.UniqueStringGenotypes() == {0, 1, 2, 5}
@@ -193,7 +217,7 @@ def test_TRRecord_GetGenotypes():
     # Test good example
     ref_allele = "CAGCAGCAG"
     alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "")
+    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
     print(rec)  # To test str function
     true_gts = [[ref_allele, alt_alleles[0]],
                 [alt_alleles[0], alt_alleles[0]],
