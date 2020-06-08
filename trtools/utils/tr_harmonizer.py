@@ -436,7 +436,6 @@ def _ConvertPLtoQualityProb(PL: List[int]) -> float:
     by 1 - sum(probabilities of other genotypes)
     """
 
-    print(PL)
     max_likelihood = min(PL)
     if max_likelihood != 0:
         return _PHREDtoProb(max_likelihood)
