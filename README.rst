@@ -17,6 +17,10 @@ See full documentation and examples at https://trtools.readthedocs.io/en/latest/
 Install
 -------
 
+You can install TRTools with conda::
+
+        conda install -c bioconda trtools
+
 You can obtain TRTools from pip::
 
         pip install --upgrade pip
@@ -24,11 +28,11 @@ You can obtain TRTools from pip::
 
 (Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
 
-Or, to install from source, run the following command from the base directory of the TRTools repo::
+To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
+checkout the branch you're interested in, and run the following command from the base directory of the repo::
 
-	python setup.py install [--prefix=PREFIX]
-
-to install locally, set :code:`--prefix=$HOME` and ensure :code:`$HOME` is on your :code:`PYTHONPATH`.
+        pip install --upgrade pip
+	pip install .
 
 (Note, required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.)
 
