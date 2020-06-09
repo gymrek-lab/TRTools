@@ -48,7 +48,7 @@ Example::
 
 	FILE=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
 	qcSTR \
-  	--vcf ${FILE1} \
+  	--vcf ${FILE} \
   	--out test-qc
 
 where :code:`$REPODIR` points to the root path of this repository.
