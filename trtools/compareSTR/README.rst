@@ -11,7 +11,7 @@ It outputs overall, per-locus, and per-sample concordance information. It option
 
 Usage
 -----
-CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags.
+CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags. CompareSTR only considers the subset of samples shared across two VCF files being compared, based on sample ID in the VCF headers.
 
 To run compareSTR use the following command::
 
