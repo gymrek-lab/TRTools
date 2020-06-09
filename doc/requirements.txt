@@ -1,6 +1,6 @@
 # some old sphinx versions seem not to work
 # so require an up to date version
-sphinx=2.3.1
+sphinx==2.3.1
 
 # include all of trtools's runtime requirements as document
 # building requirements, as autodoc imports all python modules
