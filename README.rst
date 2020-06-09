@@ -1,4 +1,7 @@
 
+.. a location that the doc/index.rst uses for including this file
+.. before_header
+
 .. image:: https://travis-ci.org/gymreklab/TRTools.svg?branch=master
     :target: https://travis-ci.org/gymreklab/TRTools
 
@@ -7,8 +10,14 @@
   :target: https://codecov.io/gh/gymreklab/TRTools
 
 
+.. a location that the doc/index.rst uses for including this file
+.. after_header
+
 TRTools
-============
+=======
+
+.. a location that the doc/index.rst uses for including this file
+.. after_title
 
 TRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
@@ -81,23 +90,33 @@ Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
-* Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-* Create a clean environment with the dependencies in requirements.txt installed.
-* Additionally, install `pytest` and `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ in your environment.
-* Fork the trtools repository. 
-* The `develop` branch contains the latest pre-release codebase. Create a branch off of `develop` titled with the name of your feature.
-* Make your changes. 
-* Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
-* Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
-* :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
-* If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
-* Submit a pull request **to the `develop` branch** of the central repository with a description of what changes you have made.
-* A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
+1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
+#. Create a clean environment with the dependencies in requirements.txt installed.
+#. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ and :code:`sphinx>=3` in your environment.
+#. Fork the trtools repository. 
+#. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
+#. Make your changes. 
+#. Document your changes.
+
+  * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+
+    If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
+
+  * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
+
+    :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
+
+8. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
+
+  * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+
+9. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
+  A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
 ----------
 If you are a trtools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
-please see PUBLISHING.rst.
+please see PUBLISHING.rst in the root of the git repo.
 If you are a community member and would like that to happen, contact us (see below).
 
 Contact Us

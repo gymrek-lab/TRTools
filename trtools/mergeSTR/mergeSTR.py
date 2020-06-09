@@ -386,7 +386,7 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcfs", help="Comma-separated list of VCF files to merge (must be sorted, bgzipped and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
+    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     ### Special merge options ###
     spec_group = parser.add_argument_group("Special merge options")
     spec_group.add_argument("--update-sample-from-file", help="Use file names, rather than sample header names, when merging", action="store_true")

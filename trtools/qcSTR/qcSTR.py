@@ -134,7 +134,7 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
+    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
@@ -154,7 +154,7 @@ def main(args):
     if invcf is None:
         return 1
     if args.vcftype != 'auto':
-        vcftype = trh.VCFTYPES[args.vcftype]
+        vcftype = trh.VcfTypes[args.vcftype]
     else:
         vcftype = trh.InferVCFType(invcf)
 

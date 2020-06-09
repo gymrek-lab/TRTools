@@ -32,8 +32,8 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-'sphinx.ext.napoleon',
-'sphinx.ext.autodoc'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc'
 ]
 
 # Napoleon settings
@@ -55,6 +55,7 @@ autodoc_default_options = {
         'special-member': True,
         'show-inheritance': True,
 }
+# autodoc_typehints = 'description'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
