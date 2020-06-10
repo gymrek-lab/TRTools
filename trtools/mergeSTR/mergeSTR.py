@@ -421,6 +421,10 @@ def main(args):
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
+    # Check if contig ID is set in VCF header for both records
+    if not any([r.CHROM in chroms for r in current_records]):
+        common.WARNING("Error: Input VCF files does not have contig IDs in header. Please reheader VCF file using this command:\n\tbcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
+        return 1
     is_min = mergeutils.GetMinRecords(current_records, chroms)
     done = mergeutils.DoneReading(current_records)
     while not done:
