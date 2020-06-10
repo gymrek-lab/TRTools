@@ -11,6 +11,7 @@ TRTools: a tool for genome-wide tandem repeat analysis
 
    INTRO
    UTILITIES
+   CALLERS
    API
    VIGNETTES
 
