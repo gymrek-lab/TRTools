@@ -307,7 +307,17 @@ def getargs(): # pragma: no cover
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
-    return args 
+    # If no stat selected, print an error message and terminate
+    stat_dict = {}
+    for grp in parser._action_groups:
+        if grp.title == "Stats group":
+            stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
+            
+    if not any(stat_dict.values()):
+        common.WARNING("Error: Please use at least one of the flags in the Stats group")
+        parser.print_help(sys.stderr)
+        return None
+    return args
 
 def main(args):
     if not os.path.exists(args.vcf):
@@ -392,8 +402,11 @@ def main(args):
 
 def run(): # pragma: no cover
     args = getargs()
-    retcode = main(args)
-    sys.exit(retcode)
+    if args == None:
+        sys.exit(1)
+    else:
+        retcode = main(args)
+        sys.exit(retcode)
 
 if __name__ == "__main__": # pragma: no cover
     run()
