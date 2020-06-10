@@ -115,9 +115,7 @@ def test_WrongContigFile(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
-    with pytest.raises(ValueError) as info:
-        main(args)
-    assert "is not in list" in str(info.value)
+    assert main(args) == 1
 
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig4.vcf.gz")
