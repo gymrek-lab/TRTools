@@ -111,7 +111,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
   * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
 9. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
-  A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
+   A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
 ----------

@@ -29,12 +29,13 @@ class Filter_MinLocusCallrate(vcf.filters.Base):
     Attributes
     ----------
     threshold : float
-       Call rate threshold
-    name : str
-       Set to the name of the filter ('CALLRATE')
+       Filters calls with lower than this fraction called
+       Derived from the input min_locus_callrate
     """
 
     name = 'CALLRATE'
+    """The name of the filter"""
+ 
     def __init__(self, min_locus_callrate):
         self.threshold = min_locus_callrate
 
@@ -65,11 +66,11 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
         the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
-    name : str
-       Set to the name of the filter ('HWE')
     """
 
     name = 'HWE'
+    """The name of the filter"""
+
     def __init__(self, min_locus_hwep, vcftype, uselength=False):
         self.threshold = min_locus_hwep
         self.vcftype = vcftype
@@ -106,11 +107,11 @@ class Filter_MinLocusHet(vcf.filters.Base):
         the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
-    name : str
-       Set to the name of the filter ('HETLOW')
     """
 
     name = 'HETLOW'
+    """The name of the filter"""
+
     def __init__(self, min_locus_het, vcftype, uselength=False):
         self.threshold = min_locus_het
         self.vcftype = vcftype
@@ -146,11 +147,11 @@ class Filter_MaxLocusHet(vcf.filters.Base):
         the type of the VCF we're working with
     uselength : bool, optional
        If set to true, consider all alleles with the same length as the same    
-    name : str
-       Set to the name of the filter ('HETHIGHT')
     """
 
     name = 'HETHIGH'
+    """The name of the filter"""
+
     def __init__(self, max_locus_het, vcftype, uselength=False):
         self.threshold = max_locus_het
         self.vcftype = vcftype
@@ -172,14 +173,11 @@ class Filter_LocusHrun(vcf.filters.Base):
     with stretches of T >= 6bp. If PERIOD is not in record.INFO, this class does nothing.
 
     This class extends vcf.filters.Base
-
-    Attributes
-    ----------
-    name : str
-       Set to the name of the filter ('HRUN')
     """
     
     name = 'HRUN'
+    """The name of the filter"""
+
     def __init__(self):
         self.threshold = 0 # e.g. pentamers with hruns of 5+threshold, hexa with 6+threshold
 
@@ -268,14 +266,14 @@ class Reason:
     calls passing the filter, and something besides None for samples
     failing the filter.
 
-    Attributes
-    ----------
-    name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
-        filtered calls.
     """
-    
+
     name = ""
+    """
+    The name of the filter to put in the FORMAT:FILTER field of
+    filtered calls.
+    """
+
     def GetReason(self):
         return self.name
 
@@ -379,11 +377,11 @@ class HipSTRCallFlankIndels(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
-    name : str
-        Set to "HipSTRCallFlankIndels"
     """
     
     name = "HipSTRCallFlankIndels"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -407,11 +405,11 @@ class HipSTRCallStutter(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
-    name : str
-        Set to "HipSTRCallStutter"
     """
     
     name = "HipSTRCallStutter"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -435,11 +433,11 @@ class HipSTRCallMinSuppReads(Reason):
     ----------
     threshold : int
         Minimum number of reads supporting each allele
-    name : str
-        Set to "HipSTRMinSuppReads"
     """
 
     name = "HipSTRMinSuppReads"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -478,11 +476,11 @@ class GangSTRCallExpansionProbHom(Reason):
     ----------
     threshold : float
         Minimum homozygous expansion probability
-    name : str
-        Set to "GangSTRCallExpansionProbHom"
     """
 
     name = "GangSTRCallExpansionProbHom"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -505,11 +503,11 @@ class GangSTRCallExpansionProbHet(Reason):
     ----------
     threshold : float
         Minimum heterozygous expansion probability
-    name : str
-        Set to "GangSTRCallExpansionProbHet"
     """
 
     name = "GangSTRCallExpansionProbHet"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -533,11 +531,11 @@ class GangSTRCallExpansionProbTotal(Reason):
     ----------
     threshold : float
         Minimum expansion probability
-    name : str
-        Set to "GangSTRCallExpansionProbTotal"
     """
 
     name = "GangSTRCallExpansionProbTotal"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):
@@ -550,10 +548,6 @@ class GangSTRCallSpanOnly(Reason):
 
     Extends Reason class. Based on RC field.
 
-    Attributes
-    ----------
-    name : str
-        Set to "GangSTRCallSpanOnly"
     """
     
     name = "GangSTRCallSpanOnly"
@@ -570,13 +564,11 @@ class GangSTRCallSpanBoundOnly(Reason):
 
     Extends Reason class. Based on RC field.
 
-    Attributes
-    ----------
-    name : str
-        Set to "GangSTRCallSpanBoundOnly"
     """
 
     name = "GangSTRCallSpanBoundOnly"
+    """The name of the filter"""
+
     def __init__(self):
         pass
     def __call__(self, sample):
@@ -593,13 +585,11 @@ class GangSTRCallBadCI(Reason):
 
     Extends Reason class. Based on REPCI and REPCN fields.
 
-    Attributes
-    ----------
-    name ; str
-        Set to "GangSTRCallBadCI"
     """
-    
+
     name = "GangSTRCallBadCI"
+    """The name of the filter"""
+
     def __init__(self):
         pass
     def __call__(self, sample):
@@ -636,11 +626,11 @@ class GangSTRCallRequireSupport(Reason):
        Minimum required number of supporting reads
     readlen : int
        Read length used for GangSTR calling. 
-    name : str
-       Set to "GangSTRCallRequireSupport"
     """
     
     name = "GangSTRCallRequireSupport"
+    """The name of the filter"""
+
     def __init__(self, threshold, readlen):
         self.threshold = threshold
         self.readlen = readlen
@@ -700,11 +690,11 @@ class PopSTRCallRequireSupport(Reason):
     ----------
     threshold : int
        Require this many reads supporting each called allele.
-    name : str
-       Set to "PopSTRCallRequireSupport"
     """
     
     name = "PopSTRCallRequireSupport"
+    """The name of the filter"""
+
     def __init__(self, threshold):
         self.threshold = threshold
     def __call__(self, sample):

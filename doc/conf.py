@@ -13,7 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
+import trtools.version
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +22,8 @@ copyright = '2020, Gymreklab'
 author = 'Gymreklab'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+version = trtools.version.version
+release = trtools.version.version
 
 master_doc = 'index'
 
@@ -37,17 +38,7 @@ extensions = [
 ]
 
 # Napoleon settings
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-#napoleon_include_init_with_doc = False
-#napoleon_include_private_with_doc = False
-#napoleon_include_special_with_doc = True
-#napoleon_use_admonition_for_examples = False
-#napoleon_use_admonition_for_notes = False
-#napoleon_use_admonition_for_references = False
-#napoleon_use_ivar = False
-#napoleon_use_param = True
-#napoleon_use_rtype = True
+napoleon_include_private_with_doc = True
 
 autodoc_default_options = {
         'members': True,
@@ -55,7 +46,7 @@ autodoc_default_options = {
         'special-member': True,
         'show-inheritance': True,
 }
-# autodoc_typehints = 'description'
+autodoc_typehints = 'description'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -88,4 +79,5 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# We currently aren't using this feature, so comment it out
+# html_static_path = ['_static']
