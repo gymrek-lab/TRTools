@@ -148,8 +148,20 @@ def getargs():  # pragma: no cover
 
 def main(args):
     if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+        common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
+
+    containing_dir = os.path.split(args.out)[0]
+    if not os.path.exists(containing_dir):
+        common.WARNING("The directory {} which contains the output location does"
+                       " not exist".format(containing_dir))
+        return 1
+
+    if os.path.isdir(args.out):
+        common.WARNING("The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
     if invcf is None:

@@ -23,11 +23,40 @@ Required Parameters:
 * :code:`--out <string>`: Prefix to name output files
 
 
-Optional Parameters:
+Optional Input Filters:
 
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
 * :code:`--period <int>`: Restrict to TRs with this motif length. e.g. to restrict to dinucleotide repeats, use :code:`--period 2`.
+* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+
+Quality Plot Options:
+
+* :code:`--quality`:  These options determine if the plot is stratified, and what 
+  the x-axis represents. The y-axis always measures percentages,
+  The x-axis is always cumulative decreasing. Multiple options can be specified
+  by separating them with commas, no spaces, which will produce a different
+  plot for each option e.g. :code:`per-locus,sample-strat`
+
+  * :code:`per-locus`
+    Compute the call quality at each locus averaged across all samples.
+    Plot the distribution of those loci qualities.
+    (This is the default for > 5 samples)
+  * :code:`sample-strat` 
+    Plot a separate line for each sample of the distribution of loci qualities
+    for that sample.
+    (This is the default for <= 5 samples)
+  * :code:`per-sample`
+    Compute the call quality for each sample averaged across all loci.
+    Plot the distribution of those sample qualities.
+  * :code:`locus-strat` 
+    Plot a separate line for each locus of the distribution of sample qualities
+    at that locus.
+  * :code:`per-call`
+    Plot the distribution of the quality of all calls.
+
+* :code:`--quality-log-scale` 
+  Make the quality plot x-axis logarithmic.
+
 
 Outputs
 -------
