@@ -81,9 +81,9 @@ def CheckLocusFilters(args, vcftype):
         if args.max_locus_het < args.min_locus_het:
             common.WARNING("Cannot have --max-locus-het less than --min-locus-het")
             return False
-    if args.use_length and vcftype not in [trh.VCFTYPES["hipstr"]]:
+    if args.use_length and vcftype not in [trh.VcfTypes["hipstr"]]:
         common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
-    if args.filter_hrun and vcftype not in [trh.VCFTYPES["hipstr"]]:
+    if args.filter_hrun and vcftype not in [trh.VcfTypes["hipstr"]]:
         common.WARNING("--filter-run only relevant to HipSTR files. This filter will have no effect.")
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
@@ -370,7 +370,7 @@ def CheckFilters(invcf, args, vcftype):
        args.hipstr_min_call_DP is not None or \
        args.hipstr_max_call_DP is not None or \
        args.hipstr_min_call_Q is not None:
-        if vcftype != trh.VCFTYPES["hipstr"]:
+        if vcftype != trh.VcfTypes["hipstr"]:
             common.WARNING("HipSTR options can only be applied to HipSTR VCFs")
             return False
         else:
@@ -389,7 +389,7 @@ def CheckFilters(invcf, args, vcftype):
        args.gangstr_filter_badCI or \
        args.gangstr_require_support is not None or \
        args.gangstr_readlen is not None:
-        if vcftype != trh.VCFTYPES["gangstr"]:
+        if vcftype != trh.VcfTypes["gangstr"]:
             common.WARNING("GangSTR options can only be applied to GangSTR VCFs")
             return False
         else:
@@ -402,7 +402,7 @@ def CheckFilters(invcf, args, vcftype):
        args.advntr_min_spanning is not None or \
        args.advntr_min_flanking is not None or \
        args.advntr_min_ML is not None:
-        if vcftype != trh.VCFTYPES["advntr"]:
+        if vcftype != trh.VcfTypes["advntr"]:
             common.WARNING("adVNTR options can only be applied to adVNTR VCFs")
             return False
         else:
@@ -415,7 +415,7 @@ def CheckFilters(invcf, args, vcftype):
        args.eh_min_ADSP is not None or \
        args.eh_min_call_LC is not None or \
        args.eh_max_call_LC is not None:
-        if vcftype != trh.VCFTYPES["eh"]:
+        if vcftype != trh.VcfTypes["eh"]:
             common.WARNING("ExpansionHunter options can only be applied to ExpansionHunter VCFs")
             return False
         else:  # pragma: no cover
@@ -426,7 +426,7 @@ def CheckFilters(invcf, args, vcftype):
     if args.popstr_min_call_DP is not None or \
        args.popstr_max_call_DP is not None or \
        args.popstr_require_support is not None:
-        if vcftype != trh.VCFTYPES["popstr"]:
+        if vcftype != trh.VcfTypes["popstr"]:
             common.WARNING("popSTR options can only be applied to popSTR VCFs")
             return False
         else:
@@ -695,7 +695,7 @@ def BuildCallFilters(args):
         filter_list.append(filters.PopSTRCallRequireSupport(args.popstr_require_support))
     return filter_list
 
-def BuildLocusFilters(args, vcftype: trh.VCFTYPES):
+def BuildLocusFilters(args, vcftype: trh.VcfTypes):
     r"""Build list of locus-level filters to include.
 
     These filters should in general not be tool specific
@@ -745,7 +745,7 @@ def getargs(): # pragma: no cover
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
-    inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VCFTYPES.__members__], type=str, default="auto")
+    inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
 
     # Locus-level filters are not specific to any tool
     locus_group = parser.add_argument_group("Locus-level filters (tool agnostic)")

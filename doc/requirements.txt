@@ -1,0 +1,10 @@
+# the autodoc_typehints configuration option requires sphinx>=3
+# and sphinx 3.0.4 is the latest released version of sphinx according to
+# https://www.sphinx-doc.org/en/master/changes.html
+sphinx==3.0.4
+
+# include all of trtools's runtime requirements as document
+# building requirements, as autodoc imports all python modules
+# in order to build their docs, and this will require the entire
+# runtime environment to be available
+-r ../requirements.txt

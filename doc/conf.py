@@ -13,7 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
+import trtools.version
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +22,8 @@ copyright = '2020, Gymreklab'
 author = 'Gymreklab'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+version = trtools.version.version
+release = trtools.version.version
 
 master_doc = 'index'
 
@@ -32,22 +33,12 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-'sphinx.ext.napoleon',
-'sphinx.ext.autodoc'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc'
 ]
 
 # Napoleon settings
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-#napoleon_include_init_with_doc = False
-#napoleon_include_private_with_doc = False
-#napoleon_include_special_with_doc = True
-#napoleon_use_admonition_for_examples = False
-#napoleon_use_admonition_for_notes = False
-#napoleon_use_admonition_for_references = False
-#napoleon_use_ivar = False
-#napoleon_use_param = True
-#napoleon_use_rtype = True
+napoleon_include_private_with_doc = True
 
 autodoc_default_options = {
         'members': True,
@@ -55,6 +46,7 @@ autodoc_default_options = {
         'special-member': True,
         'show-inheritance': True,
 }
+autodoc_typehints = 'description'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -69,7 +69,7 @@ dummy_record4 += DummyVCFSample(['0'], False, 'S9')
 
 def test_unexpected_vcf_type():
     with pytest.raises(ValueError):
-        trh._UnexpectedTypeError(trh.VCFTYPES.gangstr)  # pylint: disable=W0212
+        trh._UnexpectedTypeError(trh.VcfTypes.gangstr)  # pylint: disable=W0212
 
 
 def test_TRRecord_print():
@@ -491,101 +491,101 @@ def test_trh_init_and_type_infer(vcfdir):
 
     # Test examples with correct preset VCF type
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf, vcftype='gangstr')
-    assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
+    assert gangstr_trh.vcftype == trh.VcfTypes.gangstr
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf,
-                                         vcftype=trh.VCFTYPES.gangstr)
-    assert gangstr_trh.vcftype == trh.VCFTYPES.gangstr
-    assert trh.InferVCFType(gangstr_vcf) == trh.VCFTYPES.gangstr
+                                         vcftype=trh.VcfTypes.gangstr)
+    assert gangstr_trh.vcftype == trh.VcfTypes.gangstr
+    assert trh.InferVCFType(gangstr_vcf) == trh.VcfTypes.gangstr
     assert (not gangstr_trh.MayHaveImpureRepeats()
-            and not trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
+            and not trh.MayHaveImpureRepeats(trh.VcfTypes.gangstr))
     assert (not gangstr_trh.HasLengthRefGenotype()
-            and not trh.HasLengthRefGenotype(trh.VCFTYPES.gangstr))
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.gangstr))
     assert (not gangstr_trh.HasLengthAltGenotypes()
-            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.gangstr))
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.gangstr))
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
-    assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
+    assert hipstr_trh.vcftype == trh.VcfTypes.hipstr
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf,
-                                        vcftype=trh.VCFTYPES.hipstr)
-    assert hipstr_trh.vcftype == trh.VCFTYPES.hipstr
-    assert trh.InferVCFType(hipstr_vcf) == trh.VCFTYPES.hipstr
+                                        vcftype=trh.VcfTypes.hipstr)
+    assert hipstr_trh.vcftype == trh.VcfTypes.hipstr
+    assert trh.InferVCFType(hipstr_vcf) == trh.VcfTypes.hipstr
     assert (hipstr_trh.MayHaveImpureRepeats()
-            and trh.MayHaveImpureRepeats(trh.VCFTYPES.hipstr))
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.hipstr))
     assert (not hipstr_trh.HasLengthRefGenotype()
-            and not trh.HasLengthRefGenotype(trh.VCFTYPES.hipstr))
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.hipstr))
     assert (not hipstr_trh.HasLengthAltGenotypes()
-            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.hipstr))
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
-    assert popstr_trh.vcftype == trh.VCFTYPES.popstr
+    assert popstr_trh.vcftype == trh.VcfTypes.popstr
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf,
-                                        vcftype=trh.VCFTYPES.popstr)
-    assert popstr_trh.vcftype == trh.VCFTYPES.popstr
-    assert trh.InferVCFType(popstr_vcf) == trh.VCFTYPES.popstr
+                                        vcftype=trh.VcfTypes.popstr)
+    assert popstr_trh.vcftype == trh.VcfTypes.popstr
+    assert trh.InferVCFType(popstr_vcf) == trh.VcfTypes.popstr
     assert (popstr_trh.MayHaveImpureRepeats()
-            and trh.MayHaveImpureRepeats(trh.VCFTYPES.popstr))
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.popstr))
     assert (not popstr_trh.HasLengthRefGenotype()
-            and not trh.HasLengthRefGenotype(trh.VCFTYPES.popstr))
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.popstr))
     assert (popstr_trh.HasLengthAltGenotypes()
-            and trh.HasLengthAltGenotypes(trh.VCFTYPES.popstr))
+            and trh.HasLengthAltGenotypes(trh.VcfTypes.popstr))
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf, vcftype='advntr')
-    assert advntr_trh.vcftype == trh.VCFTYPES.advntr
+    assert advntr_trh.vcftype == trh.VcfTypes.advntr
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf,
-                                        vcftype=trh.VCFTYPES.advntr)
-    assert advntr_trh.vcftype == trh.VCFTYPES.advntr
-    assert trh.InferVCFType(advntr_vcf) == trh.VCFTYPES.advntr
+                                        vcftype=trh.VcfTypes.advntr)
+    assert advntr_trh.vcftype == trh.VcfTypes.advntr
+    assert trh.InferVCFType(advntr_vcf) == trh.VcfTypes.advntr
     assert (advntr_trh.MayHaveImpureRepeats()
-            and trh.MayHaveImpureRepeats(trh.VCFTYPES.advntr))
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.advntr))
     assert (not advntr_trh.HasLengthRefGenotype()
-            and not trh.HasLengthRefGenotype(trh.VCFTYPES.advntr))
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.advntr))
     assert (not advntr_trh.HasLengthAltGenotypes()
-            and not trh.HasLengthAltGenotypes(trh.VCFTYPES.advntr))
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.advntr))
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
-    assert eh_trh.vcftype == trh.VCFTYPES.eh
-    eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype=trh.VCFTYPES.eh)
-    assert eh_trh.vcftype == trh.VCFTYPES.eh
-    assert trh.InferVCFType(eh_vcf) == trh.VCFTYPES.eh
+    assert eh_trh.vcftype == trh.VcfTypes.eh
+    eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype=trh.VcfTypes.eh)
+    assert eh_trh.vcftype == trh.VcfTypes.eh
+    assert trh.InferVCFType(eh_vcf) == trh.VcfTypes.eh
     assert (not eh_trh.MayHaveImpureRepeats()
-            and not trh.MayHaveImpureRepeats(trh.VCFTYPES.eh))
+            and not trh.MayHaveImpureRepeats(trh.VcfTypes.eh))
     assert (eh_trh.HasLengthRefGenotype()
-            and trh.HasLengthRefGenotype(trh.VCFTYPES.eh))
+            and trh.HasLengthRefGenotype(trh.VcfTypes.eh))
     assert (eh_trh.HasLengthAltGenotypes()
-            and trh.HasLengthAltGenotypes(trh.VCFTYPES.eh))
+            and trh.HasLengthAltGenotypes(trh.VcfTypes.eh))
 
 
 def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")
-            == trh.HasLengthAltGenotypes(trh.VCFTYPES.gangstr))
+            == trh.HasLengthAltGenotypes(trh.VcfTypes.gangstr))
     assert (trh.HasLengthRefGenotype("gangstr")
-            == trh.HasLengthRefGenotype(trh.VCFTYPES.gangstr))
+            == trh.HasLengthRefGenotype(trh.VcfTypes.gangstr))
     assert (trh.MayHaveImpureRepeats("gangstr")
-            == trh.MayHaveImpureRepeats(trh.VCFTYPES.gangstr))
+            == trh.MayHaveImpureRepeats(trh.VcfTypes.gangstr))
     reset_vcfs(vcfdir)
     assert (trh.HarmonizeRecord("gangstr", next(gangstr_vcf)).GetMaxAllele()
             == len("tctgtctgtctg") / len("tctg"))
-    assert (trh.HarmonizeRecord(trh.VCFTYPES.gangstr,
+    assert (trh.HarmonizeRecord(trh.VcfTypes.gangstr,
                                 next(gangstr_vcf)).GetMaxAllele()
             == len("aaaacaaaacaaaacaaaac") / len("aaaac"))
 
 
 def all_types():
-    for vcftype in trh.VCFTYPES:
+    for vcftype in trh.VcfTypes:
         yield vcftype
     yield "snps"
 
 
 def get_vcf(vcftype):
-    if vcftype == trh.VCFTYPES.gangstr:
+    if vcftype == trh.VcfTypes.gangstr:
         return gangstr_vcf
-    if vcftype == trh.VCFTYPES.hipstr:
+    if vcftype == trh.VcfTypes.hipstr:
         return hipstr_vcf
-    if vcftype == trh.VCFTYPES.popstr:
+    if vcftype == trh.VcfTypes.popstr:
         return popstr_vcf
-    if vcftype == trh.VCFTYPES.advntr:
+    if vcftype == trh.VcfTypes.advntr:
         return advntr_vcf
-    if vcftype == trh.VCFTYPES.eh:
+    if vcftype == trh.VcfTypes.eh:
         return eh_vcf
     if vcftype == "snps":
         return snps_vcf
@@ -596,7 +596,7 @@ def get_vcf(vcftype):
 def test_wrong_vcftype(vcfdir):
     # an iterator that includes both tr caller types
     # and error file types
-    for correct_type in trh.VCFTYPES:
+    for correct_type in trh.VcfTypes:
         reset_vcfs(vcfdir)
         for incorrect_type in all_types():
             if incorrect_type == correct_type:
