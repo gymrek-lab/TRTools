@@ -21,7 +21,7 @@ To run statSTR use the following command::
 Required Parameters: 
 
 * :code:`--vcf <string>`: input the STR VCF file 
-* :code:`--vcftype <string>`: Type of VCF file being processed. Default=:code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcftype <string>`: Type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files. Set to stdout to write to standard output.
 
 Filtering Group parameters: 

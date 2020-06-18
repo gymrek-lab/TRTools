@@ -55,9 +55,10 @@ setup(name=NAME,
                         'numpy',
                         'pandas',
                         'pybedtools',
+                        'pysam',
                         'pyvcf',
-                        'scipy',
-                        'pysam'],
+                        'scikit-learn',
+                        'scipy'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.5',\
                        'License :: OSI Approved :: MIT License',\

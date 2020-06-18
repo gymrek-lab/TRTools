@@ -22,12 +22,10 @@ Required Parameters:
 * :code:`--vcf <string>`: Input VCF file
 * :code:`--out <string>`: Prefix to name output files
 
-Recommended Parameters:
-
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default=:code:'auto'. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 
 Optional Parameters:
 
+* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
 * :code:`--period <int>`: Restrict to TRs with this motif length. e.g. to restrict to dinucleotide repeats, use :code:`--period 2`.
 

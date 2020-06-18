@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=C0411,C0413
 """
 Tool for generating various QC plots for TR callsets
 """
@@ -9,24 +10,24 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # Allow plots to be editable in Adobe Illustrator
-import matplotlib
+import matplotlib  # pylint: disable=C4013
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
 # Imports
 import argparse
-import numpy as np
 import os
-import pandas as pd
 import sys
-import vcf
 
+import numpy as np
+import pandas as pd
+import sklearn
+import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
-
 
 
 def OutputDiffRefHistogram(diffs_from_ref, fname):
