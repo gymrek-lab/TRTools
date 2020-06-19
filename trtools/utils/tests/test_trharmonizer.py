@@ -738,6 +738,7 @@ def test_ConvertPLToQualityProb():
     assertFEquals(trh._ConvertPLtoQualityProb([10]), .1)
     assertFEquals(trh._ConvertPLtoQualityProb([255, 10, 246]), .1)
     assertFEquals(trh._ConvertPLtoQualityProb([10, 0, 10]), .8)
+    assertFEquals(trh._ConvertPLtoQualityProb([0, 1, 1, 1]), 0)
 
 def _getVariantAndSampleFromHarominzer(harmonizer, nvar=1):
     itr = iter(harmonizer)
