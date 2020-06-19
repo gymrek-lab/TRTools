@@ -31,9 +31,9 @@ Optional Input Filters:
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 
 If you wish to run qcSTR on a more complicated subset of the input VCF, we suggest you use
-`bcftools view <http://samtools.github.io/bcftools/bcftools.html#view>`_ to
-filter the input VCF first, and then run qcSTR on the vcf that command
-outputs.
+`dumpSTR` or `bcftools view <http://samtools.github.io/bcftools/bcftools.html#view>`_ to
+filter the input VCF first, and then run qcSTR on the vcf those commands
+outputed.
 
 Quality Plot Options:
 
