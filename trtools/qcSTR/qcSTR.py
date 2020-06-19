@@ -320,8 +320,8 @@ def main(args):
 
     # Load samples
     if args.samples:
-        samplelist = [item.strip() 
-                      for item 
+        samplelist = [item.strip()
+                      for item
                       in open(args.samples, "r").readlines()
                       if item.strip() in invcf.samples]
     else: samplelist = invcf.samples
