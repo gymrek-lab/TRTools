@@ -3,7 +3,7 @@ import glob, os, shutil, sys
 import numpy as np
 import pytest
 
-from ..qcSTR import * 
+from ..qcSTR import *
 from ..qcSTR import _QualityTypes
 
 
@@ -17,6 +17,7 @@ def base_argparse(tmpdir):
     args.numrecords = None
     args.period = None
     args.quality = []
+    args.quality_ignore_no_call = False
     return args
 
 # Just confirm that the method doesn't throw an error
@@ -48,7 +49,7 @@ def test_output_location_is_directory(tmpdir, vcfdir, capsys):
     qcdir = os.path.join(vcfdir, "qc_vcfs")
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(qcdir, "test_popstr.vcf")
-    args.out = str(tmpdir) 
+    args.out = str(tmpdir)
     retcode = main(args)
     assert "is a directory" in capsys.readouterr().err
     assert retcode == 1
@@ -118,7 +119,7 @@ def test_make_single_qual_plots_explicit(tmpdir, vcfdir):
     for qual in _QualityTypes.__members__.values():
         qual = qual.value
         args.quality = [qual]
-        _clear_folder(tmpdir)
+        _clear_folder(str(tmpdir))
         with pytest.warns(UserWarning, match="fabricated"):
             retcode = main(args)
         assert retcode == 0
