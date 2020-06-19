@@ -8,13 +8,14 @@ from ..qcSTR import *
 
 # Set up base argparser
 def base_argparse(tmpdir):
-    args = argparse.ArgumentParser()
+    args = argparse.Namespace()
     args.vcf = None
     args.out = str(tmpdir / "test_qc")
     args.vcftype = "auto"
     args.samples = None
     args.numrecords = None
     args.period = None
+    args.quality = []
     return args
 
 # Just confirm that the method doesn't throw an error
@@ -59,6 +60,33 @@ def test_output_location_is_in_nonexistant_directory(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert "does not exist" in capsys.readouterr().err
     assert retcode == 1
+
+def test_asking_for_qual_plot_fails_when_no_qual_info(tmpdir, vcfdir, capsys):
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+    args.quality = ['per-locus']
+    retcode = main(args)
+    assert "doesn't have quality scores" in capsys.readouterr().err
+    assert retcode == 1
+
+def test_dont_make_qual_plot_when_no_qual_info(tmpdir, vcfdir, capsys):
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+    retcode = main(args)
+    assert not os.path.exists(args.out + "-quality.pdf")
+    assert retcode == 0
+
+def test_make_default_qual_plot_few_samples(tmpdir, vcfdir):
+    pass
+
+def test_make_default_qual_plot_many_samples(tmpdir, vcfdir):
+    pass
+
+def test_make_single_qual_plots_explicit(tmpdir, vcfdir):
+    pass
+
+def test_make_all_qual_plots(tmpdir, vcfdir):
+    pass
 
 def test_main(tmpdir, vcfdir):
     qcdir = os.path.join(vcfdir, "qc_vcfs")
