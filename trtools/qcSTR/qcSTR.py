@@ -20,7 +20,7 @@ import enum
 import os
 import statistics as stat
 import sys
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -148,6 +148,22 @@ def OutputChromCallrate(chrom_calls, fname):
     plt.close()
 
 
+def _OutputQualityHist(
+        data: Union[List[float], Dict[str, List[float]]],
+        fname: str,
+        dist_name: str):
+    nbins = int(1e5)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    print(data)
+    ax.set_xlim(max(data), min(data))
+    ax.hist(data, nbins, density=True, cumulative=-1, histtype='step')
+    ax.set_xlabel("Quality", size=15)
+    ax.set_ylabel("% of {} with at least this quality".format(dist_name), size=15)
+    fig.savefig(fname)
+    plt.close()
+
+
 def OutputQualityPerSample(per_sample_data : List[float], fname: str):
     """Plot quality of calls per sample 
 
@@ -159,19 +175,7 @@ def OutputQualityPerSample(per_sample_data : List[float], fname: str):
     fname :
         Location to save the output plot
     """
-    MAXPOSS = 50 # don't let histogram go beyond this
-    minval = max(-1*MAXPOSS, min(diffs_from_ref))
-    maxval = min(MAXPOSS, max(diffs_from_ref))
-    extremeval = max(abs(minval), abs(maxval))
-    bins = np.arange(-1*extremeval, extremeval, 1)
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.hist(diffs_from_ref, bins=bins, color="black", edgecolor="white", log=True)
-    ax.set_xlabel("Difference from ref (rpt. units)", size=15)
-    ax.set_ylabel("", size=15)
-    fig.savefig(fname)
-    plt.close()
-
+    _OutputQualityHist(per_sample_data, fname, "samples")
 
 
 def OutputQualityPerLocus(per_locus_data: List[float], fname: str):
@@ -185,6 +189,7 @@ def OutputQualityPerLocus(per_locus_data: List[float], fname: str):
     fname :
         Location to save the output plot
     """
+    _OutputQualityHist(per_locus_data, fname, "loci")
 
 
 def OutputQualityPerCall(per_sample_data : List[float], fname: str):
@@ -243,7 +248,8 @@ def getargs():  # pragma: no cover
     quality_group.add_argument(
         "--quality",
         action="append", 
-        choices = _QualityTypes.__members__.values(),
+        choices = [option.value for option in
+                   _QualityTypes.__members__.values()],
         default = [],
         help = (
             "Which quality plot(s) to produce. May be specified more than "
@@ -395,7 +401,7 @@ def main(args):
 
     if _QualityTypes.per_sample.value in args.quality:
         new_per_sample_data = []
-        for sample_data in per_sample_data:
+        for sample_data in per_sample_data.values():
             new_per_sample_data.append(stat.mean(sample_data))
         OutputQualityPerSample(new_per_sample_data,
                                quality_output_loc(_QualityTypes.per_sample.value))
@@ -408,7 +414,7 @@ def main(args):
         new_per_locus_data = []
         for locus_data in per_locus_data:
             new_per_locus_data.append(stat.mean(locus_data))
-        OutputQualityPerLocus(per_locus_data,
+        OutputQualityPerLocus(new_per_locus_data,
                               quality_output_loc(_QualityTypes.per_locus.value))
 
     if _QualityTypes.locus_stratified.value in args.quality:
