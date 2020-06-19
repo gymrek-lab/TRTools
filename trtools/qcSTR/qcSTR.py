@@ -148,27 +148,41 @@ def OutputChromCallrate(chrom_calls, fname):
     plt.close()
 
 
+# from https://stackoverflow.com/a/39729964/2966505
+def _BetterReverseCDF(data: List[float],
+                      ax: matplotlib.axes.Axes):
+    # assumes that axes are already set to (max, min)
+    data = np.sort(data)[::-1]
+    x_axis_max, x_axis_min = ax.get_xlim()
+    data = np.hstack(([x_axis_max], data, [x_axis_min]))
+    ys = (np.hstack((np.arange(0, len(data) - 1), [1])) /
+                     np.float(len(data) - 2))
+    ax.step(data, ys, where='post')
+
+
 def _OutputQualityHist(
         data: Union[List[float], Dict[str, List[float]]],
         fname: str,
         dist_name: str):
     nbins = int(1e5)
+    spacing = 5e-3
     fig = plt.figure()
     ax = fig.add_subplot(111)
     if isinstance(data, list):
-        ax.set_xlim(max(data), min(data))
-        ax.hist(data, nbins, density=True, cumulative=-1, histtype='step')
+        ax.set_xlim(max(data) + spacing, min(data) - spacing)
+        _BetterReverseCDF(data, ax)
     else: # assume dict
         max_val = 0.0
         min_val = 1.0
         for dist in data.values():
             max_val = max(max_val, max(dist))
             min_val = min(min_val, min(dist))
-        ax.set_xlim(max_val, min_val)
+        ax.set_xlim(max_val + spacing, min_val - spacing)
+        names = []
         for name, dist in data.items():
-            ax.hist(dist, nbins, density=True, cumulative=-1, histtype='step',
-                   label=name)
-        ax.legend()
+            _BetterReverseCDF(dist, ax)
+            names.append(name)
+        ax.legend(names)
     ax.set_xlabel("Quality", size=15)
     ax.set_ylabel("% of {} with at least this quality".format(dist_name), size=15)
     fig.savefig(fname)
