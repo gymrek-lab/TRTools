@@ -65,13 +65,12 @@ def GetVCFType(vcfreader, vcftype: Union[str, VcfTypes] = "auto"):
 
 
 def _ToVCFType(vcftype: Union[str, VcfTypes]):
-    """
-    Convert the input to a VCFTYPE object.
+    # Convert the input to a VcfTypes enum.
+    # 
+    # If it is a string, look up the VcfTypes enum.
+    # If it is already a VcfTypes enum, return it.
+    # Otherwise, error
 
-    If it is a string, look up the VCFTYPE object.
-    If it is already a VCFTYPE, return it.
-    Otherwise, error
-    """
     if isinstance(vcftype, str):
         if vcftype not in VcfTypes.__members__:
             raise ValueError(("{} is not an excepted TR vcf type. "
@@ -550,7 +549,7 @@ def _HarmonizeEHRecord(vcfrecord):
 
 
 def _UpperCaseAlleles(alleles):
-    """Convert the list of allele strings to upper case."""
+    #Convert the list of allele strings to upper case
     upper_alleles = []
     for allele in alleles:
         upper_alleles.append(str(allele).upper())

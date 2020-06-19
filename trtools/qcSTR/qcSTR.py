@@ -254,7 +254,7 @@ def OutputQualityLocusStrat(
 
     Parameters
     ----------
-    sample_strat_data: 
+    locus_strat_data: 
         dict from locus ID to a list of the qualities of the calls for that
         locus.
     fname :

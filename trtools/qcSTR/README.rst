@@ -84,7 +84,14 @@ qcSTR outputs the following plots:
   metrics. If you specify the type of quality plot you wish to see with
   the :code:`--quality` option, then instead you will get a file named 
   :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
+  The following are example quality plots:
 
+
+.. image:: images/quality-per-locus.png
+.. image:: images/quality-sample-stratified.png
+.. image:: images/quality-per-sample.png
+.. image:: images/quality-locus-stratified.png
+.. image:: images/quality-per-call.png
 
 Example qcSTR command
 ---------------------
