@@ -1,9 +1,10 @@
 import argparse
-import os, sys
+import glob, os, shutil, sys
 import numpy as np
 import pytest
 
 from ..qcSTR import * 
+from ..qcSTR import _QualityTypes
 
 
 # Set up base argparser
@@ -70,23 +71,94 @@ def test_asking_for_qual_plot_fails_when_no_qual_info(tmpdir, vcfdir, capsys):
     assert retcode == 1
 
 def test_dont_make_qual_plot_when_no_qual_info(tmpdir, vcfdir, capsys):
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
     retcode = main(args)
-    assert not os.path.exists(args.out + "-quality.pdf")
+    assert len(glob.glob(args.out + "*quality*")) == 0
     assert retcode == 0
 
 def test_make_default_qual_plot_few_samples(tmpdir, vcfdir):
-    pass
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "test_popstr.vcf")
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
+    assert retcode == 0
+    assert os.path.exists(args.out + "-quality.pdf")
+    assert len(glob.glob(args.out + "-quality-*")) == 0
 
 def test_make_default_qual_plot_many_samples(tmpdir, vcfdir):
-    pass
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "many_samples.vcf.gz")
+    retcode = main(args)
+    assert retcode == 0
+    assert os.path.exists(args.out + "-quality.pdf")
+    assert len(glob.glob(args.out + "-quality-*")) == 0
+
+
+# From https://stackoverflow.com/a/1073382/2966505
+def _clear_folder(folder):
+    for root, dirs, files in os.walk(folder):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+
 
 def test_make_single_qual_plots_explicit(tmpdir, vcfdir):
-    pass
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    for qual in _QualityTypes.__members__.values():
+        qual = qual.value
+        args.quality = [qual]
+        _clear_folder(tmpdir)
+        with pytest.warns(UserWarning, match="fabricated"):
+            retcode = main(args)
+        assert retcode == 0
+        assert os.path.exists(args.out + "-quality-" + qual + ".pdf")
+        assert len(glob.glob(args.out + "-quality*")) == 1
+
 
 def test_make_all_qual_plots(tmpdir, vcfdir):
-    pass
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    for qual in _QualityTypes.__members__.values():
+        qual = qual.value
+        args.quality.append(qual)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
+    assert retcode == 0
+    assert not os.path.exists(args.out + "-quality.pdf")
+    for qual in _QualityTypes.__members__.values():
+        qual = qual.value
+        assert os.path.exists("{}-quality-{}.pdf".format(args.out, qual))
+
+def test_all_qual_plots_with_ignore_no_call(tmpdir, vcfdir):
+    # check retcode is zero and appropriate files are/are not
+    # created, don't do any checks for content
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    args.quality_ignore_no_call = True
+    for qual in _QualityTypes.__members__.values():
+        qual = qual.value
+        args.quality.append(qual)
+    with pytest.warns(UserWarning, match="fabricated"):
+        retcode = main(args)
+    assert retcode == 0
+    assert not os.path.exists(args.out + "-quality.pdf")
+    for qual in _QualityTypes.__members__.values():
+        qual = qual.value
+        assert os.path.exists("{}-quality-{}.pdf".format(args.out, qual))
+
 
 def test_main(tmpdir, vcfdir):
     qcdir = os.path.join(vcfdir, "qc_vcfs")

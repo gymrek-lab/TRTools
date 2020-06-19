@@ -25,6 +25,8 @@ Required Parameters:
 Optional Input Filters:
 
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
+  Samples in the list that are not included in the input vcf or
+  are misspelled are silently ignored.
 * :code:`--period <int>`: Restrict to TRs with this motif length. e.g. to restrict to dinucleotide repeats, use :code:`--period 2`.
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 
@@ -49,21 +51,23 @@ Quality Plot Options:
     Plot a separate line for each sample of the distribution of loci qualities
     for that sample.
     (This is the default for <= 5 samples)
+    Note: If you specify this for a vcf with many samples,
+    the code may slow to a halt and/or the plot may be cluttered.
   * :code:`per-sample`
     Compute the call quality for each sample averaged across all loci.
     Plot the distribution of those sample qualities.
   * :code:`locus-stratified` 
     Plot a separate line for each locus of the distribution of sample qualities
     at that locus.
+    Note: If you specify this for a vcf with many loci,
+    the code may slow to a halt and/or the plot may be cluttered.
   * :code:`per-call`
     Plot the distribution of the quality of all calls.
 
 * :code:`--quality-ignore-no-call` - by default, (sample, locus) pairs which
   were not called are treated as calls with zero quality for the the quality plot.
-  With this option enabled, instead they are ignored. TODO
-* TODO jagged
-* :code:`--quality-log-scale` 
-  Make the quality plot x-axis logarithmic. TODO
+  With this option enabled, instead they are ignored. This may cause the
+  plotting to crash if it causes some samples/loci to have <= 1 valid call.
 
 
 Outputs
@@ -94,3 +98,8 @@ Example::
 
 where :code:`$REPODIR` points to the root path of this repository.
 
+
+Wishlist
+--------
+A :code:`--quality-log-scale` option to expand the level of differentiation of qualities near 1.
+A :code:`--quality-smooth` option to smooth the quality plots using :code:`sklearn.neighbors.KernelDensity(kernel='gaussian')`

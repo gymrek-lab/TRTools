@@ -155,9 +155,20 @@ def _OutputQualityHist(
     nbins = int(1e5)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    print(data)
-    ax.set_xlim(max(data), min(data))
-    ax.hist(data, nbins, density=True, cumulative=-1, histtype='step')
+    if isinstance(data, list):
+        ax.set_xlim(max(data), min(data))
+        ax.hist(data, nbins, density=True, cumulative=-1, histtype='step')
+    else: # assume dict
+        max_val = 0.0
+        min_val = 1.0
+        for dist in data.values():
+            max_val = max(max_val, max(dist))
+            min_val = min(min_val, min(dist))
+        ax.set_xlim(max_val, min_val)
+        for name, dist in data.items():
+            ax.hist(dist, nbins, density=True, cumulative=-1, histtype='step',
+                   label=name)
+        ax.legend()
     ax.set_xlabel("Quality", size=15)
     ax.set_ylabel("% of {} with at least this quality".format(dist_name), size=15)
     fig.savefig(fname)
@@ -192,7 +203,7 @@ def OutputQualityPerLocus(per_locus_data: List[float], fname: str):
     _OutputQualityHist(per_locus_data, fname, "loci")
 
 
-def OutputQualityPerCall(per_sample_data : List[float], fname: str):
+def OutputQualityPerCall(per_call_data : List[float], fname: str):
     """Plot quality of calls as one distribution,
     irrespective of which sample or locus they came from.
 
@@ -203,6 +214,7 @@ def OutputQualityPerCall(per_sample_data : List[float], fname: str):
     fname :
         Location to save the output plot
     """
+    _OutputQualityHist(per_call_data, fname, "calls")
 
 
 def OutputQualitySampleStrat(
@@ -218,6 +230,7 @@ def OutputQualitySampleStrat(
     fname :
         Location to save the output plot
     """
+    _OutputQualityHist(sample_strat_data, fname, "calls")
 
 
 def OutputQualityLocusStrat(
@@ -233,6 +246,7 @@ def OutputQualityLocusStrat(
     fname :
         Location to save the output plot
     """
+    _OutputQualityHist(locus_strat_data, fname, "calls")
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
@@ -255,6 +269,15 @@ def getargs():  # pragma: no cover
             "Which quality plot(s) to produce. May be specified more than "
             " once. See the README for more info"
         )
+    )
+    quality_group.add_argument(
+        "--quality-ignore-no-call",
+        action="store_true",
+        default=False,
+        help=("Exclude no-calls from quality graph distributions instead of "
+              "the default, which is to include them as zero quality calls. "
+              "Setting this can cause the plotting to crash if it reduces the"
+              " number of valid calls (in a strata) to <= 1")
     )
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
@@ -297,8 +320,12 @@ def main(args):
 
     # Load samples
     if args.samples:
-        samplelist = [item.strip() for item in open(args.samples, "r").readlines()]
+        samplelist = [item.strip() 
+                      for item 
+                      in open(args.samples, "r").readlines()
+                      if item.strip() in invcf.samples]
     else: samplelist = invcf.samples
+
     # Figure out which quality plot to produce by default
     default_quality = False
     if len(args.quality) == 0 and harmonizer.HasQualityScore():
@@ -330,7 +357,7 @@ def main(args):
         for sample in samplelist: 
             sample_strat_data[sample] = []
     if _QualityTypes.locus_stratified.value in args.quality:
-        locus_strat_data = []
+        locus_strat_data = {}
 
     # read the vcf
     numrecords = 0
@@ -350,22 +377,28 @@ def main(args):
         if _QualityTypes.per_locus.value in args.quality:
             per_locus_data.append([])
         if _QualityTypes.locus_stratified.value in args.quality:
-            locus_strat_data.append([])
+            locus_strat_data[trrecord.record_id] = []
 
         # loop over sample data
         for call in record:
-            if not call.called:
-                continue
             s = call.sample
-            try:
-                sample_calls[s] += 1
-            except KeyError:
+            if s not in samplelist:
                 continue
-            num_calls += 1
+            if call.called:
+                sample_calls[s] += 1
+                num_calls += 1
 
             if len(args.quality) == 0:
                 continue
-            quality_score = trrecord.GetQualityScore(call)
+
+            # set non-calls to zero quality
+            if call.called:
+                quality_score = trrecord.GetQualityScore(call)
+            elif args.quality_ignore_no_call:
+                continue
+            else:
+                quality_score = 0
+
             if _QualityTypes.per_sample.value in args.quality:
                 per_sample_data[s].append(quality_score)
             if _QualityTypes.sample_stratified.value in args.quality:
@@ -373,7 +406,7 @@ def main(args):
             if _QualityTypes.per_locus.value in args.quality:
                 per_locus_data[-1].append(quality_score)
             if _QualityTypes.locus_stratified.value in args.quality:
-                locus_strat_data[-1].append(quality_score)
+                locus_strat_data[trrecord.record_id].append(quality_score)
             if _QualityTypes.per_call.value in args.quality:
                 per_call_data.append(quality_score)
 
@@ -387,9 +420,13 @@ def main(args):
 
         numrecords += 1
 
+    print("Producing " + args.out + "-diffref-histogram.pdf ...")
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
+    print("Done. Producing " + args.out + "-diffref-bias.pdf ...")
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
+    print("Done. Producing " + args.out + "-sample-callnum.pdf ...")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
+    print("Done. Producing " + args.out + "-chrom-callnum.pdf ...")
     OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
 
     if default_quality:
@@ -400,6 +437,9 @@ def main(args):
             return args.out+"-quality-{}.pdf".format(quality_value)
 
     if _QualityTypes.per_sample.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_sample.value) +
+              " ...")
         new_per_sample_data = []
         for sample_data in per_sample_data.values():
             new_per_sample_data.append(stat.mean(sample_data))
@@ -407,10 +447,16 @@ def main(args):
                                quality_output_loc(_QualityTypes.per_sample.value))
 
     if _QualityTypes.sample_stratified.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.sample_stratified.value) +
+              " ...")
         OutputQualitySampleStrat(sample_strat_data,
-                               quality_output_loc(_QualityTypes.sample_stratified.value))
+                                 quality_output_loc(_QualityTypes.sample_stratified.value))
 
     if _QualityTypes.per_locus.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_locus.value) +
+              " ...")
         new_per_locus_data = []
         for locus_data in per_locus_data:
             new_per_locus_data.append(stat.mean(locus_data))
@@ -418,13 +464,20 @@ def main(args):
                               quality_output_loc(_QualityTypes.per_locus.value))
 
     if _QualityTypes.locus_stratified.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.locus_stratified.value) +
+              " ...")
         OutputQualityLocusStrat(locus_strat_data,
                                 quality_output_loc(_QualityTypes.locus_stratified.value))
 
     if _QualityTypes.per_call.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_call.value) +
+              " ...")
         OutputQualityPerCall(per_call_data,
                              quality_output_loc(_QualityTypes.per_call.value))
 
+    print("Done.")
     return 0
 
 def run(): # pragma: no cover
