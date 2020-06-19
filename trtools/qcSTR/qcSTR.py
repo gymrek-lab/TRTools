@@ -156,7 +156,7 @@ def _BetterReverseCDF(data: List[float],
     x_axis_max, x_axis_min = ax.get_xlim()
     data = np.hstack(([x_axis_max], data, [x_axis_min]))
     ys = (np.hstack((np.arange(0, len(data) - 1), [1])) /
-                     np.float(len(data) - 2))
+          np.float(len(data) - 2))
     ax.step(data, ys, where='post')
 
 
@@ -164,7 +164,6 @@ def _OutputQualityHist(
         data: Union[List[float], Dict[str, List[float]]],
         fname: str,
         dist_name: str):
-    nbins = int(1e5)
     spacing = 5e-3
     fig = plt.figure()
     ax = fig.add_subplot(111)
