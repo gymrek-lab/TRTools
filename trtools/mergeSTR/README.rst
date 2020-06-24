@@ -18,7 +18,7 @@ MergeSTR takes as input two or more VCF files with TR genotypes and outputs a co
 To run mergeSTR use the following command::
 
 	mergeSTR \
-  	  --vcfs <vcf file1, vcf file2> \
+  	  --vcfs <vcf file1, vcf file2, ...> \
   	  --out test \
   	  [additional options]
 

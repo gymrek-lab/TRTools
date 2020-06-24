@@ -293,7 +293,8 @@ def GetNextRecords(readers, current_records, increment):
         if increment[i]:
             try:
                 new_records.append(next(readers[i]))
-            except: new_records.append(None)
+            except StopIteration: 
+                new_records.append(None)
         else: new_records.append(current_records[i])
     return new_records
 

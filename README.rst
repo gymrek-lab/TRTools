@@ -65,17 +65,22 @@ Supported TR Callers
 --------------------
 TRTools supports VCFs from the following STR/VNTR genotyping tools:
 
-* GangSTR_ version 2.4 or higher.
-* HipSTR_ 
-* PopSTR_
-* ExpansionHunter_
 * AdVNTR_
+* ExpansionHunter_
+* GangSTR_ version 2.4 or higher
+* HipSTR_
+* PopSTR_ version 2 or higher
 
-.. _GangSTR: https://github.com/gymreklab/gangstr
-.. _HipSTR: https://github.com/tfwillems/HipSTR
-.. _PopSTR: https://github.com/DecodeGenetics/popSTR
+..
+    please ensure this list of links remains the same as the one in the main README
+
+.. _AdVNTR: https://advntr.readthedocs.io/en/latest/
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
-.. _AdVNTR: https://github.com/mehrdadbakhtiari/adVNTR
+.. _GangSTR: https://github.com/gymreklab/gangstr
+.. _HipSTR: https://hipstr-tool.github.io/HipSTR/
+.. _PopSTR: https://github.com/DecodeGenetics/popSTR
+
+.. _Contributing:
 
 Contributing
 ------------

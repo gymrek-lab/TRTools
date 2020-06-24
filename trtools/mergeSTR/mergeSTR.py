@@ -409,6 +409,8 @@ def main(args):
         return 1
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
+    # WriteMergedHeader will confirm that the list of contigs is the same for
+    # each vcf, so just pulling it from one here is fine
     chroms = list(contigs)
 
     ### Check inferred type of each is the same
@@ -421,18 +423,17 @@ def main(args):
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
-    # Check if contig ID is set in VCF header for both records
-    if not any([r.CHROM in chroms for r in current_records]):
-        common.WARNING("Error: Input VCF files does not have contig IDs in header. Please reheader VCF file using this command:\n\tbcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
-        return 1
-    is_min = mergeutils.GetMinRecords(current_records, chroms)
+    # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
     while not done:
+        if not all([r.CHROM in chroms for r in current_records]):
+            common.WARNING("Error: Input VCF files does not have contig IDs in header. Please reheader VCF file using this command:\n\tbcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
+            return 1
+        is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         MergeRecords(vcfreaders, current_records, is_min, vcfw, args, useinfo, useformat)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
-        is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
     return 0 
 

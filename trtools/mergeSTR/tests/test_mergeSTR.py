@@ -111,12 +111,28 @@ def test_PopSTRRightFile(args, mrgvcfdir):
     assert main(args)==0
     
 # test VCFs with different ref genome contigs return 1
-def test_WrongContigFile(args, mrgvcfdir):
+def test_RecordChromsNotInContigs(args, mrgvcfdir):
+    #both files have records with chroms not listed in contigs
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
 
+    #first file has records with chroms not listed in contigs
+    #first file contig diff is the first record
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2_1contig.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 1
+
+    #second file has records with chroms not listed in contigs
+    #second file contig diff is not the first record
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1_1contig.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 1
+
+def test_DifferentContigs(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig4.vcf.gz")
     args.vcfs = fname1 + "," + fname2
