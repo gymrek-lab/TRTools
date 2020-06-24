@@ -229,7 +229,7 @@ def DoneReading(records):
     """
     return all([item is None for item in records])
 
-def PrintCurrentRecords(current_records, is_min):
+def DebugPrintRecordLocations(current_records, is_min):
     r"""Debug function to print current records for each file
 
     Parameters
@@ -241,13 +241,8 @@ def PrintCurrentRecords(current_records, is_min):
     """
     info = []
     for i in range(len(is_min)):
-        try:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
-        except:
-            chrom = None
-            pos = None
-            common.WARNING("Missing CHROM and POS in record.")
+        chrom = current_records[i].CHROM
+        pos = current_records[i].POS
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
     common.MSG("\t".join(info)+"\n")
 

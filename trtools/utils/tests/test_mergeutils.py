@@ -32,7 +32,7 @@ def test_PrintCurrentRecords(capsys):
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
     dummy_records.append(DummyRecordNoChrom('chr1', 100, 'CAGCAG', info={'END': 120}))
     
-    mergeutils.PrintCurrentRecords(dummy_records, [True, True])
+    mergeutils.DebugPrintRecordLocations(dummy_records, [True, True])
     captured = capsys.readouterr()
     assert "Missing CHROM and POS in record" in captured.err
 
