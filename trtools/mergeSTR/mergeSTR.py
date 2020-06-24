@@ -108,11 +108,15 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     contigs = readers[0].contigs
     for i in range(1, len(readers)):
         if readers[i].contigs != contigs:
-            raise ValueError("Different contigs found across VCF files. Make sure all files used the same reference")
+            raise ValueError(
+                "Different contigs found across VCF files. Make sure all "
+                "files used the same reference. Consider using this "
+                "command:\n\t"
+                "bcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
-    for r in readers: 
+    for r in readers:
         if "command" in r.metadata:
             vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
@@ -427,7 +431,7 @@ def main(args):
     done = mergeutils.DoneReading(current_records)
     while not done:
         if not all([r.CHROM in chroms for r in current_records if r is not None]):
-            common.WARNING("Error: Input VCF files does not have contig IDs in header. Please reheader VCF file using this command:\n\tbcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
+            common.WARNING("Error: An input VCF file has a record with a CHROM not in its contig list.")
             return 1
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
