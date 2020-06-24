@@ -1,1 +1,1 @@
-.. include:: ../../mergeSTR/README.rst
+.. include:: ../../trtools/mergeSTR/README.rst

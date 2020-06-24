@@ -48,6 +48,14 @@ napoleon_numpy_docstring = True
 #napoleon_use_ivar = False
 #napoleon_use_param = True
 #napoleon_use_rtype = True
+
+autodoc_default_options = {
+        'members': True,
+        'undoc-members': True,
+        'special-member': True,
+        'show-inheritance': True,
+}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -63,6 +71,18 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+
+html_sidebars = {
+    '**' : [
+        'about.html',
+        'navigation.html',
+        'searchbox.html'
+    ]
+}
+html_theme_options = {
+    'fixed_sidebar' : True
+}
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

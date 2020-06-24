@@ -1,7 +1,11 @@
+.. overview_directive
+.. |mergeSTR overview| replace:: MergeSTR merges VCF files from differing TR genotyping tools into a single VCF file.
+.. overview_directive_done
+
 MergeSTR 
 ========
 
-MergeSTR is a tool for merging VCF files from supported TR genotyping tools.
+|mergeSTR overview|
 
 If TR genotyping was performed separately on different samples or batches of samples, mergeSTR can be used to combine the resulting VCFs into one file. This is often necessary for downstream steps such as: computing per-locus statistics, performing per-locus filtering, and association testing.
 

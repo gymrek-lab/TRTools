@@ -1,1 +1,1 @@
-.. include:: ../../compareSTR/README.rst
+.. include:: ../../trtools/compareSTR/README.rst

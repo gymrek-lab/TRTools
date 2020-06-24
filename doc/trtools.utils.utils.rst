@@ -1,7 +1,5 @@
-trtools.utils.utils module
----------------------------
+trtools.utils.utils
+-------------------
 
 .. automodule:: trtools.utils.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
+

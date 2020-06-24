@@ -1,13 +1,20 @@
+.. overview_directive
+.. |compareSTR overview| replace:: CompareSTR compares different TR callsets generated on the same samples against the same reference panel. CompareSTR outputs overall, per-locus, and per-sample concordance information.
+.. overview_directive_done
+
 CompareSTR
 ==========
 
-CompareSTR is a tool for comparing TR callsets. Example use cases include:
+|compareSTR overview|
+
+Example use cases include:
 
 * Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data, to find call errors.
 * Comparing calls for the same tool using different parameter settings to identify differences due to bioinformatic processing.
 * Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR uses matching chromosomes and positions to compare TRs. Therefore, our method is not able to compare TRs if the starting coordinates is changed by TR calling method (e.g., due to phasing with nearby variant).
 
-It outputs overall, per-locus, and per-sample concordance information. It optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and by repeat motif length.
+CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
+
 **Note:** CompareSTR is designed to be used as a QC tool. While it may be able to pick up certail biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
 
 Usage
