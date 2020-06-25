@@ -26,7 +26,7 @@ def MSG(msg, debug=False):
     msg : str
           A descriptive message
     debug : bool, optional
-          Only print the message if debug is True  
+          Only print the message if debug is True
 
     Examples
     --------

@@ -291,7 +291,8 @@ def getargs(): # pragma: no cover
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
-    stat_group = parser.add_argument_group("Stats group")
+    stat_group_name = "Stats group"
+    stat_group = parser.add_argument_group(stat_group_name)
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
@@ -310,7 +311,7 @@ def getargs(): # pragma: no cover
     # If no stat selected, print an error message and terminate
     stat_dict = {}
     for grp in parser._action_groups:
-        if grp.title == "Stats group":
+        if grp.title == stat_group_name:
             stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
 
     if not any(stat_dict.values()):

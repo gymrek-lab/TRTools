@@ -19,22 +19,15 @@ class DummyRecord:
         self.ALTS = alts
         self.INFO = info
 
-def test_PrintCurrentRecords(capsys):
-    # Set up dummy class
-    class DummyRecordNoChrom:
-        def __init__(self, chrom, pos, ref, alts=[], info = {}):
-            self.POS = pos
-            self.REF = ref
-            self.ALTS = alts
-            self.INFO = info
-    # Set up dummy records
+def test_DebugPrintRecordLocations(capsys):
     dummy_records = [] 
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
-    dummy_records.append(DummyRecordNoChrom('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyRecord('chr1', 150, 'CTTCTT', info={'END': 170}))
     
-    mergeutils.DebugPrintRecordLocations(dummy_records, [True, True])
+    mergeutils.DebugPrintRecordLocations(dummy_records, [True, False])
     captured = capsys.readouterr()
-    assert "Missing CHROM and POS in record" in captured.err
+    assert "chr1:100:True" in captured.err
+    assert "chr1:150:False" in captured.err
 
 def test_CheckMin():
     assert mergeutils.CheckMin([True, False]) == False

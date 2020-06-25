@@ -20,7 +20,7 @@ For more information on a caller, please see its website linked below.
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
 
 TRTools can be extended to support other callers that generate standard VCF files.
-We welcome community contributions help support them. If that interests you, please 
+We welcome community contributions help support them. If that interests you, please
 see :ref:`Contributing` for more information.
 
 ..
@@ -31,4 +31,4 @@ see :ref:`Contributing` for more information.
 .. _GangSTR: https://github.com/gymreklab/gangstr
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
- 
+
