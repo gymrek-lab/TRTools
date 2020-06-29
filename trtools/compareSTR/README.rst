@@ -9,15 +9,17 @@ CompareSTR
 
 Example use cases include:
 
-* Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data
-* Comparing calls for the same tool using different parameter settings
-* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR uses matching chromosomes and positions to compare TRs. Therefore, our method is not able to compare TRs if the starting coordinates is changed by TR calling method (e.g., due to phasing with nearby variant).
+* Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data, to find call errors
+* Comparing calls for the same tool using different parameter settings to identify differences due to bioinformatic processing
+* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR uses matching chromosomes and positions to compare TRs. Therefore, our method is not able to compare TRs if the starting coordinates is changed by TR calling method (e.g., due to phasing with a nearby variant)
 
 CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
 
+**Note:** CompareSTR is designed to be used as a QC tool. While it may be able to pick up certail biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+
 Usage
 -----
-CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags.
+CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags. CompareSTR only considers the subset of samples shared across two VCF files being compared, based on sample ID in the VCF headers.
 
 To run compareSTR use the following command::
 

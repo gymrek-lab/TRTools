@@ -32,7 +32,7 @@ INFOFIELDS = {
                ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
-           ("RU", True), ("SVTYPE", True), ("VARID", False)],
+           ("RU", True), ("SVTYPE", False), ("VARID", False)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
     "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
 }
@@ -108,11 +108,15 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     contigs = readers[0].contigs
     for i in range(1, len(readers)):
         if readers[i].contigs != contigs:
-            raise ValueError("Different contigs found across VCF files. Make sure all files used the same reference")
+            raise ValueError(
+                "Different contigs found across VCF files. Make sure all "
+                "files used the same reference. Consider using this "
+                "command:\n\t"
+                "bcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
-    for r in readers: 
+    for r in readers:
         if "command" in r.metadata:
             vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
@@ -409,6 +413,8 @@ def main(args):
         return 1
     if len(vcfreaders) == 0: return 1
     contigs = vcfreaders[0].contigs
+    # WriteMergedHeader will confirm that the list of contigs is the same for
+    # each vcf, so just pulling it from one here is fine
     chroms = list(contigs)
 
     ### Check inferred type of each is the same
@@ -421,14 +427,17 @@ def main(args):
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
-    is_min = mergeutils.GetMinRecords(current_records, chroms)
+    # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
     while not done:
-        if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
+        if not all([r.CHROM in chroms for r in current_records if r is not None]):
+            common.WARNING("Error: An input VCF file has a record with a CHROM not in its contig list.")
+            return 1
+        is_min = mergeutils.GetMinRecords(current_records, chroms)
+        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         MergeRecords(vcfreaders, current_records, is_min, vcfw, args, useinfo, useformat)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
-        is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
     return 0 
 

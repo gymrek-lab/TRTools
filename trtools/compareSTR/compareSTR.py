@@ -439,7 +439,7 @@ def main(args):
     while not done:
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
-        if args.verbose: mergeutils.PrintCurrentRecords(current_records, is_min)
+        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all([is_min]):
             if (current_records[0].CHROM == current_records[1].CHROM and \

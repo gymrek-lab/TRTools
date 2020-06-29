@@ -21,6 +21,7 @@ Table of Contents
 
    VIGNETTES
    UTILITIES
+   CALLERS
    API
    site_indices
 

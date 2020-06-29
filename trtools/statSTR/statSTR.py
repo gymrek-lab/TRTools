@@ -33,12 +33,12 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object 
+    trrecord: trh.TRRecord object
           The record that we are computing the statistic for
     outprefix : str
           Prefix for output file
     samplelists: list of list of str, optional
-          List of lists of the samples that we include when compute the statistic 
+          List of lists of the samples that we include when compute the statistic
     sampleprefixes : list of str, optional
           Prefixes for each sample list to use in legend
     """
@@ -54,7 +54,7 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     min_allele = min(allele_set)-2
     max_allele = max(allele_set)+2
     bins = np.arange(min_allele, max_allele, 1)
-    
+
     fname = outprefix + "-%s-%s.pdf"%(trrecord.vcfrecord.CHROM, trrecord.vcfrecord.POS)
     w = 1.0/(len(samplelists)+0.3)
     fig = plt.figure()
@@ -73,7 +73,7 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
 
 def GetHeader(header, sample_prefixes):
     r"""Return header items for a column
-    
+
     Parameters
     ----------
     header : str
@@ -98,10 +98,10 @@ def GetThresh(trrecord, samplelists=[]):
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object 
+    trrecord: trh.TRRecord object
           The record that we are computing the statistic for
     samplelists: list of list of str
-          List of lists of the samples that we include when compute the statistic 
+          List of lists of the samples that we include when compute the statistic
 
     Returns
     -------
@@ -118,13 +118,13 @@ def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object 
+    trrecord: trh.TRRecord object
           The record that we are computing the statistic for
     samplelist: list of list of str
-          List of lists of the samples that we include when compute the statistic 
+          List of lists of the samples that we include when compute the statistic
     count: bool
           If True, return allele counts rather than allele frequencies
-    uselength: bool 
+    uselength: bool
           Whether we should collapse alleles by length
 
     Returns
@@ -145,7 +145,7 @@ def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
     return allele_freqs_strs
 
 def GetHWEP(trrecord, samplelists=[], uselength=True):
-    r"""Compute Hardy Weinberg p-value 
+    r"""Compute Hardy Weinberg p-value
 
     Tests whether the number of observed heterozygous vs.
     homozygous individuals is different than expected
@@ -159,13 +159,13 @@ def GetHWEP(trrecord, samplelists=[], uselength=True):
     samplelist: list of list of str
           List of list of the samples that we include when compute the statistic
     uselength: bool
-          Whether we should collapse alleles by length 
+          Whether we should collapse alleles by length
 
-    Returns 
+    Returns
     -------
-    p-value: list of float 
-          The two-sided p-value returned by a binomial test (scipy.stats.binom_test) 
-          If the allele frequencies dictionary is invalid, return np.nan 
+    p-value: list of float
+          The two-sided p-value returned by a binomial test (scipy.stats.binom_test)
+          If the allele frequencies dictionary is invalid, return np.nan
           If the genotype alleles not included in frequencies dictionary, return np.nan
           One value returned for each samplelist
     """
@@ -178,10 +178,10 @@ def GetHWEP(trrecord, samplelists=[], uselength=True):
     return pvals
 
 def GetHet(trrecord, samplelists=[], uselength=True):
-    r"""Compute heterozygosity of a locus 
+    r"""Compute heterozygosity of a locus
 
-    Heterozygosity is defined as the probability 
-    that two randomly drawn allele are different. 
+    Heterozygosity is defined as the probability
+    that two randomly drawn allele are different.
 
     Parameters
     ----------
@@ -192,11 +192,11 @@ def GetHet(trrecord, samplelists=[], uselength=True):
     uselength: bool
           Whether we should collapse alleles by length
 
-    Returns 
+    Returns
     -------
     heterozygosity: list of float
           The heterozygosity of the locus. One value for each sample list.
-          If the allele frequencies dictionary is invalid, return np.nan 
+          If the allele frequencies dictionary is invalid, return np.nan
     """
     if len(samplelists) == 0: samplelists.append(None)
     hetvals = []
@@ -208,64 +208,7 @@ def GetHet(trrecord, samplelists=[], uselength=True):
 def GetMean(trrecord, samplelists=[], uselength=True):
     r"""Compute the mean allele length
 
-    Parameters 
-    ----------
-    trrecord: trh.TRRecord object
-          The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of list of the samples that we include when compute the statistic
-
-    Returns 
-    -------
-    mean: list of float 
-          The mean allele length. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan 
-    """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetMean(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
-
-def GetMode(trrecord, samplelists=[]):
-    r"""Compute the mode of the allele frequencies 
-
     Parameters
-    ----------
-    trrecord: trh.TRRecord object
-          The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of the samples that we include when compute the statistic
-
-    Returns 
-    -------
-    mode: list of float 
-	  The mode of the allele frequencies. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan 
-    """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetMode(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
-
-def GetVariance(trrecord, samplelists=[]):
-    r"""Compute the variance of the allele lengths
-
-    Parameters 
-    ----------
-    trrecord: trh.TRRecord object
-          The record that we are computing the statistic for
-    samplelists: list of list of str
-          List of list of the samples that we include when compute the statistic
-
-    Returns 
-    -------
-    variance: list of float 
-          The variance of the allele lengths. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan 
-    """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetVariance(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
-
-def GetNumSamples(trrecord, samplelists=[]):
-    r"""Compute the number of samples 
-
-    Parameters 
     ----------
     trrecord: trh.TRRecord object
           The record that we are computing the statistic for
@@ -274,10 +217,67 @@ def GetNumSamples(trrecord, samplelists=[]):
 
     Returns
     -------
-    numSamples: list of int 
+    mean: list of float
+          The mean allele length. One value for each sample list
+          If the allele frequencies dictionary is invalid, return np.nan
+    """
+    if len(samplelists) == 0: samplelists.append(None)
+    return [utils.GetMean(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
+
+def GetMode(trrecord, samplelists=[]):
+    r"""Compute the mode of the allele frequencies
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of list of str
+          List of the samples that we include when compute the statistic
+
+    Returns
+    -------
+    mode: list of float
+	  The mode of the allele frequencies. One value for each sample list
+          If the allele frequencies dictionary is invalid, return np.nan
+    """
+    if len(samplelists) == 0: samplelists.append(None)
+    return [utils.GetMode(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
+
+def GetVariance(trrecord, samplelists=[]):
+    r"""Compute the variance of the allele lengths
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelists: list of list of str
+          List of list of the samples that we include when compute the statistic
+
+    Returns
+    -------
+    variance: list of float
+          The variance of the allele lengths. One value for each sample list
+          If the allele frequencies dictionary is invalid, return np.nan
+    """
+    if len(samplelists) == 0: samplelists.append(None)
+    return [utils.GetVariance(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
+
+def GetNumSamples(trrecord, samplelists=[]):
+    r"""Compute the number of samples
+
+    Parameters
+    ----------
+    trrecord: trh.TRRecord object
+          The record that we are computing the statistic for
+    samplelist: list of list of str
+          List of list of the samples that we include when compute the statistic
+
+    Returns
+    -------
+    numSamples: list of int
           The number of samples. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan 
-    """ 
+          If the allele frequencies dictionary is invalid, return np.nan
+    """
     if len(samplelists) == 0: samplelists.append(None)
     return [sum(trrecord.GetGenotypeCounts(samplelist=sl).values()) for sl in samplelists]
 
@@ -291,7 +291,8 @@ def getargs(): # pragma: no cover
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
-    stat_group = parser.add_argument_group("Stats group")
+    stat_group_name = "Stats group"
+    stat_group = parser.add_argument_group(stat_group_name)
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
@@ -307,7 +308,17 @@ def getargs(): # pragma: no cover
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
-    return args 
+    # If no stat selected, print an error message and terminate
+    stat_dict = {}
+    for grp in parser._action_groups:
+        if grp.title == stat_group_name:
+            stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
+
+    if not any(stat_dict.values()):
+        common.WARNING("Error: Please use at least one of the flags in the Stats group")
+        parser.print_help(sys.stderr)
+        return None
+    return args
 
 def main(args):
     if not os.path.exists(args.vcf):
@@ -378,7 +389,7 @@ def main(args):
             items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
         if args.het:
             items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.mean: 
+        if args.mean:
             items.extend(GetMean(trrecord, samplelists=sample_lists))
         if args.mode:
             items.extend(GetMode(trrecord, samplelists=sample_lists))
@@ -392,8 +403,11 @@ def main(args):
 
 def run(): # pragma: no cover
     args = getargs()
-    retcode = main(args)
-    sys.exit(retcode)
+    if args == None:
+        sys.exit(1)
+    else:
+        retcode = main(args)
+        sys.exit(retcode)
 
 if __name__ == "__main__": # pragma: no cover
     run()

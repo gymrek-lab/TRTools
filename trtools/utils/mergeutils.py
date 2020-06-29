@@ -21,7 +21,7 @@ def LoadReaders(vcffiles, region=None):
         List of VCF files to merge
     region : str, optional
         Chrom:start-end to restrict to
-    
+
     Returns
     -------
     readers : list of vcf.Reader
@@ -109,7 +109,7 @@ def GetAndCheckVCFType(vcfreaders, vcftype):
         if reader_type == None:
             raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
         types.append(reader_type)
-    if len(set(types)) == 1: 
+    if len(set(types)) == 1:
         return types[0]
     else: raise ValueError("VCF files are of mixed types.")
 
@@ -166,7 +166,7 @@ def GetPos(r):
 
 def CheckPos(record, chrom, pos):
     r"""Check a record is at the specified position
-    
+
     Parameters
     ----------
     r : vcf.Record
@@ -197,7 +197,7 @@ def GetMinRecords(record_list, chroms):
        list of current records from each file being merged
     chroms : list of str
        Ordered list of all chromosomes
-    
+
     Returns
     -------
     checks : list of bool
@@ -220,7 +220,7 @@ def DoneReading(records):
     ----------
     records : list of vcf.Record
        List of records from files to merge
- 
+
     Returns
     -------
     check : list of bool
@@ -229,7 +229,7 @@ def DoneReading(records):
     """
     return all([item is None for item in records])
 
-def PrintCurrentRecords(current_records, is_min):
+def DebugPrintRecordLocations(current_records, is_min):
     r"""Debug function to print current records for each file
 
     Parameters
@@ -241,15 +241,10 @@ def PrintCurrentRecords(current_records, is_min):
     """
     info = []
     for i in range(len(is_min)):
-        try:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
-        except:
-            chrom = None
-            pos = None
-            common.WARNING("Missing CHROM and POS in record.")
+        chrom = current_records[i].CHROM
+        pos = current_records[i].POS
         info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
-    common.MSG("\t".join(info)+"\n")
+    common.MSG("\t".join(info)+"\n", debug=True)
 
 def CheckMin(is_min):
     r"""Check if we're progressing through VCFs
@@ -293,7 +288,8 @@ def GetNextRecords(readers, current_records, increment):
         if increment[i]:
             try:
                 new_records.append(next(readers[i]))
-            except: new_records.append(None)
+            except StopIteration:
+                new_records.append(None)
         else: new_records.append(current_records[i])
     return new_records
 
