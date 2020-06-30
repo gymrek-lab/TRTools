@@ -594,7 +594,10 @@ class GangSTRCallBadCI(Reason):
         pass
     def __call__(self, sample):
         #### If ML estimate outside of CI
-        ml = [int(item) for item in sample["REPCN"]]
+        repcn = sample["REPCN"]
+        if isinstance(repcn, int):
+            repcn = [repcn]
+        ml = [int(item) for item in repcn]
         ci = sample["REPCI"].split(",")
         for i in range(len(ml)):
             ml_est = ml[i]
@@ -643,7 +646,10 @@ class GangSTRCallRequireSupport(Reason):
             flank = dict([(int(item.split(",")[0]), int(item.split(",")[1])) for item in sample["FLNKREADS"].split("|")])
         except:
             flank = {}
-        repcn = [int(item) for item in sample["REPCN"]]
+        repcn = sample["REPCN"]
+        if isinstance(repcn, int):
+            repcn = [repcn]
+        repcn = [int(item) for item in repcn]
         repcn_len = [len(item) for item in sample.gt_bases.split("/")]
         frrcount = int(sample["RC"].split(",")[2])
         for i in range(len(repcn)):
