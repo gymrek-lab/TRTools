@@ -66,7 +66,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
     """
     data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
     data["ref"] = data["ref"].apply(lambda x: int(x/5)*5) # bin by 5bp
-    summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref") # median or mean?
+    summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref")
     summ = summ[summ["count"]>=100] # exclude small counts
     trcounts = np.cumsum(summ["count"])
     trfreqs = trcounts/np.sum(summ["count"])
@@ -75,7 +75,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
     ax.plot(summ["ref"], summ["diff"], marker="o", color="darkblue")
     ax.axhline(y=0, linestyle="dashed", color="gray")
     ax.set_xlabel("Reference length (bp)", size=15)
-    ax.set_ylabel("Median diff from ref (bp)", size=15)
+    ax.set_ylabel("Mean diff from ref (bp)", size=15)
     ax1 = ax.twinx()
     ax1.plot(summ["ref"], trfreqs, color="darkred")
     ax1.set_ylabel("Cumulative fraction of alleles", size=15)
