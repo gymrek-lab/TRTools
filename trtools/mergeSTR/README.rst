@@ -1,5 +1,5 @@
 .. overview_directive
-.. |mergeSTR overview| replace:: MergeSTR merges VCF files from differing TR genotyping tools into a single VCF file.
+.. |mergeSTR overview| replace:: MergeSTR merges multiple VCF files containing TR genotypes into a single VCF file.
 .. overview_directive_done
 
 MergeSTR 
@@ -13,7 +13,7 @@ While other VCF libraries have capabilities to merge VCF files, they do not alwa
 
 Usage 
 -----
-MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines.
+MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be bgzipped, sorted, indexed, and have the appropriate `##contig` header lines. See "Instructions on Compressing and Indexing VCF files" below for commands for preparing tabix-indexed VCF files.
 
 To run mergeSTR use the following command::
 
@@ -88,8 +88,8 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 * Supported INFO fields: END, RU, RC
 * Supported FORMAT fields: DP, SR, FL, ML
 
-Instruction on Compressing and Indexing VCF files
--------------------------------------------------
+Instructions on Compressing and Indexing VCF files
+--------------------------------------------------
 MergeSTR requires the input file to be compressed and indexed. Use the following commands to create compressed and indexed vcf file::
   
   bgzip file.vcf
