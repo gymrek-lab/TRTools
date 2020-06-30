@@ -117,7 +117,7 @@ def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
     #first file has records with chroms not listed in contigs
     #first file contig diff is the first record
@@ -125,7 +125,7 @@ def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2_1contig.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
     #second file has records with chroms not listed in contigs
     #second file contig diff is not the first record
@@ -133,7 +133,7 @@ def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
 def test_DifferentContigs(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
