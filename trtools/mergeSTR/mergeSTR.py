@@ -430,9 +430,13 @@ def main(args):
     # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
     while not done:
-        if not all([r.CHROM in chroms for r in current_records if r is not None]):
-            common.WARNING("Error: An input VCF file has a record with a CHROM not in its contig list.")
-            return 1
+        for r in current_records:
+            if r is None: continue
+            if not r.CHROM in chroms:
+                common.WARNING("Error: chromosome {} not found in the contig list ({})".format(r.CHROM, ",".join(chroms)))
+                common.WARNING("VCF files must contain ##contig header lines for each chromosome.")
+                common.WARNING("You can use bcftools (https://github.com/samtools/bcftools) to add these, e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
+                return 1
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
