@@ -315,8 +315,7 @@ def getargs(): # pragma: no cover
             stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
 
     if not any(stat_dict.values()):
-        common.WARNING("Error: Please use at least one of the flags in the Stats group")
-        parser.print_help(sys.stderr)
+        common.WARNING("Error: Please use at least one of the flags in the Stats group. See statSTR --help for options.")
         return None
     return args
 
