@@ -1,9 +1,11 @@
 import argparse
-import os,sys
+import os
+
 import pytest
 import vcf
 
 from ..dumpSTR import *
+
 
 # Set up base argparser
 @pytest.fixture
@@ -31,7 +33,7 @@ def args(tmpdir):
     args.gangstr_expansion_prob_hom = None
     args.gangstr_expansion_prob_total = None
     args.gangstr_filter_span_only = False
-    args.gangstr_filter_spanbound_only = False 
+    args.gangstr_filter_spanbound_only = False
     args.gangstr_filter_badCI = None
     args.gangstr_require_support = None
     args.gangstr_readlen = None
@@ -331,7 +333,7 @@ def test_InvalidEHOptions(args, vcfdir):
     args.vcf = fname
     args.num_records = 10
     # TODO add once EH is implemented
-""" 
+"""
 
 def test_InvalidPopSTROptions(args, vcfdir):
     fname = os.path.join(vcfdir, "test_popstr.vcf")
@@ -410,12 +412,12 @@ def test_BrokenVCF(args, vcfdir):
     assert main(args)==1
 
 """
-def test_Filters(args, vcfdir): 
+def test_Filters(args, vcfdir):
     fname = os.path.join(vcfdir, "artificial_gangstr.vcf")
     args.vcf = fname
     args.vcftype = "gangstr"
     artificial_vcf = vcf.Reader(filename=args.vcf)
-    
+
     ## Test1: call passes with no filter
     vcfcall = vcf.model._Call # Blank call
     call_filters = []
@@ -425,7 +427,7 @@ def test_Filters(args, vcfdir):
     # Line 1 of artificial vcf
     record1 = next(artificial_vcf)
     call1 = record1.samples[0]
-    
+
     ## Check call1 attributes:
     assert record1.CHROM=='chr1'
     assert record1.POS==3004986
@@ -436,14 +438,14 @@ def test_Filters(args, vcfdir):
     assert call1['QEXP']==[0.0, 5.1188e-05, 0.999949]
     assert call1['RC']=='17,12,0,2'
 
-    ## Test2: call filter: LowCallDepth  
+    ## Test2: call filter: LowCallDepth
     vcfcall = call1
     args = base_argparse()
     args.min_call_DP = 50
     call_filters = BuildCallFilters(args)
     reasons2 = FilterCall(vcfcall, call_filters)
     assert reasons2==['LowCallDepth']
-    
+
     ## Test3: call filter: HighCallDepth
     vcfcall = call1
     args = base_argparse()
@@ -531,8 +533,8 @@ def test_Filters(args, vcfdir):
     assert record3.REF=='tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'
     assert record3.INFO['RU']=='tg'
     assert call3['DP']==20
-    assert call3['RC']=='0,10,0,10'      
- 
+    assert call3['RC']=='0,10,0,10'
+
     ## Test8: call filter: filter span-bound only
     vcfcall = call1
     args = base_argparse()
@@ -548,7 +550,7 @@ def test_Filters(args, vcfdir):
     reasons82 = FilterCall(vcfcall, call_filters)
     assert reasons82==['SpanBoundOnly']
 
-    vcfcall = call3    
+    vcfcall = call3
     args = base_argparse()
     args.filter_spanbound_only = True
     call_filters = BuildCallFilters(args)

@@ -2,10 +2,7 @@
 
 # Editor files
 *.swp
-.pydocstyle
 .mypy_cache/
-.bandit
-.pylintrc
 mypy.ini
 
 # Docs
@@ -19,6 +16,7 @@ mypy.ini
 # Extras
 nohup.out
 *\#*
+twistd.pid
 
 # Testing
 test/common/*.vcf~

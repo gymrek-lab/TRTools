@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=C0411,C0413
 """
 Tool for generating various QC plots for TR callsets
 """
@@ -9,24 +10,42 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # Allow plots to be editable in Adobe Illustrator
-import matplotlib
+import matplotlib  # pylint: disable=C4013
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
 # Imports
 import argparse
-import numpy as np
+import enum
 import os
-import pandas as pd
+import statistics as stat
 import sys
-import vcf
+from typing import Dict, List, Union
 
+import numpy as np
+import pandas as pd
+import sklearn
+import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
+
+class _QualityTypes(enum.Enum):
+    """Different quality graphs that can be made"""
+
+    per_locus = 'per-locus'
+    sample_stratified = 'sample-stratified'
+    per_sample = 'per-sample'
+    locus_stratified = 'locus-stratified'
+    per_call = 'per-call'
+
+    # Don't include the redundant values
+    # in how enums are printed out
+    def __repr__(self):
+        return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
 
 def OutputDiffRefHistogram(diffs_from_ref, fname):
@@ -128,6 +147,120 @@ def OutputChromCallrate(chrom_calls, fname):
     fig.savefig(fname)
     plt.close()
 
+
+# from https://stackoverflow.com/a/39729964/2966505
+def _BetterReverseCDF(data: List[float],
+                      ax: matplotlib.axes.Axes):
+    # assumes that axes are already set to (max, min)
+    data = np.sort(data)[::-1]
+    x_axis_max, x_axis_min = ax.get_xlim()
+    data = np.hstack(([x_axis_max], data, [x_axis_min]))
+    ys = (np.hstack((np.arange(0, len(data) - 1), [1])) /
+          np.float(len(data) - 2))
+    ax.step(data, ys, where='post')
+
+
+def _OutputQualityHist(
+        data: Union[List[float], Dict[str, List[float]]],
+        fname: str,
+        dist_name: str):
+    spacing = 5e-3
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    if isinstance(data, list):
+        ax.set_xlim(max(data) + spacing, min(data) - spacing)
+        _BetterReverseCDF(data, ax)
+    else: # assume dict
+        max_val = 0.0
+        min_val = 1.0
+        for dist in data.values():
+            max_val = max(max_val, max(dist))
+            min_val = min(min_val, min(dist))
+        ax.set_xlim(max_val + spacing, min_val - spacing)
+        names = []
+        for name, dist in data.items():
+            _BetterReverseCDF(dist, ax)
+            names.append(name)
+        ax.legend(names)
+    ax.set_xlabel("Quality", size=15)
+    ax.set_ylabel("% of {} with at least this quality".format(dist_name), size=15)
+    fig.savefig(fname)
+    plt.close()
+
+
+def OutputQualityPerSample(per_sample_data : List[float], fname: str):
+    """Plot quality of calls per sample 
+
+    Parameters
+    ----------
+    per_sample_data: 
+        list of an average quality for each sample, defined as the
+        average of qualities of calls across all loci at that sample
+    fname :
+        Location to save the output plot
+    """
+    _OutputQualityHist(per_sample_data, fname, "samples")
+
+
+def OutputQualityPerLocus(per_locus_data: List[float], fname: str):
+    """Plot quality of calls per locus
+
+    Parameters
+    ----------
+    per_locus_data: 
+        list of an average quality for each locus, defined as the
+        average of qualities of calls across all samples at that locus
+    fname :
+        Location to save the output plot
+    """
+    _OutputQualityHist(per_locus_data, fname, "loci")
+
+
+def OutputQualityPerCall(per_call_data : List[float], fname: str):
+    """Plot quality of calls as one distribution,
+    irrespective of which sample or locus they came from.
+
+    Parameters
+    ----------
+    per_call_data: 
+        List of the qualities of all calls
+    fname :
+        Location to save the output plot
+    """
+    _OutputQualityHist(per_call_data, fname, "calls")
+
+
+def OutputQualitySampleStrat(
+        sample_strat_data: Dict[str, List[float]], 
+        fname: str):
+    """Plot quality of calls, one line for each sample
+
+    Parameters
+    ----------
+    sample_strat_data: 
+        dict from sample name to a list of the qualities of the calls for that
+        sample.
+    fname :
+        Location to save the output plot
+    """
+    _OutputQualityHist(sample_strat_data, fname, "calls")
+
+
+def OutputQualityLocusStrat(
+        locus_strat_data: Dict[str, List[float]],
+        fname: str):
+    """Plot quality of calls, one line for each locus
+
+    Parameters
+    ----------
+    locus_strat_data: 
+        dict from locus ID to a list of the qualities of the calls for that
+        locus.
+    fname :
+        Location to save the output plot
+    """
+    _OutputQualityHist(locus_strat_data, fname, "calls")
+
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(__doc__)
     ### Required arguments ###
@@ -138,6 +271,27 @@ def getargs():  # pragma: no cover
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
+    quality_group = parser.add_argument_group("Quality plot options")
+    quality_group.add_argument(
+        "--quality",
+        action="append", 
+        choices = [option.value for option in
+                   _QualityTypes.__members__.values()],
+        default = [],
+        help = (
+            "Which quality plot(s) to produce. May be specified more than "
+            " once. See the README for more info"
+        )
+    )
+    quality_group.add_argument(
+        "--quality-ignore-no-call",
+        action="store_true",
+        default=False,
+        help=("Exclude no-calls from quality graph distributions instead of "
+              "the default, which is to include them as zero quality calls. "
+              "Setting this can cause the plotting to crash if it reduces the"
+              " number of valid calls (in a strata) to <= 1")
+    )
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
     ver_group = parser.add_argument_group("Version")
@@ -147,22 +301,53 @@ def getargs():  # pragma: no cover
 
 def main(args):
     if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+        common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
+
+    containing_dir = os.path.split(args.out)[0]
+    if not os.path.exists(containing_dir):
+        common.WARNING("The directory {} which contains the output location does"
+                       " not exist".format(containing_dir))
+        return 1
+
+    if os.path.isdir(args.out):
+        common.WARNING("The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
+
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
     if invcf is None:
         return 1
+
     if args.vcftype != 'auto':
-        vcftype = trh.VcfTypes[args.vcftype]
+        harmonizer = trh.TRRecordHarmonizer(invcf, args.vcftype)
     else:
-        vcftype = trh.InferVCFType(invcf)
+        harmonizer = trh.TRRecordHarmonizer(invcf)
+
+    if len(args.quality) > 0 and not harmonizer.HasQualityScore():
+        common.WARNING("Requested a quality plot, but the input vcf doesn't have "
+                       "quality scores!")
+        return 1
 
     # Load samples
     if args.samples:
-        samplelist = [item.strip() for item in open(args.samples, "r").readlines()]
+        samplelist = [item.strip()
+                      for item
+                      in open(args.samples, "r").readlines()
+                      if item.strip() in invcf.samples]
     else: samplelist = invcf.samples
-    
+
+    # Figure out which quality plot to produce by default
+    default_quality = False
+    if len(args.quality) == 0 and harmonizer.HasQualityScore():
+        default_quality = True
+        if len(samplelist) <= 5:
+            args.quality = [_QualityTypes.sample_stratified.value]
+        else:
+            args.quality = [_QualityTypes.per_locus.value]
+
     # Set up data to keep track of
     sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
     contigs = invcf.contigs
@@ -172,24 +357,72 @@ def main(args):
     diffs_from_ref = [] # for each allele call, keep track of diff (bp) from ref
     diffs_from_ref_unit = [] # for each allele call, keep track of diff (units) from ref
     reflens = [] # for each allele call, keep track of reference length (bp)
+    if _QualityTypes.per_locus.value in args.quality:
+        per_locus_data = []
+    if _QualityTypes.per_sample.value in args.quality:
+        per_sample_data = {}
+        for sample in samplelist: 
+            per_sample_data[sample] = []
+    if _QualityTypes.per_call.value in args.quality:
+        per_call_data = []
+    if _QualityTypes.sample_stratified.value in args.quality:
+        sample_strat_data = {}
+        for sample in samplelist: 
+            sample_strat_data[sample] = []
+    if _QualityTypes.locus_stratified.value in args.quality:
+        locus_strat_data = {}
 
+    # read the vcf
     numrecords = 0
-    for record in invcf:
+    for trrecord in harmonizer:
         if args.numrecords is not None and numrecords >= args.numrecords: break
-        chrom = record.CHROM
-        trrecord = trh.HarmonizeRecord(vcftype, record)
         if args.period is not None and len(trrecord.motif) != args.period: continue
+
+        record = trrecord.vcfrecord
+
         # Extract stats
+        chrom = record.CHROM
         rl = len(trrecord.ref_allele)
         allele_counts = trrecord.GetAlleleCounts(uselength=False, samplelist=samplelist)
-        called_samples = [item.sample for item in record if item.called]
+
         # Update data
         num_calls = 0
-        for s in called_samples:
-            try:
+        if _QualityTypes.per_locus.value in args.quality:
+            per_locus_data.append([])
+        if _QualityTypes.locus_stratified.value in args.quality:
+            locus_strat_data[trrecord.record_id] = []
+
+        # loop over sample data
+        for call in record:
+            s = call.sample
+            if s not in samplelist:
+                continue
+            if call.called:
                 sample_calls[s] += 1
                 num_calls += 1
-            except KeyError: pass
+
+            if len(args.quality) == 0:
+                continue
+
+            # set non-calls to zero quality
+            if call.called:
+                quality_score = trrecord.GetQualityScore(call)
+            elif args.quality_ignore_no_call:
+                continue
+            else:
+                quality_score = 0
+
+            if _QualityTypes.per_sample.value in args.quality:
+                per_sample_data[s].append(quality_score)
+            if _QualityTypes.sample_stratified.value in args.quality:
+                sample_strat_data[s].append(quality_score)
+            if _QualityTypes.per_locus.value in args.quality:
+                per_locus_data[-1].append(quality_score)
+            if _QualityTypes.locus_stratified.value in args.quality:
+                locus_strat_data[trrecord.record_id].append(quality_score)
+            if _QualityTypes.per_call.value in args.quality:
+                per_call_data.append(quality_score)
+
         chrom_calls[chrom] = chrom_calls.get(chrom, 0) + num_calls
         for allele in allele_counts.keys():
             allelediff = len(allele)-rl
@@ -197,12 +430,67 @@ def main(args):
             reflens.extend([rl]*count)
             diffs_from_ref.extend([allelediff]*count)
             diffs_from_ref_unit.extend([allelediff/len(trrecord.motif)]*count)
+
         numrecords += 1
 
+    print("Producing " + args.out + "-diffref-histogram.pdf ...")
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
+    print("Done. Producing " + args.out + "-diffref-bias.pdf ...")
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
+    print("Done. Producing " + args.out + "-sample-callnum.pdf ...")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
+    print("Done. Producing " + args.out + "-chrom-callnum.pdf ...")
     OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+
+    if default_quality:
+        def quality_output_loc(quality_value):
+            return args.out+"-quality.pdf"
+    else:
+        def quality_output_loc(quality_value):
+            return args.out+"-quality-{}.pdf".format(quality_value)
+
+    if _QualityTypes.per_sample.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_sample.value) +
+              " ...")
+        new_per_sample_data = []
+        for sample_data in per_sample_data.values():
+            new_per_sample_data.append(stat.mean(sample_data))
+        OutputQualityPerSample(new_per_sample_data,
+                               quality_output_loc(_QualityTypes.per_sample.value))
+
+    if _QualityTypes.sample_stratified.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.sample_stratified.value) +
+              " ...")
+        OutputQualitySampleStrat(sample_strat_data,
+                                 quality_output_loc(_QualityTypes.sample_stratified.value))
+
+    if _QualityTypes.per_locus.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_locus.value) +
+              " ...")
+        new_per_locus_data = []
+        for locus_data in per_locus_data:
+            new_per_locus_data.append(stat.mean(locus_data))
+        OutputQualityPerLocus(new_per_locus_data,
+                              quality_output_loc(_QualityTypes.per_locus.value))
+
+    if _QualityTypes.locus_stratified.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.locus_stratified.value) +
+              " ...")
+        OutputQualityLocusStrat(locus_strat_data,
+                                quality_output_loc(_QualityTypes.locus_stratified.value))
+
+    if _QualityTypes.per_call.value in args.quality:
+        print("Done. Producing " +
+              quality_output_loc(_QualityTypes.per_call.value) +
+              " ...")
+        OutputQualityPerCall(per_call_data,
+                             quality_output_loc(_QualityTypes.per_call.value))
+
+    print("Done.")
     return 0
 
 def run(): # pragma: no cover

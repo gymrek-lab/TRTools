@@ -34,11 +34,6 @@ Required Parameters:
 * :code:`--vcf2 <VCF>`: Second VCF file to compare (must be sorted, bgzipped, and indexed).
 * :code:`--out <string>`: Prefix to name output files
 
-Recommended Parameters:
-
-* :code:`--vcftype1 <string>`: Type of VCF file 1.
-* :code:`--vcftype2 <string>`: Type of VCF file 2.
-
 Filtering Options:
 
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
@@ -58,6 +53,8 @@ Plotting options:
 Other options:
 * :code:`--verbose`: Print helpful debugging info
 * :code:`--noplot`: Don't output any plots. Only produce text output.
+* :code:`--vcftype1 <string>`: Type of VCF file 1.
+* :code:`--vcftype2 <string>`: Type of VCF file 2.
 
 Outputs
 -------
