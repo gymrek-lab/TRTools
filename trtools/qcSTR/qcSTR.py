@@ -67,7 +67,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
     data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
     data["ref"] = data["ref"].apply(lambda x: int(x/5)*5) # bin by 5bp
     summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref") # median or mean?
-    summ = summ[summ["count"]>=25] # exclude small counts
+    summ = summ[summ["count"]>=100] # exclude small counts
     trcounts = np.cumsum(summ["count"])
     trfreqs = trcounts/np.sum(summ["count"])
     fig = plt.figure()
