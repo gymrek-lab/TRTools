@@ -289,10 +289,10 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-    filter_group = parser.add_argument_group("Filtering group")
-    filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
-    filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
+    inp_group = parser.add_argument_group("Optional input arguments")
+    inp_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    inp_group.add_argument("--samples", help="File containing list of samples to include", type=str)
+    inp_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
     quality_group = parser.add_argument_group("Quality plot options")
     quality_group.add_argument(
         "--quality",

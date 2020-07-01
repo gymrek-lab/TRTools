@@ -22,23 +22,46 @@ Required Parameters:
 * :code:`--vcf <string>`: Input VCF file
 * :code:`--out <string>`: Prefix to name output files
 
-Optional Input Filters:
+General Optional Parameters:
 
+* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
   Samples in the list that are not included in the input vcf or
   are misspelled are silently ignored.
 * :code:`--period <int>`: Restrict to TRs with this motif length. e.g. to restrict to dinucleotide repeats, use :code:`--period 2`.
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--version`: Show the version number of the program and exit.
 
 If you wish to run qcSTR on a more complicated subset of the input VCF, we suggest you use
 :code:`dumpSTR` or `bcftools view <http://samtools.github.io/bcftools/bcftools.html#view>`_ to
 filter the input VCF first, and then run qcSTR on the vcf those commands
 outputed.
 
-Quality Plot Options:
+Additional options to customize various plots output by qcSTR are described in the sections "Quality Plot Options" and "Reference Bias Plot Options" below.
+
+Outputs
+-------
+
+qcSTR outputs the following plots:
+
+* :code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
+* :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
+* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of the difference from the reference allele (in number of repeat units) for each allele called. Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. 
+* :code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
+* :code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
+  calls for this vcf. Will not be produced for vcfs which do not have quality
+  metrics. If you specify the type of quality plot you wish to see with
+  the :code:`--quality` option, then instead you will get a file named 
+  :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. 
+  Note, quality score values may not be comparable across different TR genotyping tools.
+  Quality plot options are described below.
+
+Quality Plot Options
+--------------------
+
+These additional options can be used to customize which sets of calls are included in the quality score distribution plots.
 
 * :code:`--quality`:  This option determines if the plot is stratified, and what 
-  distribution the y-axis represents. The x-axis always is the quality score, from one to
+  distribution the y-axis represents. The x-axis is always the quality score, from one to
   zero, and the y-axis is always an increasing CDF. This can be specified multiple
   times to produce multiple plots (e.g. :code:`--quality per-locus --quality
   per-sample`) - each produced plot will have the type appended to its name.
@@ -70,20 +93,6 @@ Quality Plot Options:
   plotting to crash if it causes some samples/loci to have <= 1 valid call.
 
 
-Outputs
--------
-
-qcSTR outputs the following plots:
-
-* :code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
-* :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
-* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of the difference from the reference allele (in number of repeat units) for each allele called. Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. The red line gives the cumulative fraction of TRs below each reference length.
-* :code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality.
-* :code:`<outprefix>-quality.pdf`: plots the distribution of the quality of
-  calls for this vcf. Will not be produced for vcfs which do not have quality
-  metrics. If you specify the type of quality plot you wish to see with
-  the :code:`--quality` option, then instead you will get a file named 
-  :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
   The following are example quality plots:
 
 
@@ -92,6 +101,19 @@ qcSTR outputs the following plots:
 .. image:: images/quality-per-sample.png
 .. image:: images/quality-locus-stratified.png
 .. image:: images/quality-per-call.png
+
+Reference Bias Plot Options
+---------------------------
+
+These additional options can be used to customize reference bias plots.
+
+* :code:`--refbias-binsize <int>`: Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length. Default=5.
+* :code:`--refbias-metric <string>`: Determines which metric to use to summarize the reference bias in each bin. Default=mean. 
+  Must be one of: :code:`mean` or :code:`median`.
+* :code:`--refbias-mingts <int>`: Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length. Default=100.
+* :code:`--refbias-xrange-min <int>`: Exclude points corresponding to TRs with reference length less than this value.
+* :code:`--refbias-xrange-max <int>`: Exclude points corresponding to TRs with reference length greater than this value.
+
 
 Example qcSTR command
 ---------------------
@@ -109,4 +131,5 @@ where :code:`$REPODIR` points to the root path of this repository.
 Wishlist
 --------
 A :code:`--quality-log-scale` option to expand the level of differentiation of qualities near 1.
+
 A :code:`--quality-smooth` option to smooth the quality plots using :code:`sklearn.neighbors.KernelDensity(kernel='gaussian')`
