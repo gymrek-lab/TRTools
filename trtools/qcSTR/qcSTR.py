@@ -116,7 +116,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0,100), \
     ax.plot(summ["ref"], summ["diff"], marker="o", color="darkblue")
     ax.axhline(y=0, linestyle="dashed", color="gray")
     ax.set_xlabel("Reference length (bp)", size=15)
-    ax.set_ylabel("Mean diff from ref (bp)", size=15)
+    ax.set_ylabel("{} diff from ref (bp)".format(metric), size=15)
     ax1 = ax.twinx()
     ax1.plot(summ["ref"], trfreqs, color="darkred")
     ax1.set_ylabel("Cumulative fraction of alleles", size=15)
