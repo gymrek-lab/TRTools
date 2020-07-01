@@ -18,6 +18,11 @@ def base_argparse(tmpdir):
     args.period = None
     args.quality = []
     args.quality_ignore_no_call = False
+    args.refbias_metric = "mean"
+    args.refbias_mingts = 100
+    args.refbias_xrange_min = 0
+    args.refbias_xrange_max = 100
+    args.refbias_binsize = 5
     return args
 
 # Just confirm that the method doesn't throw an error
@@ -32,6 +37,9 @@ def test_OutputDiffRefBias(tmpdir):
     reflens = [1,2,3,4,5,6,7,8,9,10]
     fname = str(tmpdir / "test_bias.pdf") # will be empty because of low count <25
     OutputDiffRefBias(diffs_from_ref, reflens, fname)
+    OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="median")
+    OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
+    OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
 
 # Just confirm that the method doesn't throw an error
 def test_OutPutSampleCallrate(tmpdir):
@@ -62,6 +70,58 @@ def test_output_location_is_in_nonexistant_directory(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert "does not exist" in capsys.readouterr().err
     assert retcode == 1
+
+def test_refbias_options(tmpdir, vcfdir, capsys):
+    qcdir = os.path.join(vcfdir, "qc_vcfs")
+    vcf = os.path.join(qcdir, "test_popstr.vcf")
+
+    # Test metrics
+    args = base_argparse(tmpdir)
+    args.vcf = vcf
+    args.refbias_metric = "median"
+    retcode = main(args)
+    assert retcode == 0
+    args.refbias_metric = "mean"
+    retcode = main(args)
+    assert retcode == 0
+    args.refbias_metric = "cheeseburger"
+    retcode = main(args)
+    assert retcode == 1
+    assert "--refbias-metric must be either" in capsys.readouterr().err
+    
+    # Test mingts
+    args = base_argparse(tmpdir)
+    args.vcf = vcf
+    args.refbias_mingts = 1
+    retcode = main(args)
+    assert retcode == 0
+    args.refbias_mingts = -1
+    retcode = main(args)
+    assert retcode == 1
+    assert "refbias-mingts must be" in capsys.readouterr().err
+    
+    # Test binsize
+    args = base_argparse(tmpdir)
+    args.vcf = vcf
+    args.refbias_binsize = 5
+    retcode = main(args)
+    assert retcode == 0
+    args.refbias_binsize = -1
+    retcode = main(args)
+    assert retcode == 1
+    assert "refbias-binsize must be" in capsys.readouterr().err
+
+    # Test xrange
+    args = base_argparse(tmpdir)
+    args.vcf = vcf
+    args.refbias_xrange_min = 0
+    args.refbias_xrange_max = 80
+    retcode = main(args)
+    assert retcode == 0
+    args.refbias_xrange_min = 100
+    retcode = main(args)
+    assert retcode == 1
+    assert "refbias-xrange" in capsys.readouterr().err
 
 def test_asking_for_qual_plot_fails_when_no_qual_info(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)

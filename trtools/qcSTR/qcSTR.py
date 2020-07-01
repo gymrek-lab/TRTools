@@ -32,7 +32,6 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
-
 class _QualityTypes(enum.Enum):
     """Different quality graphs that can be made"""
 
@@ -71,7 +70,8 @@ def OutputDiffRefHistogram(diffs_from_ref, fname):
     fig.savefig(fname)
     plt.close()
 
-def OutputDiffRefBias(diffs_from_ref, reflens, fname):
+def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0,100), \
+                      mingts=100, metric="mean", binsize=5):
     r"""Plot reflen vs. mean difference from ref bias plot
 
     Parameters
@@ -82,11 +82,33 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
         List of reference allele lengths for each call (in bp)
     fname : str
         Filename of output plot
+    xlim: tuple of int, optional
+        Specify the minimum and maximum x-axis range (in bp)
+    mingts: int, optional
+        Don't plot data points computed based on fewer than 
+        this many genotypes
+    metric: str, optional
+        Which metric to plot on the y-axis value. Must be mean or median
+    binsize: int, optional
+        Size (in bp) of bins on the x-axis.
     """
     data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
-    data["ref"] = data["ref"].apply(lambda x: int(x/5)*5) # bin by 5bp
-    summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref")
-    summ = summ[summ["count"]>=100] # exclude small counts
+    data["ref"] = data["ref"].apply(lambda x: int(x/binsize)*binsize)
+    if metric == "mean":
+        sum_fn = np.mean
+    elif metric == "median":
+        sum_fn = np.median
+    else:
+        common.WARNING("Invalid metric ({}) specified. Skipping reference bias plot".format(metric))
+        return
+    summ = data.groupby("ref", as_index=False).agg({"diff": sum_fn, "count": len}).sort_values("ref")
+    summ = summ[summ["count"]>=mingts] # exclude small counts
+    summ = summ[(summ["ref"]>=xlim[0]) & (summ["ref"]<=xlim[1])] # filter by x range
+    if summ.shape[0] == 0:
+        common.WARNING("No points left to plot in reference bias plot. Skipping")
+        return
+    common.MSG("Plotting ref bias plot with the following data:")
+    common.MSG(summ)
     trcounts = np.cumsum(summ["count"])
     trfreqs = trcounts/np.sum(summ["count"])
     fig = plt.figure()
@@ -292,6 +314,39 @@ def getargs():  # pragma: no cover
               "Setting this can cause the plotting to crash if it reduces the"
               " number of valid calls (in a strata) to <= 1")
     )
+    refbias_group = parser.add_argument_group("Reference bias plot options")
+    refbias_group.add_argument(
+        "--refbias-metric",
+        type=str,
+        default="mean",
+        help=("Which metric to use for the y-axis on "
+              "the reference bias plot. Must be mean or median")
+        )
+    refbias_group.add_argument(
+        "--refbias-mingts",
+        type=int,
+        default=100,
+        help=("Don't plot points in the reference bias plot computed "
+              "based on fewer than this many genotypes")
+    )
+    refbias_group.add_argument(
+        "--refbias-xrange-min",
+        type=int,
+        default=0,
+        help=("Minimum x-axis value (bp) to show on the reference bias plot")
+        )
+    refbias_group.add_argument(
+        "--refbias-xrange-max",
+        type=int,
+        default=100,
+        help=("Maximum x-axis value (bp) to show on the reference bias plot")
+        )
+    refbias_group.add_argument(
+        "--refbias-binsize",
+        type=int,
+        default=5,
+        help=("Size (bp) of x-axis bins for the reference bias plot")
+    )
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
     ver_group = parser.add_argument_group("Version")
@@ -304,7 +359,7 @@ def main(args):
         common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
 
-    containing_dir = os.path.split(args.out)[0]
+    containing_dir = os.path.split(os.path.abspath(args.out))[0]
     if not os.path.exists(containing_dir):
         common.WARNING("The directory {} which contains the output location does"
                        " not exist".format(containing_dir))
@@ -331,6 +386,21 @@ def main(args):
                        "quality scores!")
         return 1
 
+    # Check refbias options
+    if args.refbias_metric not in ["mean","median"]:
+        common.WARNING("--refbias-metric must be either 'mean' or 'median'")
+        return 1
+    if args.refbias_binsize < 1:
+        common.WARNING("--refbias-binsize must be >=1")
+        return 1
+    if args.refbias_mingts < 1:
+        common.WARNING("--refbias-mingts must be >=1")
+        return 1
+    if args.refbias_xrange_min >= args.refbias_xrange_max:
+        common.WARNING("--refbias-xrange-min ({}) cannot be >= --refbias-xrange-max ({})".format(
+            args.refbias_xrange_min, args.refbias_xrange_max))
+        return 1
+
     # Load samples
     if args.samples:
         samplelist = [item.strip()
@@ -352,7 +422,7 @@ def main(args):
     sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
     contigs = invcf.contigs
     if len(contigs) == 0:
-        common.MSG("Warning: no contigs found in VCF file.")
+        common.WARNING("Warning: no contigs found in VCF file.")
     chrom_calls = dict([(chrom, 0) for chrom in contigs]) # chrom->numcalls
     diffs_from_ref = [] # for each allele call, keep track of diff (bp) from ref
     diffs_from_ref_unit = [] # for each allele call, keep track of diff (units) from ref
@@ -436,7 +506,10 @@ def main(args):
     print("Producing " + args.out + "-diffref-histogram.pdf ...")
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
     print("Done. Producing " + args.out + "-diffref-bias.pdf ...")
-    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
+    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf", \
+                      xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
+                      mingts=args.refbias_mingts, metric=args.refbias_metric, \
+                      binsize=args.refbias_binsize)
     print("Done. Producing " + args.out + "-sample-callnum.pdf ...")
     OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
     print("Done. Producing " + args.out + "-chrom-callnum.pdf ...")
