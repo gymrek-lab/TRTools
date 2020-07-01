@@ -10,11 +10,7 @@ import scipy.stats
 import os, sys
 import vcf
 
-if __name__ == "utils" or __package__ is None:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    import common
-else:
-    import trtools.utils.common as common # pragma: no cover
+import trtools.utils.common as common # pragma: no cover
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
     

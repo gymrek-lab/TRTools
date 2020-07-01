@@ -1,0 +1,10 @@
+[BASIC]
+
+function-naming-style=PascalCase
+method-naming-style=PascalCase
+
+[MESSAGES CONTROL]
+
+# not interested in module naming conventions
+disable=C0103
+
