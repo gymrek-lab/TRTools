@@ -24,7 +24,7 @@ To run mergeSTR use the following command::
 
 Required Parameters: 
 
-* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. 
+* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. (See "Instructions on Compressing and Indexing VCF files" below)
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files
 
@@ -56,7 +56,7 @@ If you are testing from source, you can run::
    	--vcfs ${FILE1},${FILE2} \
    	--out test_run
 
-This command should create a file :code:`test_run.vcf` with the merged genotypes.
+This command should create a file :code:`test_run.vcf` with the merged genotypes. See "Additional Examples" below for additional example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Supported VCF fields
 --------------------
@@ -95,4 +95,46 @@ MergeSTR requires the input file to be compressed and indexed. Use the following
   bgzip file.vcf
   tabix -p vcf file.vcf.gz
 
+Additional Examples
+-------------------
 
+Below are additional :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
+
+  # GangSTR
+  FILE1=${REPODIR}/example-files/NA12878_chr21_gangstr.sorted.vcf.gz
+  FILE2=${REPODIR}/example-files/NA12891_chr21_gangstr.sorted.vcf.gz
+  FILE3=${REPODIR}/example-files/NA12892_chr21_gangstr.sorted.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_gangstr --vcftype gangstr # outputs test_merge_gangstr.vcf
+
+  # HipSTR
+  FILE1=${REPODIR}/example-files/NA12878_chr21_hipstr.sorted.vcf.gz
+  FILE2=${REPODIR}/example-files/NA12891_chr21_hipstr.sorted.vcf.gz
+  FILE3=${REPODIR}/example-files/NA12892_chr21_hipstr.sorted.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_hipstr --vcftype hipstr # outputs test_merge_hipstr.vcf
+
+  # ExpansionHunter
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  for sample in NA12878 NA12891 NA12892; do 
+      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o ${sample}_eh_reader.vcf.gz ${REPODIR}/example-files/${sample}_chr21_eh.sorted.vcf.gz
+      tabix -p vcf ${sample}_eh_reader.vcf.gz
+  done
+  FILE1=NA12878_eh_reader.vcf.gz
+  FILE2=NA12891_eh_reader.vcf.gz
+  FILE3=NA12892_eh_reader.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_eh --vcftype eh # outputs test_merge_eh.vcf
+
+  # AdVNTR
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  for sample in 1 2; do
+      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o sample${sample}_advntr_reheader.vcf.gz ${REPODIR}/example-files/sample${sample}_advntr.vcf.gz
+      tabix -p vcf sample${sample}_advntr_reheader.vcf.gz 
+  done
+  FILE1=sample1_advntr_reheader.vcf.gz
+  FILE2=sample2_advntr_reheader.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2} --out test_merge_advntr --vcftype advntr # outputs test_merge_advntr.vcf
+
+  # PopSTR
+  FILE1=${REPODIR}/example-files/NA12878_chr21_popstr.sorted.vcf.gz
+  FILE2=${REPODIR}/example-files/NA12891_chr21_popstr.sorted.vcf.gz
+  FILE3=${REPODIR}/example-files/NA12892_chr21_popstr.sorted.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_popstr --vcftype popstr # outputs test_merge_popstr.vcf

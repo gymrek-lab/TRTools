@@ -159,7 +159,7 @@ def GetRefAllele(current_records, mergelist):
     Returns
     -------
     ref : str
-       Reference allele string
+       Reference allele string. Set to None if conflicting references are found.
     """
     refs = []
     chrom = ""
@@ -170,7 +170,7 @@ def GetRefAllele(current_records, mergelist):
             pos = current_records[i].POS
             refs.append(current_records[i].REF.upper())
     if len(set(refs)) != 1:
-        raise ValueError("Conflicting refs found at %s:%s"%(chrom, pos))
+        return None
     return refs[0]
 
 def GetAltAlleles(current_records, mergelist):
@@ -353,11 +353,16 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, usefo
     output_items = []
     use_ind = [i for i in range(len(mergelist)) if mergelist[i]]
     if len(use_ind)==0: return
+    chrom = current_records[use_ind[0]].CHROM
+    pos = current_records[use_ind[0]].POS
     alt_alleles = GetAltAlleles(current_records, mergelist)
     ref_allele = GetRefAllele(current_records, mergelist)
+    if ref_allele is None:
+        common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
+        return
     # Set common fields
-    output_items.append(current_records[use_ind[0]].CHROM) # CHROM
-    output_items.append(str(current_records[use_ind[0]].POS)) # POS
+    output_items.append(chrom) # CHROM
+    output_items.append(str(pos)) # POS
     output_items.append(GetID(current_records[use_ind[0]].ID)) # ID
     output_items.append(ref_allele) # REF
     if len(alt_alleles) == 0:
@@ -423,7 +428,9 @@ def main(args):
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
     useinfo, useformat = WriteMergedHeader(vcfw, args, vcfreaders, " ".join(sys.argv), vcftype)
-    if useinfo is None or useformat is None: return 1
+    if useinfo is None or useformat is None:
+        common.WARNING("Error writing merged header. Quitting")
+        return 1
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
