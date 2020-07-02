@@ -126,7 +126,7 @@ Below are additional :code:`dumpSTR` examples using VCFs from supported TR genot
   dumpSTR --vcf ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz --out test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered
 
   # AdVNTR
-  dumpSTR --vcf ${REPODIR}/example-files/sample1_advntr.vcf.gz --out test_dumpstr_advntr
+  dumpSTR --vcf ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out test_dumpstr_advntr
 
   # PopSTR
   dumpSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100

@@ -126,7 +126,7 @@ Below are additional :code:`qcSTR` examples using VCFs from supported TR genotyp
   qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
 
   # AdVNTR
-  qcSTR --vcf ${REPODIR}/example-files/sample1_advntr.vcf.gz --out test_qc_advntr
+  qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
 
   # PopSTR
   qcSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out test_qc_popstr

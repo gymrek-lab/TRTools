@@ -94,7 +94,7 @@ Below are additional :code:`statSTR` examples using VCFs from supported TR genot
   statSTR --vcf ${REPODIR}/example-files/NA12891_chr21_eh.sorted.vcf.gz --out stdout --numcalled
 
   # AdVNTR
-  statSTR --vcf ${REPODIR}/example-files/sample1_advntr.vcf.gz --out stdout --afreq
+  statSTR --vcf ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
 
   # PopSTR
   statSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out stdout --mean --samples example-files/ex-samples.txt

@@ -128,9 +128,9 @@ Below are additional :code:`compareSTR` examples using VCFs from supported TR ge
 
   # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
   # Note, you first need to reheader files to add required contig lines to VCF headers
-  bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o sample1_advntr_reheader.vcf.gz ${REPODIR}/example-files/sample1_advntr.vcf.gz
-  tabix -p vcf sample1_advntr_reheader.vcf.gz 
-  FILE1=sample1_advntr_reheader.vcf.gz
+  bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz
+  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
+  FILE1=NA12878_advntr_reheader.vcf.gz
   compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
 
   # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
