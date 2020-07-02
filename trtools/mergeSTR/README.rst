@@ -115,23 +115,24 @@ Below are additional :code:`mergeSTR` examples using VCFs from supported TR geno
   # ExpansionHunter
   # Note, you first need to reheader files to add required contig lines to VCF headers
   for sample in NA12878 NA12891 NA12892; do 
-      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o ${sample}_eh_reader.vcf.gz ${REPODIR}/example-files/${sample}_chr21_eh.sorted.vcf.gz
-      tabix -p vcf ${sample}_eh_reader.vcf.gz
+      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o ${sample}_eh_reheader.vcf.gz ${REPODIR}/example-files/${sample}_chr21_eh.sorted.vcf.gz
+      tabix -p vcf ${sample}_eh_reheader.vcf.gz
   done
-  FILE1=NA12878_eh_reader.vcf.gz
-  FILE2=NA12891_eh_reader.vcf.gz
-  FILE3=NA12892_eh_reader.vcf.gz
+  FILE1=NA12878_eh_reheader.vcf.gz
+  FILE2=NA12891_eh_reheader.vcf.gz
+  FILE3=NA12892_eh_reheader.vcf.gz
   mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_eh --vcftype eh # outputs test_merge_eh.vcf
 
   # AdVNTR
   # Note, you first need to reheader files to add required contig lines to VCF headers
-  for sample in 1 2; do
-      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o sample${sample}_advntr_reheader.vcf.gz ${REPODIR}/example-files/sample${sample}_advntr.vcf.gz
-      tabix -p vcf sample${sample}_advntr_reheader.vcf.gz 
+  for sample in NA12878 NA12891 NA12892; do
+      bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o ${sample}_advntr_reheader.vcf.gz ${REPODIR}/example-files/${sample}_chr21_advntr.sorted.vcf.gz
+      tabix -p vcf ${sample}_advntr_reheader.vcf.gz
   done
-  FILE1=sample1_advntr_reheader.vcf.gz
-  FILE2=sample2_advntr_reheader.vcf.gz
-  mergeSTR --vcfs ${FILE1},${FILE2} --out test_merge_advntr --vcftype advntr # outputs test_merge_advntr.vcf
+  FILE1=NA12878_advntr_reheader.vcf.gz
+  FILE2=NA12891_advntr_reheader.vcf.gz
+  FILE3=NA12892_advntr_reheader.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_advntr --vcftype advntr --update-sample-from-file # outputs test_merge_advntr.vcf
 
   # PopSTR
   FILE1=${REPODIR}/example-files/NA12878_chr21_popstr.sorted.vcf.gz

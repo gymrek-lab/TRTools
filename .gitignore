@@ -116,3 +116,15 @@ test_qc_popstr-diffref-bias.pdf
 test_qc_popstr-diffref-histogram.pdf
 test_qc_popstr-quality.pdf
 test_qc_popstr-sample-callnum.pdf
+NA12878_advntr_reheader.vcf.gz
+NA12878_advntr_reheader.vcf.gz.tbi
+NA12878_eh_reheader.vcf.gz
+NA12878_eh_reheader.vcf.gz.tbi
+NA12891_advntr_reheader.vcf.gz
+NA12891_advntr_reheader.vcf.gz.tbi
+NA12891_eh_reheader.vcf.gz
+NA12891_eh_reheader.vcf.gz.tbi
+NA12892_advntr_reheader.vcf.gz
+NA12892_advntr_reheader.vcf.gz.tbi
+NA12892_eh_reheader.vcf.gz
+NA12892_eh_reheader.vcf.gz.tbi
