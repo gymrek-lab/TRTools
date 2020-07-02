@@ -818,7 +818,7 @@ def main(args):
     if invcf is None:
         return 1
     # Set up record harmonizer and infer VCF type
-    vcftype = trh.InferVCFType(invcf)
+    vcftype = trh.InferVCFType(invcf, args.vcftype)
 
     # Check filters all make sense
     if not CheckFilters(invcf, args, vcftype): return 1

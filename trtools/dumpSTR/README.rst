@@ -28,6 +28,8 @@ DumpSTR will output a new VCF file named :code:`$out.vcf`, a sample log file :co
 
 Specific filters available are described below.
 
+See "Additional Examples" below for additional example dumpSTR commands for different supported TR genotypers based on example data files in this repository.
+
 Filter options
 --------------
 
@@ -109,3 +111,23 @@ DumpSTR outputs the following files:
 * :code:`$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample.
 * :code:`$out.loclog.tab`: Output locus-level log info. It contains the mean call rate at passing TR loci. It also contains a separate line for each filter with the number of TR loci failing that filter.
 
+Additional Examples
+-------------------
+
+Below are additional :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
+
+  # GangSTR
+  dumpSTR --vcf ${REPODIR}/example-files/trio_chr21_gangstr.sorted.vcf.gz --out test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10
+
+  # HipSTR
+  dumpSTR --vcf ${REPODIR}/example-files/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out test_dumpstr_hipstr --filter-hrun --num-records 10
+
+  # ExpansionHunter
+  dumpSTR --vcf ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz --out test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered
+
+  # AdVNTR
+  dumpSTR --vcf ${REPODIR}/example-files/sample1_advntr.vcf.gz --out test_dumpstr_advntr
+
+  # PopSTR
+  dumpSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100
+  
