@@ -43,17 +43,29 @@ Outputs
 
 qcSTR outputs the following plots:
 
-* :code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
-* :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
-* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of, for each allele called, the difference between its length and the length of the reference at that locus (measured in number of repeat units). Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem.
-* :code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
-* :code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
-  calls for this vcf. Will not be produced for vcfs which do not have quality
-  metrics. If you specify the type of quality plot you wish to see with
-  the :code:`--quality` option, then instead you will get a file named
-  :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
-  Note, quality score values may not be comparable across different TR genotyping tools.
-  Quality plot options are described below.
+:code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
+
+.. image:: images/sample-callnum.png
+
+:code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
+
+.. image:: images/chrom-callnum.png
+
+:code:`<outprefix>-diffref-histogram.pdf`: a histogram of, for each allele called, the difference between its length and the length of the reference at that locus (measured in number of repeat units). Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem.
+
+.. image:: images/diffref-histogram.png
+
+:code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
+
+.. image:: images/diffref-bias.png
+
+:code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
+calls for this vcf. Will not be produced for vcfs which do not have quality
+metrics. If you specify the type of quality plot you wish to see with
+the :code:`--quality` option, then instead you will get a file named
+:code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
+Note, quality score values may not be comparable across different TR genotyping tools.
+Quality plot examples options are shown below.
 
 Quality Plot Options
 --------------------
