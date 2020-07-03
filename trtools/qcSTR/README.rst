@@ -24,19 +24,19 @@ Required Parameters:
 
 General Optional Parameters:
 
-* :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
   Samples in the list that are not included in the input vcf or
   are misspelled are silently ignored.
 * :code:`--period <int>`: Restrict to TRs with this motif length. e.g. to restrict to dinucleotide repeats, use :code:`--period 2`.
-* :code:`--version`: Show the version number of the program and exit.
+* :code:`--version`: Show the version number of qcSTR and exit.
 
 If you wish to run qcSTR on a more complicated subset of the input VCF, we suggest you use
 :code:`dumpSTR` or `bcftools view <http://samtools.github.io/bcftools/bcftools.html#view>`_ to
 filter the input VCF first, and then run qcSTR on the vcf those commands
 outputed.
 
-Additional options to customize various plots output by qcSTR are described in the sections "Quality Plot Options" and "Reference Bias Plot Options" below.
+Additional options to customize various plots output by qcSTR are described in the sections `Quality Plot Options`_ and `Reference Bias Plot Options`_ below.
 
 Outputs
 -------
@@ -45,7 +45,7 @@ qcSTR outputs the following plots:
 
 * :code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
 * :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
-* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of the difference from the reference allele (in number of repeat units) for each allele called. Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. 
+* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of, for each allele called, the difference between its length and the length of the reference at that locus (measured in number of repeat units). Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. 
 * :code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
 * :code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
   calls for this vcf. Will not be produced for vcfs which do not have quality
@@ -58,7 +58,7 @@ qcSTR outputs the following plots:
 Quality Plot Options
 --------------------
 
-These additional options can be used to customize which sets of calls are included in the quality score distribution plots.
+These additional options can be used to customize quality score distribution plots.
 
 * :code:`--quality`:  This option determines if the plot is stratified, and what 
   distribution the y-axis represents. The x-axis is always the quality score, from one to
@@ -96,11 +96,31 @@ These additional options can be used to customize which sets of calls are includ
   The following are example quality plots:
 
 
+per-locus
+^^^^^^^^^
+
 .. image:: images/quality-per-locus.png
+
+sample-stratified
+^^^^^^^^^^^^^^^^^
+
 .. image:: images/quality-sample-stratified.png
+
+per-sample
+^^^^^^^^^^
+
 .. image:: images/quality-per-sample.png
+
+locus-stratified
+^^^^^^^^^^^^^^^^
+
 .. image:: images/quality-locus-stratified.png
+
+per-call
+^^^^^^^^
+
 .. image:: images/quality-per-call.png
+
 
 Reference Bias Plot Options
 ---------------------------
@@ -127,9 +147,3 @@ Example::
 
 where :code:`$REPODIR` points to the root path of this repository.
 
-
-Wishlist
---------
-A :code:`--quality-log-scale` option to expand the level of differentiation of qualities near 1.
-
-A :code:`--quality-smooth` option to smooth the quality plots using :code:`sklearn.neighbors.KernelDensity(kernel='gaussian')`

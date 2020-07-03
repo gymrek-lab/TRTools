@@ -139,6 +139,7 @@ def test_dont_make_qual_plot_when_no_qual_info(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert len(glob.glob(args.out + "*quality*")) == 0
     assert retcode == 0
+    assert "skipping all quality plots" in capsys.readouterr().out
 
 def test_make_default_qual_plot_few_samples(tmpdir, vcfdir):
     # check retcode is zero and appropriate files are/are not
@@ -219,6 +220,59 @@ def test_all_qual_plots_with_ignore_no_call(tmpdir, vcfdir):
     for qual in _QualityTypes.__members__.values():
         qual = qual.value
         assert os.path.exists("{}-quality-{}.pdf".format(args.out, qual))
+
+
+def test_output_all_files(tmpdir, vcfdir, capsys):
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "many_samples_multiple_chroms.vcf.gz")
+    retcode = main(args)
+    assert retcode == 0
+    stdout = capsys.readouterr().out
+    for suffix in ["-sample-callnum",
+                   "-chrom-callnum",
+                   "-diffref-histogram",
+                   "-diffref-bias",
+                   "-quality"]:
+        outfile = str(tmpdir / "test_qc") + suffix + ".pdf"
+        assert "Producing " + outfile in stdout
+        assert os.path.exists(outfile)
+
+
+def test_omit_callnum_one_chrom(tmpdir, vcfdir, capsys):
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "many_samples.vcf.gz")
+    retcode = main(args)
+    assert retcode == 0
+    stdout = capsys.readouterr().out
+    for suffix in ["-sample-callnum",
+                   "-diffref-histogram",
+                   "-diffref-bias",
+                   "-quality"]:
+        outfile = str(tmpdir / "test_qc") + suffix + ".pdf"
+        assert "Producing " + outfile in stdout
+        assert os.path.exists(outfile)
+    outfile = str(tmpdir / "test_qc") + "-chrom-callnum.pdf"
+    assert not os.path.exists(outfile)
+    assert "skipping " + outfile in stdout
+
+
+def test_omit_callnum_one_sample(tmpdir, vcfdir, capsys):
+    args = base_argparse(tmpdir)
+    args.vcf = os.path.join(vcfdir, "one_sample_multiple_chroms.vcf.gz")
+    args.refbias_mingts = 1
+    retcode = main(args)
+    assert retcode == 0
+    stdout = capsys.readouterr().out
+    for suffix in ["-chrom-callnum",
+                   "-diffref-histogram",
+                   "-diffref-bias",
+                   "-quality"]:
+        outfile = str(tmpdir / "test_qc") + suffix + ".pdf"
+        assert "Producing " + outfile in stdout
+        assert os.path.exists(outfile)
+    outfile = str(tmpdir / "test_qc") + "-sample-callnum.pdf"
+    assert not os.path.exists(outfile)
+    assert "skipping " + outfile in stdout
 
 
 def test_main(tmpdir, vcfdir):

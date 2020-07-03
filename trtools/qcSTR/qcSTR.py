@@ -85,7 +85,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0,100), \
     xlim: tuple of int, optional
         Specify the minimum and maximum x-axis range (in bp)
     mingts: int, optional
-        Don't plot data points computed based on fewer than 
+        Don't plot data points computed based on fewer than
         this many genotypes
     metric: str, optional
         Which metric to plot on the y-axis value. Must be mean or median
@@ -101,11 +101,13 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0,100), \
     else:
         common.WARNING("Invalid metric ({}) specified. Skipping reference bias plot".format(metric))
         return
+    metric = metric.capitalize()
     summ = data.groupby("ref", as_index=False).agg({"diff": sum_fn, "count": len}).sort_values("ref")
     summ = summ[summ["count"]>=mingts] # exclude small counts
     summ = summ[(summ["ref"]>=xlim[0]) & (summ["ref"]<=xlim[1])] # filter by x range
     if summ.shape[0] == 0:
-        common.WARNING("No points left to plot in reference bias plot. Skipping")
+        common.WARNING("No points left to plot in reference bias plot after "
+                       "filtering. Skipping")
         return
     common.MSG("Plotting ref bias plot with the following data:")
     common.MSG(summ)
@@ -157,7 +159,8 @@ def OutputChromCallrate(chrom_calls, fname):
     fname : str
         Filename of output plot
     """
-    chroms = sorted(chrom_calls.keys())
+    chroms = sorted(chrom for chrom in chrom_calls.keys() 
+                    if chrom_calls[chrom] > 0)
     counts = [chrom_calls[chrom] for chrom in chroms]
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -503,17 +506,28 @@ def main(args):
 
         numrecords += 1
 
-    print("Producing " + args.out + "-diffref-histogram.pdf ...")
-    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
-    print("Done. Producing " + args.out + "-diffref-bias.pdf ...")
+    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='')
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf", \
                       xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
                       mingts=args.refbias_mingts, metric=args.refbias_metric, \
                       binsize=args.refbias_binsize)
-    print("Done. Producing " + args.out + "-sample-callnum.pdf ...")
-    OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
-    print("Done. Producing " + args.out + "-chrom-callnum.pdf ...")
-    OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+    if len(samplelist) > 1:
+        print("Done.\nProducing " + args.out + "-sample-callnum.pdf ... ",
+              end='')
+        OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
+        print("Done.")
+    else:
+        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")
+    if 1 < len(list(chrom for chrom, value in chrom_calls.items() 
+                    if value > 0)):
+        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='')
+        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+        print("Done.\n", end='')
+    else:
+        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.pdf ...")
+    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='')
+    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
+    print("Done.")
 
     if default_quality:
         def quality_output_loc(quality_value):
@@ -523,9 +537,9 @@ def main(args):
             return args.out+"-quality-{}.pdf".format(quality_value)
 
     if _QualityTypes.per_sample.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_sample.value) +
-              " ...")
+              " ... ", end='')
         new_per_sample_data = []
         for sample_data in per_sample_data.values():
             new_per_sample_data.append(stat.mean(sample_data))
@@ -533,16 +547,16 @@ def main(args):
                                quality_output_loc(_QualityTypes.per_sample.value))
 
     if _QualityTypes.sample_stratified.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.sample_stratified.value) +
-              " ...")
+              " ... ", end='')
         OutputQualitySampleStrat(sample_strat_data,
                                  quality_output_loc(_QualityTypes.sample_stratified.value))
 
     if _QualityTypes.per_locus.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_locus.value) +
-              " ...")
+              " ... ", end='')
         new_per_locus_data = []
         for locus_data in per_locus_data:
             new_per_locus_data.append(stat.mean(locus_data))
@@ -550,18 +564,22 @@ def main(args):
                               quality_output_loc(_QualityTypes.per_locus.value))
 
     if _QualityTypes.locus_stratified.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.locus_stratified.value) +
-              " ...")
+              " ... ", end='')
         OutputQualityLocusStrat(locus_strat_data,
                                 quality_output_loc(_QualityTypes.locus_stratified.value))
 
     if _QualityTypes.per_call.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_call.value) +
-              " ...")
+              " ... ", end='')
         OutputQualityPerCall(per_call_data,
                              quality_output_loc(_QualityTypes.per_call.value))
+
+    if len(args.quality) == 0:
+        print("This vcf does not have quality scores, so skipping all "
+              "quality plots.")
 
     print("Done.")
     return 0
