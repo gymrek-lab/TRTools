@@ -82,11 +82,7 @@ def test_refbias_options(tmpdir, vcfdir, capsys):
     assert retcode == 0
     args.refbias_metric = "mean"
     retcode = main(args)
-    assert retcode == 0
-    args.refbias_metric = "cheeseburger"
-    retcode = main(args)
-    assert retcode == 1
-    
+
     # Test mingts
     args = base_argparse(tmpdir)
     args.vcf = vcf
