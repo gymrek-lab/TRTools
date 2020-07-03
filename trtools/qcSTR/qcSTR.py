@@ -405,7 +405,7 @@ def main(args):
         return 1
 
     # Check refbias options
-   if args.refbias_binsize < 1:
+    if args.refbias_binsize < 1:
         common.WARNING("--refbias-binsize must be >=1")
         return 1
     if args.refbias_mingts < 0:  # allow for 0 mingts as a synonym for 1
