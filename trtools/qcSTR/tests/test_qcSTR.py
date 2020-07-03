@@ -39,7 +39,6 @@ def test_OutputDiffRefBias(tmpdir):
     OutputDiffRefBias(diffs_from_ref, reflens, fname)
     OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="median")
     OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
-    OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
 
 # Just confirm that the method doesn't throw an error
 def test_OutPutSampleCallrate(tmpdir):
@@ -87,7 +86,6 @@ def test_refbias_options(tmpdir, vcfdir, capsys):
     args.refbias_metric = "cheeseburger"
     retcode = main(args)
     assert retcode == 1
-    assert "--refbias-metric must be either" in capsys.readouterr().err
     
     # Test mingts
     args = base_argparse(tmpdir)
@@ -99,6 +97,7 @@ def test_refbias_options(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert retcode == 1
     assert "refbias-mingts must be" in capsys.readouterr().err
+
     
     # Test binsize
     args = base_argparse(tmpdir)

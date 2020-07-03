@@ -287,13 +287,27 @@ def OutputQualityLocusStrat(
     _OutputQualityHist(locus_strat_data, fname, "calls")
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
     inp_group = parser.add_argument_group("Optional input arguments")
-    inp_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+
+    vcftype_options = [str(item) for item in trh.VcfTypes.__members__]
+    vcftype_options.append("auto")
+    inp_group.add_argument(
+        "--vcftype",
+        type=str,
+        help="Which type of VCF to restrict the input to, or 'auto' for no"
+             " restrction",
+        default="auto",
+        choices = vcftype_options
+    )
+
     inp_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     inp_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
     quality_group = parser.add_argument_group("Quality plot options")
@@ -323,13 +337,14 @@ def getargs():  # pragma: no cover
         type=str,
         default="mean",
         help=("Which metric to use for the y-axis on "
-              "the reference bias plot. Must be mean or median")
-        )
+              "the reference bias plot."),
+        choices=['mean', 'median']
+    )
     refbias_group.add_argument(
         "--refbias-mingts",
         type=int,
         default=100,
-        help=("Don't plot points in the reference bias plot computed "
+        help=("Don't compute points for the reference bias plot "
               "based on fewer than this many genotypes")
     )
     refbias_group.add_argument(
@@ -390,13 +405,10 @@ def main(args):
         return 1
 
     # Check refbias options
-    if args.refbias_metric not in ["mean","median"]:
-        common.WARNING("--refbias-metric must be either 'mean' or 'median'")
-        return 1
-    if args.refbias_binsize < 1:
+   if args.refbias_binsize < 1:
         common.WARNING("--refbias-binsize must be >=1")
         return 1
-    if args.refbias_mingts < 1:
+    if args.refbias_mingts < 0:  # allow for 0 mingts as a synonym for 1
         common.WARNING("--refbias-mingts must be >=1")
         return 1
     if args.refbias_xrange_min >= args.refbias_xrange_max:

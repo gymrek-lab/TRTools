@@ -45,13 +45,13 @@ qcSTR outputs the following plots:
 
 * :code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
 * :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
-* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of, for each allele called, the difference between its length and the length of the reference at that locus (measured in number of repeat units). Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem. 
+* :code:`<outprefix>-diffref-histogram.pdf`: a histogram of, for each allele called, the difference between its length and the length of the reference at that locus (measured in number of repeat units). Can be used to visualize if there is a strong bias toward calling deletions vs. insertions compared to the reference, which might indicate a problem.
 * :code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
 * :code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
   calls for this vcf. Will not be produced for vcfs which do not have quality
   metrics. If you specify the type of quality plot you wish to see with
-  the :code:`--quality` option, then instead you will get a file named 
-  :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. 
+  the :code:`--quality` option, then instead you will get a file named
+  :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
   Note, quality score values may not be comparable across different TR genotyping tools.
   Quality plot options are described below.
 
@@ -60,66 +60,51 @@ Quality Plot Options
 
 These additional options can be used to customize quality score distribution plots.
 
-* :code:`--quality`:  This option determines if the plot is stratified, and what 
-  distribution the y-axis represents. The x-axis is always the quality score, from one to
-  zero, and the y-axis is always an increasing CDF. This can be specified multiple
-  times to produce multiple plots (e.g. :code:`--quality per-locus --quality
-  per-sample`) - each produced plot will have the type appended to its name.
+:code:`--quality`:  This option determines if the plot is stratified, and what
+distribution the y-axis represents. The x-axis is always the quality score, from one to
+zero, and the y-axis is always an increasing CDF. This can be specified multiple
+times to produce multiple plots (e.g. :code:`--quality per-locus --quality
+per-sample`) - each produced plot will have the type appended to its name.
 
-  * :code:`per-locus`
-    Compute the call quality at each locus averaged across all samples.
-    Plot the distribution of those loci qualities.
-    (This is the default for > 5 samples)
-  * :code:`sample-stratified` 
-    Plot a separate line for each sample of the distribution of loci qualities
-    for that sample.
-    (This is the default for <= 5 samples)
-    Note: If you specify this for a vcf with many samples,
-    the code may slow to a halt and/or the plot may be cluttered.
-  * :code:`per-sample`
-    Compute the call quality for each sample averaged across all loci.
-    Plot the distribution of those sample qualities.
-  * :code:`locus-stratified` 
-    Plot a separate line for each locus of the distribution of sample qualities
-    at that locus.
-    Note: If you specify this for a vcf with many loci,
-    the code may slow to a halt and/or the plot may be cluttered.
-  * :code:`per-call`
-    Plot the distribution of the quality of all calls.
-
-* :code:`--quality-ignore-no-call` - by default, (sample, locus) pairs which
-  were not called are treated as calls with zero quality for the the quality plot.
-  With this option enabled, instead they are ignored. This may cause the
-  plotting to crash if it causes some samples/loci to have <= 1 valid call.
-
-
-  The following are example quality plots:
-
-
-per-locus
-^^^^^^^^^
+* :code:`per-locus`
+  Compute the call quality at each locus averaged across all samples.
+  Plot the distribution of those loci qualities.
+  (This is the default for > 5 samples)
 
 .. image:: images/quality-per-locus.png
 
-sample-stratified
-^^^^^^^^^^^^^^^^^
+* :code:`sample-stratified`
+  Plot a separate line for each sample of the distribution of loci qualities
+  for that sample.
+  (This is the default for <= 5 samples)
+  Note: If you specify this for a vcf with many samples,
+  the code may slow to a halt and/or the plot may be cluttered.
 
 .. image:: images/quality-sample-stratified.png
 
-per-sample
-^^^^^^^^^^
+* :code:`per-sample`
+  Compute the call quality for each sample averaged across all loci.
+  Plot the distribution of those sample qualities.
 
 .. image:: images/quality-per-sample.png
 
-locus-stratified
-^^^^^^^^^^^^^^^^
+* :code:`locus-stratified`
+  Plot a separate line for each locus of the distribution of sample qualities
+  at that locus.
+  Note: If you specify this for a vcf with many loci,
+  the code may slow to a halt and/or the plot may be cluttered.
 
 .. image:: images/quality-locus-stratified.png
 
-per-call
-^^^^^^^^
+* :code:`per-call`
+  Plot the distribution of the quality of all calls.
 
 .. image:: images/quality-per-call.png
+
+:code:`--quality-ignore-no-call` - by default, (sample, locus) pairs which
+were not called are treated as calls with zero quality for the the quality plot.
+With this option enabled, instead they are ignored. This may cause the
+plotting to crash if it causes some samples/loci to have <= 1 valid call.
 
 
 Reference Bias Plot Options
@@ -128,7 +113,7 @@ Reference Bias Plot Options
 These additional options can be used to customize reference bias plots.
 
 * :code:`--refbias-binsize <int>`: Sets the binsize (in bp) used to bin x-axis values, which give the reference TR length. Default=5.
-* :code:`--refbias-metric <string>`: Determines which metric to use to summarize the reference bias in each bin. Default=mean. 
+* :code:`--refbias-metric <string>`: Determines which metric to use to summarize the reference bias in each bin. Default=mean.
   Must be one of: :code:`mean` or :code:`median`.
 * :code:`--refbias-mingts <int>`: Exclude points computed using fewer than this many genotypes. This option is meant to avoid plotting outlier points driven by bins with small numbers of TRs with that reference length. Default=100.
 * :code:`--refbias-xrange-min <int>`: Exclude points corresponding to TRs with reference length less than this value.
