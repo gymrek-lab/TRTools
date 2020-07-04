@@ -8,11 +8,11 @@ For more information on a genotyper, please see its website linked below.
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
 | Method (version tested) |  Supported TR classes    |  Num. TRs in reference  | Supported seq. tech.    |     Use case notes                   |     
 +=========================+==========================+=========================+=========================+======================================+
-|   AdVNTR_ (v1.3.3)      |   Repeat units 6-100bp   |   158,522 (genic hg19)* |    Illumina/PacBio      | Infers allele lengths by default. May|
-|                         |                          |                         |                         | alternatively identify putative      |
+|   AdVNTR_ (v1.3.3)      | Repeat units lengths     |   158,522 (genic hg19)\*|    Illumina/PacBio      | Infers allele lengths by default. May|
+|                         | 6-100bp                  |                         |                         | alternatively identify putative      |
 |                         |                          |                         |                         | frameshift mutations within VNTRs    |
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
-|ExpansionHunter_ (v3.2.2)| Designed for STRs (rep.) |   25 (hg19)*            |    PCR-free Illumina    | Designed for inferring expanded.     |
+|ExpansionHunter_ (v3.2.2)| Designed for STRs (rep.) |   25 (hg19)\*           |    PCR-free Illumina    | Designed for inferring expanded.     |
 |                         | unit <=6bp. Can handle   |                         |                         | repeats. Can handle repeats with     |
 |                         | complex repeat structures|                         |                         | structures such as interruptions or  |
 |                         | specified by regular     |                         |                         | regions containing multiple nearby   |
@@ -20,26 +20,22 @@ For more information on a genotyper, please see its website linked below.
 |                         | e.g. (CAG)*(CCG)*        |                         |                         | sample.                              |     
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
 | GangSTR_ (2.4.4)        | Designed for repeat unit | 829,233 (hg19_ver_13_1) | Paired-end Illumina     | Infers allele lengths only. Handles  |
-|                         | lengths 1-20bp.          | (excludes homopolymers)*|                         | both short TRs and TR expansions.    |
+|                         | lengths 1-20bp.          |(excludes homopolymers)\*|                         | both short TRs and TR expansions.    |
 |                         |                          |                         |                         | Designed to run genome-wide on one or|
 |                         |                          |                         |                         | more samples.                        |
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
-
-
-Designed for inferring expanded repeats. Can handle repeats with complex structures such as interruptions or regions containing multiple nearby repeats. Designed to run on a single sample.
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
-|                         |      AdVNTR_             | ExpansionHunter_        | GangSTR_                | HipSTR_                  | PopSTR_ (v2.0)          |
-+=========================+==========================+=========================+=========================+==========================+=========================+
-| Input Read Type         | Short Read or Long Read  | Short Read              | Short Read              | Short Read               | Short Read              |
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
-| Maximum Motif Size (bp) | 100                      | 6                       | 20                      | 6                        | 6                       |
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
-| Allele Size Limit       | Shorter than read length | Longer than read length | Longer than read length | Shorter than read length | Longer than read length |
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
-| Joint Calling           | No                       | No                      | No                      | Yes                      | Yes                     |
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
-| Reference Based         | Yes                      | Yes                     | Yes                     | Yes                      | Yes                     |
-+-------------------------+--------------------------+-------------------------+-------------------------+--------------------------+-------------------------+
+| HipSTR_ (v0.6.2)        | Repeat unit lengths 1-9bp| 1,620,030 (hg19)\*      | Illumina                | Infers both allele lengths and       |
+|                         |                          |                         |                         | sequence. Can phase with SNPs. Only  |
+|                         |                          |                         |                         | handles TRs spanned by short reads.  |
+|                         |                          |                         |                         | Designed to run genome-wide on one or|
+|                         |                          |                         |                         | more samples.                        |
++-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
+| PopSTR_ (v2.0)          | Repeat unit length 1-6bp.| 540,1401 (hg38)         | Illumina                | Infers allele lengths only. Handles  |
+|                         |                          |                         |                         | both short TRs and TR expansions.    |
+|                         |                          |                         |                         | Designed to run genome-wide on one or|
+|                         |                          |                         |                         | more samples.                        |
++-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
+\* Indicates that users may also supply custom reference panels of TR loci. Reference panel numbers shown above are based on downloads from the github repository of each tool as of July 2, 2020.
 
 TRTools can be extended to support other genotypers that generate files meeting the VCF standard.
 We welcome community contributions to help support them. If that interests you, please
