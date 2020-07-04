@@ -66,6 +66,16 @@ Supported VCF fields
 
 In addition to proper merging of alleles at multi-allelic sites, MergeSTR supports the following VCF fields for each tool. Fields not listed are currently ignored when merging. INFO fields below are expected to be constant across loci being merged.
 
+**AdVNTR**
+
+* Supported INFO fields: END, RU, RC
+* Supported FORMAT fields: DP, SR, FL, ML
+
+**ExpansionHunter**
+
+* Supported INFO fields: END, REF, REPID, RL, RU, SVTYPE
+* Supported FORMAT fields: ADFL,ADIR,ADSP,LC,REPCI,REPCN,SO
+
 **GangSTR**
 
 * Supported INFO fields: END, RU, PERIOD, REF, EXPTHRESH
@@ -76,20 +86,10 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 * Supported INFO fields: START, END, PERIOD
 * Supported FORMAT fields: GB,Q,PQ,DP,DSNP,PSNP,PDP,GLDIFF,DSTUTTER,DFLANKINDEL,AB,FS,DAB,ALLREADS,MALLREADS
 
-**ExpansionHunter**
-
-* Supported INFO fields: END, REF, REPID, RL, RU, SVTYPE
-* Supported FORMAT fields: ADFL,ADIR,ADSP,LC,REPCI,REPCN,SO
-
 **PopSTR**
 
 * Supported INFO fields: Motif
 * Supported FORMAT fields: AD, DP, PL
-
-**AdVNTR**
-
-* Supported INFO fields: END, RU, RC
-* Supported FORMAT fields: DP, SR, FL, ML
 
 Instructions on Compressing and Indexing VCF files
 --------------------------------------------------
