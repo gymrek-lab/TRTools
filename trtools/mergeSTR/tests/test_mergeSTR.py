@@ -214,3 +214,6 @@ def test_GetSampleInfo(args, vcfdir):
 # Why don't we fail if info fields are different? That's what required is
 # supposed to mean. Or at least, don't emit that record!!!
 # TODO we should intelligently merge info fields with reqd = false
+# TODO there is not a single test here that confirms that the output VCF
+# actually is a VCF, has the proper headers and each record has the proper
+# format fields and info fields and all that stuff. Write some meaningful tests.
