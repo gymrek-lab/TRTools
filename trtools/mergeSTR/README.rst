@@ -2,7 +2,7 @@
 .. |mergeSTR overview| replace:: MergeSTR merges multiple VCF files produced by the same TR genotyper into a single VCF file.
 .. overview_directive_done
 
-MergeSTR 
+MergeSTR
 ========
 
 |mergeSTR overview|
@@ -11,33 +11,34 @@ If TR genotyping was performed separately on different samples or batches of sam
 
 While other VCF libraries have capabilities to merge VCF files, they do not always handle multi-allelic STRs properly, especially if different alternate alleles are present in different files. MergeSTR is TR-aware.
 
-Note: mergeSTR currently does not support merging VCFs produced by different TR genotypers.
+Note: mergeSTR does not support merging VCFs produced by different TR genotypers as the desired outcome of such an operation is highly dependant on the use-case at hand.
+If this is your use case and you with it to be supported, consider `filing an issue <https://github.com/gymreklab/TRTools/issues>`_ with us.
 
-Usage 
+Usage
 -----
-MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be bgzipped, sorted, indexed, and have the appropriate `##contig` header lines. See "Instructions on Compressing and Indexing VCF files" below for commands for preparing tabix-indexed VCF files.
+MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be bgzipped, sorted, indexed, and have the appropriate :code:`##contig` header lines. See `Instructions on Compressing and Indexing VCF files`_ below for commands for preparing tabix-indexed VCF files.
 
 To run mergeSTR use the following command::
 
 	mergeSTR \
-  	  --vcfs <vcf file1, vcf file2, ...> \
+  	  --vcfs <file1.vcf,file2.vcf,...> \
   	  --out test \
   	  [additional options]
 
-Required Parameters: 
+Required Parameters:
 
-* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. 
+* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed.
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files
 
-Special Merge Options: 
+Special Merge Options:
 
 * :code:`--update-sample-from-file`: Append file names to sample names. Useful if sample names are repeated across VCF files.
 
-Optional Additional Parameters: 
+Optional Additional Parameters:
 
-* :code:`--verbose`: Prints out extra information 
-* :code:`--quiet`: Doesn't print out anything 
+* :code:`--verbose`: Prints out extra information
+* :code:`--quiet`: Doesn't print out anything
 
 Example MergeSTR command
 ------------------------
@@ -77,7 +78,7 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 
 **ExpansionHunter**
 
-* Supported INFO fields: END, REF, REPID, RL, RU, SVTYPE 
+* Supported INFO fields: END, REF, REPID, RL, RU, SVTYPE
 * Supported FORMAT fields: ADFL,ADIR,ADSP,LC,REPCI,REPCN,SO
 
 **PopSTR**
@@ -93,7 +94,7 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 Instructions on Compressing and Indexing VCF files
 --------------------------------------------------
 MergeSTR requires the input file to be compressed and indexed. Use the following commands to create compressed and indexed vcf file::
-  
+
   bgzip file.vcf
   tabix -p vcf file.vcf.gz
 

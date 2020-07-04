@@ -3,11 +3,11 @@
 Tool for merging STR VCF files from GangSTR
 """
 
-# Load external libraries
 import argparse
-import os
-import numpy as np
 import sys
+from typing import List
+
+import numpy as np
 import vcf
 
 import trtools.utils.common as common
@@ -291,7 +291,7 @@ def GetGT(gt_alleles, alleles):
     newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
     return "/".join([str(item) for item in newgt])
 
-def GetSampleInfo(record, alleles, formats, args):
+def GetSampleInfo(record, alleles, formats) -> List[str]:
     r"""Output sample FORMAT info
 
     Parameters
@@ -302,13 +302,12 @@ def GetSampleInfo(record, alleles, formats, args):
        List of REF + ALT alleles
     formats : list of str
        List of VCF FORMAT items
-    args : argparse namespace
-       User options
 
     Returns
     -------
-    sampleinfo : str
-       FORMAT fields for the sample
+    record_items : List[str]
+        A list of the string representations of the GT and other format
+        fields, one such string for each sample in the record
     """
     assert "GT" not in formats # since we will add that
     record_items = []
@@ -322,7 +321,7 @@ def GetSampleInfo(record, alleles, formats, args):
         # Add rest of formats
         for fmt in formats:
             val = sample[fmt]
-            if type(val)==list: val = ",".join([str(item) for item in val])
+            if isinstance(val, list): val = ",".join([str(item) for item in val])
             sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
@@ -379,7 +378,7 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, usefo
     alleles = [ref_allele]+alt_alleles
     for i in range(len(mergelist)):
         if mergelist[i]:
-            output_items.extend(GetSampleInfo(current_records[i], alleles, useformat, args))
+            output_items.extend(GetSampleInfo(current_records[i], alleles, useformat))
         else:
             output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
