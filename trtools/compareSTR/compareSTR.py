@@ -296,7 +296,10 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
         plt.close()
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
