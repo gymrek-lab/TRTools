@@ -19,8 +19,8 @@ For more information on a genotyper, please see its website linked below.
 |                         | expressions              |                         |                         | repeats. Designed to run on a single |
 |                         | e.g. (CAG)*(CCG)*        |                         |                         | sample.                              |     
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
-| GangSTR_ (2.4.4)        | Designed for repeat unit |     829,233             | Paired-end Illumina     | Infers allele lengths only. Handles  |
-|                         | lengths 1-20bp.          |(excludes homopolymers)\*|                         | both short TRs and TR expansions.    |
+| GangSTR_ (2.4.4)        | Designed for repeat unit |  829,233                | Paired-end Illumina     | Infers allele lengths only. Handles  |
+|                         | lengths 1-20bp.          |                         |                         | both short TRs and TR expansions.    |
 |                         |                          |                         |                         | Designed to run genome-wide on one or|
 |                         |                          |                         |                         | more samples.                        |
 +-------------------------+--------------------------+-------------------------+-------------------------+--------------------------------------+
