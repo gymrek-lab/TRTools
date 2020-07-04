@@ -224,3 +224,5 @@ def test_GetSampleInfo(args, vcfdir):
 # we encounter a format field that we didn't expect, we ignore it. Why? Why
 # not just use the appropriate format fields for the appropriate samples
 # in each merged record?
+# TODO what if there are multiple records at the same location in the same VCF
+# we should fail right? Confirm this.
