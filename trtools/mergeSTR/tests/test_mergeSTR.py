@@ -113,35 +113,52 @@ def test_PopSTRRightFile(args, mrgvcfdir):
 # test VCFs with different ref genome contigs return 1
 def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     #both files have records with chroms not listed in contigs
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigmissing1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigmissing2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
     assert 'not found in the contig list' in capsys.readouterr().err
 
     #first file has records with chroms not listed in contigs
-    #first file contig diff is the first record
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
+    #first file missing contig is the first record
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigmissing1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2_1contig.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
     assert 'not found in the contig list' in capsys.readouterr().err
 
     #second file has records with chroms not listed in contigs
-    #second file contig diff is not the first record
+    #second file missing contig is not the first record
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1_1contig.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigmissing2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
     assert 'not found in the contig list' in capsys.readouterr().err
 
 def test_DifferentContigs(args, mrgvcfdir):
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig4.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigdifferent1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigdifferent2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
     assert "Different contigs found across VCF files." in str(info.value)
+
+def test_DifferentContigLengths(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigdifflength.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "Different contigs found across VCF files." in str(info.value)
+
+def test_SameContigsDifferentOrder(args, vcfdir, mrgvcfdir):
+    fname1 = os.path.join(vcfdir, "one_sample_multiple_chroms.vcf.gz")
+    fname2 = os.path.join(
+        mrgvcfdir,
+        "one_sample_multiple_chroms_diff_contig_order.vcf.gz"
+    )
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
 
 def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missinginfo1.vcf.gz")
