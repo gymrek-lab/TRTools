@@ -2,6 +2,7 @@
 Util functions for calculating summary STR statistics
 and performing basic string operations on STR alleles.
 """
+import argparse
 import itertools
 import math
 
@@ -456,3 +457,29 @@ def FabricateAllele(motif, length):
         idx += 1
 
     return fab
+
+
+class ArgumentDefaultsHelpFormatter(argparse.HelpFormatter):  # pragma: no cover
+    """
+    Build a custom argument parser that works just like
+    argparse.ArgumentDefaultsHelpFormatter except that it
+    doesn't display None defaults. Everything below
+    is copied from the python library source except for that.
+
+    Help message formatter which adds default values to argument help.
+
+    Only the name of this class is considered a public API. All the methods
+    provided by the class are considered an implementation detail.
+    """
+
+    def _get_help_string(self, action):
+        help = action.help
+        if '%(default)' not in action.help:
+            if (action.default is not argparse.SUPPRESS and
+                    action.default is not None):
+                defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+                if action.option_strings or action.nargs in defaulting_nargs:
+                    help += ' (default: %(default)s)'
+        return help
+
+

@@ -385,7 +385,10 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, usefo
     vcfw.write("\t".join(output_items)+"\n")
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcfs", help="Comma-separated list of VCF files to merge (must be sorted, bgzipped and indexed)", type=str, required=True)
