@@ -444,10 +444,15 @@ def main(args):
             if not r.CHROM in chroms:
                 common.WARNING((
                     "Error: found a record in file {} with "
-                    "chromosome {} which was not found in the contig list "
+                    "chromosome '{}' which was not found in the contig list "
                     "({})").format(reader.filename, r.CHROM, ", ".join(chroms)))
-                common.WARNING("VCF files must contain ##contig header lines for each chromosome.")
-                common.WARNING("You can use bcftools (https://github.com/samtools/bcftools) to add these, e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
+                common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
+                common.WARNING(
+                    "If this is only a technical issue and all the vcf "
+                    "files were truly built against against the "
+                    "same reference, use bcftools "
+                    "(https://github.com/samtools/bcftools) to fix the contigs"
+                    ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
                 return 1
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
