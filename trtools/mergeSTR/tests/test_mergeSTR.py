@@ -222,3 +222,24 @@ def test_GetSampleInfo(args, vcfdir):
     #        GetSampleInfo(record, sample.gt_bases.split(sample.gt_phase_char()), ['UNKNOWNFORMAT'], args)
     #    print(info.traceback)
     #    assert "lolz" in str(info.value)
+
+
+# TODO confirm conflicting samples cause this to fail unless --update-sample-from-file is given
+# TODO why are required info fields a cause for failure when a record is
+# missing them but not when the entire VCF is missing them?
+# Why do we silently return if there are no info or header fields?
+# Why don't we fail if info fields are different? That's what required is
+# supposed to mean. Or at least, don't emit that record!!!
+# TODO we should intelligently merge info fields with reqd = false
+# TODO there is not a single test here that confirms that the output VCF
+# actually is a VCF, has the proper headers and each record has the proper
+# format fields and info fields and all that stuff. Write some meaningful tests.
+# TODO confirm we actually support the fields we say we support (like, they're
+# presenting in the output files when we run on the appropriate test files)
+# TODO why do we even bother saying which format fields we support? We just
+# append them all anyway. The only difference as far as I can tell is that if
+# we encounter a format field that we didn't expect, we ignore it. Why? Why
+# not just use the appropriate format fields for the appropriate samples
+# in each merged record?
+# TODO what if there are multiple records at the same location in the same VCF
+# we should fail right? Confirm this.
