@@ -35,7 +35,8 @@ For more information on a genotyper, please see its website linked below.
 |                            |                          |                            |                        |                          |                         |                        | of short or expanded TRs.            |
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+--------------------------------------+
 
-Since each of these tools take as input a list of TRs to genotype, they could also be used on custom panels of TR loci. Reference panel numbers shown above are based on downloads from the github repository of each tool as of July 2, 2020.
+Since each of these tools take as input a list of TRs to genotype, they could also be used on custom panels of TR loci.
+Tool information and reference panel numbers shown above are based on downloads from the github repository of each tool as of July 2, 2020.
 
 TRTools can be extended to support other genotypers that generate VCF files.
 We welcome community contributions to help support them. If that interests you, please
