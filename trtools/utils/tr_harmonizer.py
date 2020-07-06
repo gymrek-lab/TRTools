@@ -605,7 +605,7 @@ class TRRecord:
         where each allele may contain any number of flanking
         basepairs in addition to containing the tandem repeat.
         If set, these can be accessed through 'GetFullStringGenotype'
-    alt_allele_lengths : [str]
+    alt_allele_lengths : [float]
         The lengths of each of the alt alleles, in order.
         Should only be passed when only the lengths of the alt alleles
         were measured and not the sequences. Thus must be measured in
@@ -614,7 +614,7 @@ class TRRecord:
         If this is passed, the alt_alleles parameter to the constructor must
         be set to None and the alt_alleles attribute of the record will be set
         to fabricated alleles (see utils.FabricateAllele)
-    ref_allele_length : [str]
+    ref_allele_length : [float]
         like alt_allele_lengths, but for the reference allele.
         If this is passed, alt_allele_lengths must also be passed
     quality_score_transform : Any -> float
@@ -912,7 +912,7 @@ class TRRecord:
         Represents the sample's genotype in terms of the number
         of repeats of the motif in each allele.
         Returns a pair of floats - alleles including partial repeats
-        may have noninteger lengths.
+        or other impurities may have noninteger lengths.
 
         Parameters
         ----------

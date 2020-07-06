@@ -113,35 +113,52 @@ def test_PopSTRRightFile(args, mrgvcfdir):
 # test VCFs with different ref genome contigs return 1
 def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     #both files have records with chroms not listed in contigs
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigmissing1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigmissing2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
     #first file has records with chroms not listed in contigs
-    #first file contig diff is the first record
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig1.vcf.gz")
+    #first file missing contig is the first record
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigmissing1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2_1contig.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
     #second file has records with chroms not listed in contigs
-    #second file contig diff is not the first record
+    #second file missing contig is not the first record
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1_1contig.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig2.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigmissing2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
-    assert 'not in its contig list' in capsys.readouterr().err
+    assert 'not found in the contig list' in capsys.readouterr().err
 
 def test_DifferentContigs(args, mrgvcfdir):
-    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig3.vcf.gz")
-    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_wrongcontig4.vcf.gz")
+    fname1 = os.path.join(mrgvcfdir, "test_file_contigdifferent1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigdifferent2.vcf.gz")
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
     assert "Different contigs found across VCF files." in str(info.value)
+
+def test_DifferentContigLengths(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_contigdifflength.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "Different contigs found across VCF files." in str(info.value)
+
+def test_SameContigsDifferentOrder(args, vcfdir, mrgvcfdir):
+    fname1 = os.path.join(vcfdir, "one_sample_multiple_chroms.vcf.gz")
+    fname2 = os.path.join(
+        mrgvcfdir,
+        "one_sample_multiple_chroms_diff_contig_order.vcf.gz"
+    )
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
 
 def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missinginfo1.vcf.gz")
@@ -204,3 +221,24 @@ def test_GetSampleInfo(args, vcfdir):
     #        GetSampleInfo(record, sample.gt_bases.split(sample.gt_phase_char()), ['UNKNOWNFORMAT'], args)
     #    print(info.traceback)
     #    assert "lolz" in str(info.value)
+
+
+# TODO confirm conflicting samples cause this to fail unless --update-sample-from-file is given
+# TODO why are required info fields a cause for failure when a record is
+# missing them but not when the entire VCF is missing them?
+# Why do we silently return if there are no info or header fields?
+# Why don't we fail if info fields are different? That's what required is
+# supposed to mean. Or at least, don't emit that record!!!
+# TODO we should intelligently merge info fields with reqd = false
+# TODO there is not a single test here that confirms that the output VCF
+# actually is a VCF, has the proper headers and each record has the proper
+# format fields and info fields and all that stuff. Write some meaningful tests.
+# TODO confirm we actually support the fields we say we support (like, they're
+# presenting in the output files when we run on the appropriate test files)
+# TODO why do we even bother saying which format fields we support? We just
+# append them all anyway. The only difference as far as I can tell is that if
+# we encounter a format field that we didn't expect, we ignore it. Why? Why
+# not just use the appropriate format fields for the appropriate samples
+# in each merged record?
+# TODO what if there are multiple records at the same location in the same VCF
+# we should fail right? Confirm this.

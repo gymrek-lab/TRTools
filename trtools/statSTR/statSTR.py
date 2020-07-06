@@ -288,7 +288,10 @@ def GetNumSamples(trrecord, samplelists=[]):
     return [sum(trrecord.GetGenotypeCounts(samplelist=sl).values()) for sl in samplelists]
 
 def getargs(): # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Output file prefix. Use stdout to print file to standard output.", type=str, required=True)
