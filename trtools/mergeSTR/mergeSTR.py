@@ -105,9 +105,11 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
        List of format field strings to use downstream
     """
     # Check contigs the same for all readers
-    contigs = readers[0].contigs
+    def get_contigs(reader):
+        return set(reader.contigs.values())
+    contigs = get_contigs(readers[0])
     for i in range(1, len(readers)):
-        if readers[i].contigs != contigs:
+        if get_contigs(readers[i]) != contigs:
             raise ValueError(
                 "Different contigs found across VCF files. Make sure all "
                 "files used the same reference. Consider using this "
@@ -120,8 +122,13 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         if "command" in r.metadata:
             vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
-    for key,val in contigs.items():
-        vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
+    for contig in contigs:
+        # contigs in VCFs can contain more info than just ID and length
+        # (such as URL)
+        # even though pyvcf ignores all other fields.
+        # in the future (e.g. when swapping to cyvcf2),
+        # write  out the entire contig not just those two fields
+        vcfw.write("##contig=<ID=%s,length=%s>\n"%(contig.id, contig.length))
     # Write INFO fields, different for each tool
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
@@ -410,7 +417,6 @@ def getargs():  # pragma: no cover
 
 def main(args):    
     ### Check and Load VCF files ###
-    vcfs = args.vcfs.split(",")
     vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
     if vcfreaders is None:
         return 1
@@ -433,9 +439,21 @@ def main(args):
     # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
     while not done:
-        if not all([r.CHROM in chroms for r in current_records if r is not None]):
-            common.WARNING("Error: An input VCF file has a record with a CHROM not in its contig list.")
-            return 1
+        for r, reader in zip(current_records, vcfreaders):
+            if r is None: continue
+            if not r.CHROM in chroms:
+                common.WARNING((
+                    "Error: found a record in file {} with "
+                    "chromosome '{}' which was not found in the contig list "
+                    "({})").format(reader.filename, r.CHROM, ", ".join(chroms)))
+                common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
+                common.WARNING(
+                    "If this is only a technical issue and all the vcf "
+                    "files were truly built against against the "
+                    "same reference, use bcftools "
+                    "(https://github.com/samtools/bcftools) to fix the contigs"
+                    ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
+                return 1
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
