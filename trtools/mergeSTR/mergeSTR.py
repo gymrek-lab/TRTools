@@ -3,11 +3,11 @@
 Tool for merging STR VCF files from GangSTR
 """
 
-# Load external libraries
 import argparse
-import os
-import numpy as np
 import sys
+from typing import List
+
+import numpy as np
 import vcf
 
 import trtools.utils.common as common
@@ -32,7 +32,7 @@ INFOFIELDS = {
                ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
-           ("RU", True), ("SVTYPE", False), ("VARID", False)],
+           ("RU", True), ("SVTYPE", True), ("VARID", False)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
     "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
 }
@@ -105,9 +105,11 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
        List of format field strings to use downstream
     """
     # Check contigs the same for all readers
-    contigs = readers[0].contigs
+    def get_contigs(reader):
+        return set(reader.contigs.values())
+    contigs = get_contigs(readers[0])
     for i in range(1, len(readers)):
-        if readers[i].contigs != contigs:
+        if get_contigs(readers[i]) != contigs:
             raise ValueError(
                 "Different contigs found across VCF files. Make sure all "
                 "files used the same reference. Consider using this "
@@ -120,8 +122,13 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         if "command" in r.metadata:
             vcfw.write("##command="+r.metadata["command"][0]+"\n")
     vcfw.write("##command="+cmd+"\n")
-    for key,val in contigs.items():
-        vcfw.write("##contig=<ID=%s,length=%s>\n"%(val.id, val.length))
+    for contig in contigs:
+        # contigs in VCFs can contain more info than just ID and length
+        # (such as URL)
+        # even though pyvcf ignores all other fields.
+        # in the future (e.g. when swapping to cyvcf2),
+        # write  out the entire contig not just those two fields
+        vcfw.write("##contig=<ID=%s,length=%s>\n"%(contig.id, contig.length))
     # Write INFO fields, different for each tool
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
@@ -291,7 +298,7 @@ def GetGT(gt_alleles, alleles):
     newgt = [alleles.index(gta.upper()) for gta in gt_alleles]
     return "/".join([str(item) for item in newgt])
 
-def GetSampleInfo(record, alleles, formats, args):
+def GetSampleInfo(record, alleles, formats) -> List[str]:
     r"""Output sample FORMAT info
 
     Parameters
@@ -302,13 +309,12 @@ def GetSampleInfo(record, alleles, formats, args):
        List of REF + ALT alleles
     formats : list of str
        List of VCF FORMAT items
-    args : argparse namespace
-       User options
 
     Returns
     -------
-    sampleinfo : str
-       FORMAT fields for the sample
+    record_items : List[str]
+        A list of the string representations of the GT and other format
+        fields, one such string for each sample in the record
     """
     assert "GT" not in formats # since we will add that
     record_items = []
@@ -322,7 +328,7 @@ def GetSampleInfo(record, alleles, formats, args):
         # Add rest of formats
         for fmt in formats:
             val = sample[fmt]
-            if type(val)==list: val = ",".join([str(item) for item in val])
+            if isinstance(val, list): val = ",".join([str(item) for item in val])
             sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
@@ -379,13 +385,16 @@ def MergeRecords(readers, current_records, mergelist, vcfw, args, useinfo, usefo
     alleles = [ref_allele]+alt_alleles
     for i in range(len(mergelist)):
         if mergelist[i]:
-            output_items.extend(GetSampleInfo(current_records[i], alleles, useformat, args))
+            output_items.extend(GetSampleInfo(current_records[i], alleles, useformat))
         else:
             output_items.extend([NOCALLSTRING]*len(readers[i].samples)) # NOCALL
     vcfw.write("\t".join(output_items)+"\n")
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcfs", help="Comma-separated list of VCF files to merge (must be sorted, bgzipped and indexed)", type=str, required=True)
@@ -407,7 +416,6 @@ def getargs():  # pragma: no cover
 
 def main(args):    
     ### Check and Load VCF files ###
-    vcfs = args.vcfs.split(",")
     vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
     if vcfreaders is None:
         return 1
@@ -430,9 +438,21 @@ def main(args):
     # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
     while not done:
-        if not all([r.CHROM in chroms for r in current_records if r is not None]):
-            common.WARNING("Error: An input VCF file has a record with a CHROM not in its contig list.")
-            return 1
+        for r, reader in zip(current_records, vcfreaders):
+            if r is None: continue
+            if not r.CHROM in chroms:
+                common.WARNING((
+                    "Error: found a record in file {} with "
+                    "chromosome '{}' which was not found in the contig list "
+                    "({})").format(reader.filename, r.CHROM, ", ".join(chroms)))
+                common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
+                common.WARNING(
+                    "If this is only a technical issue and all the vcf "
+                    "files were truly built against against the "
+                    "same reference, use bcftools "
+                    "(https://github.com/samtools/bcftools) to fix the contigs"
+                    ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
+                return 1
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1

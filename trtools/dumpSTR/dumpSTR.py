@@ -740,7 +740,10 @@ def BuildLocusFilters(args, vcftype: trh.VcfTypes):
     return filter_list
 
 def getargs(): # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     # In/out are always relevant
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
