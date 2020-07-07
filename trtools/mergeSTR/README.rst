@@ -22,7 +22,7 @@ To run mergeSTR use the following command::
 
 	mergeSTR \
   	  --vcfs <file1.vcf,file2.vcf,...> \
-  	  --out test \
+  	  --out <string> \
   	  [additional options]
 
 Required Parameters:
@@ -40,16 +40,7 @@ Optional Additional Parameters:
 * :code:`--verbose`: Prints out extra information
 * :code:`--quiet`: Doesn't print out anything
 
-Example MergeSTR command
-------------------------
-
-The example below uses files available at https://github.com/gymreklab/TRTools/tree/master/example-files.
-
-	mergeSTR \
-	--vcfs NA12891_chr21_gangstr.sorted.vcf.gz,NA12892_chr21_gangstr.sorted.vcf.gz
-   	--out test_run
-
-This command should create a file :code:`test_run.vcf` with the merged genotypes. See "Additional Examples" below for additional example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
+MergeSTR outputs a merged VCF file :code:`$out.vcf` with the merged genotypes. See "Example Commands" below for example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Supported VCF fields
 --------------------
@@ -88,10 +79,10 @@ MergeSTR requires the input file to be compressed and indexed. Use the following
   bgzip file.vcf
   tabix -p vcf file.vcf.gz
 
-Additional Examples
--------------------
+Example Commands
+----------------
 
-Below are additional :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
   # GangSTR
   FILE1=NA12878_chr21_gangstr.sorted.vcf.gz
