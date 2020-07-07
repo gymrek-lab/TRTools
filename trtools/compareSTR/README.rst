@@ -30,8 +30,8 @@ To run compareSTR use the following command::
 
 Required Parameters:
 
-* :code:`--vcf1 <VCF>`: First VCF file to compare (must be sorted, bgzipped, and indexed).
-* :code:`--vcf2 <VCF>`: Second VCF file to compare (must be sorted, bgzipped, and indexed).
+* :code:`--vcf1 <VCF>`: First VCF file to compare (must be sorted, bgzipped, and indexed. See instructions below).
+* :code:`--vcf2 <VCF>`: Second VCF file to compare (must be sorted, bgzipped, and indexed. See instructions below).
 * :code:`--out <string>`: Prefix to name output files
 
 Filtering Options:
@@ -100,9 +100,41 @@ Similarly, to compare two callsets, but stratify by the DP and Q format fields i
     --bubble-min -50 --bubble-max 50 \
     --out test-compare
 
+See "Additional Examples" below for additional example compareSTR commands for different supported TR genotypers based on example data files in this repository.
+
 Instruction on Compressing and Indexing VCF files
 -------------------------------------------------
 CompareSTR requires input files to be compressed and indexed. Use the following commands to create compressed and indexed vcf files::
 
   bgzip file.vcf
   tabix -p vcf file.vcf.gz
+
+Additional Examples
+-------------------
+
+Below are additional :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
+
+  # HipSTR vs. ExpansionHunter
+  compareSTR \
+      --vcf1 ${REPODIR}/example-files/NA12878_chr21_hipstr.sorted.vcf.gz \
+      --vcf2 ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz \
+      --vcftype1 hipstr --vcftype2 eh --out hipstr_vs_eh
+
+  # HipSTR vs. GangSTR
+  compareSTR \
+      --vcf1 ${REPODIR}/example-files/NA12878_chr21_hipstr.sorted.vcf.gz \
+      --vcf2 ${REPODIR}/example-files/NA12878_chr21_gangstr.sorted.vcf.gz \
+      --vcftype1 hipstr --vcftype2 gangstr --out hipstr_vs_gangstr
+
+  # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz
+  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
+  FILE1=NA12878_advntr_reheader.vcf.gz
+  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
+
+  # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
+  FILE1=${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz
+  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out popstr_vs_popstr
+  
+

@@ -54,7 +54,7 @@ def GetVCFType(vcfreader, vcftype: Union[str, VcfTypes] = "auto"):
     vcftype : str
       Inferred VCF type
     """
-    tr_harmonizer = TRRecordHarmonizer(vcfreader)
+    tr_harmonizer = TRRecordHarmonizer(vcfreader, vcftype)
     if vcftype != "auto":
         if vcftype == tr_harmonizer.vcftype.name:
             return vcftype
@@ -188,7 +188,7 @@ def _UnexpectedTypeError(vcftype: VcfTypes):
                      .format(vcftype))
 
 
-def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
+def InferVCFType(vcffile: vcf.Reader, vcftype: Union[str, VcfTypes] = "auto") -> VcfTypes:
     """
     Infer the genotyping tool used to create the VCF.
 
@@ -199,6 +199,8 @@ def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
     ----------
     vcffile :
         The input VCF file
+    vcftype : VCFTYPE
+        Type of the VCF file specified by the user
 
     Returns
     -------
@@ -272,9 +274,12 @@ def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
         raise TypeError('Could not identify the type of this vcf')
 
     if len(possible_vcf_types) > 1:
-        raise TypeError(('Confused - this vcf looks like it could have '
-                          'been any of the types: {}'
-                          .format(possible_vcf_types)))
+        if vcftype != "auto" and _ToVCFType(vcftype) in possible_vcf_types:
+            possible_vcf_types = {_ToVCFType(vcftype)}
+        else:
+            raise TypeError(('Confused - this vcf looks like it could have '
+                             'been any of the types: {}. You may need to specify with --vcftype.'
+                             .format(possible_vcf_types)))
 
     return next(iter(possible_vcf_types))
 
@@ -1224,7 +1229,7 @@ class TRRecordHarmonizer:
             self.vcftype = InferVCFType(vcffile)
         else:
             self.vcftype = _ToVCFType(vcftype)
-            inferred_type = InferVCFType(vcffile)
+            inferred_type = InferVCFType(vcffile, vcftype)
             if inferred_type != self.vcftype:
                 raise TypeError("Trying to read a {} vcf as a {} vcf".format(
                     inferred_type, self.vcftype))

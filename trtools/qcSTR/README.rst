@@ -142,5 +142,26 @@ Example::
   	--vcf ${FILE} \
   	--out test-qc
 
-where :code:`$REPODIR` points to the root path of this repository.
+where :code:`$REPODIR` points to the root path of this repository. See "Additional Examples" below for additional example qcSTR commands for different supported TR genotypers based on example data files in this repository.
+
+Additional Examples
+-------------------
+
+Below are additional :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
+
+  # GangSTR
+  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_gangstr.sorted.vcf.gz --out test_qc_gangstr --period 4 --quality per-locus
+
+  # HipSTR
+  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_hipstr.sorted.vcf.gz --out test_qc_hipstr --vcftype hipstr --samples example-files/ex-samples.txt
+
+  # ExpansionHunter
+  qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
+
+  # AdVNTR
+  qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
+
+  # PopSTR
+  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out test_qc_popstr
+
 

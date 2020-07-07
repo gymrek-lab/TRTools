@@ -138,10 +138,16 @@ def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
     for sl in samplelists:
         if count:
             allele_counts = trrecord.GetAlleleCounts(uselength=uselength, samplelist=sl)
-            allele_freqs_strs.append(",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())]))
+            if len(allele_counts.keys()) == 0:
+                allele_freqs_strs.append(".")
+            else:
+                allele_freqs_strs.append(",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())]))
         else:
             allele_freqs = trrecord.GetAlleleFreqs(uselength=uselength, samplelist=sl)
-            allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
+            if len(allele_freqs.keys()) == 0:
+                allele_freqs_strs.append(".")
+            else:
+                allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
     return allele_freqs_strs
 
 def GetHWEP(trrecord, samplelists=[], uselength=True):
@@ -380,7 +386,7 @@ def main(args):
         if args.plot_afreq and num_plotted <= MAXPLOTS:
             PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
             num_plotted += 1
-        items = [record.CHROM, record.POS, record.INFO["END"]]
+        items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
         if args.thresh:
             items.extend(GetThresh(trrecord, samplelists=sample_lists))
         if args.afreq:
