@@ -32,7 +32,7 @@ INFOFIELDS = {
                ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
-           ("RU", True), ("SVTYPE", True), ("VARID", False)],
+           ("RU", True), ("SVTYPE", False), ("VARID", False)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
     "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
 }
