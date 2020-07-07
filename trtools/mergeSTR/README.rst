@@ -9,7 +9,7 @@ MergeSTR
 
 If TR genotyping was performed separately on different samples or batches of samples, mergeSTR can be used to combine the resulting VCFs into one file. This is often necessary for downstream steps such as: computing per-locus statistics, performing per-locus filtering, and association testing.
 
-While other VCF libraries have capabilities to merge VCF files, they do not always handle multi-allelic STRs properly, especially if different alternate alleles are present in different files. MergeSTR is TR-aware.
+While other VCF libraries have capabilities to merge VCF files, they do not always handle multi-allelic TRs properly, especially if the allele definitions are different across files. MergeSTR is TR-aware and currently handles VCF files obtained by: GangSTR, HipSTR, ExpansionHunter, popSTR, or adVNTR. See below for specific VCF fields supported for each genotyper.
 
 Note: mergeSTR does not support merging VCFs produced by different TR genotypers as the desired outcome of such an operation is highly dependant on the use-case at hand.
 If this is your use case and you with it to be supported, consider `filing an issue <https://github.com/gymreklab/TRTools/issues>`_ with us.

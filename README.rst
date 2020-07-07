@@ -19,7 +19,7 @@ TRTools
 .. a location that the doc/index.rst uses for including this file
 .. after_title
 
-TRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
+TRTools includes a variety of utilities for filtering, quality control and analysis of tandem repeats downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
 See full documentation and examples at https://trtools.readthedocs.io/en/latest/.
 
@@ -49,7 +49,7 @@ Tools
 -----
 TRTools includes the following tools.
 
-* dumpSTR: a tool for filtering VCF files with STR/VNTR genotypes
+* dumpSTR: a tool for filtering VCF files with TR genotypes
 * mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
 * statSTR: a tool for computing various statistics on VCF files
 * compareSTR: a tool for comparing TR callsets
@@ -72,7 +72,7 @@ You can also read the `Command-Line interface for each tool <https://trtools.rea
 
 Supported TR Callers
 --------------------
-TRTools supports VCFs from the following STR/VNTR genotyping tools:
+TRTools supports VCFs from the following TR genotyping tools:
 
 * AdVNTR_
 * ExpansionHunter_

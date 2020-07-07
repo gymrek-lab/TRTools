@@ -2,7 +2,7 @@ Command-Line Tools
 ===========================
 
 TRTools offers a variety of command-line tools for performing manipulations to TR genotype VCFs.
-
+(These tools have 'STR' in their name, but are applicable to all TR VCFs).
 
 .. toctree::
    :maxdepth: 1
