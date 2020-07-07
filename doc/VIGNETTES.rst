@@ -10,3 +10,4 @@ The following vignettes show example usecases of TRTools.
    VIGNETTE-AFREQ.rst
    VIGNETTE-COMPARE.rst
    VIGNETTE-COMPARE-CALLERS.rst
+   VIGNETTE-FILTER-QC.rst
