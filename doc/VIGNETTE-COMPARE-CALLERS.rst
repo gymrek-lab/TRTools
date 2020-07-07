@@ -59,15 +59,15 @@ Since we did not specify the :code:`--period` option, we are considering "ALL" r
 * :code:`hipstr_vs_eh-samplecompare.pdf`
 
 .. image:: hipstr_vs_eh-samplecompare.jpg
-   :width: 600
+   :width: 300
 
 * :code:`hipstr_vs_eh-locuscompare.pdf`
 
 .. image:: hipstr_vs_eh-locuscompare.jpg
-   :width: 600
+   :width: 300
 
 * :code:`hipstr_vs_eh-bubble-periodALL.pdf`
 
 .. image:: hipstr_vs_eh-bubble-periodALL.jpg
-   :width: 600
+   :width: 300
 

@@ -21,27 +21,27 @@ This will output the following files:
 * :code:`popstr-qc-sample-callnum.pdf`
 
 .. image:: popstr-qc-sample-callnum.jpg
-   :width: 600
+   :width: 300
 
 This shows the number of calls per sample.
 
 * :code:`popstr-qc-diffref-histogram.pdf`
 
 .. image:: popstr-qc-diffref-histogram.jpg
-   :width: 600
+   :width: 300
 
 This shows the distribution of allele sizes relative to the reference genome.
 
 * :code:`popstr-qc-diffref-bias.pdf`
 
 .. image:: popstr-qc-diffref-bias.jpg
-   :width: 600
+   :width: 300
 
 This shows the difference in allele size from the reference as a function of the reference length. We can see as expected calls are biased toward deletions for longer TRs.
 
 * :code:`popstr-qc-quality.pdf`
 
 .. image:: popstr-qc-quality.jpg
-   :width: 600
+   :width: 300
 
 This shows the distribution of quality scores across samples.
