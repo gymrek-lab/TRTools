@@ -32,7 +32,7 @@ INFOFIELDS = {
                ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
-           ("RU", True), ("SVTYPE", False), ("VARID", False)],
+           ("RU", True), ("SVTYPE", False), ("VARID", True)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
     "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
 }
@@ -104,9 +104,12 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat: list of str
        List of format field strings to use downstream
     """
-    # Check contigs the same for all readers
     def get_contigs(reader):
         return set(reader.contigs.values())
+    def get_alts(reader):
+        return set(reader.alts.values())
+
+     # Check contigs the same for all readers
     contigs = get_contigs(readers[0])
     for i in range(1, len(readers)):
         if get_contigs(readers[i]) != contigs:
@@ -129,6 +132,12 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         # in the future (e.g. when swapping to cyvcf2),
         # write  out the entire contig not just those two fields
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(contig.id, contig.length))
+    # Write ALT fields if present
+    alts = get_alts(readers[0])
+    for i in range(1, len(readers)):
+        alts = alts.union(get_alts(readers[1]))
+    for alt in alts:
+        vcfw.write("##ALT=<ID=%s,Description=\"%s\">\n"%(alt.id, alt.desc))
     # Write INFO fields, different for each tool
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:

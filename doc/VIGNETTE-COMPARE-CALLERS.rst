@@ -25,5 +25,10 @@ First, we'll want to merge the three samples called separately by ExpansionHunte
       --out trio_chr21_eh
 
   # Bgzip and index the output VCF to get ready for compareSTR
-  bgzip trio_chr21_eh.vcf.gz
+  bgzip trio_chr21_eh.vcf
   tabix -p vcf trio_chr21_eh.vcf.gz
+
+Now, we have a file from each tool (:code:`trio_chr21_hipstr.sorted.vcf.gz` and :code:`trio_chr21_eh.vcf.gz`) containing genotypes for all three samples. We can use :code:`compareSTR` to compare these::
+
+  compareSTR --vcf1 trio_chr21_hipstr.sorted.vcf.gz --vcf2 trio_chr21_eh.vcf.gz \
+     --vcftype1 hipstr --vcftype2 eh --out hipstr_vs_eh
