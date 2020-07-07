@@ -34,7 +34,9 @@ before_install: # for linux jobs
 install:
   - pip install .
   
-script: python -m pytest --cov=.
+script:
+  - python -m pytest --cov=.
+  - sh test/cmdline_tests.sh
 
 after_success:
   - codecov
