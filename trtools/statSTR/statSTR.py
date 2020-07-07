@@ -81,21 +81,6 @@ def GetHeader(header, sample_prefixes):
     sample_prefixes : list of str
        List of sample prefixes. empty if no sample groups used
 
-    Returns
-    -------
-    header_items : list of str
-       List of header items
-    """
-    if len(sample_prefixes) == 0: return [header]
-    else:
-        header_items = []
-        for sp in sample_prefixes:
-            header_items.append(header+"-"+sp)
-        return header_items
-
-def GetThresh(trrecord, samplelists=[]):
-    r"""Return the maximum TR allele length observed
-
     Parameters
     ----------
     trrecord: trh.TRRecord object
