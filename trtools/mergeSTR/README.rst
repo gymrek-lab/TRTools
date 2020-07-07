@@ -21,13 +21,13 @@ MergeSTR takes as input two or more VCF files with TR genotypes and outputs a co
 To run mergeSTR use the following command::
 
 	mergeSTR \
-  	  --vcfs <file1.vcf,file2.vcf,...> \
+  	  --vcfs <file1.vcf.gz,file2.vcf.gz,...> \
   	  --out <string> \
   	  [additional options]
 
 Required Parameters:
 
-* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. (See "Instructions on Compressing and Indexing VCF files" below)
+* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. (See `Instructions on Compressing and Indexing VCF files`_ below)
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files
 
@@ -40,7 +40,7 @@ Optional Additional Parameters:
 * :code:`--verbose`: Prints out extra information
 * :code:`--quiet`: Doesn't print out anything
 
-MergeSTR outputs a merged VCF file :code:`$out.vcf` with the merged genotypes. See "Example Commands" below for example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
+MergeSTR outputs a merged VCF file :code:`$out.vcf` with the merged genotypes. See `Example Commands`_ below for example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Supported VCF fields
 --------------------

@@ -128,3 +128,7 @@ NA12892_advntr_reheader.vcf.gz
 NA12892_advntr_reheader.vcf.gz.tbi
 NA12892_eh_reheader.vcf.gz
 NA12892_eh_reheader.vcf.gz.tbi
+stats_eh.tab
+stats_gangstr.tab
+stats_popstr.tab
+test.tab

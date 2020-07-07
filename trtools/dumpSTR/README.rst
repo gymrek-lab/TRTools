@@ -28,7 +28,7 @@ DumpSTR will output a new VCF file named :code:`$out.vcf`, a sample log file :co
 
 Specific filters available are described below.
 
-See "Example Commands" below for example dumpSTR commands for different supported TR genotypers based on example data files in this repository.
+See `Example Commands`_ below for example dumpSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Filter options
 --------------
