@@ -84,17 +84,16 @@ Example Commands
 
 Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-  # GangSTR
-  FILE1=NA12878_chr21_gangstr.sorted.vcf.gz
-  FILE2=NA12891_chr21_gangstr.sorted.vcf.gz
-  FILE3=NA12892_chr21_gangstr.sorted.vcf.gz
-  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_gangstr --vcftype gangstr # outputs test_merge_gangstr.vcf
-
-  # HipSTR
-  FILE1=NA12878_chr21_hipstr.sorted.vcf.gz
-  FILE2=NA12891_chr21_hipstr.sorted.vcf.gz
-  FILE3=NA12892_chr21_hipstr.sorted.vcf.gz
-  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_hipstr --vcftype hipstr # outputs test_merge_hipstr.vcf
+  # AdVNTR
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  for sample in NA12878 NA12891 NA12892; do
+      bcftools reheader -f hg19.fa.fai -o ${sample}_advntr_reheader.vcf.gz ${sample}_chr21_advntr.sorted.vcf.gz
+      tabix -p vcf ${sample}_advntr_reheader.vcf.gz
+  done
+  FILE1=NA12878_advntr_reheader.vcf.gz
+  FILE2=NA12891_advntr_reheader.vcf.gz
+  FILE3=NA12892_advntr_reheader.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_advntr --vcftype advntr --update-sample-from-file # outputs test_merge_advntr.vcf
 
   # ExpansionHunter
   # Note, you first need to reheader files to add required contig lines to VCF headers
@@ -107,16 +106,17 @@ Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Dat
   FILE3=NA12892_eh_reheader.vcf.gz
   mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_eh --vcftype eh # outputs test_merge_eh.vcf
 
-  # AdVNTR
-  # Note, you first need to reheader files to add required contig lines to VCF headers
-  for sample in NA12878 NA12891 NA12892; do
-      bcftools reheader -f hg19.fa.fai -o ${sample}_advntr_reheader.vcf.gz ${sample}_chr21_advntr.sorted.vcf.gz
-      tabix -p vcf ${sample}_advntr_reheader.vcf.gz
-  done
-  FILE1=NA12878_advntr_reheader.vcf.gz
-  FILE2=NA12891_advntr_reheader.vcf.gz
-  FILE3=NA12892_advntr_reheader.vcf.gz
-  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_advntr --vcftype advntr --update-sample-from-file # outputs test_merge_advntr.vcf
+  # GangSTR
+  FILE1=NA12878_chr21_gangstr.sorted.vcf.gz
+  FILE2=NA12891_chr21_gangstr.sorted.vcf.gz
+  FILE3=NA12892_chr21_gangstr.sorted.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_gangstr --vcftype gangstr # outputs test_merge_gangstr.vcf
+
+  # HipSTR
+  FILE1=NA12878_chr21_hipstr.sorted.vcf.gz
+  FILE2=NA12891_chr21_hipstr.sorted.vcf.gz
+  FILE3=NA12892_chr21_hipstr.sorted.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_hipstr --vcftype hipstr # outputs test_merge_hipstr.vcf
 
   # PopSTR
   FILE1=NA12878_chr21_popstr.sorted.vcf.gz

@@ -88,6 +88,13 @@ Example Commands
 
 Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
+  # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  bcftools reheader -f hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz NA12878_chr21_advntr.sorted.vcf.gz
+  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
+  FILE1=NA12878_advntr_reheader.vcf.gz
+  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
+
   # HipSTR vs. ExpansionHunter
   compareSTR \
       --vcf1 NA12878_chr21_hipstr.sorted.vcf.gz \
@@ -99,13 +106,6 @@ Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. D
       --vcf1 NA12878_chr21_hipstr.sorted.vcf.gz \
       --vcf2 NA12878_chr21_gangstr.sorted.vcf.gz \
       --vcftype1 hipstr --vcftype2 gangstr --out hipstr_vs_gangstr
-
-  # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
-  # Note, you first need to reheader files to add required contig lines to VCF headers
-  bcftools reheader -f hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz NA12878_chr21_advntr.sorted.vcf.gz
-  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
-  FILE1=NA12878_advntr_reheader.vcf.gz
-  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
 
   # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
   FILE1=trio_chr21_popstr.sorted.vcf.gz

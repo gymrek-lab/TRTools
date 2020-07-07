@@ -116,17 +116,17 @@ Example Commands
 
 Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
+  # AdVNTR
+  dumpSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out test_dumpstr_advntr
+
+  # ExpansionHunter
+  dumpSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered
+
   # GangSTR
   dumpSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10
 
   # HipSTR
   dumpSTR --vcf trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out test_dumpstr_hipstr --filter-hrun --num-records 10
-
-  # ExpansionHunter
-  dumpSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered
-
-  # AdVNTR
-  dumpSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out test_dumpstr_advntr
 
   # PopSTR
   dumpSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100

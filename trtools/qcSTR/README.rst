@@ -139,17 +139,17 @@ Example Commands
 
 Below are :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
+  # AdVNTR
+  qcSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
+
+  # ExpansionHunter
+  qcSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
+
   # GangSTR
   qcSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out test_qc_gangstr --period 4 --quality per-locus
 
   # HipSTR
   qcSTR --vcf trio_chr21_hipstr.sorted.vcf.gz --out test_qc_hipstr --vcftype hipstr --samples ex-samples.txt
-
-  # ExpansionHunter
-  qcSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
-
-  # AdVNTR
-  qcSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
 
   # PopSTR
   qcSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out test_qc_popstr

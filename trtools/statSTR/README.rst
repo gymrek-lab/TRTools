@@ -63,17 +63,17 @@ Example Commands
 
 Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
+  # AdVNTR
+  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
+
+  # ExpansionHunter
+  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz --out stats_eh --numcalled
+
   # GangSTR
   statSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out stats_gangstr --numcalled --mean
 
   # HipSTR
   statSTR --vcf trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out stats_gangstr --acount --afreq --mean
-
-  # ExpansionHunter
-  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz --out stats_eh --numcalled
-
-  # AdVNTR
-  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
 
   # PopSTR
   statSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out stats_popstr --mean --samples ex-samples.txt
