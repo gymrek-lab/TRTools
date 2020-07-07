@@ -32,3 +32,42 @@ Now, we have a file from each tool (:code:`trio_chr21_hipstr.sorted.vcf.gz` and 
 
   compareSTR --vcf1 trio_chr21_hipstr.sorted.vcf.gz --vcf2 trio_chr21_eh.vcf.gz \
      --vcftype1 hipstr --vcftype2 eh --out hipstr_vs_eh
+
+This command tells :code:`compareSTR` to compare these two VCFs. By specifying :code:`--vcftype1` and :code:`--vcftype2` we are telling it what format the two VCFs are in. Note, TRTools will try to automatically infer this anyway, and make sure what we infer matches what was specified.
+
+This should output several text files:
+
+* :code:`hipstr_vs_eh-overall.tab` will give overall concordance info::
+
+    period    concordance-seq    concordance-len    r2                numcalls
+    ALL       0.9533784988411481 0.9741486896059903 0.734005622224775 11218
+
+Since we did not specify the :code:`--period` option, we are considering "ALL" repeat units. This file shows the overall percent of matching calls based on allele sequences (:code:`concordance-seq`) and allele lengths (:code:`concordance-len`), the squared Pearson between genotypes (sum of allele lengths) (:code:`r2`), and the number of calls compared (:code:`numcalls`).
+
+* :code:`hipstr_vs_eh-callcompare.tab` gives a call by call comparison.
+
+* :code:`hipstr_vs_eh-locuscompare.tab` gives per-locus comparison statistics.
+
+* :code:`hipstr_vs_eh-samplecompare.tab` gives per-sample comparison statistics::
+    sample   metric-conc-seq    metric-conc-len    numcalls
+    NA12891  0.9540475554368154 0.9746192893401016 3743
+    NA12878  0.9526864474739375 0.9740711039828923 3741
+    NA12892  0.953401178361007  0.9737546866630958 3734
+
+:code:`mergeSTR` will also output several plots to visualize the comparison results:
+
+* :code:`hipstr_vs_eh-samplecompare.pdf`
+
+.. image:: hipstr_vs_eh-samplecompare.jpg
+   :width: 600
+
+* :code:`hipstr_vs_eh-locuscompare.pdf`
+
+.. image:: hipstr_vs_eh-locuscompare.jpg
+   :width: 600
+
+* :code:`hipstr_vs_eh-bubble-periodALL.pdf`
+
+.. image:: hipstr_vs_eh-bubble-periodALL.jpg
+   :width: 600
+
