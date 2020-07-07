@@ -338,6 +338,7 @@ def GetSampleInfo(record, alleles, formats) -> List[str]:
         for fmt in formats:
             val = sample[fmt]
             if isinstance(val, list): val = ",".join([str(item) for item in val])
+            if val is None: val = "."
             sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
