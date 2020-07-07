@@ -34,7 +34,7 @@ INFOFIELDS = {
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
            ("RU", True), ("SVTYPE", False), ("VARID", True)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
-    "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
+    "advntr": [("END", True), ("VID", True), ("RU", True), ("RC", True)]
 }
 
 # Tool-specific format fields to merge
