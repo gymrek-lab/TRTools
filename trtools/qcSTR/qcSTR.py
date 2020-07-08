@@ -545,38 +545,38 @@ def main(args):
 
         numrecords += 1
 
-    print("Producing " + args.out + "-diffref-bias.png ... ", end='',
+    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='',
           flush=True)
-    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.png", \
+    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf", \
                       xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
                       mingts=args.refbias_mingts, metric=args.refbias_metric, \
                       binsize=args.refbias_binsize)
     if len(samplelist) > 1:
-        print("Done.\nProducing " + args.out + "-sample-callnum.png ... ",
+        print("Done.\nProducing " + args.out + "-sample-callnum.pdf ... ",
               end='', flush=True)
-        OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.png")
+        OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
         print("Done.")
     else:
-        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.png ...")
+        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")
     if 1 < len(list(chrom for chrom, value in chrom_calls.items()
                     if value > 0)):
-        print("Producing " + args.out + "-chrom-callnum.png ... ", end='',
+        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='',
               flush=True)
-        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.png")
+        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
         print("Done.\n", end='')
     else:
-        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.png ...")
-    print("Producing " + args.out + "-diffref-histogram.png ... ", end='',
+        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.pdf ...")
+    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='',
           flush=True)
-    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.png")
+    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
     print("Done.")
 
     if default_quality:
         def quality_output_loc(quality_value):
-            return args.out+"-quality.png"
+            return args.out+"-quality.pdf"
     else:
         def quality_output_loc(quality_value):
-            return args.out+"-quality-{}.png".format(quality_value)
+            return args.out+"-quality-{}.pdf".format(quality_value)
 
     prior_qual_plot = False
     if _QualityTypes.per_sample.value in args.quality:
