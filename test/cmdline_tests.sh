@@ -59,8 +59,6 @@ runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz 
 runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
 runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
 
-# TODO check with bcftools index for mergestr, comparestr
-
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
@@ -104,11 +102,20 @@ runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE1} --out ${TMPDIR}/test_merge_advntr
 for sample in NA12878 NA12891 NA12892; do
     bcftools reheader -f ${EXDATADIR}/hg19.fa.fai -o ${TMPDIR}/${sample}_eh_reheader.vcf.gz ${EXDATADIR}/${sample}_chr21_eh.sorted.vcf.gz >/dev/null 2>&1 || die "bcftools failed"
     tabix -p vcf ${TMPDIR}/${sample}_eh_reheader.vcf.gz >/dev/null 2>&1 || die "tabix failed"
+
+    # Make bcftools index'ed versions
+    cp ${TMPDIR}/${sample}_eh_reheader.vcf.gz ${TMPDIR}/${sample}_eh_bcf_reheader.vcf.gz
+    bcftools index ${TMPDIR}/${sample}_eh_bcf_reheader.vcf.gz
 done
 FILE1=${TMPDIR}/NA12878_eh_reheader.vcf.gz
 FILE2=${TMPDIR}/NA12891_eh_reheader.vcf.gz
 FILE3=${TMPDIR}/NA12892_eh_reheader.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_eh --vcftype eh"
+
+FILE1=${TMPDIR}/NA12878_eh_bcf_reheader.vcf.gz
+FILE2=${TMPDIR}/NA12891_eh_bcf_reheader.vcf.gz
+FILE3=${TMPDIR}/NA12892_eh_bcf_reheader.vcf.gz
+runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_eh --vcftype eh" # should fail with BCF index
 
 # GangSTR
 FILE1=${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz
