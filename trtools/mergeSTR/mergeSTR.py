@@ -8,6 +8,7 @@ import sys
 from typing import List
 
 import numpy as np
+import os
 import vcf
 
 import trtools.utils.common as common
@@ -430,6 +431,16 @@ def getargs():  # pragma: no cover
     return args
 
 def main(args):    
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory {} which contains the output location does"
+                       " not exist".format(containing_dir))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     ### Check and Load VCF files ###
     vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
     if vcfreaders is None:

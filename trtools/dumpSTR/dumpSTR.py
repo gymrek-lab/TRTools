@@ -820,6 +820,17 @@ def main(args):
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
     if invcf is None:
         return 1
+
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory {} which contains the output location does"
+                       " not exist".format(containing_dir))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     # Set up record harmonizer and infer VCF type
     vcftype = trh.InferVCFType(invcf, args.vcftype)
 
