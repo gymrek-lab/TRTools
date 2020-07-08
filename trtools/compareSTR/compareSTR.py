@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tool for comparing two STR callsets
+Tool for comparing genotypes from two TR VCFs
 """
 
 # Allow making plots even with no x-forward
