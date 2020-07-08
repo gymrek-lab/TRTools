@@ -9,80 +9,83 @@ die()
     exit 1
 }
 
+runcmd_pass()
+{
+    echo "[runcmd_pass]: $1"
+    sh -c "$1" >/dev/null 2>&1 || die "Error running: $1"
+}
+
+runcmd_fail()
+{
+    echo "[runcmd_fail]: $1"
+    sh -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
+}
+
 EXDATADIR="example-files"
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 
 echo "Saving tmp files in ${TMPDIR}"
 
-echo "** Checking version **"
 # Check version
 for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR
 do
-    sh -c "${tool} --version" >/dev/null 2>&1 || die "Failed to get ${tool} version"
+    runcmd_pass "${tool} --version"
 done
-python -c "import trtools; print(trtools.__version__)" >/dev/null 2>&1 || die "Failed to get version from TRTools library"
 
-echo "** Checking outprefix options**"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean >/dev/null 2>&1 || die "Should write statstr to test.tab"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent dir"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write qc files to test prefix"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outputrefix to nonexistent directory"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write qc files to test prefix"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outputrefix to nonexistent directory"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+runcmd_pass "python -c 'import trtools; print(trtools.__version__)'"
 
-mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write to test.vcf"
-mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent directory"
-mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
-mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/ --mean"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean"
+#runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ --mean"
 
-compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write to test.vcf"
-compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent directory"
-compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
-compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
-    --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
+runcmd_fail "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/"
+#runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
+#runcmd_fail "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
 
-# TODO check with bcftools index
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
+runcmd_fail "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
+#runcmd_fail "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
 
-echo "** Checking setting --vcftype incorrectly **"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr >/dev/null 2>&1 && die "Should be gangstr VCF, hipstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype eh >/dev/null 2>&1 && die "Should be gangstr VCF, eh specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype advntr >/dev/null 2>&1 && die "Should be gangstr VCF, advntr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype popstr >/dev/null 2>&1 && die "Should be gangstr VCF, popstr specified"
+runcmd_pass "mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
+runcmd_fail "mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx"
+runcmd_pass "mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
+#runcmd_fail "mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
 
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr >/dev/null 2>&1 && die "Should be hipstr VCF, gangstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype eh >/dev/null 2>&1  && die "Should be hipstr VCF, eh specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype advntr >/dev/null 2>&1 && die "Should be hipstr VCF, advntr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype popstr >/dev/null 2>&1 && die "Should be hipstr VCF, popstr specified"
+runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
+runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx"
+runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
+#runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
 
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype gangstr >/dev/null 2>&1 && die "Should be EH VCF, gangstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype hipstr >/dev/null 2>&1 && die "Should be EH VCF, hipstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype advntr >/dev/null 2>&1 && die "Should be EH VCF, advntr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype popstr >/dev/null 2>&1 && die "Should be EH VCF, popstr specified"
+# TODO check with bcftools index for mergestr, comparestr
 
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr >/dev/null 2>&1 && die "Should be popstr VCF, gangstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr >/dev/null 2>&1 && die "Should be popstr VCF, hipstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype advntr >/dev/null 2>&1 && die "Should be popstr VCF, advntr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype eh >/dev/null 2>&1 && die "Should be popstr VCF, EH specified"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype popstr"
 
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype gangstr >/dev/null 2>&1 && die "Should be advntr VCF, gangstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype hipstr >/dev/null 2>&1 && die "Should be advntr VCF, hipstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype popstr >/dev/null 2>&1 && die "Should be advntr VCF, popstr specified"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype eh >/dev/null 2>&1 && die "Should be advntr VCF, EH specified"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype popstr"
 
-echo "** Checking merge **"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype advntr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype popstr"
+
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype popstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+
 # Test mergeSTR on all supported tools
 # AdVNTR
 # Note, you first need to reheader files to add required contig lines to VCF headers
@@ -93,7 +96,8 @@ done
 FILE1=${TMPDIR}/NA12878_advntr_reheader.vcf.gz
 FILE2=${TMPDIR}/NA12891_advntr_reheader.vcf.gz
 FILE3=${TMPDIR}/NA12892_advntr_reheader.vcf.gz
-mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_advntr --vcftype advntr --update-sample-from-file >/dev/null 2>&1 || die "Merge adVNTR failed"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_advntr --vcftype advntr --update-sample-from-file"
+runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE1} --out ${TMPDIR}/test_merge_advntr --vcftype advntr" # duplicate samples
 
 # ExpansionHunter
 # Note, you first need to reheader files to add required contig lines to VCF headers
@@ -104,66 +108,60 @@ done
 FILE1=${TMPDIR}/NA12878_eh_reheader.vcf.gz
 FILE2=${TMPDIR}/NA12891_eh_reheader.vcf.gz
 FILE3=${TMPDIR}/NA12892_eh_reheader.vcf.gz
-mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_eh --vcftype eh >/dev/null 2>&1 || die "merge EH failed"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_eh --vcftype eh"
 
 # GangSTR
 FILE1=${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_gangstr.sorted.vcf.gz
-mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_gangstr --vcftype gangstr >/dev/null 2>&1 || die "merge gangstr failed"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_gangstr --vcftype gangstr"
 
 # HipSTR
 FILE1=${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_hipstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_hipstr.sorted.vcf.gz
-mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_hipstr --vcftype hipstr >/dev/null 2>&1 || die "merge hipstr failed"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_hipstr --vcftype hipstr"
 
 # PopSTR
 FILE1=${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_popstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_popstr.sorted.vcf.gz
-mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_popstr --vcftype popstr >/dev/null 2>&1 || die "merge popstr failed"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_popstr --vcftype popstr"
 
-echo "** Checking statstr **"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq >/dev/null 2>&1 || die "statstr advntr failed"
-statSTR --vcf ${EXDATADIR}/NA12891_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/stats_eh --numcalled >/dev/null 2>&1 || die "statstr eh failed"
-statSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/stats_gangstr --numcalled --mean >/dev/null 2>&1 || die "statsr gangstr failed"
-statSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/stats_gangstr --acount --afreq --mean >/dev/null 2>&1 || die "statstr hipstr failed"
-statSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/stats_popstr --mean --samples ${EXDATADIR}/ex-samples.txt >/dev/null 2>&1 || die "statstr popstr failed"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12891_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/stats_eh --numcalled"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/stats_gangstr --numcalled --mean"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/stats_gangstr --acount --afreq --mean"
+runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/stats_popstr --mean --samples ${EXDATADIR}/ex-samples.txt"
 
-echo "** Checking dumpSTR **"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out ${TMPDIR}/test_dumpstr_advntr >/dev/null 2>&1 || die "dumpstr advntr failed"
-dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered >/dev/null 2>&1 || die "dumpstr EH failed"
-dumpSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10 >/dev/null 2>&1 || die "dumpstr gangstr failed"
-dumpSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/test_dumpstr_hipstr --filter-hrun --num-records 10 >/dev/null 2>&1 || die "dumpstr hipstr failed"
-dumpSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100 >/dev/null 2>&1 || die "dumpstr popstr failed"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out ${TMPDIR}/test_dumpstr_advntr"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/test_dumpstr_hipstr --filter-hrun --num-records 10"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100"
 
-echo "** Checking compareSTR **"
 FILE1=${TMPDIR}/NA12878_advntr_reheader.vcf.gz
-compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out ${TMPDIR}/advntr_vs_advntr --noplot >/dev/null 2>&1 || die "compareSTR advntr failed"
-compareSTR \
+runcmd_pass "compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out ${TMPDIR}/advntr_vs_advntr --noplot"
+runcmd_pass "compareSTR \
     --vcf1 ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz \
     --vcf2 ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz \
-    --vcftype1 hipstr --vcftype2 eh --out ${TMPDIR}/hipstr_vs_eh >/dev/null 2>&1 || die "compareSTR hipstr eh failed"
+    --vcftype1 hipstr --vcftype2 eh --out ${TMPDIR}/hipstr_vs_eh"
 
 FILE1=${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz
-compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out ${TMPDIR}/popstr_vs_popstr >/dev/null 2>&1 || die "comparestr popstr failed"
+runcmd_pass "compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out ${TMPDIR}/popstr_vs_popstr"
 
-echo "** Checking qcstr **"
-qcSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus >/dev/null 2>&1 || die "QC gangstr failed"
-qcSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt >/dev/null 2>&1 || die "QC hipstr failed"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_qc_eh >/dev/null 2>&1 || die "QC EH failed"
-qcSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out ${TMPDIR}/test_qc_advntr >/dev/null 2>&1 || die "QC advntr failed"
-qcSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_popstr >/dev/null 2>&1 || die "QC popstr failed"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_qc_eh"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out ${TMPDIR}/test_qc_advntr"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_popstr"
 
-echo "** Checking qcstr - merged VCFs**"
-qcSTR --vcf ${TMPDIR}/test_merge_gangstr.vcf --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus >/dev/null 2>&1 || die "QC gangstr merged failed"
-qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt >/dev/null 2>&1 || die "QC hipstr merged failed"
-qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh >/dev/null 2>&1 || die "QC EH merged failed"
-qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr >/dev/null 2>&1 || die "QC advntr merged failed" # TODO uncomment
-qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr >/dev/null 2>&1 || die "QC popstr merged failed" # TODO uncomment
+runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_gangstr.vcf --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus"
+runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt"
+runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh"
+#runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr"
+#runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
 
 echo "tests completed successfully!"
 exit 0
-
 
