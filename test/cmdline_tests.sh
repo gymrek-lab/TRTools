@@ -28,6 +28,11 @@ statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/k
 # TODO uncomment these
 #statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
 #statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test || die "Should write qc files to test prefix"
+qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outputrefix to nonexistent directory"
+# TODO uncomment these
+#qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+#qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
 
 
 echo "** Checking setting --vcftype incorrectly **"

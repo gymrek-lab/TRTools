@@ -32,7 +32,7 @@ before_install: # for linux jobs
   - pip install -U virtualenv
   - wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
   - tar -jvxf bcftools-1.10.2.tar.bz2 
-  - cd bcftools-1.10.2 && make && make install
+  - cd bcftools-1.10.2 && make && sudo make install
 
 install:
   - pip install .
