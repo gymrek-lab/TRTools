@@ -903,9 +903,12 @@ def main(args):
                 allele_freqs = trrecord.GetAlleleFreqs(uselength=args.use_length)
                 genotype_counts = trrecord.GetGenotypeCounts(uselength=args.use_length)
                 record.INFO["HET"] = utils.GetHeterozygosity(allele_freqs)
-                record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
                 record.INFO["AC"] = [int(item*(3*record.num_called)) for item in record.aaf]
                 record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
+                try:
+                    record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
+                except:
+                    record.INFO["HWEP"] = -1
             else:
                 record.INFO["HET"] = -1
                 record.INFO["HWEP"] = -1
