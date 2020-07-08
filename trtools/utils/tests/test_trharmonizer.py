@@ -738,7 +738,10 @@ def test_ConvertPLToQualityProb():
     assertFEquals(trh._ConvertPLtoQualityProb([10]), .1)
     assertFEquals(trh._ConvertPLtoQualityProb([255, 10, 246]), .1)
     assertFEquals(trh._ConvertPLtoQualityProb([10, 0, 10]), .8)
-    assertFEquals(trh._ConvertPLtoQualityProb([0, 1, 1, 1]), 0)
+    # confirm that PHRED scores of 0 don't drop below phred
+    # score of 1 despite our rebinning approach
+    assertFEquals(trh._ConvertPLtoQualityProb([0, 1, 1, 1]),
+                  trh._PHREDtoProb(1))
 
 def _getVariantAndSampleFromHarominzer(harmonizer, nvar=1):
     itr = iter(harmonizer)
@@ -774,15 +777,9 @@ def test_TRRecord_Quality(vcfdir):
     assert var.GetQualityScore(samp) == 0.93
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
-    assert popstr_trh.HasQualityScore()
+    assert not popstr_trh.HasQualityScore()
     var, samp = _getVariantAndSampleFromHarominzer(popstr_trh)
-    assert var.HasQualityScores()
-    # test a quality score that has a genotype with a PHRED score of 0 in it
-    assertFEquals(var.GetQualityScore(samp), 0.99996018828)
-    var, samp = _getVariantAndSampleFromHarominzer(popstr_trh)
-    assert var.HasQualityScores()
-    # test a quality score with no genotypes with a PHRED score of 0
-    assertFEquals(var.GetQualityScore(samp), 0.79432823472)
+    assert not var.HasQualityScores()
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
     assert advntr_trh.HasQualityScore()
