@@ -12,6 +12,8 @@ die()
 EXDATADIR="$(dirname "${BASH_SOURCE[0]}")/../example-files"
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 
+echo "Saving tmp files in ${TMPDIR}"
+
 echo "** Checking version **"
 # Check version
 for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR
@@ -21,7 +23,7 @@ done
 python -c "import trtools; print(trtools.__version__)" >/dev/null 2>&1 || die "Failed to get version from TRTools library"
 
 echo "** Checking outprefix options**"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean >/dev/null 2>&1 || die "Should write statstr to test.tab"
+statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean  || die "Should write statstr to test.tab"
 statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent dir"
 # TODO uncomment these
 #statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
