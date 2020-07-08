@@ -22,9 +22,14 @@ jobs:
         - pip install -U pytest-cov
         - pip install -U codecov
         - pip install -U virtualenv
+	- wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+        - tar -jvxf bcftools-1.10.2.tar.bz2 
+        - cd bcftools-1.10.2 && make && sudo make install && cd ..
+        - wget https://github.com/samtools/htslib/releases/download/1.10.2/htslib-1.10.2.tar.bz2
+        - tar -jvxf htslib-1.10.2.tar.bz2
+        - cd htslib-1.10.2 && make && sudo make install && cd ..
 
 before_install: # for linux jobs
-  - sudo apt-get update && sudo apt-get install tabix
   - python --version
   - pip install -U --upgrade pip
   - pip install -U pytest
@@ -34,6 +39,9 @@ before_install: # for linux jobs
   - wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
   - tar -jvxf bcftools-1.10.2.tar.bz2 
   - cd bcftools-1.10.2 && make && sudo make install && cd ..
+  - wget https://github.com/samtools/htslib/releases/download/1.10.2/htslib-1.10.2.tar.bz2
+  - tar -jvxf htslib-1.10.2.tar.bz2
+  - cd htslib-1.10.2 && make && sudo make install && cd ..
 
 install:
   - pip install .
