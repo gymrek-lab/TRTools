@@ -377,17 +377,15 @@ def main(args):
         common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
 
-    containing_dir = os.path.split(os.path.abspath(args.out))[0]
-    if not os.path.exists(containing_dir):
-        common.WARNING("The directory {} which contains the output location does"
-                       " not exist".format(containing_dir))
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
         return 1
 
-    if os.path.isdir(args.out):
-        common.WARNING("The output location {} is a "
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
-
 
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
