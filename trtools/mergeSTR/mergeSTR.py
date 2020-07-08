@@ -109,8 +109,12 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         return set(reader.contigs.values())
     def get_alts(reader):
         return set(reader.alts.values())
+    def get_sources(reader):
+        if "source" in reader.metadata:
+            return set(r.metadata["source"])
+        else: return set()
 
-     # Check contigs the same for all readers
+    # Check contigs the same for all readers
     contigs = get_contigs(readers[0])
     for i in range(1, len(readers)):
         if get_contigs(readers[i]) != contigs:
@@ -122,10 +126,18 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
+    # Update commands
     for r in readers:
         if "command" in r.metadata:
-            vcfw.write("##command="+r.metadata["command"][0]+"\n")
+            for i in range(len(r.metadata["command"])):
+                vcfw.write("##command="+r.metadata["command"][i]+"\n")
     vcfw.write("##command="+cmd+"\n")
+
+    # Update sources
+    sources = set.union(*[get_sources(reader) for reader in readers])
+    for src in sources:
+        vcfw.write("##source="+src+"\n")
+
     for contig in contigs:
         # contigs in VCFs can contain more info than just ID and length
         # (such as URL)
@@ -134,9 +146,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         # write  out the entire contig not just those two fields
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(contig.id, contig.length))
     # Write ALT fields if present
-    alts = get_alts(readers[0])
-    for i in range(1, len(readers)):
-        alts = alts.union(get_alts(readers[1]))
+    alts = set.union(*[get_alts(reader) for reader in readers])
     for alt in alts:
         vcfw.write("##ALT=<ID=%s,Description=\"%s\">\n"%(alt.id, alt.desc))
     # Write INFO fields, different for each tool
@@ -432,8 +442,8 @@ def getargs():  # pragma: no cover
 
 def main(args):    
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
-        common.WARNING("Error: The directory {} which contains the output location does"
-                       " not exist".format(containing_dir))
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
         return 1
 
     if os.path.isdir(args.out) and args.out.endswith(os.sep):

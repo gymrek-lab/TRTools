@@ -334,8 +334,8 @@ def main(args):
         return 1
 
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
-        common.WARNING("Error: The directory {} which contains the output location does"
-                       " not exist".format(containing_dir))
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
         return 1
 
     if os.path.isdir(args.out) and args.out.endswith(os.sep):

@@ -97,7 +97,7 @@ FILE1=${TMPDIR}/NA12878_advntr_reheader.vcf.gz
 FILE2=${TMPDIR}/NA12891_advntr_reheader.vcf.gz
 FILE3=${TMPDIR}/NA12892_advntr_reheader.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_advntr --vcftype advntr --update-sample-from-file"
-runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE1} --out ${TMPDIR}/test_merge_advntr --vcftype advntr" # duplicate samples
+runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE1} --out ${TMPDIR}/test_merge_advntr_dup --vcftype advntr" # duplicate samples
 
 # ExpansionHunter
 # Note, you first need to reheader files to add required contig lines to VCF headers
@@ -159,8 +159,8 @@ runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TM
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_gangstr.vcf --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh"
-#runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr"
-#runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
+runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr"
+runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
 
 echo "tests completed successfully!"
 exit 0
