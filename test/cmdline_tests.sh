@@ -23,23 +23,36 @@ done
 python -c "import trtools; print(trtools.__version__)" >/dev/null 2>&1 || die "Failed to get version from TRTools library"
 
 echo "** Checking outprefix options**"
-statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean  || die "Should write statstr to test.tab"
+statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean >/dev/null 2>&1 || die "Should write statstr to test.tab"
 statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent dir"
-# TODO uncomment these
-#statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
-#statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ --mean >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
 qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write qc files to test prefix"
 qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outputrefix to nonexistent directory"
-# TODO uncomment these
-#qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
-#qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+qcSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
 dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write qc files to test prefix"
 dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outputrefix to nonexistent directory"
-# TODO uncomment these
-#dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
-#dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
+dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outputrefix to dirname"
 
-# TODO add outprefix tests for mergeSTR, compareSTR
+mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write to test.vcf"
+mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent directory"
+mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+mergeSTR --vcfs ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz,${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+
+compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/test >/dev/null 2>&1 || die "Should write to test.vcf"
+compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/kittens/xxx >/dev/null 2>&1 && die "Trying to set outprefix to nonexistent directory"
+compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR}/ >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
+compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz \
+    --out ${TMPDIR} >/dev/null 2>&1 && die "Trying to set outprefix to dirname"
 
 # TODO check with bcftools index
 
@@ -147,8 +160,8 @@ echo "** Checking qcstr - merged VCFs**"
 qcSTR --vcf ${TMPDIR}/test_merge_gangstr.vcf --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus >/dev/null 2>&1 || die "QC gangstr merged failed"
 qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt >/dev/null 2>&1 || die "QC hipstr merged failed"
 qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh >/dev/null 2>&1 || die "QC EH merged failed"
-#qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr >/dev/null 2>&1 || die "QC advntr merged failed" # TODO uncomment
-#qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr >/dev/null 2>&1 || die "QC popstr merged failed" # TODO uncomment
+qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr >/dev/null 2>&1 || die "QC advntr merged failed" # TODO uncomment
+qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr >/dev/null 2>&1 || die "QC popstr merged failed" # TODO uncomment
 
 echo "tests completed successfully!"
 exit 0
