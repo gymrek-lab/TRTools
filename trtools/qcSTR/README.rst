@@ -67,10 +67,11 @@ the :code:`--quality` option. In that case you will get a file named
 :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. Quality plot
 examples are shown below.
 
-Note: quality scores are only comparable between different runs of the same genotyper.
-Quality score values produced by different genotypers have different meanings due to the different 
+Note: quality score plots are useful when considered in the context of a single genotyper run,
+and can also be used to compare different invocations of the same genotyper. However,
+quality score values produced by different genotypers have different meanings due to the different 
 modeling assumptions the different genotypers make. If you wish to compare quality
-scores across genotypers, you must understand those different assumptions and infer how 
+scores across genotypers, you **must** first understand those different assumptions and infer how 
 they will affect the validity of your comparison. 
 
 Quality Plot Options
