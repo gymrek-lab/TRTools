@@ -9,7 +9,7 @@ die()
     exit 1
 }
 
-EXDATADIR="$(dirname "${BASH_SOURCE[0]}")/../example-files"
+EXDATADIR="example-files"
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 
 echo "Saving tmp files in ${TMPDIR}"
