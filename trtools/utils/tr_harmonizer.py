@@ -476,7 +476,7 @@ def _ConvertPLtoQualityProb(PL: List[int]) -> float:
         if phred_likelihood == 0:
             continue
         sum_other_likelihoods += _PHREDtoProb(phred_likelihood)
-    return max(0, 1 - sum_other_likelihoods)
+    return max(_PHREDtoProb(1), 1 - sum_other_likelihoods)
 
 
 def _HarmonizePopSTRRecord(vcfrecord):

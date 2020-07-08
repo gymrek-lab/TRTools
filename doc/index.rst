@@ -23,6 +23,5 @@ Table of Contents
    UTILITIES
    CALLERS
    LIBRARY
-   API
    site_indices
 
