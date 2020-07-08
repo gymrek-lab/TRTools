@@ -38,8 +38,10 @@ You can alternatively obtain TRTools from pip::
 (Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
 
 To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
-checkout the branch you're interested in, and run the following command from the base directory of the repo::
+checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
 
+        git clone https://github.com/gymreklab/TRTools
+        cd TRTools/
         pip install --upgrade pip
 	pip install .
 
