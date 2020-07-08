@@ -30,7 +30,7 @@ You can install TRTools with conda::
 
         conda install -c bioconda trtools
 
-You can obtain TRTools from pip::
+You can alternatively obtain TRTools from pip::
 
         pip install --upgrade pip
 	pip install trtools
@@ -49,11 +49,11 @@ Tools
 -----
 TRTools includes the following tools.
 
-* dumpSTR: a tool for filtering VCF files with TR genotypes
-* mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
-* statSTR: a tool for computing various statistics on VCF files
-* compareSTR: a tool for comparing TR callsets
-* qcSTR: a tool for generating various quality control plots for a TR callset
+* `dumpSTR <https://trtools.readthedocs.io/en/latest/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
+* `mergeSTR <https://trtools.readthedocs.io/en/latest/source/mergeSTR.html>`_: a tool to merge VCF files across multiple samples genotyped using the same tool
+* `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
+* `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
+* `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
 
 Type :code:`<command> --help` to see a full set of options.
 
@@ -66,9 +66,8 @@ It additionally includes a python library, :code:`trtools`, which can be accesse
 Usage
 -----
 
-New users are recommended to start with our `example Vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_.
-You can also read the `Command-Line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
-
+We recommend new users start with example commands described in the `Command-Line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
+We also suggest going through our `example vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
 
 Supported TR Callers
 --------------------
@@ -80,6 +79,8 @@ TRTools supports VCFs from the following TR genotyping tools:
 * HipSTR_
 * PopSTR_ version 2 or higher
 
+See our description of `example use cases and features <https://trtools.readthedocs.io/en/latest/CALLERS.html>`_ of each of these tools.
+
 ..
     please ensure this list of links remains the same as the one in the main README
 
@@ -90,6 +91,13 @@ TRTools supports VCFs from the following TR genotyping tools:
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
 .. _Contributing:
+
+Development Notes
+-----------------
+
+* TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
+* TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_.
+
 
 Contributing
 ------------
