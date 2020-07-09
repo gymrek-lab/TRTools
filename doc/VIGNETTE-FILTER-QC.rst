@@ -38,10 +38,3 @@ This shows the distribution of allele sizes relative to the reference genome.
    :width: 300
 
 This shows the difference in allele size from the reference as a function of the reference length. We can see as expected calls are biased toward deletions for longer TRs.
-
-* :code:`popstr-qc-quality.pdf`
-
-.. image:: popstr-qc-quality.jpg
-   :width: 300
-
-This shows the distribution of quality scores across samples.
