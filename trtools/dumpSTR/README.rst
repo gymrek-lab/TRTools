@@ -108,7 +108,7 @@ Output files
 DumpSTR outputs the following files:
 
 * :code:`$out.vcf`: Filtered VCF file. Filtered loci have a list of failing filters in the FILTER column. An additional FORMAT:FILTER field is added to each call. This is set to PASS for passing calls. For failing calls, this is set to a list of filter reasons and the genotype is set to missing.
-* :code:`$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample.
+* :code:`$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample. This file also contains a column for each call-level filter indicating how many calls for that sample were filtered due to that reason. e.g. column "AdVNTRCallMinDepth" would indicate the number of adVNTR calls for that sample filtered due to low call depth (based on :code:`--advntr-min-call-DP`).
 * :code:`$out.loclog.tab`: Output locus-level log info. It contains the mean call rate at passing TR loci. It also contains a separate line for each filter with the number of TR loci failing that filter.
 
 Example Commands
@@ -117,7 +117,7 @@ Example Commands
 Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
   # AdVNTR
-  dumpSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out test_dumpstr_advntr
+  dumpSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 100 --out test_dumpstr_advntr
 
   # ExpansionHunter
   dumpSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered

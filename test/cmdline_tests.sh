@@ -141,7 +141,7 @@ runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out $
 runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/stats_gangstr --acount --afreq --mean"
 runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/stats_popstr --mean --samples ${EXDATADIR}/ex-samples.txt"
 
-runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 5 --out ${TMPDIR}/test_dumpstr_advntr"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 100 --out ${TMPDIR}/test_dumpstr_advntr"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/test_dumpstr_hipstr --filter-hrun --num-records 10"
