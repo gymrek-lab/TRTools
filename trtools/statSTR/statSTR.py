@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tool for computing stats on STR VCF files
+Tool for computing stats on a TR VCF file
 """
 
 # Allow making plots even with no x-forward
