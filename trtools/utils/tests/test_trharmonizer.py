@@ -726,22 +726,22 @@ def assertFEquals(f1: float, f2: float):
     epsilon = 1e-6
     assert abs(f1 - f2) < epsilon
 
-def test_PHREDtoProb():
-    # pylint: disable=W0212
-    assertFEquals(trh._PHREDtoProb(0), 1)
-    assertFEquals(trh._PHREDtoProb(20), .01)
-    assertFEquals(trh._PHREDtoProb(2), 0.63095734448)
+#def test_PHREDtoProb():
+#    # pylint: disable=W0212
+#    assertFEquals(trh._PHREDtoProb(0), 1)
+#    assertFEquals(trh._PHREDtoProb(20), .01)
+#    assertFEquals(trh._PHREDtoProb(2), 0.63095734448)
 
-def test_ConvertPLToQualityProb():
-    # pylint: disable=W0212
-    assertFEquals(trh._ConvertPLtoQualityProb([0]), 1)
-    assertFEquals(trh._ConvertPLtoQualityProb([10]), .1)
-    assertFEquals(trh._ConvertPLtoQualityProb([255, 10, 246]), .1)
-    assertFEquals(trh._ConvertPLtoQualityProb([10, 0, 10]), .8)
-    # confirm that PHRED scores of 0 don't drop below phred
-    # score of 1 despite our rebinning approach
-    assertFEquals(trh._ConvertPLtoQualityProb([0, 1, 1, 1]),
-                  trh._PHREDtoProb(1))
+#def test_ConvertPLToQualityProb():
+#    # pylint: disable=W0212
+#    assertFEquals(trh._ConvertPLtoQualityProb([0]), 1)
+#    assertFEquals(trh._ConvertPLtoQualityProb([10]), .1)
+#    assertFEquals(trh._ConvertPLtoQualityProb([255, 10, 246]), .1)
+#    assertFEquals(trh._ConvertPLtoQualityProb([10, 0, 10]), .8)
+#    # confirm that PHRED scores of 0 don't drop below phred
+#    # score of 1 despite our rebinning approach
+#    assertFEquals(trh._ConvertPLtoQualityProb([0, 1, 1, 1]),
+#                  trh._PHREDtoProb(1))
 
 def _getVariantAndSampleFromHarominzer(harmonizer, nvar=1):
     itr = iter(harmonizer)

@@ -15,14 +15,13 @@ Here is how TRHarmonizer infers quality scores for each supported genotyper:
 
 * AdVNTR quality scores are taken directly from the :code:`ML` (maximum likelihood)
   format field.
-* ExpansionHunter does not output anything that can be reasonably interpreted as a
-  quality score
+* ExpansionHunter does not output a quality score. It does output a confidence interval, 
+  but this field is not currently used by TRTools.
 * GangSTR quality scores are taken directly from the :code:`Q` format field.
-* HipSTR quality scores are taken directly from the :code:`Q` format field, which represents
-  the quality of a call up to choice of phasing. TRHarmonizer ignores the
+* HipSTR quality scores are taken directly from the :code:`Q` format field. TRHarmonizer ignores the
   :code:`PQ` field, which represents the quality of a call and its phasing.
-* TRTools does not currently support PopSTR quality scores. We are working to figure out
-  how best to interpret the :code:`PL` field as a quality score.
+* PopSTR does not output a genotype quality score. It does output a :code:`PL` field 
+  with Phred-scaled genotype likelihoods, but this field is
+  not currently used by TRTools,
 
-Read the relevant genotyper's documentation to understand the meaning of the format field
-that TRHarmonzier uses.
+More details about these fields can be found in the documentation for each genotyper.

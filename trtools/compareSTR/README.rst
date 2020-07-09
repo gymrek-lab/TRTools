@@ -17,10 +17,7 @@ CompareSTR optionally will stratify results based on a user-specified FORMAT fie
 
 Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
 
-Note: CompareSTR currently is unable to compare quality scores between VCFs produced by different
-runs of the same genotyper. For the time being, please use qcSTR to individually generate quality
-plots for both VCFs. Please also heed the note above **Quality Plot Options** in the qcSTR docs
-regarding the inability to meaningfully compare quality scores produced by different genotypers.
+Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_ to visualize the distribution of quality scores in each VCF file seprately.
 
 Usage
 -----

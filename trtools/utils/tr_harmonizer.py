@@ -445,38 +445,38 @@ def _HarmonizeAdVNTRRecord(vcfrecord):
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'ML')
 
 
-def _PHREDtoProb(phred: int) -> float:
-    """Convert PHRED score to probability
+#def _PHREDtoProb(phred: int) -> float:
+#    """Convert PHRED score to probability
+#
+#    Notes
+#    -----
+#    Per https://en.wikipedia.org/wiki/Phred_quality_score
+#    """
+#    return 10**(-phred/10)
 
-    Notes
-    -----
-    Per https://en.wikipedia.org/wiki/Phred_quality_score
-    """
-    return 10**(-phred/10)
 
-
-def _ConvertPLtoQualityProb(PL: List[int]) -> float:
-    """
-    Convert a list of PHRED-scaled genotype probabilities to the
-    unscaled probability of the single most likely genotype.
-
-    Notes
-    -----
-    PHRED scaling is not very accurate around numbers close to 1
-    unfortunately, so for PHRED score of 0, instead calculate the probability
-    by 1 - sum(probabilities of other genotypes)
-    """
-
-    max_likelihood = min(PL)
-    if max_likelihood != 0:
-        return _PHREDtoProb(max_likelihood)
-
-    sum_other_likelihoods = 0.0
-    for phred_likelihood in PL:
-        if phred_likelihood == 0:
-            continue
-        sum_other_likelihoods += _PHREDtoProb(phred_likelihood)
-    return max(_PHREDtoProb(1), 1 - sum_other_likelihoods)
+#def _ConvertPLtoQualityProb(PL: List[int]) -> float:
+#    """
+#    Convert a list of PHRED-scaled genotype probabilities to the
+#    unscaled probability of the single most likely genotype.#
+#
+#    Notes
+#    -----
+#    PHRED scaling is not very accurate around numbers close to 1
+#    unfortunately, so for PHRED score of 0, instead calculate the probability
+#    by 1 - sum(probabilities of other genotypes)
+#    """
+#
+#    max_likelihood = min(PL)
+#    if max_likelihood != 0:
+#        return _PHREDtoProb(max_likelihood)
+#
+#    sum_other_likelihoods = 0.0
+#    for phred_likelihood in PL:
+#        if phred_likelihood == 0:
+#            continue
+#        sum_other_likelihoods += _PHREDtoProb(phred_likelihood)
+#    return max(_PHREDtoProb(1), 1 - sum_other_likelihoods)
 
 
 def _HarmonizePopSTRRecord(vcfrecord):
