@@ -21,7 +21,13 @@ runcmd_fail()
     sh -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
 }
 
-EXDATADIR="example-files"
+if [ $# -eq 0 ]; then
+    # use default example location
+    EXDATADIR="example-files"
+else
+    EXDATADIR=$1
+fi
+
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 
 echo "Saving tmp files in ${TMPDIR}"
