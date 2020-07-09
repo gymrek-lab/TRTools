@@ -65,7 +65,8 @@ for <= 5 samples. This will not be produced for vcfs which do not have quality
 metrics. Alternatively, you may specify the type(s) of quality plot(s) you wish to see with
 the :code:`--quality` option. In that case you will get a file named
 :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. Quality plot
-examples are shown below.
+examples are shown below. To learn more about how qcSTR infers quality scores for VCFs from
+different genotypers, see `here <https://trtools.readthedocs.io/en/latest/LIBRARY_SPEC.html>`_
 
 Note: quality score plots are useful when considered in the context of a single genotyper run,
 and can also be used to compare different invocations of the same genotyper. However,
