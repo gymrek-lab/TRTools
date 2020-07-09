@@ -30,10 +30,15 @@ You can install TRTools with conda::
 
         conda install -c bioconda trtools
 
+Note: Bioconda only supports python versions 3.6 and 3.7 currently,
+so that is all TRTools supports in conda.
+If you are using a different version of python we support (3.5 or >= 3.8),
+install TRTools using pip.
+
 You can alternatively obtain TRTools from pip::
 
         pip install --upgrade pip
-	pip install trtools
+        pip install trtools
 
 (Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
 
@@ -43,7 +48,7 @@ checkout the branch you're interested in, and run the following command from the
         git clone https://github.com/gymreklab/TRTools
         cd TRTools/
         pip install --upgrade pip
-	pip install .
+        pip install .
 
 (Note, required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.)
 
@@ -51,25 +56,25 @@ Tools
 -----
 TRTools includes the following tools.
 
-* `dumpSTR <https://trtools.readthedocs.io/en/latest/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
 * `mergeSTR <https://trtools.readthedocs.io/en/latest/source/mergeSTR.html>`_: a tool to merge VCF files across multiple samples genotyped using the same tool
+* `dumpSTR <https://trtools.readthedocs.io/en/latest/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
+* `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
 * `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
 * `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
-* `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
 
 Type :code:`<command> --help` to see a full set of options.
 
 It additionally includes a python library, :code:`trtools`, which can be accessed from within Python scripts. e.g.::
 
-	import trtools.utils.utils as stls
-	allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
-	stls.GetHeterozygosity(allele_freqs) # should return 0.5
+        import trtools.utils.utils as stls
+        allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
+        stls.GetHeterozygosity(allele_freqs) # should return 0.5
 
 Usage
 -----
 
-We recommend new users start with example commands described in the `Command-Line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
-We also suggest going through our `example vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
+We recommend new users start with the example commands described in the `command-line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
+We also suggest going through our `vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
 
 Supported TR Callers
 --------------------
@@ -81,7 +86,7 @@ TRTools supports VCFs from the following TR genotyping tools:
 * HipSTR_
 * PopSTR_ version 2 or higher
 
-See our description of `example use cases and features <https://trtools.readthedocs.io/en/latest/CALLERS.html>`_ of each of these tools.
+See our description of the `features and example use-cases <https://trtools.readthedocs.io/en/latest/CALLERS.html>`_ of each of these tools.
 
 ..
     please ensure this list of links remains the same as the one in the main README
