@@ -1,5 +1,5 @@
-from setuptools import setup, find_packages
 import os
+from setuptools import setup, find_packages
 
 DESCRIPTION = "Toolkit for genome-wide analysis of STRs"
 LONG_DESCRIPTION = DESCRIPTION
@@ -13,9 +13,9 @@ LICENSE = 'MIT'
 
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
-MAJ = 2
+MAJ = 3
 MIN = 0
-REV = 18
+REV = 0
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
