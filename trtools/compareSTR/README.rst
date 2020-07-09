@@ -15,7 +15,9 @@ Example use cases include:
 
 CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
 
-**Note:** CompareSTR is designed to be used as a QC tool. While it may be able to pick up certail biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+
+Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_ to visualize the distribution of quality scores in each VCF file seprately.
 
 Usage
 -----
@@ -129,12 +131,12 @@ Below are additional :code:`compareSTR` examples using VCFs from supported TR ge
   # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
   # Note, you first need to reheader files to add required contig lines to VCF headers
   bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz
-  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
+  tabix -p vcf NA12878_advntr_reheader.vcf.gz
   FILE1=NA12878_advntr_reheader.vcf.gz
   compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
 
   # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
   FILE1=${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz
   compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out popstr_vs_popstr
-  
+
 
