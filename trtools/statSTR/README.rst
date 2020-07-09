@@ -14,14 +14,14 @@ To run statSTR use the following command::
 
    statSTR 
       --vcf <vcf file> \
-      --out test.tab \
+      --out <string> \
       --thresh \
       [additional options]
 
 Required Parameters: 
 
-* :code:`--vcf <string>`: input the STR VCF file 
-* :code:`--vcftype <string>`: Type of VCF file being processed. Default=:code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcf <string>`: the input TR VCF file
+* :code:`--vcftype <string>`: Type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files. Set to stdout to write to standard output.
 
 Filtering Group parameters: 
@@ -32,7 +32,9 @@ Filtering Group parameters:
 
 For specific statistics available, see below.
 
-StatSTR will output a tab delimited file with per-locus statistics. See a description of the output file below.
+StatSTR will output a tab delimited file :code:`$out.tab` with per-locus statistics. See a description of the output file below.
+
+See `Example Commands`_ below for example statSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Statistics options
 ------------------
@@ -51,29 +53,27 @@ The following options can be specified to compute various per-locus statistics:
 
 Specifying :code:`--use-length` will collapse alleles by length (only relevant for HipSTR, which outputs sequence differences in TR alleles).
 
-Example command
----------------
-
-If you have installed the TRTools package, you can run an example statSTR command using files in this repository::
-
-  statSTR \
-    --vcf $REPODIR/test/common/sample_vcfs/test_hipstr.vcf \
-    --out teststats.tab \
-    --afreq
-
-where :code:`$REPODIR` points to the root path of this repository.
-
-This will output :code:`teststats.tab` with columns chrom, start, end, afreq.
-
-If you are testing from source, you can run::
-
-  python statSTR.py \
-    --vcf $REPODIR/test/common/sample_vcfs/test_hipstr.vcf \
-    --out teststats.tab \
-    --afreq
-
 Output file
 -----------
 
 StatSTR outputs a tab-delimited file with columns: chrom, start, end, plus an additional column for each statistic specified using the options described above.
 
+Example Commands
+----------------
+
+Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+
+  # AdVNTR
+  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
+
+  # ExpansionHunter
+  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz --out stats_eh --numcalled
+
+  # GangSTR
+  statSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out stats_gangstr --numcalled --mean
+
+  # HipSTR
+  statSTR --vcf trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out stats_gangstr --acount --afreq --mean
+
+  # PopSTR
+  statSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out stats_popstr --mean --samples ex-samples.txt

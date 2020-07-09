@@ -3,16 +3,25 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-TRTools: a tool for genome-wide tandem repeat analysis
-======================================================
+TRTools: a toolkit for genome-wide tandem repeat analysis
+=========================================================
 
-.. include:: ..//README.rst
+.. include:: ../README.rst
+    :start-after: before_header
+    :end-before: after_header
+
+.. include:: ../README.rst
+    :start-after: after_title
+
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
 
    VIGNETTES
    UTILITIES
-   API
+   CALLERS
+   LIBRARY
    site_indices
 
