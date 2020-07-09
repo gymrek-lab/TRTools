@@ -56,7 +56,7 @@ def test_output_location_is_directory(tmpdir, vcfdir, capsys):
     qcdir = os.path.join(vcfdir, "qc_vcfs")
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(qcdir, "test_popstr.vcf")
-    args.out = str(tmpdir)
+    args.out = str(tmpdir)+os.path.sep
     retcode = main(args)
     assert "is a directory" in capsys.readouterr().err
     assert retcode == 1

@@ -330,8 +330,19 @@ def getargs(): # pragma: no cover
 
 def main(args):
     if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+        common.WARNING("Error: %s does not exist"%args.vcf)
         return 1
+
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     # Load samples
     sample_lists = []
     sample_prefixes = []
