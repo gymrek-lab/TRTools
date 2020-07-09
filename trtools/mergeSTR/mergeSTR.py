@@ -9,6 +9,7 @@ import sys
 from typing import List
 
 import numpy as np
+import os
 import vcf
 
 import trtools.utils.common as common
@@ -33,9 +34,9 @@ INFOFIELDS = {
                ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                ("DFLANKINDEL", False)],
     "eh": [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
-           ("RU", True), ("SVTYPE", True), ("VARID", False)],
+           ("RU", True), ("SVTYPE", False), ("VARID", True)],
     "popstr": [("Motif", True)], # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
-    "advntr": [("END", True), ("VID", False), ("RU", True), ("RC", True)]
+    "advntr": [("END", True), ("VID", True), ("RU", True), ("RC", True)]
 }
 
 # Tool-specific format fields to merge
@@ -105,9 +106,16 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     useformat: list of str
        List of format field strings to use downstream
     """
-    # Check contigs the same for all readers
     def get_contigs(reader):
         return set(reader.contigs.values())
+    def get_alts(reader):
+        return set(reader.alts.values())
+    def get_sources(reader):
+        if "source" in reader.metadata:
+            return set(r.metadata["source"])
+        else: return set()
+
+    # Check contigs the same for all readers
     contigs = get_contigs(readers[0])
     for i in range(1, len(readers)):
         if get_contigs(readers[i]) != contigs:
@@ -119,10 +127,18 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
 
+    # Update commands
     for r in readers:
         if "command" in r.metadata:
-            vcfw.write("##command="+r.metadata["command"][0]+"\n")
+            for i in range(len(r.metadata["command"])):
+                vcfw.write("##command="+r.metadata["command"][i]+"\n")
     vcfw.write("##command="+cmd+"\n")
+
+    # Update sources
+    sources = set.union(*[get_sources(reader) for reader in readers])
+    for src in sources:
+        vcfw.write("##source="+src+"\n")
+
     for contig in contigs:
         # contigs in VCFs can contain more info than just ID and length
         # (such as URL)
@@ -130,6 +146,10 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         # in the future (e.g. when swapping to cyvcf2),
         # write  out the entire contig not just those two fields
         vcfw.write("##contig=<ID=%s,length=%s>\n"%(contig.id, contig.length))
+    # Write ALT fields if present
+    alts = set.union(*[get_alts(reader) for reader in readers])
+    for alt in alts:
+        vcfw.write("##ALT=<ID=%s,Description=\"%s\">\n"%(alt.id, alt.desc))
     # Write INFO fields, different for each tool
     useinfo = []
     for (field, reqd) in INFOFIELDS[vcftype]:
@@ -330,6 +350,7 @@ def GetSampleInfo(record, alleles, formats) -> List[str]:
         for fmt in formats:
             val = sample[fmt]
             if isinstance(val, list): val = ",".join([str(item) for item in val])
+            if val is None: val = "."
             sample_items.append(val)
         record_items.append(":".join([str(item) for item in sample_items]))
     return record_items
@@ -421,6 +442,16 @@ def getargs():  # pragma: no cover
     return args
 
 def main(args):    
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     ### Check and Load VCF files ###
     vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
     if vcfreaders is None:

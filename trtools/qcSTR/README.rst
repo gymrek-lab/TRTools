@@ -12,8 +12,8 @@ Usage
 qcSTR takes as input a VCF file and outputs several plots in pdf format. To run qcSTR, use the following command::
 
     qcSTR \
-  	--vcf <vcf file> \
-   	--out test \
+  	--vcf <file.vcf> \
+   	--out <string> \
    	[additional options]
 
 
@@ -37,6 +37,8 @@ filter the input VCF first, and then run qcSTR on the vcf those commands
 outputed.
 
 Additional options to customize various plots output by qcSTR are described in the sections `Quality Plot Options`_ and `Reference Bias Plot Options`_ below.
+
+See `Example Commands`_ below for example qcSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Outputs
 -------
@@ -143,36 +145,24 @@ These additional options can be used to customize reference bias plots.
 * :code:`--refbias-xrange-max <int>`: Exclude points corresponding to TRs with reference length greater than this value.
 
 
-Example qcSTR command
----------------------
+Example Commands
+----------------
 
-Example::
-
-	FILE=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
-	qcSTR \
-  	--vcf ${FILE} \
-  	--out test-qc
-
-where :code:`$REPODIR` points to the root path of this repository. See "Additional Examples" below for additional example qcSTR commands for different supported TR genotypers based on example data files in this repository.
-
-Additional Examples
--------------------
-
-Below are additional :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
-
-  # GangSTR
-  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_gangstr.sorted.vcf.gz --out test_qc_gangstr --period 4 --quality per-locus
-
-  # HipSTR
-  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_hipstr.sorted.vcf.gz --out test_qc_hipstr --vcftype hipstr --samples example-files/ex-samples.txt
-
-  # ExpansionHunter
-  qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
+Below are :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
   # AdVNTR
-  qcSTR --vcf ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
+  qcSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
+
+  # ExpansionHunter
+  qcSTR --vcf NA12878_chr21_eh.sorted.vcf.gz --out test_qc_eh
+
+  # GangSTR
+  qcSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out test_qc_gangstr --period 4 --quality per-locus
+
+  # HipSTR
+  qcSTR --vcf trio_chr21_hipstr.sorted.vcf.gz --out test_qc_hipstr --vcftype hipstr --samples ex-samples.txt
 
   # PopSTR
-  qcSTR --vcf ${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz --out test_qc_popstr
+  qcSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out test_qc_popstr
 
 

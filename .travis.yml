@@ -22,6 +22,12 @@ jobs:
         - pip install -U pytest-cov
         - pip install -U codecov
         - pip install -U virtualenv
+        - wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+        - tar -jvxf bcftools-1.10.2.tar.bz2 
+        - cd bcftools-1.10.2 && make && sudo make install && cd ..
+        - wget https://github.com/samtools/htslib/releases/download/1.10.2/htslib-1.10.2.tar.bz2
+        - tar -jvxf htslib-1.10.2.tar.bz2
+        - cd htslib-1.10.2 && make && sudo make install && cd ..
 
 before_install: # for linux jobs
   - python --version
@@ -30,11 +36,19 @@ before_install: # for linux jobs
   - pip install -U pytest-cov
   - pip install -U codecov
   - pip install -U virtualenv
+  - wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+  - tar -jvxf bcftools-1.10.2.tar.bz2 
+  - cd bcftools-1.10.2 && make && sudo make install && cd ..
+  - wget https://github.com/samtools/htslib/releases/download/1.10.2/htslib-1.10.2.tar.bz2
+  - tar -jvxf htslib-1.10.2.tar.bz2
+  - cd htslib-1.10.2 && make && sudo make install && cd ..
 
 install:
   - pip install .
   
-script: python -m pytest --cov=.
+script:
+  - python -m pytest --cov=.
+  - sh test/cmdline_tests.sh
 
 after_success:
   - codecov

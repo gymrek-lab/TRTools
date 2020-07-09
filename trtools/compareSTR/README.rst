@@ -26,14 +26,14 @@ CompareSTR takes as input two VCF files with overlapping TRs and samples and out
 To run compareSTR use the following command::
 
   compareSTR \
-    --vcf1 <vcf file> --vcf2 <vcf file> \
-    --out test \
+    --vcf1 <file1.vcf.gz> --vcf2 <file2.vcf.gz> \
+    --out <string> \
     [additional options]
 
 Required Parameters:
 
-* :code:`--vcf1 <VCF>`: First VCF file to compare (must be sorted, bgzipped, and indexed. See instructions below).
-* :code:`--vcf2 <VCF>`: Second VCF file to compare (must be sorted, bgzipped, and indexed. See instructions below).
+* :code:`--vcf1 <VCF>`: First VCF file to compare (must be sorted, bgzipped, and indexed. See `Instructions on Compressing and Indexing VCF files`_ below)
+* :code:`--vcf2 <VCF>`: Second VCF file to compare (must be sorted, bgzipped, and indexed. See `Instructions on Compressing and Indexing VCF files`_ below)
 * :code:`--out <string>`: Prefix to name output files
 
 Filtering Options:
@@ -69,74 +69,48 @@ In output files, compareSTR reports the following metrics:
 
 compareSTR outputs the following text files and plots:
 
-* outprefix+"-overall.tab": Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
-* outprefix+"-bubble-period$period.pdf": "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of bp difference from the reference genome. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period.
-* outprefix+"-locuscompare.tab": Has columns chrom, start, metric-conc-seq, metric-conc-len, sample. last column gives the number of samples considered at each locus. There is one line for each TR.
-* outprefix+"-locuscompare.pdf": Plots the length concordance metric for each TR locus considered.
-* outprefix+"-samplecompare.tab": Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
-* outprefix+"-samplecompare.pdf": Plots the length concordance metric for each sample considered.
+* :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
+* :code:`<outprefix>-bubble-period$period.pdf`: "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of bp difference from the reference genome. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period.
+* :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, metric-conc-seq, metric-conc-len, sample. last column gives the number of samples considered at each locus. There is one line for each TR.
+* :code:`<outprefix>-locuscompare.pdf`: Plots the length concordance metric for each TR locus considered.
+* :code:`<outprefix>-samplecompare.tab`: Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
+* :code:`<outprefix>-samplecompare.pdf`: Plots the length concordance metric for each sample considered.
 
-Example compareSTR command
---------------------------
+See `Example Commands`_ below for example compareSTR commands for different supported TR genotypers based on example data files in this repository. More detailed use cases are also given in the vignettes https://trtools.readthedocs.io/en/develop/VIGNETTES.html.
 
-Compare two callsets::
-
-  FILE1=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
-  FILE2=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf2.vcf.gz
-  compareSTR \
-    --vcf1 ${FILE1} --vcf2 ${FILE2} \
-    --out test-compare
-
-where :code:`$REPODIR` points to the root path of this repository.
-
-Similarly, to compare two callsets, but stratify by the DP and Q format fields in the first VCF file and output metrics separately by period (and also modify the bubble plot dimensions)::
-
-  FILE1=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf1.vcf.gz
-  FILE2=${REPODIR}/test/common/sample_vcfs/compareSTR_vcfs/compare_vcf2.vcf.gz
-  compareSTR \
-    --vcf1 ${FILE1} --vcf2 ${FILE2} \
-    --stratify-fields DP,Q \
-    --stratify-binsizes 0:50:10,0:1:0.1 \
-    --stratify-file 1 \
-    --period \
-    --bubble-min -50 --bubble-max 50 \
-    --out test-compare
-
-See "Additional Examples" below for additional example compareSTR commands for different supported TR genotypers based on example data files in this repository.
-
-Instruction on Compressing and Indexing VCF files
--------------------------------------------------
+Instructions on Compressing and Indexing VCF files
+--------------------------------------------------
 CompareSTR requires input files to be compressed and indexed. Use the following commands to create compressed and indexed vcf files::
 
   bgzip file.vcf
   tabix -p vcf file.vcf.gz
 
-Additional Examples
--------------------
+Example Commands
+----------------
 
-Below are additional :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found in the :code:`example-files` directory of this repository::
+Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+
+  # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
+  # Note, you first need to reheader files to add required contig lines to VCF headers
+  bcftools reheader -f hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz NA12878_chr21_advntr.sorted.vcf.gz
+  tabix -p vcf NA12878_advntr_reheader.vcf.gz 
+  FILE1=NA12878_advntr_reheader.vcf.gz
+  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
 
   # HipSTR vs. ExpansionHunter
   compareSTR \
-      --vcf1 ${REPODIR}/example-files/NA12878_chr21_hipstr.sorted.vcf.gz \
-      --vcf2 ${REPODIR}/example-files/NA12878_chr21_eh.sorted.vcf.gz \
+      --vcf1 NA12878_chr21_hipstr.sorted.vcf.gz \
+      --vcf2 NA12878_chr21_eh.sorted.vcf.gz \
       --vcftype1 hipstr --vcftype2 eh --out hipstr_vs_eh
 
   # HipSTR vs. GangSTR
   compareSTR \
-      --vcf1 ${REPODIR}/example-files/NA12878_chr21_hipstr.sorted.vcf.gz \
-      --vcf2 ${REPODIR}/example-files/NA12878_chr21_gangstr.sorted.vcf.gz \
+      --vcf1 NA12878_chr21_hipstr.sorted.vcf.gz \
+      --vcf2 NA12878_chr21_gangstr.sorted.vcf.gz \
       --vcftype1 hipstr --vcftype2 gangstr --out hipstr_vs_gangstr
 
-  # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
-  # Note, you first need to reheader files to add required contig lines to VCF headers
-  bcftools reheader -f ${REPODIR}/example-files/hg19.fa.fai -o NA12878_advntr_reheader.vcf.gz ${REPODIR}/example-files/NA12878_chr21_advntr.sorted.vcf.gz
-  tabix -p vcf NA12878_advntr_reheader.vcf.gz
-  FILE1=NA12878_advntr_reheader.vcf.gz
-  compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out advntr_vs_advntr --noplot
-
   # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
-  FILE1=${REPODIR}/example-files/trio_chr21_popstr.sorted.vcf.gz
+  FILE1=trio_chr21_popstr.sorted.vcf.gz
   compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out popstr_vs_popstr
 
 

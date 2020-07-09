@@ -278,8 +278,9 @@ def InferVCFType(vcffile: vcf.Reader, vcftype: Union[str, VcfTypes] = "auto") ->
             possible_vcf_types = {_ToVCFType(vcftype)}
         else:
             raise TypeError(('Confused - this vcf looks like it could have '
-                             'been any of the types: {}. You may need to specify with --vcftype.'
-                             .format(possible_vcf_types)))
+                             'been any of the types: {}. But you specified: --vcftype {}. '
+                             'You may need to set --vcftype to the correct option.'
+                             .format(possible_vcf_types, vcftype)))
 
     return next(iter(possible_vcf_types))
 
@@ -329,11 +330,11 @@ def _HarmonizeGangSTRRecord(vcfrecord):
     TRRecord
     """
     if 'RU' not in vcfrecord.INFO:
-        raise TypeError("This is not a GangSTR record")
+        raise TypeError("This is not a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if 'VID' in vcfrecord.INFO:
-        raise TypeError("Trying to read an AdVNTR record as a GangSTR record")
+        raise TypeError("Trying to read an AdVNTR record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if 'VARID' in vcfrecord.INFO:
-        raise TypeError("Trying to read an EH record as a GangSTR record")
+        raise TypeError("Trying to read an EH record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -360,7 +361,7 @@ def _HarmonizeHipSTRRecord(vcfrecord):
     if ('START' not in vcfrecord.INFO
             or 'END' not in vcfrecord.INFO
             or 'PERIOD' not in vcfrecord.INFO):
-        raise TypeError("This is not a HipSTR record")
+        raise TypeError("This is not a HipSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
 
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
@@ -433,7 +434,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord):
     TRRecord
     """
     if 'RU' not in vcfrecord.INFO or 'VID' not in vcfrecord.INFO:
-        raise TypeError("This is not an AdVNTR record")
+        raise TypeError("This is not an AdVNTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -492,7 +493,7 @@ def _HarmonizePopSTRRecord(vcfrecord):
     TRRecord
     """
     if 'Motif' not in vcfrecord.INFO:
-        raise TypeError("This is not a PopSTR record")
+        raise TypeError("This is not a PopSTR record {}:{}",format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     motif = vcfrecord.INFO["Motif"].upper()
     record_id = vcfrecord.ID
@@ -531,7 +532,7 @@ def _HarmonizeEHRecord(vcfrecord):
     TRRecord
     """
     if 'VARID' not in vcfrecord.INFO or 'RU' not in vcfrecord.INFO:
-        raise TypeError("This is not an ExpansionHunter record")
+        raise TypeError("This is not an ExpansionHunter record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     record_id = vcfrecord.INFO["VARID"]
     motif = vcfrecord.INFO["RU"].upper()
     ref_allele_length = int(vcfrecord.INFO["RL"]) / len(motif)
