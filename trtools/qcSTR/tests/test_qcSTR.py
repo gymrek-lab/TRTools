@@ -140,9 +140,8 @@ def test_make_default_qual_plot_few_samples(tmpdir, vcfdir):
     # check retcode is zero and appropriate files are/are not
     # created, don't do any checks for content
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "test_popstr.vcf")
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    args.vcf = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
+    retcode = main(args)
     assert retcode == 0
     assert os.path.exists(args.out + "-quality.pdf")
     assert len(glob.glob(args.out + "-quality-*")) == 0
@@ -171,13 +170,12 @@ def test_make_single_qual_plots_explicit(tmpdir, vcfdir):
     # check retcode is zero and appropriate files are/are not
     # created, don't do any checks for content
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    args.vcf = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
     for qual in _QualityTypes.__members__.values():
         qual = qual.value
         args.quality = [qual]
         _clear_folder(str(tmpdir))
-        with pytest.warns(UserWarning, match="fabricated"):
-            retcode = main(args)
+        retcode = main(args)
         assert retcode == 0
         assert os.path.exists(args.out + "-quality-" + qual + ".pdf")
         assert len(glob.glob(args.out + "-quality*")) == 1
@@ -187,12 +185,11 @@ def test_make_all_qual_plots(tmpdir, vcfdir):
     # check retcode is zero and appropriate files are/are not
     # created, don't do any checks for content
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    args.vcf = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
     for qual in _QualityTypes.__members__.values():
         qual = qual.value
         args.quality.append(qual)
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
     assert retcode == 0
     assert not os.path.exists(args.out + "-quality.pdf")
     for qual in _QualityTypes.__members__.values():
@@ -203,13 +200,12 @@ def test_all_qual_plots_with_ignore_no_call(tmpdir, vcfdir):
     # check retcode is zero and appropriate files are/are not
     # created, don't do any checks for content
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "qc_vcfs", "50by3.vcf")
+    args.vcf = os.path.join(vcfdir, "few_loci.vcf")
     args.quality_ignore_no_call = True
     for qual in _QualityTypes.__members__.values():
         qual = qual.value
         args.quality.append(qual)
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
     assert retcode == 0
     assert not os.path.exists(args.out + "-quality.pdf")
     for qual in _QualityTypes.__members__.values():

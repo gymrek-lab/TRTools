@@ -15,7 +15,9 @@ Example use cases include:
 
 CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
 
-**Note:** CompareSTR is designed to be used as a QC tool. While it may be able to pick up certail biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+
+Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_ to visualize the distribution of quality scores in each VCF file seprately.
 
 Usage
 -----
@@ -110,5 +112,5 @@ Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. D
   # PopSTR (comparing a file against itself. Not very interesting. Just for demonstration)
   FILE1=trio_chr21_popstr.sorted.vcf.gz
   compareSTR --vcf1 ${FILE1} --vcf2 ${FILE1} --out popstr_vs_popstr
-  
+
 

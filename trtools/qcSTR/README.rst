@@ -62,44 +62,53 @@ qcSTR outputs the following plots:
 .. image:: images/diffref-bias.png
 
 :code:`<outprefix>-quality.pdf`: plots the cumulative distribution of the quality scores for
-calls for this vcf. Will not be produced for vcfs which do not have quality
-metrics. If you specify the type of quality plot you wish to see with
-the :code:`--quality` option, then instead you will get a file named
-:code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested.
-Note, quality score values may not be comparable across different TR genotyping tools.
-Quality plot examples options are shown below.
+calls in this VCF. This will be a per-locus plot for >5 samples, or a sample-stratified plot
+for <= 5 samples. This will not be produced for vcfs which do not have quality
+metrics. Alternatively, you may specify the type(s) of quality plot(s) you wish to see with
+the :code:`--quality` option. In that case you will get a file named
+:code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. Quality plot
+examples are shown below. To learn more about how qcSTR infers quality scores for VCFs from
+different genotypers, see `here <https://trtools.readthedocs.io/en/latest/LIBRARY_SPEC.html>`_
+
+Note: quality score plots are useful when considered in the context of a single genotyper run,
+and can also be used to compare different invocations of the same genotyper. However,
+quality score values produced by different genotypers have different meanings due to the different 
+modeling assumptions the different genotypers make. If you wish to compare quality
+scores across genotypers, you **must** first understand those different assumptions and infer how 
+they will affect the validity of your comparison. 
 
 Quality Plot Options
 --------------------
 
 These additional options can be used to customize quality score distribution plots.
 
-:code:`--quality`:  This option determines if the plot is stratified, and what
-distribution the y-axis represents. The x-axis is always the quality score, from one to
-zero, and the y-axis is always an increasing CDF. This can be specified multiple
+:code:`--quality`:  This option determines if the plot is stratified and what
+distribution the y-axis represents. The x-axis is always the quality score and the 
+y-axis is always a decreasing CDF. This can be specified multiple
 times to produce multiple plots (e.g. :code:`--quality per-locus --quality
-per-sample`) - each produced plot will have the type appended to its name.
+per-sample`). Each plot will have the specified type appended to the output filename.
 
 * :code:`per-locus`
   Compute the call quality at each locus averaged across all samples.
   Plot the distribution of those loci qualities.
-  (This is the default for > 5 samples)
 
+.. produced running qcSTR on many_samples.vcf.gz
 .. image:: images/quality-per-locus.png
 
 * :code:`sample-stratified`
   Plot a separate line for each sample of the distribution of loci qualities
   for that sample.
-  (This is the default for <= 5 samples)
   Note: If you specify this for a vcf with many samples,
   the code may slow to a halt and/or the plot may be cluttered.
 
+.. produced running qcSTR on test_popstr.vcf
 .. image:: images/quality-sample-stratified.png
 
 * :code:`per-sample`
   Compute the call quality for each sample averaged across all loci.
   Plot the distribution of those sample qualities.
 
+.. produced running qcSTR on many_samples.vcf.gz
 .. image:: images/quality-per-sample.png
 
 * :code:`locus-stratified`
@@ -108,11 +117,13 @@ per-sample`) - each produced plot will have the type appended to its name.
   Note: If you specify this for a vcf with many loci,
   the code may slow to a halt and/or the plot may be cluttered.
 
+.. produced running qcSTR on few_loci.vcf
 .. image:: images/quality-locus-stratified.png
 
 * :code:`per-call`
   Plot the distribution of the quality of all calls.
 
+.. produced running qcSTR on test_popstr.vcf
 .. image:: images/quality-per-call.png
 
 :code:`--quality-ignore-no-call` - by default, (sample, locus) pairs which
