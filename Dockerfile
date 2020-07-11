@@ -30,7 +30,7 @@ WORKDIR ..
 RUN wget -O bedtools-2.27.1.tar.gz https://github.com/arq5x/bedtools2/releases/download/v2.27.1/bedtools-2.27.1.tar.gz
 RUN tar -xzvf bedtools-2.27.1.tar.gz
 WORKDIR bedtools2
-RUN make && make install 
+RUN make && make install
 WORKDIR ..
 
 # Download, compile, and install GangSTR
@@ -44,7 +44,6 @@ WORKDIR ..
 # Download and install TRTools
 RUN git clone https://github.com/gymreklab/TRTools
 WORKDIR TRTools
+RUN git checkout xchrom
 RUN python3 setup.py install
 WORKDIR ..
-
-
