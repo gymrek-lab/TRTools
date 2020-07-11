@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -qqy \
     unzip \
     zlib1g-dev
 
+RUN pip3 install --upgrade pip
+
 RUN pip3 install pybedtools pyvcf scipy numpy
 
 # Install samtools (needed to index reference fasta files)
@@ -42,7 +44,7 @@ RUN ldconfig
 WORKDIR ..
 
 # Download and install TRTools
-RUN git clone https://github.com/gymreklab/TRTools
+RUN git clone https://github.com/ileenamitra/TRTools
 WORKDIR TRTools
 RUN git checkout xchrom
 RUN python3 setup.py install
