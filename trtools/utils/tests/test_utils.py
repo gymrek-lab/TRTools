@@ -28,6 +28,16 @@ def test_GetHeterozygosity():
     afreqs = {}
     assert(np.isnan(utils.GetHeterozygosity(afreqs)))
 
+def test_GetEntropy():
+    afreqs = {0:1}
+    assert utils.GetEntropy(afreqs) == 0
+    afreqs = {0:0.5, 1:0.5}
+    assert utils.GetEntropy(afreqs) == 1
+    afreqs = {0:0.5, 1:0.2, 2:0.3}
+    assert abs(utils.GetEntropy(afreqs) - 1.48) < .01
+    afreqs = {}
+    assert np.isnan(utils.GetEntropy(afreqs))
+
 # GetMean
 def test_GetMean(): 
     afreqs = {0:1}

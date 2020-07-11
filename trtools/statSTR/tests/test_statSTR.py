@@ -26,6 +26,7 @@ def args(tmpdir):
     args.mode = False 
     args.var = False 
     args.numcalled = False 
+    args.entropy = False
     return args
 
 # Test no such file or directory
@@ -50,6 +51,7 @@ def test_Stats(args, vcfdir):
     args.vcf = fname
     args.thresh = True
     args.het = True
+    args.entropy = True
     args.hwep = True
     args.numcalled = True
     args.mode = True
@@ -60,7 +62,7 @@ def test_Stats(args, vcfdir):
     assert main(args)==0
     args.uselength = True
     assert main(args)==0
-    args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt") 
+    args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt")
     args.out = "stdout"
     args.region = "chr1:3045469-3045470"
     assert main(args)==1

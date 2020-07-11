@@ -23,7 +23,7 @@ Required parameters:
 * :code:`--vcf <string>`: The input TR VCF file
 * :code:`--out <string>`: The prefix to name output files. Set to stdout to write to standard output.
 
-Optional filtering group parameters:
+Optional file type and filtering parameters:
 
 * :code:`--vcftype <string>`: The type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: A file containing a list of samples to include in computing statistics. If not given, all samples are used. To compute statistics for multiple groups of samples, you can give a comma-separated list of samples files. Sample files should list one sample per line, no header line. Samples not found in the VCF are silently ignored.
@@ -31,9 +31,6 @@ Optional filtering group parameters:
 * :code:`--region <string>`: Restrict to specific regions (chrom:start-end).
 
 For specific statistics available, see below.
-
-Output file
------------
 
 StatSTR outputs a tab-delimited file :code:`<outprefix>.tab` with per locus statistics. See a description of the output file below.
 
@@ -83,25 +80,31 @@ Example Commands
 Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
   # AdVNTR
-  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
+  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz \
+        --out stdout \
+        --afreq
 
   # ExpansionHunter
-  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz --out stats_eh --numcalled
+  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz \
+        --out stats_eh \
+        --numcalled
 
   # GangSTR
-  statSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out stats_gangstr --numcalled --mean
+  statSTR --vcf trio_chr21_gangstr.sorted.vcf.gz \
+         --out stats_gangstr \
+         --numcalled \
+         --mean
 
   # HipSTR
-  echo -e "NA12891\nNA12892" > parents.sample 
-  echo -e "NA12878" > child.sample 
   statSTR --vcf trio_chr21_hipstr.sorted.vcf.gz \
         --vcftype hipstr \
         --out stats_hipstr \
-        --samples parents.sample,child.sample \
-        --sample-prefixes parents,child \
         --acount \
         --afreq \
-        --mean 
+        --mean
 
   # PopSTR
-  statSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out stats_popstr --mean --samples ex-samples.txt
+  statSTR --vcf trio_chr21_popstr.sorted.vcf.gz \
+        --out stats_popstr \
+        --mean \
+        --samples ex-samples.txt

@@ -223,6 +223,38 @@ def GetHet(trrecord: trh.TRRecord,
         hetvals.append(utils.GetHeterozygosity(allele_freqs))
     return hetvals
 
+def GetEntropy(trrecord: trh.TRRecord,
+               samplelists: List[List[str]] = [],
+               uselength: bool = True) -> List[float]:
+    """Compute the entropy of a locus
+
+    This is the (bit) entropy of the distribution of alleles
+    called at that locus. See `wikipedia
+    <https://en.wikipedia.org/wiki/Entropy_(information_theory)>`_
+    for the definition of entropy.
+
+    Parameters
+    ----------
+    trrecord:
+          The record that we are computing the statistic for
+    samplelist:
+          List of list of the samples that we include when compute the statistic
+    uselength:
+          Whether we should collapse alleles by length
+
+    Returns
+    -------
+    heterozygosity: List[float]
+          For each sample list, the entropy of the calls for those
+          samples, or np.nan if no such calls
+    """
+    if len(samplelists) == 0: samplelists.append(None)
+    entropy_vals = []
+    for sl in samplelists:
+        allele_freqs = trrecord.GetAlleleFreqs(samplelist=sl, uselength=uselength)
+        entropy_vals.append(utils.GetEntropy(allele_freqs))
+    return entropy_vals
+
 def GetMean(trrecord: trh.TRRecord,
             samplelists: List[List[str]] = [],
             uselength: bool = True) -> List[float]:
@@ -247,7 +279,7 @@ def GetMean(trrecord: trh.TRRecord,
     return [utils.GetMean(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True))
             for sl in samplelists]
 
-def GetMean(trrecord: trh.TRRecord,
+def GetMode(trrecord: trh.TRRecord,
             samplelists: List[List[str]] = [],
             uselength: bool = True) -> List[float]:
     """Compute the mode of the allele lengths
@@ -336,12 +368,13 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
-    stat_group.add_argument("--het", help="Output heterozygosity of each locus.", action="store_true")
-    stat_group.add_argument("--mean", help="Output mean of allele frequencies.", action="store_true")
-    stat_group.add_argument("--mode", help="Output mode of allele frequencies.", action="store_true")
-    stat_group.add_argument("--var", help="Output variance of allele frequencies.", action="store_true")
+    stat_group.add_argument("--het", help="Output the heterozygosity of each locus.", action="store_true")
+    stat_group.add_argument("--entropy", help="Output the entropy of each locus.", action="store_true")
+    stat_group.add_argument("--mean", help="Output mean of the allele frequencies.", action="store_true")
+    stat_group.add_argument("--mode", help="Output mode of the allele frequencies.", action="store_true")
+    stat_group.add_argument("--var", help="Output variance of the allele frequencies.", action="store_true")
     stat_group.add_argument("--numcalled", help="Output number of samples called.", action="store_true")
-    stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
+    stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length. This is implicitly true for genotypers which only emit length based genotypes.", action="store_true")
     plot_group = parser.add_argument_group("Plotting group")
     plot_group.add_argument("--plot-afreq", help="Output allele frequency plot. Will only do for a maximum of 10 TRs.", action="store_true")
     ver_group = parser.add_argument_group("Version")
@@ -402,6 +435,7 @@ def main(args):
     if args.acount: header.extend(GetHeader("acount", sample_prefixes))
     if args.hwep: header.extend(GetHeader("hwep", sample_prefixes))
     if args.het: header.extend(GetHeader("het", sample_prefixes))
+    if args.entropy: header.extend(GetHeader("entropy", sample_prefixes))
     if args.mean: header.extend(GetHeader("mean", sample_prefixes))
     if args.mode: header.extend(GetHeader("mode", sample_prefixes))
     if args.var: header.extend(GetHeader("var", sample_prefixes))
@@ -438,6 +472,8 @@ def main(args):
             items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
         if args.het:
             items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
+        if args.entropy:
+            items.extend(GetEntropy(trrecord, samplelists=sample_lists, uselength=args.use_length))
         if args.mean:
             items.extend(GetMean(trrecord, samplelists=sample_lists))
         if args.mode:
