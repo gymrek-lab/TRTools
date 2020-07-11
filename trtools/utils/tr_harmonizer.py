@@ -54,7 +54,7 @@ def GetVCFType(vcfreader, vcftype: Union[str, VcfTypes] = "auto"):
     vcftype : str
       Inferred VCF type
     """
-    tr_harmonizer = TRRecordHarmonizer(vcfreader)
+    tr_harmonizer = TRRecordHarmonizer(vcfreader, vcftype)
     if vcftype != "auto":
         if vcftype == tr_harmonizer.vcftype.name:
             return vcftype
@@ -66,7 +66,7 @@ def GetVCFType(vcfreader, vcftype: Union[str, VcfTypes] = "auto"):
 
 def _ToVCFType(vcftype: Union[str, VcfTypes]):
     # Convert the input to a VcfTypes enum.
-    # 
+    #
     # If it is a string, look up the VcfTypes enum.
     # If it is already a VcfTypes enum, return it.
     # Otherwise, error
@@ -188,7 +188,7 @@ def _UnexpectedTypeError(vcftype: VcfTypes):
                      .format(vcftype))
 
 
-def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
+def InferVCFType(vcffile: vcf.Reader, vcftype: Union[str, VcfTypes] = "auto") -> VcfTypes:
     """
     Infer the genotyping tool used to create the VCF.
 
@@ -199,6 +199,8 @@ def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
     ----------
     vcffile :
         The input VCF file
+    vcftype : VCFTYPE
+        Type of the VCF file specified by the user
 
     Returns
     -------
@@ -272,9 +274,13 @@ def InferVCFType(vcffile: vcf.Reader) -> VcfTypes:
         raise TypeError('Could not identify the type of this vcf')
 
     if len(possible_vcf_types) > 1:
-        raise TypeError(('Confused - this vcf looks like it could have '
-                          'been any of the types: {}'
-                          .format(possible_vcf_types)))
+        if vcftype != "auto" and _ToVCFType(vcftype) in possible_vcf_types:
+            possible_vcf_types = {_ToVCFType(vcftype)}
+        else:
+            raise TypeError(('Confused - this vcf looks like it could have '
+                             'been any of the types: {}. But you specified: --vcftype {}. '
+                             'You may need to set --vcftype to the correct option.'
+                             .format(possible_vcf_types, vcftype)))
 
     return next(iter(possible_vcf_types))
 
@@ -324,11 +330,11 @@ def _HarmonizeGangSTRRecord(vcfrecord):
     TRRecord
     """
     if 'RU' not in vcfrecord.INFO:
-        raise TypeError("This is not a GangSTR record")
+        raise TypeError("This is not a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if 'VID' in vcfrecord.INFO:
-        raise TypeError("Trying to read an AdVNTR record as a GangSTR record")
+        raise TypeError("Trying to read an AdVNTR record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if 'VARID' in vcfrecord.INFO:
-        raise TypeError("Trying to read an EH record as a GangSTR record")
+        raise TypeError("Trying to read an EH record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -355,7 +361,7 @@ def _HarmonizeHipSTRRecord(vcfrecord):
     if ('START' not in vcfrecord.INFO
             or 'END' not in vcfrecord.INFO
             or 'PERIOD' not in vcfrecord.INFO):
-        raise TypeError("This is not a HipSTR record")
+        raise TypeError("This is not a HipSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
 
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
@@ -428,7 +434,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord):
     TRRecord
     """
     if 'RU' not in vcfrecord.INFO or 'VID' not in vcfrecord.INFO:
-        raise TypeError("This is not an AdVNTR record")
+        raise TypeError("This is not an AdVNTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT[0] is not None:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -440,38 +446,38 @@ def _HarmonizeAdVNTRRecord(vcfrecord):
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'ML')
 
 
-def _PHREDtoProb(phred: int) -> float:
-    """Convert PHRED score to probability
+#def _PHREDtoProb(phred: int) -> float:
+#    """Convert PHRED score to probability
+#
+#    Notes
+#    -----
+#    Per https://en.wikipedia.org/wiki/Phred_quality_score
+#    """
+#    return 10**(-phred/10)
 
-    Notes
-    -----
-    Per https://en.wikipedia.org/wiki/Phred_quality_score
-    """
-    return 10**(-phred/10)
 
-
-def _ConvertPLtoQualityProb(PL: List[int]) -> float:
-    """
-    Convert PHRED-scaled genotype likelihoods to the probability of the
-    single most likely genotype.
-
-    Notes
-    -----
-    PHRED scaling is not very accurate around numbers close to 1
-    unfortunately, so for PHRED score of 0, instead calculate the probability
-    by 1 - sum(probabilities of other genotypes)
-    """
-
-    max_likelihood = min(PL)
-    if max_likelihood != 0:
-        return _PHREDtoProb(max_likelihood)
-
-    sum_other_likelihoods = 0.0
-    for phred_likelihood in PL:
-        if phred_likelihood == 0:
-            continue
-        sum_other_likelihoods += _PHREDtoProb(phred_likelihood)
-    return max(0, 1 - sum_other_likelihoods)
+#def _ConvertPLtoQualityProb(PL: List[int]) -> float:
+#    """
+#    Convert a list of PHRED-scaled genotype probabilities to the
+#    unscaled probability of the single most likely genotype.#
+#
+#    Notes
+#    -----
+#    PHRED scaling is not very accurate around numbers close to 1
+#    unfortunately, so for PHRED score of 0, instead calculate the probability
+#    by 1 - sum(probabilities of other genotypes)
+#    """
+#
+#    max_likelihood = min(PL)
+#    if max_likelihood != 0:
+#        return _PHREDtoProb(max_likelihood)
+#
+#    sum_other_likelihoods = 0.0
+#    for phred_likelihood in PL:
+#        if phred_likelihood == 0:
+#            continue
+#        sum_other_likelihoods += _PHREDtoProb(phred_likelihood)
+#    return max(_PHREDtoProb(1), 1 - sum_other_likelihoods)
 
 
 def _HarmonizePopSTRRecord(vcfrecord):
@@ -487,7 +493,7 @@ def _HarmonizePopSTRRecord(vcfrecord):
     TRRecord
     """
     if 'Motif' not in vcfrecord.INFO:
-        raise TypeError("This is not a PopSTR record")
+        raise TypeError("This is not a PopSTR record {}:{}",format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
     motif = vcfrecord.INFO["Motif"].upper()
     record_id = vcfrecord.ID
@@ -509,9 +515,8 @@ def _HarmonizePopSTRRecord(vcfrecord):
                     None,
                     motif,
                     record_id,
-                    'PL',
-                    alt_allele_lengths=alt_allele_lengths,
-                    quality_score_transform=_ConvertPLtoQualityProb)
+                    None,
+                    alt_allele_lengths=alt_allele_lengths)
 
 
 def _HarmonizeEHRecord(vcfrecord):
@@ -527,7 +532,7 @@ def _HarmonizeEHRecord(vcfrecord):
     TRRecord
     """
     if 'VARID' not in vcfrecord.INFO or 'RU' not in vcfrecord.INFO:
-        raise TypeError("This is not an ExpansionHunter record")
+        raise TypeError("This is not an ExpansionHunter record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     record_id = vcfrecord.INFO["VARID"]
     motif = vcfrecord.INFO["RU"].upper()
     ref_allele_length = int(vcfrecord.INFO["RL"]) / len(motif)
@@ -614,8 +619,8 @@ class TRRecord:
         If this is passed, alt_allele_lengths must also be passed
     quality_score_transform : Any -> float
         A function which turns the quality_field value into a float
-        probability. When None, the quality_field values are assumed
-        to already be probabilities
+        score. When None, the quality_field values are assumed
+        to already be floats
 
     Notes
     -----
@@ -795,13 +800,15 @@ class TRRecord:
 
     def HasQualityScores(self):
         """
-        Does this TRRecord have a quality score field?
+        Does this TRRecord contain quality scores for each of its calls?
+        If present, the meaning and reliability of these scores is
+        genotyper dependent, see the doc section :ref:`Quality Scores`.
 
         Return
         ------
         boolean:
-            Whether or not a corresponding FORMAT field
-            has been identified
+            Whether or not a FORMAT field that could be interpreted as a
+            quality score has been identified
         """
 
         return (self.quality_field is not None and
@@ -809,11 +816,9 @@ class TRRecord:
 
     def GetQualityScore(self, sample):
         """
-        Get the quality score for the sample. This should be
-        interpreted as the estimated probability of the sample's genotype call
-        being correct. Note that these estimates are provided by the
-        TR callers that generated the calls, and so the reliability of this
-        value is dependent on the choice and version of the TR caller.
+        Get the quality score for the call of the sample.
+        The meaning and reliability of these scores is genotyper
+        dependent, see the doc section :ref:`Quality Scores`.
 
         Parameters
         ----------
@@ -823,26 +828,8 @@ class TRRecord:
         Returns
         -------
         float :
-            A probability between zero and one
+            The quality score for this sample in this record
 
-        Notes
-        -----
-        For calls generated by HipSTR, this returns the 'Q' field which
-        contains the probability of the call being correct ignoring phase,
-        not the field 'PQ' which contains the probability of the call and
-        its phase both being correct.
-
-        If using calls generated by PopSTR, know that PopSTR records quality
-        using the PL field which contains integer rounded `PHRED scores
-        <https://en.wikipedia.org/wiki/Phred_quality_score>`_. This means that
-        quality scores are grouped into the bins 89%-71%-56%-45-35-28-22-18-14-11-...
-        For genotypes that would fall into the bin 100%-89% that PopSTR records as
-        having perfect quality (PL == 0), we instead report
-
-        .. math::
-            1 - \\sum_{\\text{other genotypes}} Prob(\\text{other genotype})
-
-        in order to mitigate the binning introduced by the integer rounding.
         """
 
         if not self.HasQualityScores():
@@ -1050,7 +1037,8 @@ class TRRecord:
         Parameters
         ----------
         samplelist : list of str, optional
-            List of samples to include when computing counts
+            List of samples to include when computing counts.
+            Nonexistant samples are silently ignored
         uselength : bool, optional
             If True, represent alleles a lengths
             else represent as strings
@@ -1061,8 +1049,9 @@ class TRRecord:
         Returns
         -------
         allele_counts: dict of (object: int)
-            Gives the count of each allele.
+            Gives the count of each allele
             Alleles may be represented as floats or strings
+            Only contains alleles with at least one call
         """
         if uselength and fullgenotypes:
             raise ValueError("Can't specify both uselength and fullgenotypes")
@@ -1104,7 +1093,8 @@ class TRRecord:
         Returns
         -------
         allele_freqs: dict of (object: float)
-            Gives the frequency of each allele.
+            Gives the frequency of each allele among called samples
+            (so that frequencies add up to 1)
             Alleles may be represented as floats or strings
         """
         allele_counts = self.GetAlleleCounts(uselength=uselength,
@@ -1134,7 +1124,8 @@ class TRRecord:
         Returns
         -------
         maxallele : float
-            The maximum allele length called (in number of repeat units)
+            The maximum allele length called (in number of repeat units),
+            or nan if no alleles called
         """
         alleles = self.GetAlleleCounts(uselength=True,
                                        samplelist=samplelist).keys()
@@ -1224,7 +1215,7 @@ class TRRecordHarmonizer:
             self.vcftype = InferVCFType(vcffile)
         else:
             self.vcftype = _ToVCFType(vcftype)
-            inferred_type = InferVCFType(vcffile)
+            inferred_type = InferVCFType(vcffile, vcftype)
             if inferred_type != self.vcftype:
                 raise TypeError("Trying to read a {} vcf as a {} vcf".format(
                     inferred_type, self.vcftype))
@@ -1265,15 +1256,14 @@ class TRRecordHarmonizer:
     def HasQualityScore(self):
         """
         Does this VCF contain quality scores for each of its calls?
-
-        A quality score is a FORMAT field that can be interpreted
-        (possibly after some transformation) as a 0 to 1 probability
-        indicating the likelihood that the call is correct, as estimated
-        by the TR caller.
+        If present, the meaning and reliability of these scores is
+        genotyper dependent, see the doc section :ref:`Quality Scores`.
 
         Returns
         -------
         bool
+            Whether or not a FORMAT field that could be interpreted as a
+            quality score has been identified
         """
         if self.vcftype == VcfTypes.gangstr:
             return 'Q' in self.vcffile.formats
@@ -1282,7 +1272,7 @@ class TRRecordHarmonizer:
         if self.vcftype == VcfTypes.advntr:
             return True
         if self.vcftype == VcfTypes.popstr:
-            return True
+            return False
         if self.vcftype == VcfTypes.eh:
             return False
 

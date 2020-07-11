@@ -173,15 +173,40 @@ def OutputChromCallrate(chrom_calls, fname):
     plt.close()
 
 
-# from https://stackoverflow.com/a/39729964/2966505
-def _BetterReverseCDF(data: List[float],
-                      ax: matplotlib.axes.Axes):
-    # assumes that axes are already set to (max, min)
-    data = np.sort(data)[::-1]
-    x_axis_max, x_axis_min = ax.get_xlim()
-    data = np.hstack(([x_axis_max], data, [x_axis_min]))
-    ys = (np.hstack((np.arange(0, len(data) - 1), [1])) /
-          np.float(len(data) - 2))
+# original idea https://stackoverflow.com/a/39729964/2966505
+def _BetterCDF(data: List[float],
+               ax: matplotlib.axes.Axes):
+    # assumes that axes are already set to (min, max)
+    data = np.sort(data)
+    x_axis_min, x_axis_max = ax.get_xlim()
+    n_points = len(data)
+    has_quality_1_point = data[-1] == 1
+    if has_quality_1_point:
+        # don't print a drop off if the last data point(s)
+        # have quality 1
+        n_ones = sum(data == data[-1])
+        data = np.hstack((
+            [x_axis_min],
+            data[0:(len(data) - n_ones)],
+            [x_axis_max]
+        ))
+        ys = np.hstack((
+            [1],
+            np.arange(n_points - 1, n_ones - 1, -1) / np.float(n_points),
+            [n_ones / np.float(n_points)]
+        ))
+    else:
+        data = np.hstack((
+            [x_axis_min],
+            data,
+            [x_axis_max]
+        ))
+        ys = np.hstack((
+            [1],
+            np.arange(n_points - 1, -1, -1) / np.float(n_points),
+            [0]
+        ))
+    #ax.step(data, ys)#, where='post')
     ax.step(data, ys, where='post')
 
 
@@ -189,22 +214,24 @@ def _OutputQualityHist(
         data: Union[List[float], Dict[str, List[float]]],
         fname: str,
         dist_name: str):
+    #data is a List[float] if there is no stratification,
+    #Dict[str, List[float]] with startification
     spacing = 5e-3
     fig = plt.figure()
     ax = fig.add_subplot(111)
     if isinstance(data, list):
-        ax.set_xlim(max(data) + spacing, min(data) - spacing)
-        _BetterReverseCDF(data, ax)
+        ax.set_xlim(min(data) - spacing, max(data) + spacing)
+        _BetterCDF(data, ax)
     else: # assume dict
         max_val = 0.0
         min_val = 1.0
         for dist in data.values():
             max_val = max(max_val, max(dist))
             min_val = min(min_val, min(dist))
-        ax.set_xlim(max_val + spacing, min_val - spacing)
+        ax.set_xlim(min_val - spacing, max_val + spacing)
         names = []
         for name, dist in data.items():
-            _BetterReverseCDF(dist, ax)
+            _BetterCDF(dist, ax)
             names.append(name)
         ax.legend(names)
     ax.set_xlabel("Quality", size=15)
@@ -278,7 +305,7 @@ def OutputQualityLocusStrat(
 
     Parameters
     ----------
-    locus_strat_data: 
+    locus_strat_data:
         dict from locus ID to a list of the qualities of the calls for that
         locus.
     fname :
@@ -377,17 +404,15 @@ def main(args):
         common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
 
-    containing_dir = os.path.split(os.path.abspath(args.out))[0]
-    if not os.path.exists(containing_dir):
-        common.WARNING("The directory {} which contains the output location does"
-                       " not exist".format(containing_dir))
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
         return 1
 
-    if os.path.isdir(args.out):
-        common.WARNING("The output location {} is a "
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
-
 
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
@@ -518,26 +543,29 @@ def main(args):
 
         numrecords += 1
 
-    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='')
+    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='',
+          flush=True)
     OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf", \
                       xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
                       mingts=args.refbias_mingts, metric=args.refbias_metric, \
                       binsize=args.refbias_binsize)
     if len(samplelist) > 1:
         print("Done.\nProducing " + args.out + "-sample-callnum.pdf ... ",
-              end='')
+              end='', flush=True)
         OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
         print("Done.")
     else:
         print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")
-    if 1 < len(list(chrom for chrom, value in chrom_calls.items() 
+    if 1 < len(list(chrom for chrom, value in chrom_calls.items()
                     if value > 0)):
-        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='')
+        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='',
+              flush=True)
         OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
         print("Done.\n", end='')
     else:
         print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.pdf ...")
-    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='')
+    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='',
+          flush=True)
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
     print("Done.")
 
@@ -548,44 +576,57 @@ def main(args):
         def quality_output_loc(quality_value):
             return args.out+"-quality-{}.pdf".format(quality_value)
 
+    prior_qual_plot = False
     if _QualityTypes.per_sample.value in args.quality:
         print("Producing " +
               quality_output_loc(_QualityTypes.per_sample.value) +
-              " ... ", end='')
+              " ... ", end='', flush=True)
         new_per_sample_data = []
         for sample_data in per_sample_data.values():
             new_per_sample_data.append(stat.mean(sample_data))
         OutputQualityPerSample(new_per_sample_data,
                                quality_output_loc(_QualityTypes.per_sample.value))
+        prior_qual_plot = True
 
     if _QualityTypes.sample_stratified.value in args.quality:
+        if prior_qual_plot:
+            print("Done.")
         print("Producing " +
               quality_output_loc(_QualityTypes.sample_stratified.value) +
-              " ... ", end='')
+              " ... ", end='', flush=True)
         OutputQualitySampleStrat(sample_strat_data,
                                  quality_output_loc(_QualityTypes.sample_stratified.value))
+        prior_qual_plot = True
 
     if _QualityTypes.per_locus.value in args.quality:
+        if prior_qual_plot:
+            print("Done.")
         print("Producing " +
               quality_output_loc(_QualityTypes.per_locus.value) +
-              " ... ", end='')
+              " ... ", end='', flush=True)
         new_per_locus_data = []
         for locus_data in per_locus_data:
             new_per_locus_data.append(stat.mean(locus_data))
         OutputQualityPerLocus(new_per_locus_data,
                               quality_output_loc(_QualityTypes.per_locus.value))
+        prior_qual_plot = True
 
     if _QualityTypes.locus_stratified.value in args.quality:
+        if prior_qual_plot:
+            print("Done.")
         print("Producing " +
               quality_output_loc(_QualityTypes.locus_stratified.value) +
-              " ... ", end='')
+              " ... ", end='', flush=True)
         OutputQualityLocusStrat(locus_strat_data,
                                 quality_output_loc(_QualityTypes.locus_stratified.value))
+        prior_qual_plot = True
 
     if _QualityTypes.per_call.value in args.quality:
+        if prior_qual_plot:
+            print("Done.")
         print("Producing " +
               quality_output_loc(_QualityTypes.per_call.value) +
-              " ... ", end='')
+              " ... ", end='', flush=True)
         OutputQualityPerCall(per_call_data,
                              quality_output_loc(_QualityTypes.per_call.value))
 

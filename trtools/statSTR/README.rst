@@ -20,23 +20,24 @@ To run statSTR use the following command::
 
 Required parameters:
 
-* :code:`--vcf <string>`: input the STR VCF file
-* :code:`--vcftype <string>`: Type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
-* :code:`--out <string>`: prefix to name output files. Set to stdout to write to standard output.
+* :code:`--vcf <string>`: The input TR VCF file
+* :code:`--out <string>`: The prefix to name output files. Set to stdout to write to standard output.
 
 Optional filtering group parameters:
 
-* :code:`--samples <string>`: A file containing a list of samples to include in computing statistics. If not given, all samples are used. To compute statistics for multiple groups of samples, you can give a comma-separated list of samples files.
-* :code:`--sample-prefixes <string>`: Prefixes to name output for each samples group. By default uses 1,2,3 etc. Must be sample length as :code:`--samples`.
-* :code:`--region <string>`: restrict to specific regions (chrom:start-end).
+* :code:`--vcftype <string>`: The type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--samples <string>`: A file containing a list of samples to include in computing statistics. If not given, all samples are used. To compute statistics for multiple groups of samples, you can give a comma-separated list of samples files. Sample files should list one sample per line, no header line. Samples not found in the VCF are silently ignored.
+* :code:`--sample-prefixes <string>`: The prefixes to name output for each samples group. By default uses 1,2,3 etc. Must be sample length as :code:`--samples`.
+* :code:`--region <string>`: Restrict to specific regions (chrom:start-end).
 
 For specific statistics available, see below.
 
 Output file
 -----------
 
-StatSTR outputs a tab-delimited file called :code:`<prefix>.tab` with per locus statistics.
-It has columns: chrom, start, end, and an additional column for each statistic specified.
+StatSTR outputs a tab-delimited file :code:`<outprefix>.tab` with per locus statistics. See a description of the output file below.
+
+See `Example Commands`_ below for example statSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Statistics options
 ------------------
@@ -45,41 +46,62 @@ The following options can be specified to compute various per-locus statistics. 
 produced in the output file has the same name as the specified option:
 
 * :code:`--thresh`: Output the maximum observed allele length.
-* :code:`--afreq`: Output allele frequences. Comma-separated list of allele:freq
+* :code:`--afreq`: Output allele frequences. Comma-separated list of allele:freq.
+  Only called alleles are included in the list. If there are no called alleles, '.' is emitted.
 * :code:`--acount`: Output allele counts. Comma-separated list of allele:count
-* :code:`--hwep`: Output Hardy Weinberg p-values per locus. 
+  Only called alleles are included in the list. If there are no called alleles, '.' is emitted.
+* :code:`--hwep`: Output Hardy Weinberg p-values per locus.
 * :code:`--het`: Output heterozygosity of each locus.
-* :code:`--entropy`: Output the entropy of the distribution of genotypes at each locus in bits.
-  (Entropy is a measurement of how many genotypes there are at a locus and how 
-  evenly distributed they are. Higher entropy means more genotypes more evenly distributed.
-  It is a more accurate measurement of the complexity of a locus than heterozygosity.
-  See `wikipedia <https://en.wikipedia.org/wiki/Information_content>`_ for more info.)
-* :code:`--mean`: Output mean allele length. 
+* :code:`--entropy`: Output the entropy of the distribution of alleles at each locus in bits.
+  (Entropy is a measurement of how complicated a locus is. Loci with higher entropies have more
+  alleles or have allele frequencies which are more evenly distributed. Entropy is a more
+  descriptive measurement of locus complexity than heterozygosity for loci with more than two alleles
+  because it not only distinguishes between heterozygous and homozygous genotypes, but also among
+  different heterozygous and different homozygous genotypes. See
+  `wikipedia <https://en.wikipedia.org/wiki/Information_content>`_ for the mathematical definition
+  of entropy.)
+* :code:`--mean`: Output mean allele length.
 * :code:`--mode`: Output mode allele length.
 * :code:`--var`: Output variance of allele length.
 * :code:`--numcalled`: Output number of called samples.
 
+The statistics :code:`thresh, hewp, het, entropy, mean, mode, var` will output :code:`nan` if there are no called alleles.
+The statistics :code:`afreq, acount` will output :code:`.` if there are no called alleles.
+
 For genotypers which output allele sequences, :code:`--use-length` will collapse alleles by length.
 (This is implicit for genotypers which only output allele lengths.)
 
-Example command
----------------
+Output file
+-----------
 
-If you have installed the TRTools package, you can run an example statSTR command using files in this repository::
+StatSTR outputs a tab-delimited file with columns: chrom, start, end, plus an additional column for each statistic specified.
+If multiple sample groups are specified, instead there is one additional column for each sample gruop-by-statistic pair
 
-  statSTR \
-    --vcf $REPODIR/test/common/sample_vcfs/test_hipstr.vcf \
-    --out teststats \
-    --afreq
+Example Commands
+----------------
 
-where :code:`$REPODIR` points to the root path of this repository.
+Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-If you are testing from source, you can run::
+  # AdVNTR
+  statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq
 
-  python statSTR.py \
-    --vcf $REPODIR/test/common/sample_vcfs/test_hipstr.vcf \
-    --out teststats \
-    --afreq
+  # ExpansionHunter
+  statSTR --vcf NA12891_chr21_eh.sorted.vcf.gz --out stats_eh --numcalled
 
-This will output :code:`teststats.tab` with columns chrom, start, end, afreq.
+  # GangSTR
+  statSTR --vcf trio_chr21_gangstr.sorted.vcf.gz --out stats_gangstr --numcalled --mean
 
+  # HipSTR
+  echo -e "NA12891\nNA12892" > parents.sample 
+  echo -e "NA12878" > child.sample 
+  statSTR --vcf trio_chr21_hipstr.sorted.vcf.gz \
+        --vcftype hipstr \
+        --out stats_hipstr \
+        --samples parents.sample,child.sample \
+        --sample-prefixes parents,child \
+        --acount \
+        --afreq \
+        --mean 
+
+  # PopSTR
+  statSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out stats_popstr --mean --samples ex-samples.txt

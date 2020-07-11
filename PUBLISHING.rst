@@ -56,7 +56,8 @@ Lastly go through the following steps to publish the changed code to bioconda (s
 3. Run ``git remote add upstream https://github.com/bioconda/bioconda-recipes`` so that you can pull from not only your fork but also upstream.
 4. Create a new branch from master with your package's name
 5. In `the recipe for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
-6. Check the recipe by running the following
+6. Run :code:`git pull upstream master` to make sure you're up to date with the central repo's master branch
+7. Check the recipe by cd'ing to the bioconda-recipes project root and running:
 
 .. code-block:: bash
 
@@ -71,7 +72,6 @@ Lastly go through the following steps to publish the changed code to bioconda (s
   # build and test
   bioconda-utils build --docker --mulled-test --packages <conda package name>
 
-7. Before committing, run `git pull upstream master` to make sure you're up to date with the central repo's master branch
 #. Commit and push the changes to your fork repo
 #. Create a pull request from your new branch in your fork into master in the central repository
 #. Follow the instructions in the pull request to get the update published

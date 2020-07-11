@@ -201,13 +201,14 @@ def GetVariance(allele_freqs):
     -------
     variance: float
           Return variance if allele frequencies dictionary is valid
+          np.nan otherwise.
 
     Examples
     --------
     >>> GetVariance({0:1})
     0
     """
-    if not ValidateAlleleFreqs(allele_freqs):
+    if not ValidateAlleleFreqs(allele_freqs) or len(allele_freqs) <= 1:
         return np.nan
     mean = GetMean(allele_freqs)
     return sum([allele_freqs[key]*(key-mean)**2 for key in allele_freqs.keys()])
