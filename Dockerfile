@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -qqy \
     unzip \
     zlib1g-dev
 
-RUN pip3 install pybedtools pyvcf scipy numpy
+RUN pip3 install --upgrade pip
+RUN pip3 install trtools
 
 # Install samtools (needed to index reference fasta files)
 RUN wget -O samtools-1.9.tar.bz2 https://github.com/samtools/samtools/releases/download/1.9/samtools-1.9.tar.bz2
@@ -39,12 +40,6 @@ RUN tar -xzvf GangSTR-2.4.tar.gz
 WORKDIR GangSTR-2.4
 RUN ./install-gangstr.sh
 RUN ldconfig
-WORKDIR ..
-
-# Download and install TRTools
-RUN git clone https://github.com/gymreklab/TRTools
-WORKDIR TRTools
-RUN python3 setup.py install
 WORKDIR ..
 
 
