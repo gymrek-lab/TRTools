@@ -56,7 +56,6 @@ setup(name=NAME,
                         'pybedtools',
                         'pysam',
                         'pyvcf',
-                        'scikit-learn',
                         'scipy'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.5',\
