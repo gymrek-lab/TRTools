@@ -47,5 +47,4 @@ WORKDIR ..
 RUN git clone https://github.com/ileenamitra/TRTools
 WORKDIR TRTools
 RUN git checkout xchrom
-RUN python3 setup.py install
 WORKDIR ..
