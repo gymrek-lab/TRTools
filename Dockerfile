@@ -1,7 +1,10 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 
-# Update necessary packages
-RUN apt-get update && apt-get install -qqy \
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -qqy \
+    python3 \
+    python3-pip \
+    python \
+    python-dev \
     awscli \
     build-essential \
     git \
@@ -9,10 +12,6 @@ RUN apt-get update && apt-get install -qqy \
     liblzma-dev \
     make \
     pkg-config \
-    python \
-    python3 \
-    python3-dev \
-    python3-pip \
     wget \
     unzip \
     zlib1g-dev
