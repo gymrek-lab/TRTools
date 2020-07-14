@@ -5,10 +5,12 @@ and performing basic string operations on STR alleles.
 import argparse
 import itertools
 import math
+import os
+import sys
+from typing import Any, Dict
 
 import numpy as np
 import scipy.stats
-import os, sys
 import vcf
 
 import trtools.utils.common as common # pragma: no cover
@@ -136,6 +138,44 @@ def GetHeterozygosity(allele_freqs):
         return np.nan
     return 1-sum([freq**2 for freq in allele_freqs.values()])
 
+
+def GetEntropy(allele_freqs: Dict[Any, float]) -> float:
+    r"""Compute the (bit) entropy of a locus
+
+    Entropy is defined as the
+    `entropy <https://en.wikipedia.org/wiki/Information_content>_`
+    of the distribution of allele frequencies.
+
+    Parameters
+    ----------
+    allele_freqs : dict of object: float
+          Dictionary of allele frequencies for each allele.
+          Alleles are typically strings (sequences) or floats (num. repeats)
+
+    Returns
+    -------
+    entropy: float
+          The entropy of the locus.
+          If the allele frequencies dictionary is invalid, return np.nan
+
+    Notes
+    -----
+    Entropy is computed as:
+
+    .. math:: E = -\sum_{i=1..n} -p_i*log_2(p_i)
+
+    where `p_i` is the frequency of allele `i` and `n` is the number of alleles.
+
+    Examples
+    --------
+    >>> GetEntropy({0:0.5, 1:0.5})
+    1
+    """
+    if not ValidateAlleleFreqs(allele_freqs):
+        return np.nan
+    return scipy.stats.entropy(list(x for x in allele_freqs.values()), base=2)
+
+
 def GetMean(allele_freqs):
     r"""Compute the mean allele length
 
@@ -201,6 +241,7 @@ def GetVariance(allele_freqs):
     -------
     variance: float
           Return variance if allele frequencies dictionary is valid
+          np.nan otherwise.
 
     Examples
     --------

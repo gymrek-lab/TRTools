@@ -1037,7 +1037,8 @@ class TRRecord:
         Parameters
         ----------
         samplelist : list of str, optional
-            List of samples to include when computing counts
+            List of samples to include when computing counts.
+            Nonexistant samples are silently ignored
         uselength : bool, optional
             If True, represent alleles a lengths
             else represent as strings
@@ -1048,8 +1049,9 @@ class TRRecord:
         Returns
         -------
         allele_counts: dict of (object: int)
-            Gives the count of each allele.
+            Gives the count of each allele
             Alleles may be represented as floats or strings
+            Only contains alleles with at least one call
         """
         if uselength and fullgenotypes:
             raise ValueError("Can't specify both uselength and fullgenotypes")
@@ -1091,7 +1093,8 @@ class TRRecord:
         Returns
         -------
         allele_freqs: dict of (object: float)
-            Gives the frequency of each allele.
+            Gives the frequency of each allele among called samples
+            (so that frequencies add up to 1)
             Alleles may be represented as floats or strings
         """
         allele_counts = self.GetAlleleCounts(uselength=uselength,
@@ -1121,7 +1124,8 @@ class TRRecord:
         Returns
         -------
         maxallele : float
-            The maximum allele length called (in number of repeat units)
+            The maximum allele length called (in number of repeat units),
+            or nan if no alleles called
         """
         alleles = self.GetAlleleCounts(uselength=True,
                                        samplelist=samplelist).keys()
