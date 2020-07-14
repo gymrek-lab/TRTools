@@ -49,14 +49,11 @@ produced in the output file has the same name as the specified option:
   Only called alleles are included in the list. If there are no called alleles, '.' is emitted.
 * :code:`--hwep`: Output Hardy Weinberg p-values per locus.
 * :code:`--het`: Output heterozygosity of each locus.
-* :code:`--entropy`: Output the entropy of the distribution of alleles at each locus in bits.
-  (Entropy is a measurement of how complicated a locus is. Loci with higher entropies have more
-  alleles or have allele frequencies which are more evenly distributed. Entropy is a more
-  descriptive measurement of locus complexity than heterozygosity for loci with more than two alleles
-  because it not only distinguishes between heterozygous and homozygous genotypes, but also among
-  different heterozygous and different homozygous genotypes. See
+* :code:`--entropy`: Output the bit-entropy of the distribution of alleles at each locus.
+  Entropy is a measurement of how hard it is to predict genotypes at a locus, where higher
+  entropy values indicate more complex loci. See
   `wikipedia <https://en.wikipedia.org/wiki/Information_content>`_ for the mathematical definition
-  of entropy.)
+  of entropy.
 * :code:`--mean`: Output mean allele length.
 * :code:`--mode`: Output mode allele length.
 * :code:`--var`: Output variance of allele length.
