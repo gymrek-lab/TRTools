@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -qqy \
     python3 \
@@ -16,6 +16,7 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -qqy \
     unzip \
     zlib1g-dev
 
+RUN pip3 install --upgrade pip
 RUN pip3 install pybedtools pyvcf scipy numpy
 
 # Install samtools (needed to index reference fasta files)
