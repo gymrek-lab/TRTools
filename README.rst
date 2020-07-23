@@ -19,7 +19,7 @@ TRTools
 .. a location that the doc/index.rst uses for including this file
 .. after_title
 
-TRTools includes a variety of utilities for filtering, quality control and analysis of short tandem repeats (STRs) and variable number tandem repeats (VNTRs) downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
+TRTools includes a variety of utilities for filtering, quality control and analysis of tandem repeats downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
 See full documentation and examples at https://trtools.readthedocs.io/en/latest/.
 
@@ -30,18 +30,25 @@ You can install TRTools with conda::
 
         conda install -c bioconda trtools
 
-You can obtain TRTools from pip::
+Note: Bioconda only supports python versions 3.6 and 3.7 currently,
+so that is all TRTools supports in conda.
+If you are using a different version of python we support (3.5 or >= 3.8),
+install TRTools using pip.
+
+You can alternatively obtain TRTools from pip::
 
         pip install --upgrade pip
-	pip install trtools
+        pip install trtools
 
 (Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
 
 To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
-checkout the branch you're interested in, and run the following command from the base directory of the repo::
+checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
 
+        git clone https://github.com/gymreklab/TRTools
+        cd TRTools/
         pip install --upgrade pip
-	pip install .
+        pip install .
 
 (Note, required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.)
 
@@ -49,36 +56,37 @@ Tools
 -----
 TRTools includes the following tools.
 
-* dumpSTR: a tool for filtering VCF files with STR/VNTR genotypes
-* mergeSTR: a tool to merge VCF files across multiple samples genotyped using the same tool
-* statSTR: a tool for computing various statistics on VCF files
-* compareSTR: a tool for comparing TR callsets
-* qcSTR: a tool for generating various quality control plots for a TR callset
+* `mergeSTR <https://trtools.readthedocs.io/en/latest/source/mergeSTR.html>`_: a tool to merge VCF files across multiple samples genotyped using the same tool
+* `dumpSTR <https://trtools.readthedocs.io/en/latest/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
+* `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
+* `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
+* `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
 
 Type :code:`<command> --help` to see a full set of options.
 
 It additionally includes a python library, :code:`trtools`, which can be accessed from within Python scripts. e.g.::
 
-	import trtools.utils.utils as stls
-	allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
-	stls.GetHeterozygosity(allele_freqs) # should return 0.5
+        import trtools.utils.utils as stls
+        allele_freqs = {5: 0.5, 6: 0.5} # 50% of alleles have 5 repeat copies, 50% have 6
+        stls.GetHeterozygosity(allele_freqs) # should return 0.5
 
 Usage
 -----
 
-New users are recommended to start with our `example Vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_.
-You can also read the `Command-Line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
-
+We recommend new users start with the example commands described in the `command-line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
+We also suggest going through our `vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
 
 Supported TR Callers
 --------------------
-TRTools supports VCFs from the following STR/VNTR genotyping tools:
+TRTools supports VCFs from the following TR genotyping tools:
 
 * AdVNTR_
 * ExpansionHunter_
 * GangSTR_ version 2.4 or higher
 * HipSTR_
 * PopSTR_ version 2 or higher
+
+See our description of the `features and example use-cases <https://trtools.readthedocs.io/en/latest/CALLERS.html>`_ of each of these tools.
 
 ..
     please ensure this list of links remains the same as the one in the main README
@@ -90,6 +98,13 @@ TRTools supports VCFs from the following STR/VNTR genotyping tools:
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
 .. _Contributing:
+
+Development Notes
+-----------------
+
+* TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
+* TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_.
+
 
 Contributing
 ------------

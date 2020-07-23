@@ -5,6 +5,5 @@ Python API
    :glob:
    :maxdepth: 3
 
-   APIOVERVIEW.rst
    trtools.*
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tool for computing stats on STR VCF files
+Tool for computing stats on a TR VCF file
 """
 
 # Allow making plots even with no x-forward
@@ -138,10 +138,16 @@ def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
     for sl in samplelists:
         if count:
             allele_counts = trrecord.GetAlleleCounts(uselength=uselength, samplelist=sl)
-            allele_freqs_strs.append(",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())]))
+            if len(allele_counts.keys()) == 0:
+                allele_freqs_strs.append(".")
+            else:
+                allele_freqs_strs.append(",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())]))
         else:
             allele_freqs = trrecord.GetAlleleFreqs(uselength=uselength, samplelist=sl)
-            allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
+            if len(allele_freqs.keys()) == 0:
+                allele_freqs_strs.append(".")
+            else:
+                allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
     return allele_freqs_strs
 
 def GetHWEP(trrecord, samplelists=[], uselength=True):
@@ -282,7 +288,10 @@ def GetNumSamples(trrecord, samplelists=[]):
     return [sum(trrecord.GetGenotypeCounts(samplelist=sl).values()) for sl in samplelists]
 
 def getargs(): # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Output file prefix. Use stdout to print file to standard output.", type=str, required=True)
@@ -315,15 +324,25 @@ def getargs(): # pragma: no cover
             stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
 
     if not any(stat_dict.values()):
-        common.WARNING("Error: Please use at least one of the flags in the Stats group")
-        parser.print_help(sys.stderr)
+        common.WARNING("Error: Please use at least one of the flags in the Stats group. See statSTR --help for options.")
         return None
     return args
 
 def main(args):
     if not os.path.exists(args.vcf):
-        common.WARNING("%s does not exist"%args.vcf)
+        common.WARNING("Error: %s does not exist"%args.vcf)
         return 1
+
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     # Load samples
     sample_lists = []
     sample_prefixes = []
@@ -378,7 +397,7 @@ def main(args):
         if args.plot_afreq and num_plotted <= MAXPLOTS:
             PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
             num_plotted += 1
-        items = [record.CHROM, record.POS, record.INFO["END"]]
+        items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
         if args.thresh:
             items.extend(GetThresh(trrecord, samplelists=sample_lists))
         if args.afreq:

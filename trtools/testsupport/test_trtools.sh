@@ -6,7 +6,9 @@
 echo "Running test_trtools.sh"
 
 command -v git >/dev/null 2>&1 || { echo >&2 "git is not available, but is required for downloading the test data. Aborting."; exit 1; }
-command -v pytest >/dev/null 2>&1 || { echo >&2 "pytest is not available, but is required for running the test suite. Aborting."; exit 1; }
+command -v pytest >/dev/null 2>&1 || { echo >&2 "pytest is not available, but is required for running the unit test suite. Aborting."; exit 1; }
+command -v tabix >/dev/null 2>&1 || { echo >&2 "tabix is not available, but is required for running the command line test suite. Aborting."; exit 1; }
+command -v bcftools >/dev/null 2>&1 || { echo >&2 "bcftools is not available, but is required for running the command line test suite. Aborting."; exit 1; }
 
 TMP=/tmp/trtools_data_download
 if [ ! -d "$TMP" ] ; then
@@ -15,11 +17,6 @@ if [ ! -d "$TMP" ] ; then
 	pushd $TMP
 	git init .
 	git remote add origin -f https://github.com/gymreklab/TRTools.git
-	# Inform git to only download the files we're interested in
-	# (this should work for newer versions of git, though not tested)
-	# won't work for older ones
-	printf "tests/common/sample_regions\ntests/common/sample_vcfs\n" > \
-	.git/info/sparse-checkout
 	git pull origin master
 	popd
 	echo "Download done"
@@ -37,11 +34,14 @@ echo "Repo with test data located at $TMP"
 # (python would find the current one because the local directory is always added 
 # to the python path on startup, and is on the path before other installations)
 mkdir -p /tmp/trtools_tmp
-cd /tmp/trtools_tmp
-loc=$(dirname $(python -c "import trtools;print(trtools.__file__)"))
+cd /tmp/trtools_tmp || exit 1
+loc=$(dirname "$(python -c 'import trtools;print(trtools.__file__)')")
 echo "Location of trtools installation: $loc"
 
 echo "Running pytest ..."
-cd "$loc"
+cd "$loc" || exit 1
+# run unit tests
 python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/trtools/testsupport
+# run command line tests
+$TMP/test/cmdline_tests.sh $TMP/example-files
 

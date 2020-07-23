@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tool for comparing two STR callsets
+Tool for comparing genotypes from two TR VCFs
 """
 
 # Allow making plots even with no x-forward
@@ -296,7 +296,10 @@ def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
         plt.close()
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
@@ -385,6 +388,16 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
             results_dir[ff+"2"].append(val2)
 
 def main(args):
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
     ### Check and load VCF files ###
     vcfreaders = utils.LoadReaders([args.vcf1, args.vcf2], checkgz=True, region=args.region)
     if vcfreaders is None or len(vcfreaders) != 2:

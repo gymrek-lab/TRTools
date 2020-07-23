@@ -86,8 +86,7 @@ def GetSamples(readers, usefilenames=False):
 def GetAndCheckVCFType(vcfreaders, vcftype):
     """Infer vcf type of readers
 
-    If vcftype is "auto", try to infer types of each reader.
-    If it is not auto, just return that string.
+    Infer VCF type of each reader.
     If they are all the same, return that type
     If not, return error
 
