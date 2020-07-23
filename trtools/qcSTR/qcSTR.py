@@ -32,7 +32,6 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
-
 class _QualityTypes(enum.Enum):
     """Different quality graphs that can be made"""
 
@@ -71,7 +70,8 @@ def OutputDiffRefHistogram(diffs_from_ref, fname):
     fig.savefig(fname)
     plt.close()
 
-def OutputDiffRefBias(diffs_from_ref, reflens, fname):
+def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0,100), \
+                      mingts=100, metric="mean", binsize=5):
     r"""Plot reflen vs. mean difference from ref bias plot
 
     Parameters
@@ -82,11 +82,35 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
         List of reference allele lengths for each call (in bp)
     fname : str
         Filename of output plot
+    xlim: tuple of int, optional
+        Specify the minimum and maximum x-axis range (in bp)
+    mingts: int, optional
+        Don't plot data points computed based on fewer than
+        this many genotypes
+    metric: str, optional
+        Which metric to plot on the y-axis value. Must be mean or median
+    binsize: int, optional
+        Size (in bp) of bins on the x-axis.
     """
     data = pd.DataFrame({"diff": diffs_from_ref, "ref": reflens, "count": [1]*len(reflens)})
-    data["ref"] = data["ref"].apply(lambda x: int(x/5)*5) # bin by 5bp
-    summ = data.groupby("ref", as_index=False).agg({"diff": np.mean, "count": len}).sort_values("ref") # median or mean?
-    summ = summ[summ["count"]>=25] # exclude small counts
+    data["ref"] = data["ref"].apply(lambda x: int(x/binsize)*binsize)
+    if metric == "mean":
+        sum_fn = np.mean
+    elif metric == "median":
+        sum_fn = np.median
+    else:
+        common.WARNING("Invalid metric ({}) specified. Skipping reference bias plot".format(metric))
+        return
+    metric = metric.capitalize()
+    summ = data.groupby("ref", as_index=False).agg({"diff": sum_fn, "count": len}).sort_values("ref")
+    summ = summ[summ["count"]>=mingts] # exclude small counts
+    summ = summ[(summ["ref"]>=xlim[0]) & (summ["ref"]<=xlim[1])] # filter by x range
+    if summ.shape[0] == 0:
+        common.WARNING("No points left to plot in reference bias plot after "
+                       "filtering. Skipping")
+        return
+    common.MSG("Plotting ref bias plot with the following data:")
+    common.MSG(summ)
     trcounts = np.cumsum(summ["count"])
     trfreqs = trcounts/np.sum(summ["count"])
     fig = plt.figure()
@@ -94,7 +118,7 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname):
     ax.plot(summ["ref"], summ["diff"], marker="o", color="darkblue")
     ax.axhline(y=0, linestyle="dashed", color="gray")
     ax.set_xlabel("Reference length (bp)", size=15)
-    ax.set_ylabel("Median diff from ref (bp)", size=15)
+    ax.set_ylabel("{} diff from ref (bp)".format(metric), size=15)
     ax1 = ax.twinx()
     ax1.plot(summ["ref"], trfreqs, color="darkred")
     ax1.set_ylabel("Cumulative fraction of alleles", size=15)
@@ -135,7 +159,8 @@ def OutputChromCallrate(chrom_calls, fname):
     fname : str
         Filename of output plot
     """
-    chroms = sorted(chrom_calls.keys())
+    chroms = sorted(chrom for chrom in chrom_calls.keys() 
+                    if chrom_calls[chrom] > 0)
     counts = [chrom_calls[chrom] for chrom in chroms]
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -148,15 +173,40 @@ def OutputChromCallrate(chrom_calls, fname):
     plt.close()
 
 
-# from https://stackoverflow.com/a/39729964/2966505
-def _BetterReverseCDF(data: List[float],
-                      ax: matplotlib.axes.Axes):
-    # assumes that axes are already set to (max, min)
-    data = np.sort(data)[::-1]
-    x_axis_max, x_axis_min = ax.get_xlim()
-    data = np.hstack(([x_axis_max], data, [x_axis_min]))
-    ys = (np.hstack((np.arange(0, len(data) - 1), [1])) /
-          np.float(len(data) - 2))
+# original idea https://stackoverflow.com/a/39729964/2966505
+def _BetterCDF(data: List[float],
+               ax: matplotlib.axes.Axes):
+    # assumes that axes are already set to (min, max)
+    data = np.sort(data)
+    x_axis_min, x_axis_max = ax.get_xlim()
+    n_points = len(data)
+    has_quality_1_point = data[-1] == 1
+    if has_quality_1_point:
+        # don't print a drop off if the last data point(s)
+        # have quality 1
+        n_ones = sum(data == data[-1])
+        data = np.hstack((
+            [x_axis_min],
+            data[0:(len(data) - n_ones)],
+            [x_axis_max]
+        ))
+        ys = np.hstack((
+            [1],
+            np.arange(n_points - 1, n_ones - 1, -1) / np.float(n_points),
+            [n_ones / np.float(n_points)]
+        ))
+    else:
+        data = np.hstack((
+            [x_axis_min],
+            data,
+            [x_axis_max]
+        ))
+        ys = np.hstack((
+            [1],
+            np.arange(n_points - 1, -1, -1) / np.float(n_points),
+            [0]
+        ))
+    #ax.step(data, ys)#, where='post')
     ax.step(data, ys, where='post')
 
 
@@ -164,22 +214,24 @@ def _OutputQualityHist(
         data: Union[List[float], Dict[str, List[float]]],
         fname: str,
         dist_name: str):
+    #data is a List[float] if there is no stratification,
+    #Dict[str, List[float]] with startification
     spacing = 5e-3
     fig = plt.figure()
     ax = fig.add_subplot(111)
     if isinstance(data, list):
-        ax.set_xlim(max(data) + spacing, min(data) - spacing)
-        _BetterReverseCDF(data, ax)
+        ax.set_xlim(min(data) - spacing, max(data) + spacing)
+        _BetterCDF(data, ax)
     else: # assume dict
         max_val = 0.0
         min_val = 1.0
         for dist in data.values():
             max_val = max(max_val, max(dist))
             min_val = min(min_val, min(dist))
-        ax.set_xlim(max_val + spacing, min_val - spacing)
+        ax.set_xlim(min_val - spacing, max_val + spacing)
         names = []
         for name, dist in data.items():
-            _BetterReverseCDF(dist, ax)
+            _BetterCDF(dist, ax)
             names.append(name)
         ax.legend(names)
     ax.set_xlabel("Quality", size=15)
@@ -253,7 +305,7 @@ def OutputQualityLocusStrat(
 
     Parameters
     ----------
-    locus_strat_data: 
+    locus_strat_data:
         dict from locus ID to a list of the qualities of the calls for that
         locus.
     fname :
@@ -262,15 +314,29 @@ def OutputQualityLocusStrat(
     _OutputQualityHist(locus_strat_data, fname, "calls")
 
 def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(__doc__)
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    req_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-    filter_group = parser.add_argument_group("Filtering group")
-    filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
-    filter_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
+    inp_group = parser.add_argument_group("Optional input arguments")
+
+    vcftype_options = [str(item) for item in trh.VcfTypes.__members__]
+    vcftype_options.append("auto")
+    inp_group.add_argument(
+        "--vcftype",
+        type=str,
+        help="Which type of VCF to restrict the input to, or 'auto' for no"
+             " restrction",
+        default="auto",
+        choices = vcftype_options
+    )
+
+    inp_group.add_argument("--samples", help="File containing list of samples to include", type=str)
+    inp_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
     quality_group = parser.add_argument_group("Quality plot options")
     quality_group.add_argument(
         "--quality",
@@ -292,6 +358,40 @@ def getargs():  # pragma: no cover
               "Setting this can cause the plotting to crash if it reduces the"
               " number of valid calls (in a strata) to <= 1")
     )
+    refbias_group = parser.add_argument_group("Reference bias plot options")
+    refbias_group.add_argument(
+        "--refbias-metric",
+        type=str,
+        default="mean",
+        help=("Which metric to use for the y-axis on "
+              "the reference bias plot."),
+        choices=['mean', 'median']
+    )
+    refbias_group.add_argument(
+        "--refbias-mingts",
+        type=int,
+        default=100,
+        help=("Don't compute points for the reference bias plot "
+              "based on fewer than this many genotypes")
+    )
+    refbias_group.add_argument(
+        "--refbias-xrange-min",
+        type=int,
+        default=0,
+        help=("Minimum x-axis value (bp) to show on the reference bias plot")
+        )
+    refbias_group.add_argument(
+        "--refbias-xrange-max",
+        type=int,
+        default=100,
+        help=("Maximum x-axis value (bp) to show on the reference bias plot")
+        )
+    refbias_group.add_argument(
+        "--refbias-binsize",
+        type=int,
+        default=5,
+        help=("Size (bp) of x-axis bins for the reference bias plot")
+    )
     debug_group = parser.add_argument_group("Debug group")
     debug_group.add_argument("--numrecords", help="Only process this many records", type=int)
     ver_group = parser.add_argument_group("Version")
@@ -304,17 +404,15 @@ def main(args):
         common.WARNING("The input vcf location %s does not exist"%args.vcf)
         return 1
 
-    containing_dir = os.path.split(args.out)[0]
-    if not os.path.exists(containing_dir):
-        common.WARNING("The directory {} which contains the output location does"
-                       " not exist".format(containing_dir))
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
         return 1
 
-    if os.path.isdir(args.out):
-        common.WARNING("The output location {} is a "
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
-
 
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
@@ -329,6 +427,18 @@ def main(args):
     if len(args.quality) > 0 and not harmonizer.HasQualityScore():
         common.WARNING("Requested a quality plot, but the input vcf doesn't have "
                        "quality scores!")
+        return 1
+
+    # Check refbias options
+    if args.refbias_binsize < 1:
+        common.WARNING("--refbias-binsize must be >=1")
+        return 1
+    if args.refbias_mingts < 0:  # allow for 0 mingts as a synonym for 1
+        common.WARNING("--refbias-mingts must be >=1")
+        return 1
+    if args.refbias_xrange_min >= args.refbias_xrange_max:
+        common.WARNING("--refbias-xrange-min ({}) cannot be >= --refbias-xrange-max ({})".format(
+            args.refbias_xrange_min, args.refbias_xrange_max))
         return 1
 
     # Load samples
@@ -352,7 +462,7 @@ def main(args):
     sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
     contigs = invcf.contigs
     if len(contigs) == 0:
-        common.MSG("Warning: no contigs found in VCF file.")
+        common.WARNING("Warning: no contigs found in VCF file.")
     chrom_calls = dict([(chrom, 0) for chrom in contigs]) # chrom->numcalls
     diffs_from_ref = [] # for each allele call, keep track of diff (bp) from ref
     diffs_from_ref_unit = [] # for each allele call, keep track of diff (units) from ref
@@ -433,14 +543,31 @@ def main(args):
 
         numrecords += 1
 
-    print("Producing " + args.out + "-diffref-histogram.pdf ...")
+    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='',
+          flush=True)
+    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf", \
+                      xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
+                      mingts=args.refbias_mingts, metric=args.refbias_metric, \
+                      binsize=args.refbias_binsize)
+    if len(samplelist) > 1:
+        print("Done.\nProducing " + args.out + "-sample-callnum.pdf ... ",
+              end='', flush=True)
+        OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
+        print("Done.")
+    else:
+        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")
+    if 1 < len(list(chrom for chrom, value in chrom_calls.items()
+                    if value > 0)):
+        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='',
+              flush=True)
+        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+        print("Done.\n", end='')
+    else:
+        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.pdf ...")
+    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='',
+          flush=True)
     OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
-    print("Done. Producing " + args.out + "-diffref-bias.pdf ...")
-    OutputDiffRefBias(diffs_from_ref, reflens, args.out + "-diffref-bias.pdf")
-    print("Done. Producing " + args.out + "-sample-callnum.pdf ...")
-    OutputSampleCallrate(sample_calls, args.out+"-sample-callnum.pdf")
-    print("Done. Producing " + args.out + "-chrom-callnum.pdf ...")
-    OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+    print("Done.")
 
     if default_quality:
         def quality_output_loc(quality_value):
@@ -449,46 +576,63 @@ def main(args):
         def quality_output_loc(quality_value):
             return args.out+"-quality-{}.pdf".format(quality_value)
 
+    prior_qual_plot = False
     if _QualityTypes.per_sample.value in args.quality:
-        print("Done. Producing " +
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_sample.value) +
-              " ...")
+              " ... ", end='', flush=True)
         new_per_sample_data = []
         for sample_data in per_sample_data.values():
             new_per_sample_data.append(stat.mean(sample_data))
         OutputQualityPerSample(new_per_sample_data,
                                quality_output_loc(_QualityTypes.per_sample.value))
+        prior_qual_plot = True
 
     if _QualityTypes.sample_stratified.value in args.quality:
-        print("Done. Producing " +
+        if prior_qual_plot:
+            print("Done.")
+        print("Producing " +
               quality_output_loc(_QualityTypes.sample_stratified.value) +
-              " ...")
+              " ... ", end='', flush=True)
         OutputQualitySampleStrat(sample_strat_data,
                                  quality_output_loc(_QualityTypes.sample_stratified.value))
+        prior_qual_plot = True
 
     if _QualityTypes.per_locus.value in args.quality:
-        print("Done. Producing " +
+        if prior_qual_plot:
+            print("Done.")
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_locus.value) +
-              " ...")
+              " ... ", end='', flush=True)
         new_per_locus_data = []
         for locus_data in per_locus_data:
             new_per_locus_data.append(stat.mean(locus_data))
         OutputQualityPerLocus(new_per_locus_data,
                               quality_output_loc(_QualityTypes.per_locus.value))
+        prior_qual_plot = True
 
     if _QualityTypes.locus_stratified.value in args.quality:
-        print("Done. Producing " +
+        if prior_qual_plot:
+            print("Done.")
+        print("Producing " +
               quality_output_loc(_QualityTypes.locus_stratified.value) +
-              " ...")
+              " ... ", end='', flush=True)
         OutputQualityLocusStrat(locus_strat_data,
                                 quality_output_loc(_QualityTypes.locus_stratified.value))
+        prior_qual_plot = True
 
     if _QualityTypes.per_call.value in args.quality:
-        print("Done. Producing " +
+        if prior_qual_plot:
+            print("Done.")
+        print("Producing " +
               quality_output_loc(_QualityTypes.per_call.value) +
-              " ...")
+              " ... ", end='', flush=True)
         OutputQualityPerCall(per_call_data,
                              quality_output_loc(_QualityTypes.per_call.value))
+
+    if len(args.quality) == 0:
+        print("This vcf does not have quality scores, so skipping all "
+              "quality plots.")
 
     print("Done.")
     return 0
