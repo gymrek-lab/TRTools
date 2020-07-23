@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -qqy \
     python3 \
@@ -29,21 +29,11 @@ WORKDIR ..
 RUN wget -O bedtools-2.27.1.tar.gz https://github.com/arq5x/bedtools2/releases/download/v2.27.1/bedtools-2.27.1.tar.gz
 RUN tar -xzvf bedtools-2.27.1.tar.gz
 WORKDIR bedtools2
-RUN make && make install 
-WORKDIR ..
-
-# Download, compile, and install GangSTR
-RUN wget -O GangSTR-2.4.tar.gz https://github.com/gymreklab/GangSTR/releases/download/v2.4/GangSTR-2.4.tar.gz
-RUN tar -xzvf GangSTR-2.4.tar.gz
-WORKDIR GangSTR-2.4
-RUN ./install-gangstr.sh
-RUN ldconfig
+RUN make && make install
 WORKDIR ..
 
 # Download and install TRTools
 RUN git clone https://github.com/gymreklab/TRTools
 WORKDIR TRTools
-RUN python3 setup.py install
+RUN git checkout xchrom
 WORKDIR ..
-
-
