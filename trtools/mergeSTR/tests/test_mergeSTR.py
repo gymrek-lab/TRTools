@@ -13,6 +13,7 @@ def args(tmpdir):
     args.vcfs = None
     args.out = str(tmpdir / "test")
     args.update_sample_from_file = False 
+    args.force_merge_ggl = False
     args.quiet = False
     args.verbose = False
     args.vcftype = "auto"

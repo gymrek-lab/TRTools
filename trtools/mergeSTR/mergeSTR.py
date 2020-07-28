@@ -293,7 +293,10 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     for i in range(len(mergelist)):
         if mergelist[i]:
             if info_field in current_records[i].INFO:
-                vals.add(current_records[i].INFO[info_field])
+                if type(current_records[i].INFO[info_field]) == list:
+                    vals.add(",".join([str(item) for item in current_records[i].INFO[info_field]]))
+                else:
+                    vals.add(current_records[i].INFO[info_field])
             else:
                 raise ValueError("Missing info field %s"%info_field)
     if len(vals)==1:
@@ -432,6 +435,7 @@ def getargs():  # pragma: no cover
     ### Special merge options ###
     spec_group = parser.add_argument_group("Special merge options")
     spec_group.add_argument("--update-sample-from-file", help="Use file names, rather than sample header names, when merging", action="store_true")
+    spec_group.add_argument("--force-merge-ggl", help="Merge GangSTR GGL and GRID fields. Requires identical ALT alleles across files", action="store_true")
     ### Optional arguments ###
     opt_group = parser.add_argument_group("Optional arguments")
     opt_group.add_argument("--verbose", help="Print out extra info", action="store_true")
@@ -453,6 +457,11 @@ def main(args):
         common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
+
+    ### Update merge fields based on options
+    if args.force_merge_ggl:
+        FORMATFIELDS["gangstr"].append("GGL")
+        INFOFIELDS["gangstr"].append(("GRID",True))
 
     ### Check and Load VCF files ###
     vcfreaders = utils.LoadReaders(args.vcfs.split(","), checkgz = True)
