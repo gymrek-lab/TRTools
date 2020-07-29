@@ -158,6 +158,8 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
         else:
             vcfw.write(GetInfoString(readers[0].infos[field])+"\n")
             useinfo.append((field, reqd))
+    # Write GT header
+    vcfw.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
     # Write FORMAT fields, different for each tool
     useformat = []
     for field in FORMATFIELDS[vcftype]:
