@@ -16,7 +16,6 @@ matplotlib.rcParams['ps.fonttype'] = 42
 
 # Imports
 import argparse
-import collections
 import enum
 import os
 import statistics as stat
@@ -137,7 +136,7 @@ def OutputSampleCallrate(sample_calls, fname):
     fname : str
         Filename of output plot
     """
-    samples = sample_calls.keys()
+    samples = list(sample_calls.keys())
     data = pd.DataFrame({"sample": samples, "numcalls": [sample_calls[key] for key in samples]})
     #data = data.sort_values("numcalls") # Commented because the order would be incorrect if sorted
     fig = plt.figure()
@@ -460,9 +459,7 @@ def main(args):
             args.quality = [_QualityTypes.per_locus.value]
 
     # Set up data to keep track of
-    sample_calls = collections.OrderedDict(
-        [(sample, 0) for sample in samplelist] # sample->numcalls
-    )
+    sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
     contigs = invcf.contigs
     if len(contigs) == 0:
         common.WARNING("Warning: no contigs found in VCF file.")

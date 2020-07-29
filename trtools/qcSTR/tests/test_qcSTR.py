@@ -1,9 +1,5 @@
 import argparse
-import collections
-import glob
-import os
-import shutil
-
+import glob, os, shutil, sys
 import numpy as np
 import pytest
 
@@ -45,13 +41,13 @@ def test_OutputDiffRefBias(tmpdir):
     OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
 
 # Just confirm that the method doesn't throw an error
-def test_OutputSampleCallrate(tmpdir):
-    sample_calls = collections.OrderedDict([('s1', 120), ('s2', 10)])
+def test_OutPutSampleCallrate(tmpdir):
+    sample_calls = {'s1': 120, 's2': 10}
     fname = str(tmpdir / "test_qc1.pdf")
     OutputSampleCallrate(sample_calls, fname)
 
 # Just confirm that the method doesn't throw an error
-def test_OutputChromCallrate(tmpdir):
+def test_OutPutChromCallrate(tmpdir):
     chrom_calls = {'chr1': 100, 'chr2': 200}
     fname = str(tmpdir / "test_qc2.pdf")
     OutputChromCallrate(chrom_calls, fname)
