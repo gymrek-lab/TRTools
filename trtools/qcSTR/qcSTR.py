@@ -16,6 +16,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 
 # Imports
 import argparse
+import collections
 import enum
 import os
 import statistics as stat
@@ -459,7 +460,9 @@ def main(args):
             args.quality = [_QualityTypes.per_locus.value]
 
     # Set up data to keep track of
-    sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
+    sample_calls = collections.OrderedDict(
+        [(sample, 0) for sample in samplelist] # sample->numcalls
+    )
     contigs = invcf.contigs
     if len(contigs) == 0:
         common.WARNING("Warning: no contigs found in VCF file.")
