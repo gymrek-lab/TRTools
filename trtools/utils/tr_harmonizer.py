@@ -8,8 +8,8 @@ import re
 import warnings
 from typing import Dict, Iterator, List, Union
 
+import cyvcf2
 import numpy as np
-import vcf
 
 import trtools.utils.utils as utils
 
