@@ -1,8 +1,10 @@
 import os
+import types
+from typing import List
 
+import cyvcf2
 import numpy as np
 import pytest
-import vcf
 
 import trtools.utils.tr_harmonizer as trh
 
@@ -10,61 +12,69 @@ import trtools.utils.tr_harmonizer as trh
 
 #### Test TRRecord using dummy info ####
 
+# TODO add tests that check this for quality scores?
 
-# Set up dummy class with gt_alleles
-class DummyVCFSample:
+class DummyCyvcf2Record:
     def __init__(self,
-                 gt_alleles,
-                 called,
-                 sample='',
-                 quality_field=None,
-                 quality_field_val=None):
-        self.gt_alleles = gt_alleles
-        self.called = called
-        self.sample = sample
-        self.formats = {}
-        if quality_field is not None:
-            self.formats[quality_field] = quality_field_val
-
-
-class DummyVCFRecord:
-    def __init__(self,
-                 quality_field: str = None
+                 gts, # arraylike (n x 2). All entries in a row should contain -1s for no calls
+                      # For calls with different ploidy, the array should
+                      # contain columns equal to the greatest ploidy and lower
+                      # ploidy calls should be padded with -1s
+                      # if this is a vcf with no samples in it (just loci
+                      # descriptions) then this should be None
                  ):
-        self.samples = []
         self.POS = 42
         self.CHROM = '1984'
-        self.formats = {}
-        self.quality_field = quality_field
+        self.FORMAT = {}
 
-    def __iadd__(self, other: DummyVCFSample):
-        self.samples.append(other)
-        return self
+        if gts is not None:
+            self.genotype = types.SimpleNamespace()
+            self._gts = np.array(gts)
+            self._gts = np.concatenate(
+                (self._gts, np.zeros((self._gts.shape[0], 1))),
+                axis=1
+            ) # add the phasing axis, we're not testing that here
+            self.genotype.array = lambda: self._gts
+        else:
+            self.genotype = None
+
+
+class DummyCvcf2VCF:
+    def __init__(
+            self,
+            samples: List[str],
+            records: List[DummyCyvcf2Record]):
+        self.samples = samples
+        self.records = records
 
     def __iter__(self):
-        for sample in self.samples:
-            yield sample
+        for record in self.records:
+            yield record
 
 
 # Set up dummy VCF records which are just lists of genotypes
-dummy_record1 = DummyVCFRecord()  # Example record with real data
-dummy_sample1 = DummyVCFSample(['0', '1'], True, 'S1')
-dummy_sample2 = DummyVCFSample(['1', '1'], True, 'S2')
-dummy_record1 += dummy_sample1
-dummy_record1 += dummy_sample2
-dummy_record1 += DummyVCFSample(['1', '1'], True, 'S3')
-dummy_record1 += DummyVCFSample(['1', '2'], True, 'S4')
-dummy_record1 += DummyVCFSample(['2', '2'], True, 'S5')
-dummy_record1 += DummyVCFSample(['0'], True, 'S6')  # add a haploid sample
-dummy_record2 = DummyVCFRecord()  # Empty record
-dummy_record3 = DummyVCFRecord()  # All reference
-for i in range(3):
-    dummy_record3 += DummyVCFSample(['0', '0'], True, 'S7')
-# add a triploid sample
-dummy_record3 += DummyVCFSample(['0', '0', '0'], True, 'S8')
-# Example record not called (not sure what gt field should look like)
-dummy_record4 = DummyVCFRecord()
-dummy_record4 += DummyVCFSample(['0'], False, 'S9')
+dummy_record_gts = [
+    [0, 1],
+    [1, 1],
+    [1, 1],
+    [1, 2],
+    [2, 2],
+    [0, -1]]
+dummy_record = DummyCyvcf2Record(
+    gts=dummy_record_gts #last sample is haploid
+)
+record_with_triploid = DummyCyvcf2Record(
+    gts=[[0, 0, -1],
+         [0, 0, -1],
+         [0, 0, -1],
+         [0, 0, 0]]
+)
+record_with_nocall = DummyCyvcf2Record(
+    gts=[[-1, -1]]
+)
+record_with_nosamples = DummyCyvcf2Record(
+    gts=None
+)
 
 
 def test_unexpected_vcf_type():
@@ -77,78 +87,83 @@ def test_TRRecord_print():
     alt = ["DEF", "GHI"]
     motif = "foo"
     ID = "bar"
-    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID, "some_field")
+    record = trh.TRRecord(record_with_nosamples, ref, alt, motif, ID, "some_field")
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
 
-    record = trh.TRRecord(dummy_record1, ref, alt, motif, None, None)
-    assert str(record) == "{}:{} {} {} {},{}".format(dummy_record1.CHROM,
-                                                     dummy_record1.POS,
+    # use CHROM:POS if records do not have Ids
+    record = trh.TRRecord(record_with_nosamples, ref, alt, motif, None, None)
+    assert str(record) == "{}:{} {} {} {},{}".format(record_with_nosamples.CHROM,
+                                                     record_with_nosamples.POS,
                                                      motif, ref, alt[0],
                                                      alt[1])
 
-    record = trh.TRRecord(dummy_record1, ref, alt, motif, ID, None)
+    record = trh.TRRecord(record_with_nosamples, ref, alt, motif, ID, None)
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
 
-    record = trh.TRRecord(dummy_record1, "B", ["E", "H"], motif, ID, None,
+    record = trh.TRRecord(record_with_nosamples, "B", ["E", "H"], motif, ID, None,
                           full_alleles=(ref, alt))
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
 
-    record = trh.TRRecord(dummy_record1, ref, None, motif, ID, None,
+    record = trh.TRRecord(record_with_nosamples, ref, None, motif, ID, None,
                           alt_allele_lengths=[3, 5.5])
     assert str(record) == "{} {} {} n_reps:3,n_reps:5.5".format(ID, motif, ref)
 
-    record = trh.TRRecord(dummy_record1, None, None, motif, ID, None,
+    record = trh.TRRecord(record_with_nosamples, None, None, motif, ID, None,
                           ref_allele_length=7,
                           alt_allele_lengths=[3, 5.5])
     assert str(record) == ("{} {} n_reps:7 n_reps:3,n_reps:5.5"
                            .format(ID, motif))
 
 
-def test_TRRecord_iter():
-    record = trh.TRRecord(dummy_record1, "ACG", ["A", "C", "G", "T"],
+def test_TRRecord_output_shape():
+    record = trh.TRRecord(dummy_record, "ACG", ["A", "C", "G", "T"],
                           "FOO", "BAR", "some_field")
-    record_iter = iter(record)
-    assert next(record_iter) == dummy_sample1
-    assert next(record_iter) == dummy_sample2
+    assert (record.GetGenotypeIndicies().shape ==
+            dummy_record.genotype.array().shape()[:-1])
 
 
-def test_TRRecord_allele_lengths():
+def test_TRRecord_allele_seqs_from_lens():
     ref_allele = "CAGCAGCAG"
     alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
     motif = 'FOO'
     ID = 'BAR'
 
     # alt alleles
+    # confirm cannot use alt_allele_lengths and alt_allele sequences at the same time
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+        trh.TRRecord(record_with_nosamples, ref_allele, alt_alleles, motif, ID,
                      "some_field",
                      alt_allele_lengths=[4, 6])
 
-    record = trh.TRRecord(dummy_record1, ref_allele, None, motif, ID,
+    # confirm accessing fabricated alt_alleles from lengths
+    record = trh.TRRecord(record_with_nosamples, ref_allele, None, motif, ID,
                           "some_field",
                           alt_allele_lengths=[4, 5.5])
     assert record.alt_alleles == [motif * 4, motif * 5 + "F"]
 
     # ref allele
+    # confirm cannot use ref_allele_length and ref_allele sequence at the same time
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
+        trh.TRRecord(record_with_nosamples, ref_allele, alt_alleles, motif, ID, None,
                      ref_allele_length=5)
 
+    # confirm cannot use ref_allele_length and alt_allele sequences at the same time
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, None, alt_alleles, motif, ID, None,
+        trh.TRRecord(record_with_nosamples, None, alt_alleles, motif, ID, None,
                      ref_allele_length=5)
 
-    record = trh.TRRecord(dummy_record1, None, None, motif, ID, None,
+    # confirm accessing fabricated ref_allele from length
+    record = trh.TRRecord(record_with_nosamples, None, None, motif, ID, None,
                           ref_allele_length=5.5, alt_allele_lengths=[4, 5.5])
     assert record.ref_allele == motif * 5 + 'F'
 
 
 def test_TRRecord_unique_lengths():
     record = trh.TRRecord(
-        dummy_record2,
+        record_with_nosamples,
         "ACGACGACG",
         [
             "ACGAAGACG",
@@ -186,20 +201,20 @@ def test_TRRecord_full_alleles():
     ID = 'BAR'
 
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, None, None, motif, ID, None,
+        trh.TRRecord(record_with_nosamples, None, None, motif, ID, None,
                      full_alleles=(full_ref, full_alts))
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
+        trh.TRRecord(record_with_nosamples, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(["CAGCAGCAQQQQQQQQQQQQQQQ"], full_alts))
     with pytest.raises(ValueError):
         bad_alts = [
             "CAGCAGCAQQQQQQQQQQQQQQQ",
             full_alts[1]
         ]
-        trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID, None,
+        trh.TRRecord(record_with_nosamples, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(ref_allele, bad_alts))
 
-    record = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, motif, ID,
+    record = trh.TRRecord(record_with_nosamples, ref_allele, alt_alleles, motif, ID,
                           None,
                           full_alleles=(ref_allele, alt_alleles))
 
@@ -218,52 +233,54 @@ def test_TRRecord_GetGenotypes():
     # Test good example
     ref_allele = "CAGCAGCAG"
     alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
-    print(rec)  # To test str function
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     true_gts = [[ref_allele, alt_alleles[0]],
                 [alt_alleles[0], alt_alleles[0]],
                 [alt_alleles[0], alt_alleles[0]],
                 [alt_alleles[0], alt_alleles[1]],
-                [alt_alleles[1], alt_alleles[1]], [ref_allele]]
-    true_len_gts = [[3, 4], [4, 4], [4, 4], [4, 6], [6, 6], [3]]
-    ind = 0
-    for sample in rec.vcfrecord:
-        stringt = rec.GetStringGenotype(sample)
-        lengt = rec.GetLengthGenotype(sample)
-        assert(all(
-            [(stringt[i] == true_gts[ind][i]) for i in range(len(stringt))]
-        ))
-        assert(all(
-            [(lengt[i] == true_len_gts[ind][i]) for i in range(len(lengt))]
-        ))
-        ind += 1
+                [alt_alleles[1], alt_alleles[1]],
+                [ref_allele, None]]
+    true_gts = np.array(true_gts)
+    true_len_gts = np.array([[3, 4], [4, 4], [4, 4], [4, 6], [6, 6], [3, -1]])
+    assert np.all(rec.GetGenotypeIndicies()[:, :-1] ==
+                  np.array(dummy_record_gts))
+    assert np.all(rec.GetLengthGenotypes()[:, :-1] == true_len_gts)
+    assert np.all(rec.GetStringGenotypes()[:, :-1] == true_gts)
+
     # Test example where alt=[]
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    print(rec)  # To test str function
-    for sample in rec.vcfrecord:
-        stringt = rec.GetStringGenotype(sample)
-        lengt = rec.GetLengthGenotype(sample)
-        assert(all([item == ref_allele for item in stringt]))
-        assert(all([item == 3 for item in lengt]))
-    # Test example with discrepancy between alt_alleles and genotypes given
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    assert np.all(rec.GetGenotypeIndicies() == 0)
+    assert np.all(rec.GetLengthGenotypes() == 3)
+    assert np.all(rec.GetStringGenotypes() == ref_allele)
+
+    # Test example with fewer alt_alleles than the max genotype index
     with pytest.raises(ValueError):
-        trh.TRRecord(dummy_record1, ref_allele, [], "CAG", "", None)
+        trh.TRRecord(dummy_record, ref_allele, [], "CAG", "", None)
 
 
 def test_GetGenotypeCounts():
-    # Test good example, no samplelist, uselength=True (default)
+    # Test working example, no samplelist
     ref_allele = "CAGCAGCAG"
     alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
-    print(rec)  # To test str function
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
+    true_idx_counts = {(0, 1) : 1,
+                       (1, 1) : 2,
+                       (1, 2) : 1,
+                       (2, 2) : 1,
+                       (0, -1) : 1}
     true_gt_counts = {(ref_allele, alt_alleles[0]): 1,
                       (alt_alleles[0], alt_alleles[0]): 2,
                       (alt_alleles[0], alt_alleles[1]): 1,
-                      (alt_alleles[1], alt_alleles[1]): 1, (ref_allele,): 1}
-    true_len_gt_counts = {(3, 4): 1, (4, 4): 2, (4, 6): 1, (6, 6): 1, (3,): 1}
+                      (alt_alleles[1], alt_alleles[1]): 1,
+                      (ref_allele, None): 1}
+    true_len_gt_counts = {(3, 4): 1, (4, 4): 2, (4, 6): 1, (6, 6): 1, (3, -1): 1}
 
     gt_counts_uselength = rec.GetGenotypeCounts()
     gt_counts_nolength = rec.GetGenotypeCounts(uselength=False)
+    gt_counts_idx = rec.GetGenotypeCounts(index=True)
+    assert (all(
+        v == true_idx_counts[k] for k, v in gt_counts_idx.items()
+    ) and len(gt_counts_idx) == len(true_idx_counts))
     assert (all(
         v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
     ) and len(gt_counts_uselength) == len(true_len_gt_counts))
@@ -271,15 +288,49 @@ def test_GetGenotypeCounts():
         v == true_gt_counts[k] for k, v in gt_counts_nolength.items()
     ) and len(gt_counts_nolength) == len(true_gt_counts))
 
-    # Test good example with samplelist
+    # Test example where alt=[]
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    true_idx_gt_counts = {(0, 0, 0): 1, (0, 0, -1): 3}
+    true_len_gt_counts = {(3, 3, 3): 1, (3, 3, -1): 3}
+    true_gt_counts = {(ref_allele, ref_allele, ref_allele): 1,
+                      (ref_allele, ref_allele, None): 3}
+    gt_counts_idx = rec.GetGenotypeCounts(index=True)
+    gt_counts_uselength = rec.GetGenotypeCounts()
+    gt_counts_nolength = rec.GetGenotypeCounts(uselength=False)
+    assert (all(
+        v == true_idx_gt_counts[k] for k, v in gt_counts_idx.items()
+    ) and len(gt_counts_idx) == len(true_idx_gt_counts))
+    assert (all(
+        v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
+    ) and len(gt_counts_uselength) == len(true_len_gt_counts))
+    assert (all(
+        v == true_gt_counts[k] for k, v in gt_counts_nolength.items()
+    ) and len(gt_counts_nolength) == len(true_gt_counts))
+
+    # Test example where there are no samples
+    rec = trh.TRRecord(record_with_nocall, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetGenotypeCounts(index=True)) == 0
+    assert len(rec.GetGenotypeCounts()) == 0
+    assert len(rec.GetGenotypeCounts(uselength=True)) == 0
+
+
+    # --- Tests with samplelist param ---
+
+    # Test working example with samplelist
+    true_idx_gt_counts_slist = {(0, 1): 1, (1, 1): 1, (0, -1): 1}
     true_gt_counts_slist = {(ref_allele, alt_alleles[0]): 1,
                             (alt_alleles[0], alt_alleles[0]): 1,
-                            (ref_allele,): 1}
-    true_len_gt_counts_slist = {(3, 4): 1, (4, 4): 1, (3,): 1}
-    slist = ['S1', 'S3', 'S6']
+                            (ref_allele, None): 1}
+    true_len_gt_counts_slist = {(3, 4): 1, (4, 4): 1, (3, -1): 1}
+    slist = [0, 2, 5]
+    gt_counts_idx_slist = rec.GetGenotypeCounts(samplelist=slist, index=True)
     gt_counts_uselength_slist = rec.GetGenotypeCounts(samplelist=slist)
     gt_counts_nolength_slist = rec.GetGenotypeCounts(samplelist=slist,
                                                      uselength=False)
+    assert (all(
+        v == true_idx_gt_counts_slist[k] for k, v in
+        gt_counts_idx_slist.items()
+    ) and len(gt_counts_idx_slist) == len(true_idx_gt_counts_slist))
     assert (all(
         v == true_len_gt_counts_slist[k] for k, v in
         gt_counts_uselength_slist.items()
@@ -289,44 +340,30 @@ def test_GetGenotypeCounts():
         in gt_counts_nolength_slist.items()
     ) and len(gt_counts_nolength_slist) == len(true_gt_counts_slist))
 
-    # Test example where alt=[]
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_gt_counts = {(3, 3, 3): 1, (3, 3): 3}
-    gt_counts_uselength = rec.GetGenotypeCounts()
-    assert (all(
-        v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
-    ) and len(gt_counts_uselength) == len(true_len_gt_counts))
-
-    # Test example with non of samples in samplelist in VCF
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_gt_counts_slist = {}
-    gt_counts_uselength_slist = \
-        rec.GetGenotypeCounts(samplelist=['NonExistentSample'])
-    assert (all(
-        v == true_len_gt_counts_slist[k] for k, v
-        in gt_counts_uselength_slist.items()
-    ) and len(gt_counts_uselength_slist) == len(true_len_gt_counts_slist))
-
-    # Test example where that has one uncalled sample only
-    rec = trh.TRRecord(dummy_record4, ref_allele, [], "CAG", "", None)
-    true_len_gt_counts = {}
-    gt_counts_uselength = rec.GetGenotypeCounts()
-    assert (all(
-        v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
-    ) and len(gt_counts_uselength) == len(true_len_gt_counts))
+    # Test example where none of the samples in samplelist are in the VCF
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetGenotypeCounts(samplelist=['NonExistentSample'],
+                                     index=True)) == 0
+    assert len(rec.GetGenotypeCounts(samplelist=['NonExistentSample'])) == 0
+    assert len(rec.GetGenotypeCounts(samplelist=['NonExistentSample'],
+                                     uselength=True)) == 0
 
 
 def test_GetAlleleCounts():
-    # Test good example, no samplelist, uselength=True (default)
+    # Test working example, no samplelist
     ref_allele = "CAGCAGCAG"
     alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
-    print(rec)  # To test str function
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     true_al_counts = {ref_allele: 2, alt_alleles[0]: 6, alt_alleles[1]: 3}
     true_len_al_counts = {3: 2, 4: 6, 6: 3}
+    true_idx_al_counts = {0: 2, 1: 6, 2: 3}
 
     al_counts_uselength = rec.GetAlleleCounts()
     al_counts_nolength = rec.GetAlleleCounts(uselength=False)
+    al_counts_idx = rec.GetAlleleCounts(index=True)
+    assert (all(
+        v == true_idx_counts[k] for k, v in al_counts_idx.items()
+    ) and len(al_counts_idx) == len(true_idx_counts))
     assert (all(
         v == true_len_al_counts[k] for k, v in al_counts_uselength.items()
     ) and len(al_counts_uselength) == len(true_len_al_counts))
@@ -334,119 +371,176 @@ def test_GetAlleleCounts():
         v == true_al_counts[k] for k, v in al_counts_nolength.items()
     ) and len(al_counts_nolength) == len(true_al_counts))
 
-    # Test good example with samplelist
-    true_al_counts_slist = {ref_allele: 2, alt_alleles[0]: 3}
+    # Test example where alt=[]
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    true_len_al_counts = {3: 9}
+    true_idx_al_counts = {0: 9}
+    true_al_counts = {ref_allele: 9}
+    al_counts_idx = rec.GetAlleleCounts(index=True)
+    al_counts_uselength = rec.GetAlleleCounts()
+    al_counts_nolength = rec.GetAlleleCounts(uselength=False)
+    assert (all(
+        v == true_idx_al_counts[k] for k, v in al_counts_idx.items()
+    ) and len(al_counts_idx) == len(true_idx_al_counts))
+    assert (all(
+        v == true_len_al_counts[k] for k, v in al_counts_uselength.items()
+    ) and len(al_counts_uselength) == len(true_len_al_counts))
+    assert (all(
+        v == true_al_counts[k] for k, v in al_counts_nolength.items()
+    ) and len(al_counts_nolength) == len(true_al_counts))
+
+    # Test example where there are no samples
+    rec = trh.TRRecord(record_with_nocall, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetAlleleCounts(index=True)) == 0
+    assert len(rec.GetAlleleCounts()) == 0
+    assert len(rec.GetAlleleCounts(uselength=True)) == 0
+
+
+    # --- Tests with samplelist param ---
+
+    # Test working example with samplelist
+    true_idx_al_counts_slist = {0: 2, 1: 3}
     true_len_al_counts_slist = {3: 2, 4: 3}
-    slist = ['S1', 'S3', 'S6']
+    true_al_counts_slist = {ref_allele: 2, alt_alleles[0]: 3}
+    slist = [0, 2, 5]
+    al_counts_idx_slist = rec.GetAlleleCounts(samplelist=slist, index=True)
     al_counts_uselength_slist = rec.GetAlleleCounts(samplelist=slist)
     al_counts_nolength_slist = rec.GetAlleleCounts(samplelist=slist,
                                                    uselength=False)
-
     assert (all(
-        v == true_len_al_counts_slist[k] for k, v
-        in al_counts_uselength_slist.items()
+        v == true_idx_al_counts_slist[k] for k, v in
+        al_counts_idx_slist.items()
+    ) and len(al_counts_idx_slist) == len(true_idx_al_counts_slist))
+    assert (all(
+        v == true_len_al_counts_slist[k] for k, v in
+        al_counts_uselength_slist.items()
     ) and len(al_counts_uselength_slist) == len(true_len_al_counts_slist))
     assert (all(
         v == true_al_counts_slist[k] for k, v
         in al_counts_nolength_slist.items()
     ) and len(al_counts_nolength_slist) == len(true_al_counts_slist))
 
-    # Test example where alt=[]
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_al_counts = {3: 9}
-    al_counts_uselength = rec.GetAlleleCounts()
-    assert (all(v == true_len_al_counts[k] for k,
-                v in al_counts_uselength.items()) and len(al_counts_uselength) == len(true_len_al_counts))
-
-    # Test example with non of samples in samplelist in VCF
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_al_counts_slist = {}
-    al_counts_uselength_slist = rec.GetAlleleCounts(samplelist = ['NonExistentSample'])
-    assert (all(v == true_len_al_counts_slist[k] for k,v in al_counts_uselength_slist.items()) and len(al_counts_uselength_slist) == len(true_len_al_counts_slist))
-
-    # Test example where that has one uncalled sample only
-    rec = trh.TRRecord(dummy_record4, ref_allele, [], "CAG", "", None)
-    true_len_al_counts = {}
-    al_counts_uselength = rec.GetAlleleCounts()
-    assert (all(v == true_len_al_counts[k] for k,v in al_counts_uselength.items()) and len(al_counts_uselength) == len(true_len_al_counts))
+    # Test example where none of the samples in samplelist are in the VCF
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetAlleleCounts(samplelist=['NonExistentSample'],
+                                   index=True)) == 0
+    assert len(rec.GetAlleleCounts(samplelist=['NonExistentSample'])) == 0
+    assert len(rec.GetAlleleCounts(samplelist=['NonExistentSample'],
+                                     uselength=True)) == 0
 
 
 def test_GetAlleleFreqs():
-    # Test good example, no samplelist, uselength=True (default)
+    # Test working example, no samplelist
     ref_allele = "CAGCAGCAG"
-    alt_alleles = ["CAGCAGCAGCAG","CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
-    print(rec) # To test str function
+    alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     true_al_freqs = {ref_allele: 0.18181818181818182, alt_alleles[0]: 0.5454545454545454, alt_alleles[1]: 0.2727272727272727}
     true_len_al_freqs = {3: 0.18181818181818182, 4: 0.5454545454545454, 6: 0.2727272727272727}
-    al_freqs_uselength = rec.GetAlleleFreqs()
-    al_freqs_nolength = rec.GetAlleleFreqs(uselength = False)
-    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
-    assert (all(v == true_al_freqs[k] for k,v in al_freqs_nolength.items()) and len(al_freqs_nolength) == len(true_al_freqs))
+    true_idx_al_freqs = {0: 0.18181818181818182, 1: 0.5454545454545454, 2: 0.2727272727272727}
 
-    # Test good example with samplelist
-    true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
-    true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
-    slist = ['S1', 'S3', 'S6']
-    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = slist)
-    al_freqs_nolength_slist = rec.GetAlleleFreqs(samplelist = slist, uselength = False)
-    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
-    assert (all(v == true_al_freqs_slist[k] for k,v in al_freqs_nolength_slist.items()) and len(al_freqs_nolength_slist) == len(true_al_freqs_slist))
+    al_freqs_uselength = rec.GetAlleleFreqs()
+    al_freqs_nolength = rec.GetAlleleFreqs(uselength=False)
+    al_freqs_idx = rec.GetAlleleFreqs(index=True)
+    assert (all(
+        v == true_idx_al_freqs[k] for k, v in al_freqs_idx.items()
+    ) and len(al_freqs_idx) == len(true_idx_al_freqs))
+    assert (all(
+        v == true_len_al_freqs[k] for k, v in al_freqs_uselength.items()
+    ) and len(al_freqs_uselength) == len(true_len_al_freqs))
+    assert (all(
+        v == true_al_freqs[k] for k, v in al_freqs_nolength.items()
+    ) and len(al_freqs_nolength) == len(true_al_freqs))
 
     # Test example where alt=[]
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_al_freqs = {3: 1.0}
-    al_freqs_uselength = rec.GetAlleleFreqs()
-    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    true_len_al_freq = {3: 1}
+    true_idx_al_freq = {0: 1}
+    true_al_freq = {ref_allele: 1}
+    al_freq_idx = rec.GetAlleleFreqs(index=True)
+    al_freq_uselength = rec.GetAlleleFreqs()
+    al_freq_nolength = rec.GetAlleleFreqs(uselength=False)
+    assert (all(
+        v == true_idx_al_freq[k] for k, v in al_freq_idx.items()
+    ) and len(al_freq_idx) == len(true_idx_al_freq))
+    assert (all(
+        v == true_len_al_freq[k] for k, v in al_freq_uselength.items()
+    ) and len(al_freq_uselength) == len(true_len_al_freq))
+    assert (all(
+        v == true_al_freq[k] for k, v in al_freq_nolength.items()
+    ) and len(al_freq_nolength) == len(true_al_freq))
+
+    # Test example where there are no samples
+    rec = trh.TRRecord(record_with_nocall, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetAlleleFreqs(index=True)) == 0
+    assert len(rec.GetAlleleFreqs()) == 0
+    assert len(rec.GetAlleleFreqs(uselength=True)) == 0
 
 
-    # Test example with non of samples in samplelist in VCF
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_len_al_freqs_slist = {}
-    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist = ['NonExistentSample'])
-    assert (all(v == true_len_al_freqs_slist[k] for k,v in al_freqs_uselength_slist.items()) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
+    # --- Tests with samplelist param ---
 
-    # Test example where that has one uncalled sample only
-    rec = trh.TRRecord(dummy_record4, ref_allele, [], "CAG", "", None)
-    true_len_al_freqs = {}
-    al_freqs_uselength = rec.GetAlleleFreqs()
-    assert (all(v == true_len_al_freqs[k] for k,v in al_freqs_uselength.items()) and len(al_freqs_uselength) == len(true_len_al_freqs))
+    # Test working example with samplelist
+    true_idx_al_freqs_slist = {3: 0.4, 4: 0.6}
+    true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
+    true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
+    slist = [0, 2, 5]
+    al_freqs_idx_slist = rec.GetAlleleFreqs(samplelist=slist, index=True)
+    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist=slist)
+    al_freqs_nolength_slist = rec.GetAlleleFreqs(samplelist=slist,
+                                                 uselength=False)
+    assert (all(
+        v == true_idx_al_freqs_slist[k] for k, v in
+        al_freqs_idx_slist.items()
+    ) and len(al_freqs_idx_slist) == len(true_idx_al_freqs_slist))
+    assert (all(
+        v == true_len_al_freqs_slist[k] for k, v in
+        al_freqs_uselength_slist.items()
+    ) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
+    assert (all(
+        v == true_al_freqs_slist[k] for k, v
+        in al_freqs_nolength_slist.items()
+    ) and len(al_freqs_nolength_slist) == len(true_al_freqs_slist))
+
+    # Test example where none of the samples in samplelist are in the VCF
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    assert len(rec.GetAlleleFreqs(samplelist=['NonExistentSample'],
+                                  index=True)) == 0
+    assert len(rec.GetAlleleFreqs(samplelist=['NonExistentSample'])) == 0
+    assert len(rec.GetAlleleFreqs(samplelist=['NonExistentSample'],
+                                  uselength=True)) == 0
+
 
 def test_GetMaxAllele():
-    # Test good example, no samplelist, uselength=True (default)
+    # Test working example
     ref_allele = "CAGCAGCAG"
-    alt_alleles = ["CAGCAGCAGCAG","CAGCAGCAGCAGCAGCAG"]
-    rec = trh.TRRecord(dummy_record1, ref_allele, alt_alleles, "CAG", "", None)
-    print(rec) # To test str function
+    alt_alleles = ["CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG"]
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     true_al_max = 6.0
     al_max = rec.GetMaxAllele()
     assert al_max == true_al_max
 
-    # Test good example with samplelist
-    true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
-    true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
-    slist = ['S1', 'S3', 'S6']
-    true_al_max_slist = 4.0
-    al_max_slist = rec.GetMaxAllele(samplelist = slist)
-    assert al_max_slist == true_al_max_slist
-
     # Test example where alt=[]
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
     true_al_max = 3.0
     al_max = rec.GetMaxAllele()
     assert al_max == true_al_max
 
-    # Test example with non of samples in samplelist in VCF
-    rec = trh.TRRecord(dummy_record3, ref_allele, [], "CAG", "", None)
-    true_al_max_slist = np.nan
-    al_max_slist = rec.GetMaxAllele(samplelist = ['NonExistentSample'])
-    assert np.isnan(al_max_slist) == True
-
-    # Test example where that has one uncalled sample only
-    rec = trh.TRRecord(dummy_record4, ref_allele, [], "CAG", "", None)
+    # Test example where there are no samples
+    rec = trh.TRRecord(record_with_nocall, ref_allele, [], "CAG", "", None)
     true_al_max = np.nan
     al_max = rec.GetMaxAllele()
-    assert np.isnan(al_max) == True
+    assert np.isnan(al_max)
+
+    # Test working example with samplelist
+    slist = [0, 2, 5]
+    true_al_max_slist = 4.0
+    al_max_slist = rec.GetMaxAllele(samplelist=slist)
+    assert al_max_slist == true_al_max_slist
+
+    # Test example where none of the samples in samplelist are in the VCF
+    rec = trh.TRRecord(record_with_triploid, ref_allele, [], "CAG", "", None)
+    true_al_max_slist = np.nan
+    al_max_slist = rec.GetMaxAllele(samplelist=['NonExistentSample'])
+    assert np.isnan(al_max_slist)
 
 
 #### Test TRRecordHarmonizer on different files ####
@@ -454,18 +548,17 @@ def test_GetMaxAllele():
 
 def reset_vcfs(vcfdir):
     global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
-    gangstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_gangstr.vcf"))
-    hipstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_hipstr.vcf"))
-    popstr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_popstr.vcf"))
-    advntr_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_advntr.vcf"))
-    eh_vcf = vcf.Reader(filename=os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
-    snps_vcf = vcf.Reader(filename=os.path.join(vcfdir, "snps.vcf"))
+    gangstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_gangstr.vcf"))
+    hipstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_hipstr.vcf"))
+    popstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_popstr.vcf"))
+    advntr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_advntr.vcf"))
+    eh_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
+    snps_vcf = cyvcf2.VCF(os.path.join(vcfdir, "snps.vcf"))
 
 
 def test_multitype_vcf(vcfdir):
     with pytest.raises(TypeError):
-        reader = vcf.Reader(filename=os.path.join(vcfdir,
-                                                  "test_multitype.vcf"))
+        reader = cyvcf2.VCF(os.path.join(vcfdir, "test_multitype.vcf"))
         trh.TRRecordHarmonizer(reader)
 
 
@@ -760,8 +853,8 @@ def test_TRRecord_Quality(vcfdir):
     assert var.HasQualityScores()
     assert var.GetQualityScore(samp) == 0.999912
 
-    gangstr_vcf_noqual = vcf.Reader(
-        filename=os.path.join(vcfdir, "test_gangstr_noqual.vcf")
+    gangstr_vcf_noqual = cyvcf2.VCF(
+        os.path.join(vcfdir, "test_gangstr_noqual.vcf")
     )
     gangstr_trh_noqual = trh.TRRecordHarmonizer(gangstr_vcf_noqual)
     assert not gangstr_trh_noqual.HasQualityScore()
