@@ -90,6 +90,7 @@ def MayHaveImpureRepeats(vcftype: VcfTypes):
     Determine if any of the alleles in this VCF may contain impure repeats.
 
     Specifically, impure repeats include:
+
     * impurities in the underlying sequence (e.g. AAATAAAAA)
     * partial repeats (e.g. AATAATAATAA)
 
@@ -126,9 +127,9 @@ def HasLengthRefGenotype(vcftype: VcfTypes):
 
     If True, then reference alleles for all variants produced by this
     caller are specified by length and not by sequence. Sequences are
-    fabricated according to Utils.FabricateAllele().
+    fabricated according to :py:func:`trtools.utils.utils.FabricateAllele`.
 
-    If True, then HasLengthAltGenotypes() will also be true
+    If True, then :py:meth:`HasLengthAltGenotypes` will also be true
 
     Returns
     -------
@@ -159,7 +160,7 @@ def HasLengthAltGenotypes(vcftype: VcfTypes):
 
     If True, then alt alleles for all variants produced by this
     caller are specified by length and not by sequence. Sequences are
-    fabricated according to Utils.FabricateAllele().
+    fabricated according to :py:func:`trtools.utils.utils.FabricateAllele`.
 
     Returns
     -------
@@ -230,7 +231,7 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
        Sometimes includes non-repeat flanks in the original genotypes,
        which are trimmed off during harmonization.
        In that case, the original alleles can be accessed through
-       the GetFullStringGenotype() method on the returned
+       the :py:meth:`TRRecord.GetFullStringGenotypes` method on the returned
        TRRecord objects.
        If the alt alleles have differently sized flanks than the ref allele
        then those alt alleles will be improperly trimmed.
@@ -248,12 +249,12 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
 
        Includes full REF string, which can contain impurities.
        Alt alleles are only reported as lengths, sequences are
-       fabricated with Utils.FabricateAllele
+       fabricated with :py:meth:`trtools.utils.utils.FabricateAllele`
 
     EH:
 
        Both REF and ALT alleles are only reported as lengths.
-       Sequences are fabricated with Utils.FabricateAllele
+       Sequences are fabricated with :py:meth:`trtools.utils.utils.FabricateAllele`
        Does not include quality scores
     """
     possible_vcf_types = set()
@@ -577,10 +578,10 @@ def _UpperCaseAlleles(alleles : List[str]):
 
 class _Cyvcf2FormatDict():
     """
-    Provide an immutable dict-like interface for accessing 
+    Provide an immutable dict-like interface for accessing
     format fields from a cyvcf2 record.
-    To iterate over this dict, use iter(this)
-    or this.keys().
+    To iterate over this dict, use :code:`iter(this)`
+    or :code:`this.keys()`.
     """
 
     def __init__(self, record: cyvcf2.Variant):
@@ -607,7 +608,7 @@ class _Cyvcf2FormatDict():
 
 class TRRecord:
     """
-    Analagous to cyvcf2.Variant, except specialized for TR fields.
+    A representation of a VCF record specialized for TR fields.
 
     Allows downstream functions to be agnostic to the
     genotyping tool used to create the record.
@@ -657,7 +658,7 @@ class TRRecord:
         A tuple of string genotypes (ref_allele, [alt_alleles])
         where each allele may contain any number of flanking
         basepairs in addition to containing the tandem repeat.
-        If set, these can be accessed through 'GetFullStringGenotype'
+        If set, these can be accessed through :py:meth:`GetFullStringGenotypes`
     alt_allele_lengths :
         The lengths of each of the alt alleles, in order.
         Should only be passed when only the lengths of the alt alleles
@@ -666,7 +667,8 @@ class TRRecord:
 
         If this is passed, the alt_alleles parameter to the constructor must
         be set to None and the alt_alleles attribute of the record will be set
-        to fabricated alleles (see utils.FabricateAllele)
+        to fabricated alleles (see
+        :py:meth:`trtools.utils.utils.FabricateAllele`)
     ref_allele_length :
         like alt_allele_lengths, but for the reference allele.
         If this is passed, alt_allele_lengths must also be passed
@@ -836,31 +838,32 @@ class TRRecord:
         """
         Get an array of string genotypes for each sample.
 
-        The array is as described in :py:meth:`TRRecord.GetGenotypeIndicies`
+        The array is as described in :py:meth:`GetGenotypeIndicies`
         except that the indicies are replaced by their corresponding
         sequences, -1 indicies are replaced by '', and the
         phasing bits (0 or 1) are replaced by the strings '0' or '1'.
 
         Will not include flanking base pairs. To get genotypes that include
         flanking base pairs (for callers that call those), use
-        GetFullStringGenotype. For callers that include flanking base pairs
+        :py:meth:`GetFullStringGenotypes`. For callers that include flanking base pairs
         it is possible that some of the alleles in the regular string genotypes
         (with the flanks stripped) will be identical. In this case, you may
-        use UniqueStringGenotypeMapping() to get a canonical unique subset
+        use :py:meth:`UniqueStringGenotypeMapping` to get a canonical unique subset
         of indicies which represent all possible alleles.
 
         Note that some TR callers will only call allele lengths, not allele
         sequences. In such a case, this method will return a fabricated
-        sequence based on the called length (see utils.FabricateAllele) and
+        sequence based on the called length (see
+        :py:meth:`trtools.utils.utils.FabricateAllele`) and
         a warning will be raised. This may not be intended -
-        use GetLengthGenotypes for a fully caller agnostic
+        use :py:meth:`GetLengthGenotypes` for a fully caller agnostic
         way of handling genotypes.
 
         This method is inefficient for many samples, consider either using
-        length genotypes (:py:meth:`TRRecord.GetLengthGenotypes`), or
-        using genotype indicies (:py:meth:`TRRecord.GetGenotypeIndicies`) and
-        accessing string genotypes as needed
-        (:py:meth:`TRRecord.GetStringGenotypesList), instead.
+        length genotypes (:py:meth:`GetLengthGenotypes`), or
+        using genotype indicies (:py:meth:`GetGenotypeIndicies`) and
+        accessing string genotypes as needed through the fields ref_allele and
+        alt_alleles, instead.
 
         Returns
         -------
@@ -887,7 +890,7 @@ class TRRecord:
     def GetFullStringGenotypes(self) -> Optional[np.ndarray]:
         """
         Get an array of full string genotypes for each sample.
-        See :py:meth:`TRRecord.GetStringGenotypes` for details and
+        See :py:meth:`GetStringGenotypes` for details and
         limitations of string genotypes.
 
         If the sample does not have full genotypes that are distinct
@@ -952,7 +955,8 @@ class TRRecord:
         """
         Find allele indicies corresponding to the unique alleles.
 
-        Equivalent to calling set(UniqueStringGenotypeMapping().values())
+        Equivalent to calling
+        :code:`set(UniqueStringGenotypeMapping().values())`
 
         Returns
         -------
@@ -970,7 +974,7 @@ class TRRecord:
         Returns a pair of floats - alleles including partial repeats
         or other impurities may have noninteger lengths.
 
-        The array is as described in :py:meth:`TRRecord.GetGenotypeIndicies`
+        The array is as described in :py:meth:`GetGenotypeIndicies`
         except that indicies are replaced by their length genotypes.
         -1s are not modified.
 
@@ -1034,7 +1038,8 @@ class TRRecord:
         """
         Find allele indicies corresponding to the unique length alleles.
 
-        Equivalent to calling set(UniqueLengthGenotypeMapping().values())
+        Equivalent to calling
+        :code:`set(UniqueLengthGenotypeMapping().values())`
         
         Returns
         -------
@@ -1050,8 +1055,8 @@ class TRRecord:
         Returns
         -------
         bool:
-            True iff GetFullStringGenotype(...) will return
-            a different value than GetStringGenotype(...) for some
+            True iff :py:meth:`GetFullStringGenotypes` will return
+            a different value than :py:meth:`GetStringGenotypes` for some
             alleles.
         """
         return self.full_alleles is not None
