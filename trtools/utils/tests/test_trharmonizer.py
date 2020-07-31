@@ -44,19 +44,6 @@ class DummyCyvcf2Record:
             self.genotype = None
 
 
-class DummyCvcf2VCF:
-    def __init__(
-            self,
-            samples: List[str],
-            records: List[DummyCyvcf2Record]):
-        self.samples = samples
-        self.records = records
-
-    def __iter__(self):
-        for record in self.records:
-            yield record
-
-
 # Set up dummy VCF records which are just lists of genotypes
 dummy_record_gts = [
     [0, 1],
