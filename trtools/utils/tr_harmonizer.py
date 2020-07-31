@@ -17,8 +17,6 @@ import trtools.utils.utils as utils
 # List of supported VCF types
 # TODO: add Beagle
 # TODO: add support for tool version numbers
-# TODO: add EH support for getting ref allele sequence genotypes from fasta
-
 
 class VcfTypes(enum.Enum):
     """The different tr callers that tr_harmonizer supports."""
@@ -113,7 +111,7 @@ def MayHaveImpureRepeats(vcftype: VcfTypes):
     if vcftype == VcfTypes.popstr:
         return True
     if vcftype == VcfTypes.eh:
-        return False  # TODO check this
+        return False
 
     # Can't cover this line because it is future proofing.
     # (It explicitly is not reachable now,
@@ -146,7 +144,7 @@ def HasLengthRefGenotype(vcftype: VcfTypes):
     if vcftype == VcfTypes.popstr:
         return False
     if vcftype == VcfTypes.eh:
-        return True  # TODO check this
+        return True
 
     # Can't cover this line because it is future proofing.
     # (It explicitly is not reachable now,
@@ -213,49 +211,6 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
     -------
     vcftype : VcfTypes
        Type of the VCF file
-
-    Notes
-    -----
-    TODO move these notes to online docs
-    Some notes on the pecularities of each VCF type
-
-    GangSTR:
-
-       Does not include sequence impurities or partial repeats.
-       Full REF and ALT strings given
-
-    HipSTR:
-
-       Full REF and ALT strings given
-       May contain sequence impurities and partial repeats
-       Sometimes includes non-repeat flanks in the original genotypes,
-       which are trimmed off during harmonization.
-       In that case, the original alleles can be accessed through
-       the :py:meth:`TRRecord.GetFullStringGenotypes` method on the returned
-       TRRecord objects.
-       If the alt alleles have differently sized flanks than the ref allele
-       then those alt alleles will be improperly trimmed.
-       HipSTR reports the motif length but not the motif itself,
-       so the motif is inferred from the sequences. This is usually
-       but not always the correct motif.
-
-    adVNTR:
-
-       Full REF and ALT strings given.
-       Uses its own ID convention that can change from run to run.
-       May contain impurities or partial repeats?
-
-    popSTR:
-
-       Includes full REF string, which can contain impurities.
-       Alt alleles are only reported as lengths, sequences are
-       fabricated with :py:meth:`trtools.utils.utils.FabricateAllele`
-
-    EH:
-
-       Both REF and ALT alleles are only reported as lengths.
-       Sequences are fabricated with :py:meth:`trtools.utils.utils.FabricateAllele`
-       Does not include quality scores
     """
     possible_vcf_types = set()
     header = vcffile.raw_header.lower()
@@ -659,6 +614,8 @@ class TRRecord:
         where each allele may contain any number of flanking
         basepairs in addition to containing the tandem repeat.
         If set, these can be accessed through :py:meth:`GetFullStringGenotypes`
+        If the alt alleles have differently sized flanks than the ref allele
+        then those alt alleles will be improperly trimmed.
     alt_allele_lengths :
         The lengths of each of the alt alleles, in order.
         Should only be passed when only the lengths of the alt alleles
