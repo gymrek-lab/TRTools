@@ -28,6 +28,8 @@ import trtools.utils.utils as utils
 from trtools import __version__
 
 MAXPLOTS = 10 # don't plot more than this many allele freqs
+PRECISION = 6
+PRECISION_FORMAT = "\t{:." + str(PRECISION) + "}"
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     r"""Plot allele frequencies for a locus
@@ -400,6 +402,12 @@ def getargs(): # pragma: no cover
         return None
     return args
 
+def format_nan_precision(val):
+    if np.isnan(val):
+        return "\tnan"
+    else:
+        return PRECISION_FORMAT.format(val)
+
 def main(args):
     if not os.path.exists(args.vcf):
         common.WARNING("Error: %s does not exist"%args.vcf)
@@ -450,6 +458,7 @@ def main(args):
     if args.mode: header.extend(GetHeader("mode", sample_prefixes))
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
+
     try:
         if args.out == "stdout":
             if args.plot_afreq:
@@ -474,29 +483,45 @@ def main(args):
             if args.plot_afreq and num_plotted <= MAXPLOTS:
                 PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
                 num_plotted += 1
-            items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
+            outf.write(str(record.CHROM) + "\t"
+                       + str(record.POS) + "\t"
+                       + str(record.POS+len(trrecord.ref_allele)))
             if args.thresh:
-                items.extend(GetThresh(trrecord, samplelists=sample_lists))
+                for val in GetThresh(trrecord, samplelists=sample_lists):
+                    outf.write(format_nan_precision(val))
             if args.afreq:
-                items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length))
+                for val in GetAFreq(trrecord, samplelists=sample_lists,
+                                    uselength=args.use_length):
+                    outf.write("\t" + str(val))
             if args.acount:
-                items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length, count=True))
+                for val in GetAFreq(trrecord, samplelists=sample_lists,
+                                    uselength=args.use_length, count=True):
+                    outf.write("\t" + str(val))
             if args.hwep:
-                items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
+                for val in GetHWEP(trrecord, samplelists=sample_lists,
+                                   uselength=args.use_length):
+                    outf.write(format_nan_precision(val))
             if args.het:
-                items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
+                for val in GetHet(trrecord, samplelists=sample_lists,
+                                  uselength=args.use_length):
+                    outf.write(format_nan_precision(val))
             if args.entropy:
-                items.extend(GetEntropy(trrecord, samplelists=sample_lists, uselength=args.use_length))
+                for val in GetEntropy(trrecord, samplelists=sample_lists,
+                                      uselength=args.use_length):
+                    outf.write(format_nan_precision(val))
             if args.mean:
-                items.extend(GetMean(trrecord, samplelists=sample_lists))
+                for val in GetMean(trrecord, samplelists=sample_lists):
+                    outf.write(format_nan_precision(val))
             if args.mode:
-                items.extend(GetMode(trrecord, samplelists=sample_lists))
+                for val in GetMode(trrecord, samplelists=sample_lists):
+                    outf.write(format_nan_precision(val))
             if args.var:
-                items.extend(GetVariance(trrecord, samplelists=sample_lists))
+                for val in GetVariance(trrecord, samplelists=sample_lists):
+                    outf.write(format_nan_precision(val))
             if args.numcalled:
-                items.extend(GetNumSamples(trrecord, samplelists=sample_lists))
-            outf.write("\t".join([str(item) for item in items])+"\n")
-
+                for val in GetNumSamples(trrecord, samplelists=sample_lists):
+                    outf.write("\t" + str(val))
+            outf.write("\n")
             if nrecords % 50 == 0:
                 outf.flush()
             if args.out != "stdout" and nrecords % 50 == 0:
@@ -513,6 +538,7 @@ def main(args):
 
     if args.out != "stdout":
         print("\nDone", flush=True)
+
     return 0
 
 def run(): # pragma: no cover
