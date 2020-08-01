@@ -289,7 +289,7 @@ def test_TRRecord_GetGenotypes():
 
 
 def test_GetGenotypeCounts():
-    # Test working example, no samplelist
+    # Test working example, no sample_index
     dummy_record = get_dummy_record()
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
@@ -355,35 +355,35 @@ def test_GetGenotypeCounts():
     assert len(rec.GetGenotypeCounts(include_nocalls=True)) == 1
     assert len(rec.GetGenotypeCounts(uselength=True, include_nocalls=True)) == 1
 
-    # Test working example with samplelist
-    true_idx_gt_counts_slist = {(0, 1): 1, (1, 1): 1, (-1, 0): 1}
-    true_gt_counts_slist = {(ref_allele, alt_alleles[0]): 1,
+    # Test working example with sample_index
+    true_idx_gt_counts_sindex = {(0, 1): 1, (1, 1): 1, (-1, 0): 1}
+    true_gt_counts_sindex = {(ref_allele, alt_alleles[0]): 1,
                             (alt_alleles[0], alt_alleles[0]): 1,
                             ('', ref_allele): 1}
-    true_len_gt_counts_slist = {(3, 4): 1, (4, 4): 1, (-1, 3): 1}
-    slist = [0, 2, 5]
+    true_len_gt_counts_sindex = {(3, 4): 1, (4, 4): 1, (-1, 3): 1}
+    sindex = [0, 2, 5]
     dummy_record = get_dummy_record()
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    gt_counts_idx_slist = rec.GetGenotypeCounts(samplelist=slist, index=True)
-    gt_counts_uselength_slist = rec.GetGenotypeCounts(samplelist=slist)
-    gt_counts_nolength_slist = rec.GetGenotypeCounts(samplelist=slist,
+    gt_counts_idx_sindex = rec.GetGenotypeCounts(sample_index=sindex, index=True)
+    gt_counts_uselength_sindex = rec.GetGenotypeCounts(sample_index=sindex)
+    gt_counts_nolength_sindex = rec.GetGenotypeCounts(sample_index=sindex,
                                                      uselength=False)
     assert (all(
-        v == true_idx_gt_counts_slist[k] for k, v in
-        gt_counts_idx_slist.items()
-    ) and len(gt_counts_idx_slist) == len(true_idx_gt_counts_slist))
+        v == true_idx_gt_counts_sindex[k] for k, v in
+        gt_counts_idx_sindex.items()
+    ) and len(gt_counts_idx_sindex) == len(true_idx_gt_counts_sindex))
     assert (all(
-        v == true_len_gt_counts_slist[k] for k, v in
-        gt_counts_uselength_slist.items()
-    ) and len(gt_counts_uselength_slist) == len(true_len_gt_counts_slist))
+        v == true_len_gt_counts_sindex[k] for k, v in
+        gt_counts_uselength_sindex.items()
+    ) and len(gt_counts_uselength_sindex) == len(true_len_gt_counts_sindex))
     assert (all(
-        v == true_gt_counts_slist[k] for k, v
-        in gt_counts_nolength_slist.items()
-    ) and len(gt_counts_nolength_slist) == len(true_gt_counts_slist))
+        v == true_gt_counts_sindex[k] for k, v
+        in gt_counts_nolength_sindex.items()
+    ) and len(gt_counts_nolength_sindex) == len(true_gt_counts_sindex))
 
 
 def test_GetAlleleCounts():
-    # Test working example, no samplelist
+    # Test working example, no sample_index
     dummy_record = get_dummy_record()
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
@@ -429,32 +429,32 @@ def test_GetAlleleCounts():
     assert len(rec.GetAlleleCounts()) == 0
     assert len(rec.GetAlleleCounts(uselength=True)) == 0
 
-    # Test working example with samplelist
-    true_idx_al_counts_slist = {0: 2, 1: 3}
-    true_len_al_counts_slist = {3: 2, 4: 3}
-    true_al_counts_slist = {ref_allele: 2, alt_alleles[0]: 3}
-    slist = [0, 2, 5]
+    # Test working example with sample_index
+    true_idx_al_counts_sindex = {0: 2, 1: 3}
+    true_len_al_counts_sindex = {3: 2, 4: 3}
+    true_al_counts_sindex = {ref_allele: 2, alt_alleles[0]: 3}
+    sindex = [0, 2, 5]
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    al_counts_idx_slist = rec.GetAlleleCounts(samplelist=slist, index=True)
-    al_counts_uselength_slist = rec.GetAlleleCounts(samplelist=slist)
-    al_counts_nolength_slist = rec.GetAlleleCounts(samplelist=slist,
+    al_counts_idx_sindex = rec.GetAlleleCounts(sample_index=sindex, index=True)
+    al_counts_uselength_sindex = rec.GetAlleleCounts(sample_index=sindex)
+    al_counts_nolength_sindex = rec.GetAlleleCounts(sample_index=sindex,
                                                    uselength=False)
     assert (all(
-        v == true_idx_al_counts_slist[k] for k, v in
-        al_counts_idx_slist.items()
-    ) and len(al_counts_idx_slist) == len(true_idx_al_counts_slist))
+        v == true_idx_al_counts_sindex[k] for k, v in
+        al_counts_idx_sindex.items()
+    ) and len(al_counts_idx_sindex) == len(true_idx_al_counts_sindex))
     assert (all(
-        v == true_len_al_counts_slist[k] for k, v in
-        al_counts_uselength_slist.items()
-    ) and len(al_counts_uselength_slist) == len(true_len_al_counts_slist))
+        v == true_len_al_counts_sindex[k] for k, v in
+        al_counts_uselength_sindex.items()
+    ) and len(al_counts_uselength_sindex) == len(true_len_al_counts_sindex))
     assert (all(
-        v == true_al_counts_slist[k] for k, v
-        in al_counts_nolength_slist.items()
-    ) and len(al_counts_nolength_slist) == len(true_al_counts_slist))
+        v == true_al_counts_sindex[k] for k, v
+        in al_counts_nolength_sindex.items()
+    ) and len(al_counts_nolength_sindex) == len(true_al_counts_sindex))
 
 
 def test_GetAlleleFreqs():
-    # Test working example, no samplelist
+    # Test working example, no sample_index
     dummy_record = get_dummy_record()
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
@@ -504,28 +504,28 @@ def test_GetAlleleFreqs():
     assert len(rec.GetAlleleFreqs()) == 0
     assert len(rec.GetAlleleFreqs(uselength=True)) == 0
 
-    # Test working example with samplelist
-    true_idx_al_freqs_slist = {0: 0.4, 1: 0.6}
-    true_len_al_freqs_slist = {3: 0.4, 4: 0.6}
-    true_al_freqs_slist = {ref_allele: 0.4, alt_alleles[0]: 0.6}
-    slist = [0, 2, 5]
+    # Test working example with sample_index
+    true_idx_al_freqs_sindex = {0: 0.4, 1: 0.6}
+    true_len_al_freqs_sindex = {3: 0.4, 4: 0.6}
+    true_al_freqs_sindex = {ref_allele: 0.4, alt_alleles[0]: 0.6}
+    sindex = [0, 2, 5]
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    al_freqs_idx_slist = rec.GetAlleleFreqs(samplelist=slist, index=True)
-    al_freqs_uselength_slist = rec.GetAlleleFreqs(samplelist=slist)
-    al_freqs_nolength_slist = rec.GetAlleleFreqs(samplelist=slist,
+    al_freqs_idx_sindex = rec.GetAlleleFreqs(sample_index=sindex, index=True)
+    al_freqs_uselength_sindex = rec.GetAlleleFreqs(sample_index=sindex)
+    al_freqs_nolength_sindex = rec.GetAlleleFreqs(sample_index=sindex,
                                                  uselength=False)
     assert (all(
-        v == true_idx_al_freqs_slist[k] for k, v in
-        al_freqs_idx_slist.items()
-    ) and len(al_freqs_idx_slist) == len(true_idx_al_freqs_slist))
+        v == true_idx_al_freqs_sindex[k] for k, v in
+        al_freqs_idx_sindex.items()
+    ) and len(al_freqs_idx_sindex) == len(true_idx_al_freqs_sindex))
     assert (all(
-        v == true_len_al_freqs_slist[k] for k, v in
-        al_freqs_uselength_slist.items()
-    ) and len(al_freqs_uselength_slist) == len(true_len_al_freqs_slist))
+        v == true_len_al_freqs_sindex[k] for k, v in
+        al_freqs_uselength_sindex.items()
+    ) and len(al_freqs_uselength_sindex) == len(true_len_al_freqs_sindex))
     assert (all(
-        v == true_al_freqs_slist[k] for k, v
-        in al_freqs_nolength_slist.items()
-    ) and len(al_freqs_nolength_slist) == len(true_al_freqs_slist))
+        v == true_al_freqs_sindex[k] for k, v
+        in al_freqs_nolength_sindex.items()
+    ) and len(al_freqs_nolength_sindex) == len(true_al_freqs_sindex))
 
 
 def test_GetMaxAllele():
@@ -550,12 +550,12 @@ def test_GetMaxAllele():
     al_max = rec.GetMaxAllele()
     assert np.isnan(al_max)
 
-    # Test working example with samplelist
-    slist = [0, 2, 5]
-    true_al_max_slist = 4.0
+    # Test working example with sample_index
+    sindex = [0, 2, 5]
+    true_al_max_sindex = 4.0
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    al_max_slist = rec.GetMaxAllele(samplelist=slist)
-    assert al_max_slist == true_al_max_slist
+    al_max_sindex = rec.GetMaxAllele(sample_index=sindex)
+    assert al_max_sindex == true_al_max_sindex
 
 
 #### Test TRRecordHarmonizer on different files ####

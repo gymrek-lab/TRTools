@@ -1044,7 +1044,7 @@ class TRRecord:
 
     def GetGenotypeCounts(
             self,
-            samplelist: Optional[Any] = None,
+            sample_index: Optional[Any] = None,
             uselength: bool = True,
             index: bool = False,
             fullgenotypes: bool = False,
@@ -1061,7 +1061,7 @@ class TRRecord:
 
         Parameters
         ----------
-        samplelist :
+        sample_index :
             Used to index the numpy array of samples. So can be a numpy array
             of sample indicies, or a bool array with length of the number
             of samples, etc.
@@ -1113,8 +1113,8 @@ class TRRecord:
         gts = gts[:, :-1] #remove phasing
         gts = np.sort(gts, axis=1)
 
-        if samplelist is not None:
-            gts = gts[samplelist, :]
+        if sample_index is not None:
+            gts = gts[sample_index, :]
 
         genotypes, counts = np.unique(
             gts,
@@ -1131,7 +1131,7 @@ class TRRecord:
         return count_dict
 
     def GetAlleleCounts(self,
-                        samplelist: Optional[Any] = None,
+                        sample_index: Optional[Any] = None,
                         *,
                         uselength: bool = True,
                         index: bool = False,
@@ -1144,7 +1144,7 @@ class TRRecord:
 
         Parameters
         ----------
-        samplelist :
+        sample_index :
             Used to index the numpy array of samples. So can be a numpy array
             of sample indicies, or a bool array with length of the number
             of samples, etc.
@@ -1189,8 +1189,8 @@ class TRRecord:
 
         gts = gts[:, :-1] #remove phasing
 
-        if samplelist is not None:
-            gts = gts[samplelist, :]
+        if sample_index is not None:
+            gts = gts[sample_index, :]
         
         gts = gts[gts != empty_val] # remove no calls and missing haplotypes
 
@@ -1201,7 +1201,7 @@ class TRRecord:
         return dict(zip(alleles, counts))
 
     def GetAlleleFreqs(self,
-                       samplelist: Optional[Any] = None,
+                       sample_index: Optional[Any] = None,
                        *,
                        uselength: bool = True,
                        index: bool = False,
@@ -1211,7 +1211,7 @@ class TRRecord:
 
         Parameters
         ----------
-        samplelist :
+        sample_index :
             Used to index the numpy array of samples. So can be a numpy array
             of sample indicies, or a bool array with length of the number
             of samples, etc.
@@ -1236,12 +1236,12 @@ class TRRecord:
         allele_counts = self.GetAlleleCounts(uselength=uselength,
                                              index=index,
                                              fullgenotypes=fullgenotypes,
-                                             samplelist=samplelist)
+                                             sample_index=sample_index)
         total = float(sum(allele_counts.values()))
         return {key: value/total for key, value in allele_counts.items()}
 
     def GetMaxAllele(self,
-                     samplelist: Optional[Any] = None) -> float:
+                     sample_index: Optional[Any] = None) -> float:
         """
         Get the maximum allele length called in a record.
         
@@ -1254,7 +1254,7 @@ class TRRecord:
 
         Parameters
         ----------
-        samplelist :
+        sample_index :
             Used to index the numpy array of samples. So can be a numpy array
             of sample indicies, or a bool array with length of the number
             of samples, etc.
@@ -1270,7 +1270,7 @@ class TRRecord:
         # TODO should we have an option for grabbing
         # the index of the longest allele?
         alleles = self.GetAlleleCounts(uselength=True,
-                                       samplelist=samplelist).keys()
+                                       sample_index=sample_index).keys()
         if len(alleles) == 0:
             return np.nan
         return max(alleles)
