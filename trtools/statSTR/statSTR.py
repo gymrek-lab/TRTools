@@ -28,7 +28,7 @@ import trtools.utils.utils as utils
 from trtools import __version__
 
 MAXPLOTS = 10 # don't plot more than this many allele freqs
-PRECISION = 6
+PRECISION = 5
 PRECISION_FORMAT = "\t{:." + str(PRECISION) + "}"
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):

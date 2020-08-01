@@ -197,7 +197,11 @@ def GetMean(allele_freqs):
     return sum([key*allele_freqs[key] for key in allele_freqs])
 
 def GetMode(allele_freqs):
-    r"""Compute the mode allele length
+    """
+    Compute the mode allele length.
+
+    If more than one allele has the maximum number of copies out of all
+    alleles, choose one at random (but reproducibly)
 
     Parameters
     ----------
@@ -217,13 +221,15 @@ def GetMode(allele_freqs):
     """
     if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
-    mode_allele = None
     mode_freq = -1
-    for key in allele_freqs.keys():
-        if allele_freqs[key] > mode_freq:
-            mode_allele = key
-            mode_freq = allele_freqs[key]
-    return mode_allele
+    modes = set()
+    for allele, freq in allele_freqs.items():
+        if freq > mode_freq:
+            modes = {allele}
+            mode_freq = freq
+        if freq == mode_freq:
+            modes.add(allele)
+    return min(modes)  # use min to make this arbitrary selection reproducible
 
 def GetVariance(allele_freqs):
     r"""Compute the variance of the allele lengths
