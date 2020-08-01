@@ -497,6 +497,8 @@ def main(args):
                 items.extend(GetNumSamples(trrecord, samplelists=sample_lists))
             outf.write("\t".join([str(item) for item in items])+"\n")
 
+            if nrecords % 50 == 0:
+                outf.flush()
             if args.out != "stdout" and nrecords % 50 == 0:
                 print(
                     "Finished {} records, time/record={:.5}sec".format(
