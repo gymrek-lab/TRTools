@@ -1,5 +1,7 @@
 import argparse
-import os, sys
+import filecmp
+import os
+
 import pytest
 
 from ..statSTR import *
@@ -12,7 +14,7 @@ def args(tmpdir):
     args.vcfs = None
     args.out = str(tmpdir /  "test")
     args.vcftype = "auto"
-    args.samples = None 
+    args.samples = None
     args.sample_prefixes = None
     args.plot_afreq = False
     args.region = None
@@ -23,9 +25,9 @@ def args(tmpdir):
     args.het = False
     args.use_length = False
     args.mean = False
-    args.mode = False 
-    args.var = False 
-    args.numcalled = False 
+    args.mode = False
+    args.var = False
+    args.numcalled = False
     args.entropy = False
     return args
 
@@ -47,7 +49,7 @@ def test_RightFile(args, vcfdir):
 
 # Test all the statSTR options
 def test_Stats(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_gangstr.vcf")
+    fname = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
     args.vcf = fname
     args.thresh = True
     args.het = True
@@ -59,13 +61,21 @@ def test_Stats(args, vcfdir):
     args.var = True
     args.acount = True
     args.afreq = True
-    assert main(args)==0
+    assert main(args) == 0
     args.uselength = True
-    assert main(args)==0
-    args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt")
-    args.out = "stdout"
+    assert main(args) == 0
     args.region = "chr1:3045469-3045470"
-    assert main(args)==1
+    assert main(args) == 0
+    args.samples = os.path.join(vcfdir, "fewer_samples.txt")
+    assert main(args) == 0
+
+def test_require_tabix_for_regions(args, vcfdir, capsys):
+    # args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt")
+    args.region = "chr1:3045469-3045470"
+    args.vcf = os.path.join(vcfdir, "test_gangstr.vcf")
+    args.thresh = True
+    assert main(args) == 1
+    assert 'bgzipped' in capsys.readouterr().err
 
 def test_Stats2(args, vcfdir):
     args.vcf = os.path.join(vcfdir, "mergeSTR_vcfs", "test_file_gangstr1.vcf.gz")
@@ -77,3 +87,27 @@ def test_PlotAfreq(args, vcfdir):
     args.vcf = fname
     args.plot_afreq = True
     assert main(args)==0
+
+def test_stats_output(args, vcfdir, statsdir):
+    """
+    Run statSTR on a file which statSTR has been run on in the past
+    and confirm the results haven't changed
+    """
+    fname = os.path.join(vcfdir, "many_samples.vcf.gz")
+    args.vcf = fname
+    args.thresh = True
+    args.afreq = True
+    args.acount = True
+    args.hwep = True
+    args.het = True
+    args.entropy = True
+    args.mean = True
+    args.mode = True
+    args.var = True
+    args.numcalled = True
+    assert main(args) == 0
+    assert filecmp.cmp(
+        args.out + ".tab",
+        os.path.join(statsdir, "many_samples_all.tab")
+    )
+

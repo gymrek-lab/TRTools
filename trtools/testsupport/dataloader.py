@@ -25,3 +25,9 @@ def vcfdir(request):
 def regiondir(request):
 	return os.path.join(request.config.getoption("--datadir"), "sample_regions")
 
+@pytest.fixture()
+def statsdir(request):
+	return os.path.join(request.config.getoption("--datadir"),
+                     "sample_stats")
+
+

@@ -17,10 +17,10 @@ matplotlib.rcParams['ps.fonttype'] = 42
 import argparse
 import os
 import sys
+import time
 from typing import List
 
 import numpy as np
-import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
@@ -356,12 +356,21 @@ def getargs(): # pragma: no cover
     )
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
-    inout_group.add_argument("--out", help="Output file prefix. Use stdout to print file to standard output.", type=str, required=True)
+    inout_group.add_argument(
+        "--out",
+        help=("Output file prefix. Use stdout to print file to standard "
+              "output. In addition, if not stdout then timing diagnostics are print to "
+              "stdout."),
+        type=str,
+        required=True
+    )
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
-    filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
+    filter_group.add_argument("--region", help="Restrict to the region "
+                              "chrom:start-end. Requires file to bgzipped and"
+                              " tabix indexed.", type=str)
     stat_group_name = "Stats group"
     stat_group = parser.add_argument_group(stat_group_name)
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
@@ -421,7 +430,8 @@ def main(args):
         for sf in sfiles:
             sample_lists.append([item.strip() for item in open(sf, "r").readlines()])
 
-    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
+    checkgz = args.region is not None
+    invcf = utils.LoadSingleReader(args.vcf, checkgz=checkgz)
     if invcf is None:
         return 1
     if args.vcftype != 'auto':
@@ -440,50 +450,67 @@ def main(args):
     if args.mode: header.extend(GetHeader("mode", sample_prefixes))
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
-    if args.out == "stdout":
-        if args.plot_afreq:
-            common.MSG("Cannot use --out stdout when generating plots")
-            return 1
-        outf = sys.stdout
-    else:
-        outf = open(args.out + ".tab", "w")
-    outf.write("\t".join(header)+"\n")
+    try:
+        if args.out == "stdout":
+            if args.plot_afreq:
+                common.MSG("Cannot use --out stdout when generating plots")
+                return 1
+            outf = sys.stdout
+        else:
+            outf = open(args.out + ".tab", "w")
+        outf.write("\t".join(header)+"\n")
 
-    if args.region:
-        if not os.path.isfile(args.vcf+".tbi"):
-            common.MSG("Make sure %s is bgzipped and indexed"%args.vcf)
-            return 1
-        regions = invcf.fetch(args.region)
-    else: regions = invcf
-    num_plotted = 0
-    for record in regions:
-        trrecord = trh.HarmonizeRecord(vcftype, record)
-        if args.plot_afreq and num_plotted <= MAXPLOTS:
-            PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
-            num_plotted += 1
-        items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
-        if args.thresh:
-            items.extend(GetThresh(trrecord, samplelists=sample_lists))
-        if args.afreq:
-            items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.acount:
-            items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length, count=True))
-        if args.hwep:
-            items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.het:
-            items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.entropy:
-            items.extend(GetEntropy(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.mean:
-            items.extend(GetMean(trrecord, samplelists=sample_lists))
-        if args.mode:
-            items.extend(GetMode(trrecord, samplelists=sample_lists))
-        if args.var:
-            items.extend(GetVariance(trrecord, samplelists=sample_lists))
-        if args.numcalled:
-            items.extend(GetNumSamples(trrecord, samplelists=sample_lists))
-        outf.write("\t".join([str(item) for item in items])+"\n")
-    outf.close()
+        if args.region:
+            region = invcf(args.region)
+        else: region = invcf
+        num_plotted = 0
+
+        start_time = time.time()
+        nrecords = 0
+        for record in region:
+            nrecords += 1
+
+            trrecord = trh.HarmonizeRecord(vcftype, record)
+            if args.plot_afreq and num_plotted <= MAXPLOTS:
+                PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
+                num_plotted += 1
+            items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
+            if args.thresh:
+                items.extend(GetThresh(trrecord, samplelists=sample_lists))
+            if args.afreq:
+                items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length))
+            if args.acount:
+                items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length, count=True))
+            if args.hwep:
+                items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
+            if args.het:
+                items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
+            if args.entropy:
+                items.extend(GetEntropy(trrecord, samplelists=sample_lists, uselength=args.use_length))
+            if args.mean:
+                items.extend(GetMean(trrecord, samplelists=sample_lists))
+            if args.mode:
+                items.extend(GetMode(trrecord, samplelists=sample_lists))
+            if args.var:
+                items.extend(GetVariance(trrecord, samplelists=sample_lists))
+            if args.numcalled:
+                items.extend(GetNumSamples(trrecord, samplelists=sample_lists))
+            outf.write("\t".join([str(item) for item in items])+"\n")
+
+            if args.out != "stdout" and nrecords % 50 == 0:
+                print(
+                    "Finished {} records, time/record={:.5}sec".format(
+                        nrecords, (time.time() - start_time)/nrecords
+                    ),
+                    flush=True,
+                    end="\r"
+                )
+    finally:
+        if outf is not None and args.out != "stdout":
+            outf.close()
+
+    if args.out != "stdout":
+        print("\nDone", flush=True)
     return 0
 
 def run(): # pragma: no cover
