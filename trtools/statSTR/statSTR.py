@@ -367,7 +367,7 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     inout_group.add_argument(
         "--precision",
-        help=("How much precision to use when printing decimals",
+        help="How much precision to use when printing decimals",
         type=int,
         default=3
      )
