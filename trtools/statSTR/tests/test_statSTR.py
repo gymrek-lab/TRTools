@@ -89,7 +89,7 @@ def test_PlotAfreq(args, vcfdir):
     args.plot_afreq = True
     assert main(args)==0
 
-def test_stats_output(args, vcfdir, statsdir):
+def test_output(args, vcfdir, statsdir):
     """
     Run statSTR on a file which statSTR has been run on in the past
     and confirm the results haven't changed
@@ -113,5 +113,36 @@ def test_stats_output(args, vcfdir, statsdir):
     assert filecmp.cmp(
         args.out + ".tab",
         os.path.join(statsdir, "many_samples_all.tab")
+    )
+
+
+def test_output_samplestrat(args, vcfdir, statsdir):
+    """
+    Run statSTR on a file which statSTR has been run on in the past
+    and confirm the results haven't changed
+    """
+    fname = os.path.join(vcfdir, "many_samples.vcf.gz")
+    args.vcf = fname
+    args.samples = (
+        os.path.join(vcfdir, "many_samples_subsample1.txt") + "," +
+        os.path.join(vcfdir, "many_samples_subsample2.txt")
+    )
+    args.thresh = True
+    args.afreq = True
+    args.acount = True
+    args.hwep = True
+    args.het = True
+    args.entropy = True
+    args.mean = True
+    args.mode = True
+    args.var = True
+    args.numcalled = True
+    # exclude an allele which doesn't have
+    # reproducible stats even up to two decimal places
+    args.region = "1:1-1833757"
+    assert main(args) == 0
+    assert filecmp.cmp(
+        args.out + ".tab",
+        os.path.join(statsdir, "many_samples_all_strat.tab")
     )
 
