@@ -1047,17 +1047,16 @@ class TRRecord:
             samplelist: Optional[Any] = None,
             uselength: bool = True,
             index: bool = False,
-            fullgenotypes: bool = False) -> Dict[tuple, int]:
+            fullgenotypes: bool = False,
+            include_nocalls: bool = False) -> Dict[tuple, int]:
         """
         Get the counts of each genotype for a record.
-
-        This includes nocalls.
 
         For samples with a lower ploidy than the max ploidy among all samples,
         the -1 placeholder haplotypes are sorted to the beginning of the call
         (e.g. (-1, 5) instead of (5, -1))
 
-        This currently ignores genotype phasing, it could be
+        This currently returns unphased genotypes (with no phasing column), it could be
         extend to have an option to respect phasing
 
         Parameters
@@ -1076,6 +1075,9 @@ class TRRecord:
         fullgenotypes :
             If True, include flanking basepairs in allele representations
             Only makes sense when uselength=False and index=False
+        include_nocalls:
+            Whether or not the count of the nocall genotype should be included
+            in the returned dict
 
         Returns
         -------
@@ -1094,12 +1096,16 @@ class TRRecord:
 
         if index:
             gts = self.GetGenotypeIndicies()
+            nocall_entry = -1
         elif uselength and not index:
             gts = self.GetLengthGenotypes()
+            nocall_entry = -1
         elif not uselength and not fullgenotypes:
             gts = self.GetStringGenotypes()
+            nocall_entry = ''
         elif fullgenotypes:
             gts = self.GetFullStringGenotypes()
+            nocall_entry = ''
 
         if gts is None:
             return {}
@@ -1115,7 +1121,14 @@ class TRRecord:
             axis=0,
             return_counts=True
         )
-        return dict(zip(tuple(map(tuple, genotypes)), counts))
+        count_dict = dict(zip(tuple(map(tuple, genotypes)), counts))
+
+        if not include_nocalls:
+            nocall_gt = tuple([nocall_entry]*gts.shape[1])
+            if nocall_gt in count_dict:
+                del count_dict[nocall_gt]
+
+        return count_dict
 
     def GetAlleleCounts(self,
                         samplelist: Optional[Any] = None,
