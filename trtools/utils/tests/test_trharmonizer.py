@@ -348,9 +348,12 @@ def test_GetGenotypeCounts():
     # Test example where there are no samples
     rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
     # expect a entry for counting no-calls
-    assert len(rec.GetGenotypeCounts(index=True)) == 1
-    assert len(rec.GetGenotypeCounts()) == 1
-    assert len(rec.GetGenotypeCounts(uselength=True)) == 1
+    assert len(rec.GetGenotypeCounts(index=True)) == 0
+    assert len(rec.GetGenotypeCounts()) == 0
+    assert len(rec.GetGenotypeCounts(uselength=True)) == 0
+    assert len(rec.GetGenotypeCounts(index=True, include_nocalls=True)) == 1
+    assert len(rec.GetGenotypeCounts(include_nocalls=True)) == 1
+    assert len(rec.GetGenotypeCounts(uselength=True, include_nocalls=True)) == 1
 
     # Test working example with samplelist
     true_idx_gt_counts_slist = {(0, 1): 1, (1, 1): 1, (-1, 0): 1}
