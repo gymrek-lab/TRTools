@@ -28,8 +28,6 @@ import trtools.utils.utils as utils
 from trtools import __version__
 
 MAXPLOTS = 10 # don't plot more than this many allele freqs
-PRECISION = 5
-PRECISION_FORMAT = "\t{:." + str(PRECISION) + "}"
 
 def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     r"""Plot allele frequencies for a locus
@@ -367,6 +365,12 @@ def getargs(): # pragma: no cover
         required=True
     )
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    inout_group.add_argument(
+        "--precision",
+        help=("How much precision to use when printing decimals",
+        type=int,
+        default=3
+     )
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
@@ -402,11 +406,11 @@ def getargs(): # pragma: no cover
         return None
     return args
 
-def format_nan_precision(val):
+def format_nan_precision(precision_format, val):
     if np.isnan(val):
         return "\tnan"
     else:
-        return PRECISION_FORMAT.format(val)
+        return precision_format.format(val)
 
 def main(args):
     if not os.path.exists(args.vcf):
@@ -459,6 +463,7 @@ def main(args):
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
 
+    precision_format = "\t{:." + str(args.precision) + "}"
     try:
         if args.out == "stdout":
             if args.plot_afreq:
@@ -488,7 +493,7 @@ def main(args):
                        + str(record.POS+len(trrecord.ref_allele)))
             if args.thresh:
                 for val in GetThresh(trrecord, samplelists=sample_lists):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.afreq:
                 for val in GetAFreq(trrecord, samplelists=sample_lists,
                                     uselength=args.use_length):
@@ -500,24 +505,24 @@ def main(args):
             if args.hwep:
                 for val in GetHWEP(trrecord, samplelists=sample_lists,
                                    uselength=args.use_length):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.het:
                 for val in GetHet(trrecord, samplelists=sample_lists,
                                   uselength=args.use_length):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.entropy:
                 for val in GetEntropy(trrecord, samplelists=sample_lists,
                                       uselength=args.use_length):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.mean:
                 for val in GetMean(trrecord, samplelists=sample_lists):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.mode:
                 for val in GetMode(trrecord, samplelists=sample_lists):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.var:
                 for val in GetVariance(trrecord, samplelists=sample_lists):
-                    outf.write(format_nan_precision(val))
+                    outf.write(format_nan_precision(precision_format, val))
             if args.numcalled:
                 for val in GetNumSamples(trrecord, samplelists=sample_lists):
                     outf.write("\t" + str(val))
