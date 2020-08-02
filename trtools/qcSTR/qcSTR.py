@@ -22,8 +22,9 @@ import statistics as stat
 import sys
 from typing import Dict, List, Union
 
-import numpy as np
+import cyvcf2
 import pandas as pd
+import numpy as np
 import sklearn
 import vcf
 
@@ -353,11 +354,13 @@ def getargs():  # pragma: no cover
         "--quality-ignore-no-call",
         action="store_true",
         default=False,
-        help=("Exclude no-calls from quality graph distributions instead of "
-              "the default, which is to include them as zero quality calls. "
+        help=("Exclude no-calls and calls without quality scores from quality" 
+              " graph distributions instead of the default, which is to "
+              "include them as zero quality calls. "
               "Setting this can cause the plotting to crash if it reduces the"
               " number of valid calls (in a strata) to <= 1")
     )
+    # TODO add n loci argument
     refbias_group = parser.add_argument_group("Reference bias plot options")
     refbias_group.add_argument(
         "--refbias-metric",
@@ -415,7 +418,8 @@ def main(args):
         return 1
 
     # Set up reader and harmonizer
-    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
+    invcf = utils.LoadSingleReader(args.vcf, checkgz=False)
+    pyvcf = vcf.Reader(filename = args.vcf) #just for parsing the header
     if invcf is None:
         return 1
 
@@ -445,9 +449,12 @@ def main(args):
     if args.samples:
         samplelist = [item.strip()
                       for item
-                      in open(args.samples, "r").readlines()
-                      if item.strip() in invcf.samples]
-    else: samplelist = invcf.samples
+                      in open(args.samples, "r").readlines()]
+        n_samples = len(samplelist)
+        sample_index = np.isin(np.array(invcf.samples), sample_list)
+    else: 
+        samplelist = invcf.samples
+        sample_index = None
 
     # Figure out which quality plot to produce by default
     default_quality = False
@@ -459,8 +466,9 @@ def main(args):
             args.quality = [_QualityTypes.per_locus.value]
 
     # Set up data to keep track of
-    sample_calls = dict([(sample, 0) for sample in samplelist]) # sample->numcalls
-    contigs = invcf.contigs
+    sample_calls = np.zeros((len(invcf.samples))) 
+    # set up a 1d array to track this, filter this down at the end
+    contigs = pyvcf.contigs
     if len(contigs) == 0:
         common.WARNING("Warning: no contigs found in VCF file.")
     chrom_calls = dict([(chrom, 0) for chrom in contigs]) # chrom->numcalls
@@ -470,9 +478,7 @@ def main(args):
     if _QualityTypes.per_locus.value in args.quality:
         per_locus_data = []
     if _QualityTypes.per_sample.value in args.quality:
-        per_sample_data = {}
-        for sample in samplelist: 
-            per_sample_data[sample] = []
+        per_sample_total_qual = np.zeros((len(vcf.samples)))
     if _QualityTypes.per_call.value in args.quality:
         per_call_data = []
     if _QualityTypes.sample_stratified.value in args.quality:
@@ -481,7 +487,7 @@ def main(args):
             sample_strat_data[sample] = []
     if _QualityTypes.locus_stratified.value in args.quality:
         locus_strat_data = {}
-
+        
     # read the vcf
     numrecords = 0
     for trrecord in harmonizer:
@@ -493,7 +499,8 @@ def main(args):
         # Extract stats
         chrom = record.CHROM
         rl = len(trrecord.ref_allele)
-        allele_counts = trrecord.GetAlleleCounts(uselength=False, samplelist=samplelist)
+        allele_counts = trrecord.GetAlleleCounts(uselength=False,
+                                                 sample_index=sample_index)
 
         # Update data
         num_calls = 0
@@ -502,38 +509,42 @@ def main(args):
         if _QualityTypes.locus_stratified.value in args.quality:
             locus_strat_data[trrecord.record_id] = []
 
-        # loop over sample data
-        for call in record:
-            s = call.sample
-            if s not in samplelist:
-                continue
-            if call.called:
-                sample_calls[s] += 1
-                num_calls += 1
+        # handle calls ... TODO
+        idx_gts = trrecord.GetGenotypeIndicies()[:, :-1]
+        nocall = np.full((1, idxs.shape[1]), -1))
+        calls = np.all(idxs == nocall, axis=1)
+        # TODO test this
+        sample_calls += calls
+        # TODO test this
+        chrom_calls[chrom] = chrom_calls.get(chrom, 0) + np.sum(calls)
 
-            if len(args.quality) == 0:
-                continue
-
-            # set non-calls to zero quality
-            if call.called:
-                quality_score = trrecord.GetQualityScore(call)
-            elif args.quality_ignore_no_call:
-                continue
+        if len(args.quality) != 0:
+            quality_scores = trrecord.GetQualityScores()
+            quality_scores[calls] = np.nan
+            if not args.quality_ignore_no_call:
+                quality_scores[np.isnan(quality_scores)] = 0
             else:
-                quality_score = 0
+                quality_idxs = ~np.isnan(quality_scores)
+                quality_scores = quality_scores[quality_idxs]
 
-            if _QualityTypes.per_sample.value in args.quality:
-                per_sample_data[s].append(quality_score)
-            if _QualityTypes.sample_stratified.value in args.quality:
-                sample_strat_data[s].append(quality_score)
-            if _QualityTypes.per_locus.value in args.quality:
-                per_locus_data[-1].append(quality_score)
-            if _QualityTypes.locus_stratified.value in args.quality:
-                locus_strat_data[trrecord.record_id].append(quality_score)
-            if _QualityTypes.per_call.value in args.quality:
-                per_call_data.append(quality_score)
+        if _QualityTypes.per_sample.value:
+            if not args.quality_ignore_no_call
+                per_sample_total_qual += quality_scores
+            else:
+                per_sample_total_qual[quality_idxs] += quality_scores
+        if _QualityTypes.sample_stratified.value in args.quality:
+            sample_strat_data[s].append(quality_score)
+        if _QualityTypes.per_locus.value in args.quality:
+            per_locus_data[-1].append(quality_score)
+        if _QualityTypes.locus_stratified.value in args.quality:
+            locus_strat_data[trrecord.record_id].append(quality_score)
+        if _QualityTypes.per_call.value in args.quality:
+            per_call_data.append(quality_score)
 
-        chrom_calls[chrom] = chrom_calls.get(chrom, 0) + num_calls
+        # end handle calls TODO
+
+
+
         for allele in allele_counts.keys():
             allelediff = len(allele)-rl
             count = allele_counts[allele]

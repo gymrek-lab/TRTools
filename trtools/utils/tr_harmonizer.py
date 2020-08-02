@@ -1301,6 +1301,7 @@ class TRRecord:
         -------
         np.ndarray :
             An array of quality score floats
+            Samples which were not called have the value np.nan
         """
         if not self.HasQualityScores():
             raise TypeError(
