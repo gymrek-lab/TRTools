@@ -33,7 +33,8 @@ jobs:
 
 before_install: # for linux jobs
   - sudo apt-get update
-  - sudo apt-get -y install -y libcrypto++-dev libssl-dev
+    # attempt to get cyvcf2 working, it requires a SHA256 'symbol'
+  - sudo apt-get -y install -y libcrypto++-dev libssl-dev libcurl4-openssl-dev
   - python --version
   - pip install -U --upgrade pip
   - pip install -U pytest
