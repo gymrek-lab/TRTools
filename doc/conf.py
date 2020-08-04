@@ -63,7 +63,7 @@ autodoc_typehints = 'description'
 # be installed when building the documentation, so just mock them
 # see here:
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_mock_imports
-autodoc_mock_imports = ['cyvcf2']
+autodoc_mock_imports = ['cyvcf2', 'numpy']
 
 # -- Options for HTML output -------------------------------------------------
 
