@@ -1,4 +1,4 @@
-pyvcf=0.6.8
+pyvcf==0.6.8
 pandas==1.0.5
 numpy==1.18.5
 pybedtools==0.8.1
