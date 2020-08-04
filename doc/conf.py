@@ -59,12 +59,6 @@ autodoc_default_options = {
 
 autodoc_typehints = 'description'
 
-# cyvcf2 pulls in some c dependencies that shouldn't have to
-# be installed when building the documentation, so just mock them
-# see here:
-# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_mock_imports
-autodoc_mock_imports = ['cyvcf2', 'numpy']
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
