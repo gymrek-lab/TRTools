@@ -105,32 +105,35 @@ Development Notes
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
 * TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_.
 
+Contact Us
+----------
+Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
 
 Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-#. Create a clean environment with the dependencies in requirements.txt installed.
+#. Create a clean environment with the dependencies in :code:`requirements.txt` installed but without :code:`trtools` installed.
 #. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ and :code:`sphinx>=3` in your environment.
 #. Fork the trtools repository. 
 #. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
 #. Make your changes. 
+#. To run a tool (e.g. :code:`qcSTR`) from a local copy of the repository (instead of from a pip or conda install), cd into the root of the repository and run :code:`python -m trtools.qcSTR.qcSTR <args>` You can ignore the warrning *RuntimeWarning: 'trtools.qcSTR.qcSTR' found in sys.modules after import of package 'trtools.qcSTR', ...*
 #. Document your changes.
 
-  * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+   * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 
-    If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
+   * If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
 
-  * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
+   * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
+     :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
 
-    :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
+#. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
-8. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
+   * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
-  * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
-
-9. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
+#. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
@@ -139,7 +142,4 @@ If you are a trtools maintainer and wish to publish changes from the develop bra
 please see PUBLISHING.rst in the root of the git repo.
 If you are a community member and would like that to happen, contact us (see below).
 
-Contact Us
-----------
-Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
 
