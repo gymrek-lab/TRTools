@@ -136,7 +136,7 @@ def OutputSampleCallrate(sample_calls, fname):
     fname : str
         Filename of output plot
     """
-    samples = sample_calls.keys()
+    samples = list(sample_calls.keys())
     data = pd.DataFrame({"sample": samples, "numcalls": [sample_calls[key] for key in samples]})
     #data = data.sort_values("numcalls") # Commented because the order would be incorrect if sorted
     fig = plt.figure()
