@@ -26,21 +26,30 @@ See full documentation and examples at https://trtools.readthedocs.io/en/latest/
 Install
 -------
 
-You can install TRTools with conda::
+With conda
+^^^^^^^^^^
+
+::
 
         conda install -c bioconda trtools
 
-Note: Bioconda only supports python versions 3.6 and 3.7 currently,
+Note: Bioconda `only supports <https://bioconda.github.io/user/versions.html#python>`_ python versions 3.6 and 3.7 currently,
 so that is all TRTools supports in conda.
 If you are using a different version of python we support (3.5 or >= 3.8),
 install TRTools using pip.
 
-You can alternatively obtain TRTools from pip::
+With pip
+^^^^^^^^
+
+::
 
         pip install --upgrade pip
         pip install trtools
 
-(Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
+Note: TRTools installation may fail for pip version 10.0.1, hence the need to upgrade pip first
+
+From source
+^^^^^^^^^^^
 
 To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
 checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
@@ -48,9 +57,11 @@ checkout the branch you're interested in, and run the following command from the
         git clone https://github.com/gymreklab/TRTools
         cd TRTools/
         pip install --upgrade pip
-        pip install .
+        pip install -e .
 
-(Note, required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.)
+Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
+
+Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing
 
 Tools
 -----
@@ -114,12 +125,11 @@ Contributing
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-#. Create a clean environment with the dependencies in :code:`requirements.txt` installed but without :code:`trtools` installed.
+#. Install TRTools from source `as above <From source_>`_.
 #. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ and :code:`sphinx>=3` in your environment.
-#. Fork the trtools repository. 
+#. Fork the TRTools repository.
 #. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
 #. Make your changes. 
-#. To run a tool (e.g. :code:`qcSTR`) from a local copy of the repository (instead of from a pip or conda install), cd into the root of the repository and run :code:`python -m trtools.qcSTR.qcSTR <args>` You can ignore the warrning *RuntimeWarning: 'trtools.qcSTR.qcSTR' found in sys.modules after import of package 'trtools.qcSTR', ...*
 #. Document your changes.
 
    * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
@@ -138,7 +148,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 Publishing
 ----------
-If you are a trtools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
+If you are a TRTools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
 please see PUBLISHING.rst in the root of the git repo.
 If you are a community member and would like that to happen, contact us (see below).
 
