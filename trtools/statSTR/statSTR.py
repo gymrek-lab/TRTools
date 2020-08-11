@@ -21,10 +21,12 @@ import time
 from typing import Any, List
 
 import numpy as np
+import pandas as pd
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
+import trtools.utils.plotting as trplotting
 from trtools import __version__
 
 MAXPLOTS = 10 # don't plot more than this many allele freqs
@@ -405,28 +407,43 @@ def GetNumSamples(trrecord, sample_indexes=[None]):
     """
     return [sum(trrecord.GetGenotypeCounts(sample_index=si).values()) for si in sample_indexes]
 
+_dist_plot_args = {
+    "thresh",
+    "hwep",
+    "het",
+    "entropy",
+    "mean",
+    "mode",
+    "var",
+    "numcalled",
+    "use-length"
+}
+
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
         __doc__,
         formatter_class=utils.ArgumentDefaultsHelpFormatter
     )
     inout_group = parser.add_argument_group("Input/output")
-    inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
-    inout_group.add_argument(
-        "--out",
-        help=("Output file prefix. Use stdout to print file to standard "
-              "output. In addition, if not stdout then timing diagnostics are print to "
-              "stdout."),
-        type=str,
-        required=True
-    )
+    inout_group.add_argument("--vcf", help="Input STR VCF file", type=str)
+    inout_group.add_argument("--tabfiles", help="The path to the output of a "
+                             "previous run of statSTR. Used in conjunction "
+                             "with --plot-dists to plot distributions of "
+                             "previously computed results. In this case, "
+                             "statistics that you wish to plot must both be"
+                             "listed in the argument list and present in the "
+                             "results file. May also be a comma separated "
+                             "list file paths, if so, plot data wll cover all "
+                             "loci in all files.")
+    inout_group.add_argument("--out", help="Output file prefix. Use stdout "
+                             "to print file to standard output. In addition, "
+                             "if not stdout then timing diagnostics are print to "
+                             "stdout.",
+                             type=str, required=True)
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-    inout_group.add_argument(
-        "--precision",
-        help="How much precision to use when printing decimals",
-        type=int,
-        default=3
-     )
+    inout_group.add_argument("--precision", help="How much precision to "
+                             "use when printing decimals",
+                             type=int, default=3)
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
@@ -448,6 +465,15 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length. This is implicitly true for genotypers which only emit length based genotypes.", action="store_true")
     plot_group = parser.add_argument_group("Plotting group")
     plot_group.add_argument("--plot-afreq", help="Output allele frequency plot. Will only do for a maximum of 10 TRs.", action="store_true")
+    plot_group.add_argument("--plot-dists", help="Output distributions of "
+                            "statistics across loci (ignoring any nans). "
+                            "Works for all statistics that summarize a locus "
+                            "with a single value. By "
+                            " default outputs histograms, set to 'smooth' to "
+                            " produce smooth (KDE) plots for float "
+                            "valued-plots instead.",
+                            choices={"hist", "smooth"}, default="hist",
+                            const='hist', nargs="?")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
@@ -460,6 +486,23 @@ def getargs(): # pragma: no cover
     if not any(stat_dict.values()):
         common.WARNING("Error: Please use at least one of the flags in the Stats group. See statSTR --help for options.")
         return None
+
+    if not args.plot_dists and not any(_dist_plot_args.intersection(vars(args))):
+        common.WARNING("Error: If specifying --plot-dists, please specify a"
+                       " corresponding statistic to plot.")
+        return None
+
+    if not args.vcf and not (args.tabfiles and args.plot_dists):
+        common.WARNING("Error: please specify either --vcf or both "
+                       "--tabfiles and --plot-dists")
+        return None
+
+    if args.plot_dists:
+        for arg in ('samples', 'region'):
+            if vars(args)[arg]:
+                common.WARNING("Cannot specify --plot-dists and --{}".format(arg))
+                return None
+
     return args
 
 def format_nan_precision(precision_format, val):
@@ -468,21 +511,11 @@ def format_nan_precision(precision_format, val):
     else:
         return precision_format.format(val)
 
-def main(args):
-    if not os.path.exists(args.vcf):
-        common.WARNING("Error: %s does not exist"%args.vcf)
-        return 1
-
-    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
-        common.WARNING("Error: The directory which contains the output location {} does"
-                       " not exist".format(args.out))
-        return 1
-
-    if os.path.isdir(args.out) and args.out.endswith(os.sep):
-        common.WARNING("Error: The output location {} is a "
-                       "directory".format(args.out))
-        return 1
-
+def process_vcf(args):
+    """
+    The usual case: calculate per locus statistics and output
+    a tab file. Possibly followed by plotting
+    """
     checkgz = args.region is not None
     invcf = utils.LoadSingleReader(args.vcf, checkgz=checkgz)
     if invcf is None:
@@ -514,7 +547,8 @@ def main(args):
         sample_indexes = [None] # None is used to mean all samples
 
     header = ["chrom","start","end"]
-    if args.thresh: header.extend(GetHeader("thresh", sample_prefixes))
+    if args.thresh: 
+        header.extend(GetHeader("thresh", sample_prefixes))
     if args.afreq: header.extend(GetHeader("afreq", sample_prefixes))
     if args.acount: header.extend(GetHeader("acount", sample_prefixes))
     if args.hwep: header.extend(GetHeader("hwep", sample_prefixes))
@@ -524,6 +558,11 @@ def main(args):
     if args.mode: header.extend(GetHeader("mode", sample_prefixes))
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
+
+    if args.plot_dists:
+        dist_resutls = []
+        for arg in _dist_plot_args.intersection(vars(args)):
+            dist_results[arg] = []
 
     precision_format = "\t{:." + str(args.precision) + "}"
     try:
@@ -554,8 +593,11 @@ def main(args):
                        + str(record.POS) + "\t"
                        + str(record.POS+len(trrecord.ref_allele)))
             if args.thresh:
-                for val in GetThresh(trrecord, sample_indexes=sample_indexes):
+                threshes = GetThresh(trrecord, sample_indexes=sample_indexes)
+                for val in threshes:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['thresh'].append(threshes)
             if args.afreq:
                 for val in GetAFreq(trrecord, sample_indexes=sample_indexes,
                                     uselength=args.use_length):
@@ -565,29 +607,50 @@ def main(args):
                                     uselength=args.use_length, count=True):
                     outf.write("\t" + str(val))
             if args.hwep:
-                for val in GetHWEP(trrecord, sample_indexes=sample_indexes,
-                                   uselength=args.use_length):
+                hweps = GetHWEP(trrecord, sample_indexes=sample_indexes,
+                                   uselength=args.use_length)
+                for val in hweps:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['hwep'].append(hweps)
             if args.het:
-                for val in GetHet(trrecord, sample_indexes=sample_indexes,
-                                  uselength=args.use_length):
+                hets = GetHet(trrecord, sample_indexes=sample_indexes,
+                                  uselength=args.use_length)
+                for val in hets:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['het'].append(hets)
             if args.entropy:
-                for val in GetEntropy(trrecord, sample_indexes=sample_indexes,
-                                      uselength=args.use_length):
+                entropies = GetEntropy(trrecord, sample_indexes=sample_indexes,
+                                      uselength=args.use_length)
+                for val in entropies:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['entropy'].append(entropies)
             if args.mean:
-                for val in GetMean(trrecord, sample_indexes=sample_indexes):
+                means = GetMean(trrecord, sample_indexes=sample_indexes)
+                for val in means:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['mean'].append(means)
             if args.mode:
-                for val in GetMode(trrecord, sample_indexes=sample_indexes):
+                modes = GetMode(trrecord, sample_indexes=sample_indexes)
+                for val in modes:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['mode'].append(modes)
             if args.var:
-                for val in GetVariance(trrecord, sample_indexes=sample_indexes):
+                variances = GetVariance(trrecord, sample_indexes=sample_indexes)
+                for val in variances:
                     outf.write(format_nan_precision(precision_format, val))
+                if args.plot_dists:
+                    dist_results['hwep'].append(hweps)
             if args.numcalled:
-                for val in GetNumSamples(trrecord, sample_indexes=sample_indexes):
+                callnums = GetNumSamples(trrecord, sample_indexes=sample_indexes)
+                for val in callnums:
                     outf.write("\t" + str(val))
+                if args.plot_dists:
+                    dist_results['hwep'].append(hweps)
             outf.write("\n")
             if nrecords % 50 == 0:
                 outf.flush()
@@ -606,6 +669,109 @@ def main(args):
     if args.out != "stdout":
         print("\nDone", flush=True)
 
+    return dist_results
+
+
+def main(args):
+    if args.vcf and not os.path.exists(args.vcf):
+        common.WARNING("Error: %s does not exist"%args.vcf)
+        return 1
+
+    if args.tabfiles:
+        for fname in args.tabfiles.split(","):
+            if not os.path.exists(fname):
+                common.WARNING("Error: {} does not exist".format(fname))
+                return 1
+
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Error: The directory which contains the output location {} does"
+                       " not exist".format(args.out))
+        return 1
+
+    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+        common.WARNING("Error: The output location {} is a "
+                       "directory".format(args.out))
+        return 1
+
+    if args.vcf:
+        dist_stats = process_vcf(args)
+    
+    if not args.plot_dists:
+        return 0
+
+    # plot dists
+    dist_stat_names = _dist_plot_args.intersection(vars(args))
+
+    if args.vcf:
+        for name in dist_stat_names:
+            dist_stats[name] = np.concat(dist_stats[name], axis=0)
+
+    elif args.tabfiles:
+        # set cols
+        cols = []
+        first_fname = args.tabfiles.split(",")[0]
+        with open(first_fname) as tabfile:
+            header = tabfile.readline()
+            sample_prefixes = []
+            a_stat_name = next(iter(dist_stat_names))
+            for col_name in header.split():
+                if col_name == a_stat_name:
+                    sample_prefixes = None
+                elif col_name.startswith(a_stat_name):
+                    sample_prefixes.append(
+                        col_name[len(a_stat_name + 1):]
+                    )
+            if not sample_prefixes:
+                cols = dist_stat_names
+            else:
+                for name in dist_stat_names:
+                    for prefix in sample_prefixes:
+                        cols.append("{}-{}".format(name, prefix))
+
+        #load data from each file
+        df = None
+        for fname in args.tabfiles.split(","):
+            new_df = pd.read_csv(fname, sep='\t', usecols=cols)
+            if df is None:
+                df = new_df
+            else:
+                df = pd.concat((df, new_df), axis=0)
+      
+        # group data by statistic name
+        dist_stats = {}
+        for name in dist_stat_names:
+            col_subset = (col for col in cols if col.startswith(name))
+            dist_stats[name] = df[col_subset].to_numpy()
+
+    # we now have dist_stats regardless of whether or not it was loaded or
+    # generated
+    for stat, data in dist_stats.items():
+        if stat == 'mean':
+            stat_text = 'mean allele length'
+        elif stat == 'mode':
+            stat_text = 'mode allele length'
+        elif stat == 'numcalled':
+            stat_text = 'number of alleles called'
+        elif stat == 'thresh':
+            stat_text = 'max called allele length'
+        else:
+            stat_text = stat
+        data = data[~np.isnan(data)]
+        if (args.plot_dists == 'smooth' and stat in
+                {'het', 'hwep', 'entropy', 'var'}):
+            trplotting.PlotKDE(
+                data,
+                stat,
+                "Distribution of {} across loci".format(stat_text),
+                "{}-{}".format(args.out, stat)
+            )
+        else:
+            trplotting.PlotHistogram(
+                data,
+                stat_text,
+                "Histogram of {} across loci".format(stat_text),
+                "{}-{}".format(args.out, stat)
+            )
     return 0
 
 def run(): # pragma: no cover
