@@ -1,3 +1,5 @@
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn.model_selection
@@ -5,7 +7,37 @@ import sklearn.neighbors
 
 NOFFSETS = 4
 
-def _get_bins(min_val, max_val, nbins, offset):
+def _get_bins(min_val: float,
+              max_val: float,
+              nbins: int,
+              offset: int) -> List[float]:
+    """
+    Get an array of bin endpoints with the corresponding number and offset.
+
+    The bins will extend a bit to either side of min_val and max_val
+    to make sure they are covered. The offset determines how much to one
+    side or the other.
+
+    Parameters
+    ----------
+    min_val:
+        The min value the histogram should cover.
+    max_val:
+        The max value the histogram should cover.
+    nbins:
+        The number of bins in the histogram
+    offset:
+        An int between 1 and NOFFSETS. 1 means most over the
+        overhang (and subsequent offsetting of bins) is to the left of min_val,
+        NOFFSETS means most of the overhang (and prior offsetting of bins) is to
+        the right of max_val.
+
+    Returns
+    -------
+    bins: List[float]
+        A List of bin endpoints. length = len(nbins) + 1
+    """
+
     assert 1 <= offset and offset <= NOFFSETS
     eps = (max_val - min_val)/10e3
     binrange = (max_val - min_val + 2*eps)*(nbins + 1)/nbins
@@ -14,11 +46,30 @@ def _get_bins(min_val, max_val, nbins, offset):
     return np.arange(start, start + binsize*nbins + eps, binsize)
 
 
-def PlotHistogram(data, xlabel, title, fname, random_state=13):
+def PlotHistogram(data,
+                  xlabel: str,
+                  title: str,
+                  fname: str,
+                  random_state: int = 13):
     """
     Plot a histogram with learned bin sizes and alignment.
 
-    Learn parameters with 5 fold cross validation
+    Learn using 5 fold cross validation
+
+    Parameters
+    ----------
+    data:
+        TODO
+    xlabel:
+        the x label for the graph
+    title:
+        the title for the graph
+    fname:
+        the file name to save the graph. Must include the extension,
+        and one that matplotlib will recognize so that it produces
+        a file of that type.
+    randome_state:
+        used to control the splitting in the cross validation.
     """
     # Handle case when data is all the same
     if np.all(data == data[0]):
@@ -57,6 +108,7 @@ def PlotHistogram(data, xlabel, title, fname, random_state=13):
     max_val = np.max(data)
     best_bins = _get_bins(min_val, max_val, best[0], best[1])
 
+    # plot using those parameters
     fig, ax = plt.subplots()
     ax.hist(data, bins=best_bins)
     ax.set_title(title)
@@ -68,17 +120,32 @@ def PlotHistogram(data, xlabel, title, fname, random_state=13):
 def PlotKDE(data, xlabel, title, fname, random_state=13):
     """
     Plots a kernel density estimation of the distribution.
-    
+
     This is a smoother representation of the distribution
-    than a historgram.
-    Kernel bandwidth (which determins plot smoothness)
-    is determined by cross validation
+    than a historgram. Kernel bandwidth (which determins plot
+    smoothness) is determined by cross validation
+
+    Parameters
+    ----------
+    data:
+        TODO
+    xlabel:
+        the x label for the graph
+    title:
+        the title for the graph
+    fname:
+        the file name to save the graph. Must include the extension,
+        and one that matplotlib will recognize so that it produces
+        a file of that type.
+    randome_state:
+        used to control the splitting in the cross validation.
     """
+    # Handle case when data is all the same
     if np.all(data == data[0]):
         fig, ax = plt.subplots()
         ax.hist(
-            np.array(data[0]), 
-            bins = np.arange(data[0] - 1.5, data[0] + 2.5, 1)
+            np.array(data[0]),
+            bins=np.arange(data[0] - 1.5, data[0] + 2.5, 1)
         )
         ax.set_title(title)
         ax.set_xlabel(xlabel)

@@ -415,9 +415,13 @@ _dist_plot_args = {
     "mean",
     "mode",
     "var",
-    "numcalled",
-    "use-length"
+    "numcalled"
 }
+
+_stat_args = {
+    'afreq',
+    'acount'
+}.union(_dist_plot_args)
 
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
@@ -472,24 +476,29 @@ def getargs(): # pragma: no cover
                             " default outputs histograms, set to 'smooth' to "
                             " produce smooth (KDE) plots for float "
                             "valued-plots instead.",
-                            choices={"hist", "smooth"}, default="hist",
-                            const='hist', nargs="?")
+                            choices={"hist", "smooth"}, const='hist', nargs="?")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
-    args = parser.parse_args()
-    # If no stat selected, print an error message and terminate
-    stat_dict = {}
-    for grp in parser._action_groups:
-        if grp.title == stat_group_name:
-            stat_dict = {a.dest:getattr(args,a.dest,None) for a in grp._group_actions}
+    return parser.parse_args()
 
-    if not any(stat_dict.values()):
+def check_args(args):
+    arg_dict = vars(args)
+
+    # If no stat selected, print an error message and terminate
+    if not any(arg for arg in _stat_args if arg_dict[arg]):
         common.WARNING("Error: Please use at least one of the flags in the Stats group. See statSTR --help for options.")
         return None
 
-    if not args.plot_dists and not any(_dist_plot_args.intersection(vars(args))):
+    plotting_args = _dist_plot_args.intersection(
+        arg for arg in arg_dict if arg_dict[arg]
+    )
+    if args.plot_dists and not any(plotting_args):
         common.WARNING("Error: If specifying --plot-dists, please specify a"
                        " corresponding statistic to plot.")
+        return None
+
+    if args.vcf and args.tabfiles:
+        common.WARNING("Error: please specify --vcf or --tabfiles, not both")
         return None
 
     if not args.vcf and not (args.tabfiles and args.plot_dists):
@@ -497,13 +506,15 @@ def getargs(): # pragma: no cover
                        "--tabfiles and --plot-dists")
         return None
 
+
     if args.plot_dists:
         for arg in ('samples', 'region'):
-            if vars(args)[arg]:
+            if arg_dict[arg]:
                 common.WARNING("Cannot specify --plot-dists and --{}".format(arg))
                 return None
 
     return args
+
 
 def format_nan_precision(precision_format, val):
     if np.isnan(val):
@@ -560,8 +571,12 @@ def process_vcf(args):
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
 
     if args.plot_dists:
-        dist_resutls = []
-        for arg in _dist_plot_args.intersection(vars(args)):
+        dist_results = {}
+        arg_dict = vars(args)
+        plotting_args = _dist_plot_args.intersection(
+            arg for arg in arg_dict if arg_dict[arg]
+        )
+        for arg in plotting_args:
             dist_results[arg] = []
 
     precision_format = "\t{:." + str(args.precision) + "}"
@@ -644,13 +659,13 @@ def process_vcf(args):
                 for val in variances:
                     outf.write(format_nan_precision(precision_format, val))
                 if args.plot_dists:
-                    dist_results['hwep'].append(hweps)
+                    dist_results['var'].append(variances)
             if args.numcalled:
                 callnums = GetNumSamples(trrecord, sample_indexes=sample_indexes)
                 for val in callnums:
                     outf.write("\t" + str(val))
                 if args.plot_dists:
-                    dist_results['hwep'].append(hweps)
+                    dist_results['numcalled'].append(callnums)
             outf.write("\n")
             if nrecords % 50 == 0:
                 outf.flush()
@@ -669,7 +684,10 @@ def process_vcf(args):
     if args.out != "stdout":
         print("\nDone", flush=True)
 
-    return dist_results
+    if not args.plot_dists:
+        return
+    else:
+        return dist_results
 
 
 def main(args):
@@ -695,16 +713,25 @@ def main(args):
 
     if args.vcf:
         dist_stats = process_vcf(args)
+        if dist_stats == 1:
+            return 1
     
     if not args.plot_dists:
         return 0
 
     # plot dists
-    dist_stat_names = _dist_plot_args.intersection(vars(args))
+    print("Plotting ... ", flush=True, end="")
+    arg_dict = vars(args)
+    dist_stat_names = _dist_plot_args.intersection(
+        arg for arg in arg_dict if arg_dict[arg]
+    )
 
     if args.vcf:
         for name in dist_stat_names:
-            dist_stats[name] = np.concat(dist_stats[name], axis=0)
+            dist_stats[name] = np.concatenate(
+                list(np.array(locus_data) for locus_data in dist_stats[name]),
+                axis=0
+            )
 
     elif args.tabfiles:
         # set cols
@@ -726,7 +753,15 @@ def main(args):
             else:
                 for name in dist_stat_names:
                     for prefix in sample_prefixes:
+                        # TODO check this works. What if wrong col names for
+                        # one file?
                         cols.append("{}-{}".format(name, prefix))
+
+        for col in cols:
+            if col not in header.split():
+                common.WARNING("Error: Expected to find column {} in tabfile "
+                               "but didn't.".format(col))
+                return 1
 
         #load data from each file
         df = None
@@ -772,15 +807,20 @@ def main(args):
                 "Histogram of {} across loci".format(stat_text),
                 "{}-{}".format(args.out, stat)
             )
+    print("\nDone", flush=True)
     return 0
 
 def run(): # pragma: no cover
     args = getargs()
     if args == None:
         sys.exit(1)
-    else:
-        retcode = main(args)
-        sys.exit(retcode)
+
+    args = check_args( args)
+    if args == None:
+        sys.exit(1)
+
+    retcode = main(args)
+    sys.exit(retcode)
 
 if __name__ == "__main__": # pragma: no cover
     run()
