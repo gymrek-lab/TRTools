@@ -720,7 +720,7 @@ def main(args):
         return 0
 
     # plot dists
-    print("Plotting ... ", flush=True, end="")
+    print("Beginning plotting", flush=True)
     arg_dict = vars(args)
     dist_stat_names = _dist_plot_args.intersection(
         arg for arg in arg_dict if arg_dict[arg]
@@ -791,6 +791,7 @@ def main(args):
             stat_text = 'max called allele length'
         else:
             stat_text = stat
+        print(" ... Plotting {} ...".format(stat_text), flush=True)
         data = data[~np.isnan(data)]
         if (args.plot_dists == 'smooth' and stat in
                 {'het', 'hwep', 'entropy', 'var'}):
@@ -812,11 +813,11 @@ def main(args):
 
 def run(): # pragma: no cover
     args = getargs()
-    if args == None:
+    if args is None:
         sys.exit(1)
 
-    args = check_args( args)
-    if args == None:
+    args = check_args(args)
+    if args is None:
         sys.exit(1)
 
     retcode = main(args)

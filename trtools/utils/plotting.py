@@ -46,7 +46,7 @@ def _get_bins(min_val: float,
     return np.arange(start, start + binsize*nbins + eps, binsize)
 
 
-def PlotHistogram(data,
+def PlotHistogram(data: np.ndarray,
                   xlabel: str,
                   title: str,
                   fname: str,
@@ -59,7 +59,9 @@ def PlotHistogram(data,
     Parameters
     ----------
     data:
-        TODO
+        Either a 1D array of statistics to create a histogram of,
+        or a 2D array where each column represents a different stratification
+        of the data that will get a different line in the plot
     xlabel:
         the x label for the graph
     title:
@@ -92,8 +94,13 @@ def PlotHistogram(data,
     best_prob = 0
     for nbins in range(1, MAX_BIN + 1):
         for offset in range(1, NOFFSETS + 1):
+            print("Testing fit {} of {}".format(
+                (nbins-1)*NOFFSETS+ offset, MAX_BIN * NOFFSETS),
+                end="\r", flush=True)
             prob = 0
-            for train, test in kfold.split(data):
+            for train_idxs, test_idxs in kfold.split(data):
+                train = data[train_idxs]
+                test = data[test_idxs]
                 min_val = np.min(train)
                 max_val = np.max(train)
                 bins = _get_bins(min_val, max_val, nbins, offset)
@@ -104,6 +111,7 @@ def PlotHistogram(data,
                 best = (nbins, offset)
                 best_prob = prob
 
+    print("Done fitting. Now plotting         ", end="\r", flush=True)
     min_val = np.min(data)
     max_val = np.max(data)
     best_bins = _get_bins(min_val, max_val, best[0], best[1])
@@ -115,9 +123,14 @@ def PlotHistogram(data,
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Counts")
     plt.savefig(fname)
+    print("Done plotting                  ", flush=True)
 
 
-def PlotKDE(data, xlabel, title, fname, random_state=13):
+def PlotKDE(data: np.ndarray,
+            xlabel: str,
+            title: str,
+            fname: str,
+            random_state: int = 13):
     """
     Plots a kernel density estimation of the distribution.
 
@@ -128,7 +141,9 @@ def PlotKDE(data, xlabel, title, fname, random_state=13):
     Parameters
     ----------
     data:
-        TODO
+        Either a 1D array of statistics to create a histogram of,
+        or a 2D array where each column represents a different stratification
+        of the data that will get a different line in the plot
     xlabel:
         the x label for the graph
     title:
@@ -163,11 +178,12 @@ def PlotKDE(data, xlabel, title, fname, random_state=13):
         random_state=random_state,
         shuffle=True
     )
-    bandwidths = 10 ** np.linspace(-1, 1, 20)
+    bandwidths = 10 ** np.linspace(-2, 2, 20)
     grid = sklearn.model_selection.GridSearchCV(
         sklearn.neighbors.KernelDensity(kernel='gaussian'),
         {'bandwidth': bandwidths},
-        cv=kfold
+        cv=kfold,
+        verbose=1
     )
     grid.fit(data)
     bandwidth = grid.best_params_['bandwidth']
