@@ -507,10 +507,10 @@ def check_args(args):
         return None
 
 
-    if args.plot_dists:
+    if args.tabfiles:
         for arg in ('samples', 'region'):
             if arg_dict[arg]:
-                common.WARNING("Cannot specify --plot-dists and --{}".format(arg))
+                common.WARNING("Cannot specify --tabfiles and --{}".format(arg))
                 return None
 
     return args
@@ -729,9 +729,12 @@ def main(args):
     if args.vcf:
         for name in dist_stat_names:
             dist_stats[name] = np.concatenate(
-                list(np.array(locus_data) for locus_data in dist_stats[name]),
+                list(np.array(locus_data).reshape(1, -1) for locus_data in dist_stats[name]),
                 axis=0
             )
+        sample_prefixes = args.sample_prefixes
+        if sample_prefixes is not None:
+            sample_prefixes = sample_prefixes.split(',')
 
     elif args.tabfiles:
         # set cols
@@ -739,23 +742,22 @@ def main(args):
         first_fname = args.tabfiles.split(",")[0]
         with open(first_fname) as tabfile:
             header = tabfile.readline()
-            sample_prefixes = []
-            a_stat_name = next(iter(dist_stat_names))
-            for col_name in header.split():
-                if col_name == a_stat_name:
-                    sample_prefixes = None
-                elif col_name.startswith(a_stat_name):
-                    sample_prefixes.append(
-                        col_name[len(a_stat_name + 1):]
-                    )
-            if not sample_prefixes:
-                cols = dist_stat_names
-            else:
-                for name in dist_stat_names:
-                    for prefix in sample_prefixes:
-                        # TODO check this works. What if wrong col names for
-                        # one file?
-                        cols.append("{}-{}".format(name, prefix))
+
+        sample_prefixes = []
+        a_stat_name = next(iter(dist_stat_names))
+        for col_name in header.split():
+            if col_name == a_stat_name:
+                sample_prefixes = None
+            elif col_name.startswith(a_stat_name):
+                sample_prefixes.append(
+                    col_name[(len(a_stat_name) + 1):]
+                )
+        if not sample_prefixes:
+            cols = dist_stat_names
+        else:
+            for name in dist_stat_names:
+                for prefix in sample_prefixes:
+                    cols.append("{}-{}".format(name, prefix))
 
         for col in cols:
             if col not in header.split():
@@ -766,7 +768,13 @@ def main(args):
         #load data from each file
         df = None
         for fname in args.tabfiles.split(","):
-            new_df = pd.read_csv(fname, sep='\t', usecols=cols)
+            try:
+                new_df = pd.read_csv(fname, sep='\t', usecols=cols)
+            except ValueError as ve:
+                common.WARNING("Reading tabfile {} caused the error "
+                               "{}".format(fname, str(ve)))
+                return 1
+
             if df is None:
                 df = new_df
             else:
@@ -792,21 +800,22 @@ def main(args):
         else:
             stat_text = stat
         print(" ... Plotting {} ...".format(stat_text), flush=True)
-        data = data[~np.isnan(data)]
         if (args.plot_dists == 'smooth' and stat in
                 {'het', 'hwep', 'entropy', 'var'}):
             trplotting.PlotKDE(
                 data,
                 stat,
                 "Distribution of {} across loci".format(stat_text),
-                "{}-{}".format(args.out, stat)
+                "{}-{}".format(args.out, stat),
+                strata_labels=sample_prefixes
             )
         else:
             trplotting.PlotHistogram(
                 data,
                 stat_text,
                 "Histogram of {} across loci".format(stat_text),
-                "{}-{}".format(args.out, stat)
+                "{}-{}".format(args.out, stat),
+                strata_labels=sample_prefixes
             )
     print("\nDone", flush=True)
     return 0

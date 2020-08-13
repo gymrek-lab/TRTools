@@ -208,13 +208,13 @@ def test_crash_plot_dists_bad_arg_combos(args, vcfdir, statsdir, capsys):
 
     args.samples = os.path.join(vcfdir, "fewer_samples.txt")
     assert check_args(args) is None
-    assert ("Cannot specify --plot-dists and --samples" in
+    assert ("Cannot specify --tabfiles and --samples" in
         capsys.readouterr().err)
     args.samples = None
 
     args.region = "1:1-1000000"
     assert check_args(args) is None
-    assert ("Cannot specify --plot-dists and --region" in
+    assert ("Cannot specify --tabfiles and --region" in
         capsys.readouterr().err)
     args.region = None
 
@@ -297,21 +297,76 @@ def test_nocrash_plot_dists_diff_tabfiles_same_subset(args, statsdir):
             assert not os.path.exists(fname)
 
 
-def test_nocrash_plot_dists_prefixes():
-    pass
+def test_nocrash_plot_dists_prefixes(args_allstats, statsdir):
+    args = args_allstats
+    args.tabfiles = os.path.join(statsdir, "many_samples_all_strat.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 0
+    for stat in _dist_plot_args:
+        assert os.path.exists("{}-{}.png".format(
+            args.out, stat))
 
-def test_nocrash_plot_dists_prefixes_tabfile():
-    pass
 
-def test_nocrash_plot_dists_prefixes_many_tabfiles():
-    pass
+def test_nocrash_plot_dists_prefixes_tabfile(args_allstats, statsdir):
+    args = args_allstats
+    args.tabfiles = os.path.join(statsdir, "many_samples_all_strat.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 0
+    for stat in _dist_plot_args:
+        assert os.path.exists("{}-{}.png".format(
+            args.out, stat))
 
-def test_crash_plot_dists_tabfiles_different_prefixes():
-    pass
 
-def test_nocrash_plot_dists_diff_tabfiles_same_subset_same_prefixes():
-    pass
+def test_nocrash_plot_dists_prefixes_many_tabfiles(args_allstats, statsdir):
+    args = args_allstats
+    args.tabfiles = os.path.join(statsdir, "many_samples_all_strat.tab")
+    args.tabfiles += ',' +  args.tabfiles
+    args.plot_dists = 'histo'
+    assert main(args) == 0
+    for stat in _dist_plot_args:
+        assert os.path.exists("{}-{}.png".format(
+            args.out, stat))
 
-def test_nocrash_plot_dists_prefixes_stat_not_in_tabfile():
-    pass
+
+def test_crash_plot_dists_tabfiles_different_prefixes(args, statsdir, capsys):
+    args.mean = True
+    args.tabfiles = os.path.join(statsdir, "many_samples_all_strat.tab")
+    args.tabfiles += "," + os.path.join(statsdir,
+                                        "many_samples_all_strat_diffnames.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 1
+    assert "mean-2" in capsys.readouterr().err
+
+
+def test_nocrash_plot_dists_diff_tabfiles_same_subset_same_prefixes(args,
+                                                                    statsdir):
+    args.mean = True
+    args.tabfiles = os.path.join(statsdir, "afreq_mean_hwep.tab")
+    args.tabfiles += ',' + os.path.join(statsdir, "acount_mean_het.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 0
+    for stat in _dist_plot_args:
+        fname = "{}-{}.png".format(args.out, stat)
+        if stat == 'mean':
+            assert os.path.exists(fname)
+        else:
+            assert not os.path.exists(fname)
+
+
+def test_crash_plot_dists_prefixes_stat_not_in_tabfile(args, statsdir, capsys):
+    args.thresh = True
+    args.tabfiles = os.path.join(statsdir, "afreq_mean_hwep.tab")
+    args.tabfiles += ',' + os.path.join(statsdir, "acount_mean_het.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 1
+    assert 'thresh' in capsys.readouterr().err
+
+
+def test_crash_plot_dists_prefixes_stat_not_in_tabfiles(args, statsdir, capsys):
+    args.hwep = True
+    args.tabfiles = os.path.join(statsdir, "afreq_mean_hwep.tab")
+    args.tabfiles += ',' + os.path.join(statsdir, "acount_mean_het.tab")
+    args.plot_dists = 'histo'
+    assert main(args) == 1
+    assert 'hwep' in capsys.readouterr().err
 
