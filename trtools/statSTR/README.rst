@@ -71,6 +71,23 @@ Output file
 StatSTR outputs a tab-delimited file with columns: chrom, start, end, plus an additional column for each statistic specified.
 If multiple sample groups are specified, instead there is one additional column for each sample gruop-by-statistic pair
 
+Plotting
+--------
+
+To get statSTR to plot the distribution of a statistic across loci, add the :code:`--plot-dists` flag.
+(This only works for statistics which are a single number, i.e. not :code:`afreq` or :code:`acount`).
+This will, in addition to producing the :code:`<out>.tab` file, produce a :code:`<out>-<stat>.png` graph
+file for each statistic option you specified.
+
+To plot graph from output of previous runs of statSTR, pass the path to that output tabfile to
+:code:`--tabfiles <string>` instead of using :code:`--vcf`. To concatenate the results of multiple
+prior runs before plotting, just use a comma separated list of paths.
+
+To plot smooth distributions instead of histograms for statistics where that makes sense,
+use :code:`--plot-dists smooth`.
+
+See the below for example plots
+
 Example Commands
 ----------------
 
@@ -105,3 +122,21 @@ Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data
         --out stats_popstr \
         --mean \
         --samples ex-samples.txt
+
+And two example plotting commands::
+
+  # plotting while calculating samples
+  statSTR --vcf ceu_ex.vcf.gz \
+        --out stats_ceu \
+        --het \
+        --plot-dists
+
+  # plotting from a previous run
+  statSTR --vcf ceu_ex.vcf.gz \
+        --out stats_ceu \
+        --het
+  statSTR --tabfile stats_ceu.tab \
+        --out stats_ceu_graphs \
+        --het \
+        --plot-dists
+
