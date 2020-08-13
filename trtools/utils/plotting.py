@@ -194,9 +194,10 @@ def PlotKDE(data: np.ndarray,
     n_strata = data.shape[1]
 
     # only train on up to 1k loci for speed
-    if data.shape[0] > 1e3:
+    max_loci = int(1e3)
+    if data.shape[0] > max_loci:
         rng = numpy.random.default_rng(random_state)
-        train_data = data[rng.choice(1e3), :]
+        train_data = data[rng.choice(data.shape[0], size=max_loci, replace=False), :]
     else:
         train_data = data
 
@@ -207,7 +208,6 @@ def PlotKDE(data: np.ndarray,
 
     # Fit and plot each stratum individually
     for col in range(n_strata):
-
         stratum = train_data[:, col]
         stratum = stratum[~np.isnan(stratum)]
         # Handle case when data is all the same
