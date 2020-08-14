@@ -766,7 +766,7 @@ def main(args):
         for col in cols:
             if col not in header.split():
                 common.WARNING("Error: Expected to find column {} in tabfile "
-                               "{} but didn't.".format(first_fname, col))
+                               "{} but didn't.".format(col, first_fname))
                 return 1
 
         #load data from each file
