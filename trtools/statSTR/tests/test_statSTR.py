@@ -209,7 +209,7 @@ def test_crash_plot_dists_bad_arg_combos(args, vcfdir, statsdir, capsys):
     args.out = 'stdout'
     assert check_args(args) is None
     assert "Cannot plot distributions to stdout" in capsys.readouterr().err
-    args.out = foo
+    args.out = "foo"
 
     args.samples = os.path.join(vcfdir, "fewer_samples.txt")
     assert check_args(args) is None
