@@ -89,6 +89,52 @@ def test_PlotAfreq(args, vcfdir):
     args.plot_afreq = True
     assert main(args)==0
 
+
+def _comp_output_files(fname1, fname2):
+    with open(fname1) as file1, open(fname2) as file2:
+        i1 = iter(file1)
+        i2 = iter(file2)
+        header1 = next(i1)
+        header2 = next(i2)
+        assert header1 == header2
+        header = header1.split('\t')
+
+        linenum = 1
+        while True:
+            try:
+                l1 = next(i1)
+            except StopIteration:
+                try:
+                    l2 = next(i2)
+                    raise ValueError(
+                        "file1 is a truncated version of file2, equal up till truncation"
+                    )
+                except StopIteration:
+                    # files are the same and ended at the same time
+                    return
+            try:
+                l2 = next(i2)
+            except StopIteration:
+                raise ValueError(
+                    "file2 is a truncated version of file1, equal up till truncation"
+                )
+            linenum += 1
+            l1 = l1.split('\t')
+            l2 = l2.split('\t')
+            if len(l1) != len(l2):
+                raise ValueError(
+                    (f"Line {l1[0:3]} (line num {linenum} is of different "
+                     f"length between the two files")
+                )
+            for idx, (token1, token2) in enumerate(zip(l1, l2)):
+                if token1 != token2:
+                    raise ValueError(
+                        (f"Line {l1[0:3]} line num {linenum} is different "
+                         f"between the two files at column {header[idx]} "
+                         f"with vals file1:{token1} file2:{token2}")
+                    )
+
+
 def test_output(args, vcfdir, statsdir):
     """
     Run statSTR on a file which statSTR has been run on in the past
@@ -106,11 +152,11 @@ def test_output(args, vcfdir, statsdir):
     args.mode = True
     args.var = True
     args.numcalled = True
+    args.precision = 6
     # exclude an allele which doesn't have
     # reproducible stats even up to two decimal places
-    args.region = "1:1-3683401"
     assert main(args) == 0
-    assert filecmp.cmp(
+    assert _comp_output_files(
         args.out + ".tab",
         os.path.join(statsdir, "many_samples_all.tab")
     )
@@ -137,12 +183,13 @@ def test_output_samplestrat(args, vcfdir, statsdir):
     args.mode = True
     args.var = True
     args.numcalled = True
+    args.precision = 6
     # exclude an allele which doesn't have
     # reproducible stats even up to two decimal places
-    args.region = "1:1-1833757"
     assert main(args) == 0
-    assert filecmp.cmp(
+    assert _comp_output_files(
         args.out + ".tab",
         os.path.join(statsdir, "many_samples_all_strat.tab")
     )
+
 
