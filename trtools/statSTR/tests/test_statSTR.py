@@ -1,5 +1,4 @@
 import argparse
-import filecmp
 import os
 
 import pytest
@@ -29,7 +28,7 @@ def args(tmpdir):
     args.var = False
     args.numcalled = False
     args.entropy = False
-    args.precision = 2
+    args.precision = 4
     return args
 
 # Test no such file or directory
@@ -89,6 +88,43 @@ def test_PlotAfreq(args, vcfdir):
     args.plot_afreq = True
     assert main(args)==0
 
+# True if equal
+def _imprecise_compare(token1, token2):
+    token1 = float(token1)
+    token2 = float(token2)
+    if np.isnan(token1) and np.isnan(token2):
+        return True
+    elif token1 == 0 and token2 == 0:
+        return True
+    elif token1 < 1e-3:
+        token1 = _precision(token1, 2)
+        token2 = _precision(token2, 2)
+    elif token1 < 1e-4:
+        # only use one bit of precision
+        # so that calculations with numeric instability can
+        # still be compared at very low values
+        token1 = _precision(token1, 1)
+        token2 = _precision(token2, 1)
+    else:
+        token1 = _precision(token1, 3)
+        token2 = _precision(token2, 3)
+
+    return abs(token1 - token2) < token1*1e-6
+
+
+# Converts 5.461e-6 to 5e-6
+def _precision(val, prec):
+    exp = 10**(np.floor(np.log10(val)) - prec + 1)
+    return np.floor(val/exp)*exp
+
+
+def _make_allele_dict(allele_dict_string):
+    d = {}
+    for pair in allele_dict_string.split(','):
+        key, val = pair.split(':')
+        d[key] = val
+    return d
+
 
 def _comp_output_files(fname1, fname2):
     with open(fname1) as file1, open(fname2) as file2:
@@ -123,13 +159,60 @@ def _comp_output_files(fname1, fname2):
             l2 = l2.split('\t')
             if len(l1) != len(l2):
                 raise ValueError(
-                    (f"Line {l1[0:3]} (line num {linenum} is of different "
+                    (f"Locus {l1[0:3]} (line num {linenum}) is of different "
                      f"length between the two files")
                 )
             for idx, (token1, token2) in enumerate(zip(l1, l2)):
-                if token1 != token2:
+                column = header[idx]
+                # check some columns for a less than exact match
+                if ('hwep' in column or
+                        'het' in column or
+                        'entropy' in column or
+                        'var' in column or
+                        'mean' in column or
+                        'mode' in column or
+                        'thresh' in column):
+                    if not _imprecise_compare(token1, token2):
+                        raise ValueError(
+                            (f"Locus {l1[0:3]} (line num {linenum}) is different "
+                             f"between the two files at column {header[idx]} "
+                             f"with vals file1:{token1} file2:{token2}")
+                        )
+                elif 'afreq' in column or 'acount' in column:
+                    if token1 == '.' or token2 == '.':
+                        if token1 == '.' and token2 == '.':
+                            continue
+                        else:
+                            raise ValueError(
+                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
+                                 f"between the two files at column {header[idx]}"
+                                 f"file1:{token1} file2:{token2}")
+                            )
+                    dict1 = _make_allele_dict(token1)
+                    dict2 = _make_allele_dict(token2)
+                    if len(dict1) != len(dict2):
+                        raise ValueError(
+                            (f"Locus {l1[0:3]} (line num {linenum}) is different "
+                             f"between the two files at column {header[idx]}"
+                             f"with different numbers of alleles! file1:{token1} file2:{token2}")
+                        )
+                    for key in dict1:
+                        if not key in dict2:
+                            raise ValueError(
+                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
+                                 f"between the two files at column {header[idx]}"
+                                 f"allele {key} is in file1 but not file2")
+                            )
+                        if not _imprecise_compare(dict1[key],
+                                                 dict2[key]):
+                            raise ValueError(
+                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
+                                 f"between the two files at column {header[idx]} "
+                                 f"with vals for allele {key} file1:{token1} file2:{token2}")
+                            )
+                elif token1 != token2:
                     raise ValueError(
-                        (f"Line {l1[0:3]} line num {linenum} is different "
+                        (f"Locus {l1[0:3]} (line num {linenum}) is different "
                          f"between the two files at column {header[idx]} "
                          f"with vals file1:{token1} file2:{token2}")
                     )
@@ -139,6 +222,8 @@ def test_output(args, vcfdir, statsdir):
     """
     Run statSTR on a file which statSTR has been run on in the past
     and confirm the results haven't changed
+
+    If you need to change the output file, generate it with precision 4
     """
     fname = os.path.join(vcfdir, "many_samples.vcf.gz")
     args.vcf = fname
@@ -152,11 +237,10 @@ def test_output(args, vcfdir, statsdir):
     args.mode = True
     args.var = True
     args.numcalled = True
-    args.precision = 6
     # exclude an allele which doesn't have
     # reproducible stats even up to two decimal places
     assert main(args) == 0
-    assert _comp_output_files(
+    _comp_output_files(
         args.out + ".tab",
         os.path.join(statsdir, "many_samples_all.tab")
     )
@@ -166,6 +250,8 @@ def test_output_samplestrat(args, vcfdir, statsdir):
     """
     Run statSTR on a file which statSTR has been run on in the past
     and confirm the results haven't changed
+
+    If you need to change the output file, generate it with precision 4
     """
     fname = os.path.join(vcfdir, "many_samples.vcf.gz")
     args.vcf = fname
@@ -183,11 +269,10 @@ def test_output_samplestrat(args, vcfdir, statsdir):
     args.mode = True
     args.var = True
     args.numcalled = True
-    args.precision = 6
     # exclude an allele which doesn't have
     # reproducible stats even up to two decimal places
     assert main(args) == 0
-    assert _comp_output_files(
+    _comp_output_files(
         args.out + ".tab",
         os.path.join(statsdir, "many_samples_all_strat.tab")
     )
