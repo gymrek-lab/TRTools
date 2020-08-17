@@ -10,8 +10,10 @@ jobs:
       language: sh
       addons:
         homebrew:
-#           update: true
-          packages: python3
+          packages:
+          - python3
+          - openssl
+          update: true
       before_install:
         - pip3 install virtualenv
         - virtualenv -p python3 ~/venv
@@ -30,6 +32,9 @@ jobs:
         - cd htslib-1.10.2 && make && sudo make install && cd ..
 
 before_install: # for linux jobs
+  - sudo apt-get update
+    # attempt to get cyvcf2 working, it requires a SHA256 'symbol'
+  - sudo apt-get -y install -y libcrypto++-dev libssl-dev libcurl4-openssl-dev
   - python --version
   - pip install -U --upgrade pip
   - pip install -U pytest
