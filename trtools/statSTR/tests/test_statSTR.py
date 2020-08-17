@@ -209,10 +209,10 @@ def _comp_output_files(fname1, fname2):
                                  "between the two files at column {}"
                                  "allele {} is in file1 but not "
                                  "file2").format(
-                                     l1[0:3], linenum, header[idx], key
+                                     l1[0:3], linenum, header[idx], key)
                             )
                         if not _imprecise_compare(dict1[key],
-                                                 dict2[key]):
+                                                  dict2[key]):
                             raise ValueError(
                                 ("Locus {} (line num {}) is different "
                                  "between the two files at column {} "
