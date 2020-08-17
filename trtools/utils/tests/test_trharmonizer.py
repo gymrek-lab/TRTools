@@ -751,6 +751,8 @@ def test_HarmonizeRecord(vcfdir):
     assert (tr_rec3.alt_alleles ==
             ['tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'.upper()])
     assert tr_rec3.motif == 'tg'.upper()
+    assert tr_rec3.ref_allele_length == 26
+    assert tr_rec3.alt_allele_lengths == [24]
 
     # hipstr
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)

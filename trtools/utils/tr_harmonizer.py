@@ -618,9 +618,12 @@ class TRRecord:
         then those alt alleles will be improperly trimmed.
     alt_allele_lengths :
         The lengths of each of the alt alleles, in order.
-        Should only be passed when only the lengths of the alt alleles
-        were measured and not the sequences. Thus must be measured in
-        number of copies of repeat unit, NOT the allele length in base pairs.
+        Thus is measured in number of copies of repeat unit,
+        NOT the allele length in base pairs.
+
+        Should be passed to the constructor when only the lengths of the alt alleles
+        were measured and not the sequences. If sequences are passed to the
+        constructor then this is set automatically.
 
         If this is passed, the alt_alleles parameter to the constructor must
         be set to None and the alt_alleles attribute of the record will be set
@@ -689,7 +692,7 @@ class TRRecord:
             self.ref_allele = utils.FabricateAllele(motif, ref_allele_length)
         else:
             self.has_fabricated_ref_allele = False
-            self.ref_allele_length = len(ref_allele)
+            self.ref_allele_length = len(ref_allele)/len(motif)
 
         if alt_allele_lengths is not None:
             self.has_fabricated_alt_alleles = True
@@ -700,7 +703,7 @@ class TRRecord:
         else:
             self.has_fabricated_alt_alleles = False
             self.alt_allele_lengths = [
-                len(allele) for allele in self.alt_alleles
+                len(allele)/len(motif) for allele in self.alt_alleles
             ]
 
         try:
@@ -958,7 +961,6 @@ class TRRecord:
         for idx, allele_len in enumerate(allele_lens):
             len_gts[:, :-1][idx_gts[:, :-1] == idx] = allele_len
 
-        len_gts = len_gts / len(self.motif)
         len_gts[idx_gts == -1] = -1
 
         return len_gts
@@ -1300,7 +1302,7 @@ class TRRecord:
         Returns
         -------
         np.ndarray :
-            An array of quality score floats
+            An array of quality score floats, one row per sample
             Samples which were not called have the value np.nan
         """
         if not self.HasQualityScores():
