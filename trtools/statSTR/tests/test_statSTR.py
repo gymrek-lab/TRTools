@@ -159,8 +159,9 @@ def _comp_output_files(fname1, fname2):
             l2 = l2.split('\t')
             if len(l1) != len(l2):
                 raise ValueError(
-                    (f"Locus {l1[0:3]} (line num {linenum}) is of different "
-                     f"length between the two files")
+                    ("Locus {} (line num {}) is of different "
+                     "length between the two files").format(
+                         l1[0:3], linenum)
                 )
             for idx, (token1, token2) in enumerate(zip(l1, l2)):
                 column = header[idx]
@@ -174,9 +175,10 @@ def _comp_output_files(fname1, fname2):
                         'thresh' in column):
                     if not _imprecise_compare(token1, token2):
                         raise ValueError(
-                            (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                             f"between the two files at column {header[idx]} "
-                             f"with vals file1:{token1} file2:{token2}")
+                            ("Locus {} (line num {}) is different "
+                             "between the two files at column {} "
+                             "with vals file1:{} file2:{}").format(
+                                 l1[0:3], linenum, header[idx], token1, token2)
                         )
                 elif 'afreq' in column or 'acount' in column:
                     if token1 == '.' or token2 == '.':
@@ -184,37 +186,48 @@ def _comp_output_files(fname1, fname2):
                             continue
                         else:
                             raise ValueError(
-                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                                 f"between the two files at column {header[idx]}"
-                                 f"file1:{token1} file2:{token2}")
+                                ("Locus {} (line num {}) is different "
+                                 "between the two files at column {}"
+                                 "file1:{} file2:{}").format(
+                                     l1[0:3], linenum, header[idx], token1,
+                                     token2)
                             )
                     dict1 = _make_allele_dict(token1)
                     dict2 = _make_allele_dict(token2)
                     if len(dict1) != len(dict2):
                         raise ValueError(
-                            (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                             f"between the two files at column {header[idx]}"
-                             f"with different numbers of alleles! file1:{token1} file2:{token2}")
+                            ("Locus {} (line num {}) is different "
+                             "between the two files at column {}"
+                             "with different numbers of alleles! file1:{} "
+                             "file2:{}").format(
+                                 l1[0:3], linenum, header[idx], token1, token2)
                         )
                     for key in dict1:
                         if not key in dict2:
                             raise ValueError(
-                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                                 f"between the two files at column {header[idx]}"
-                                 f"allele {key} is in file1 but not file2")
+                                ("Locus {} (line num {}) is different "
+                                 "between the two files at column {}"
+                                 "allele {} is in file1 but not "
+                                 "file2").format(
+                                     l1[0:3], linenum, header[idx], key
                             )
                         if not _imprecise_compare(dict1[key],
                                                  dict2[key]):
                             raise ValueError(
-                                (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                                 f"between the two files at column {header[idx]} "
-                                 f"with vals for allele {key} file1:{token1} file2:{token2}")
+                                ("Locus {} (line num {}) is different "
+                                 "between the two files at column {} "
+                                 "with vals for allele {} file1:{} "
+                                 "file2:{}").format(
+                                     l1[0:3], linenum, header[idx], key,
+                                     token1, token2)
                             )
                 elif token1 != token2:
                     raise ValueError(
-                        (f"Locus {l1[0:3]} (line num {linenum}) is different "
-                         f"between the two files at column {header[idx]} "
-                         f"with vals file1:{token1} file2:{token2}")
+                        ("Locus {} (line num {}) is different "
+                         "between the two files at column {} "
+                         "with vals file1:{} file2:{}").format(
+                             l1[0:3], linenum, header[idx], token1, token2
+                         )
                     )
 
 
