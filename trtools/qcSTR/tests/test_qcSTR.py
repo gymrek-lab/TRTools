@@ -279,7 +279,7 @@ def test_main(tmpdir, vcfdir):
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(qcdir, "test_popstr_nocontig.vcf")
     retcode = main(args)
-    assert retcode == 1
+    assert retcode == 0
     args.vcf = os.path.join(qcdir, "test_popstr.vcf")
 
     # Set sample list

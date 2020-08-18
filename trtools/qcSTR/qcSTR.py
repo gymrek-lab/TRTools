@@ -25,7 +25,6 @@ import cyvcf2
 import pandas as pd
 import numpy as np
 import sklearn
-import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
@@ -437,7 +436,6 @@ def main(args):
 
     # Set up reader and harmonizer
     invcf = utils.LoadSingleReader(args.vcf, checkgz=False)
-    pyvcf = vcf.Reader(filename=args.vcf) #just for parsing the header
     if invcf is None:
         return 1
 
@@ -485,13 +483,7 @@ def main(args):
 
     # Set up data to keep track of
     sample_calls = np.zeros(len(sample_list))
-    # set up a 1d array to track this, filter this down at the end
-    contigs = pyvcf.contigs
-    if len(contigs) == 0:
-        common.WARNING("Warning: no contigs found in VCF file. "
-                       "using `bcftools reheader` to fix that")
-        return 1
-    chrom_calls = dict([(chrom, 0) for chrom in contigs]) # chrom->numcalls
+    chrom_calls = {} # chrom->numcalls
     diffs_from_ref_bp = [] # for each allele call, keep track of diff (bp) from ref
     diffs_from_ref_unit = [] # for each allele call, keep track of diff
                              # (repeat units) from ref
@@ -515,6 +507,8 @@ def main(args):
         if args.period is not None and len(trrecord.motif) != args.period: continue
 
         chrom = trrecord.chrom
+        if chrom not in chrom_calls:
+            chrom_calls[chrom] = 0
         allele_counts = trrecord.GetAlleleCounts(uselength=True,
                                                  sample_index=sample_index)
 
