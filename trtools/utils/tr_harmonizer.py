@@ -604,8 +604,12 @@ class TRRecord:
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
-        The dictionary of FORMAT fields at this locus, each corresponding
-        to an array with rows correpsonding to samples
+        The dictionary of FORMAT fields at this locus.
+        Numeric format fields are 2D numpy arrays with rows corresponding
+        to samples (normally 1 column, but if there are multiple numbers
+        then more than one column)
+        String format fields are 1D numpy arrays with entries corresponding
+        to samples
 
     Other Parameters
     ----------------
@@ -746,6 +750,32 @@ class TRRecord:
                     raise ValueError(("Could not find alt allele {} "
                                       "inside its full alt "
                                       "allele").format(idx))
+
+    def GetMaxPloidy(self) -> int:
+        """
+        Return the maximum ploidy at this locus.
+
+        All genotypes will be a tuple of that many haplotypes,
+        with some haplotypes at the end of the call being set to ''
+        (for string genotypes) or -1 (for index or length genotypes)
+        for calls with lower ploidy than the maximum ploidy out of all
+        calls
+        """
+        return self.vcfrecord.ploidy
+
+    def GetCallRate(self) -> float:
+        """
+        Return the call rate at this locus.
+        """
+        return self.vcfrecord.call_rate
+
+    def GetNumSamples(self) -> int:
+        """
+        Return the number of samples at this locus (called or not).
+
+        Same as the number of samples in the overall vcf
+        """
+        return self.vcfrecord.genotype.n_samples
 
     def GetGenotypeIndicies(self) -> Optional[np.ndarray]:
         """
