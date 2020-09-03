@@ -193,14 +193,6 @@ def PlotKDE(data: np.ndarray,
 
     n_strata = data.shape[1]
 
-    # only train on up to 1k loci for speed
-    max_loci = int(1e3)
-    if data.shape[0] > max_loci:
-        rng = numpy.random.default_rng(random_state)
-        train_data = data[rng.choice(data.shape[0], size=max_loci, replace=False), :]
-    else:
-        train_data = data
-
     fig, ax = plt.subplots()
     ax.set_title(title)
     ax.set_xlabel(xlabel)
@@ -208,8 +200,17 @@ def PlotKDE(data: np.ndarray,
 
     # Fit and plot each stratum individually
     for col in range(n_strata):
-        stratum = train_data[:, col]
+        stratum = data[:, col]
         stratum = stratum[~np.isnan(stratum)]
+        # only train on up to 1k loci for speed. Select a random subset
+        # it would be nice to train on the same subset of loci for each strata
+        # but that isn't feasible if some strata have many more nan's than
+        # others
+        max_loci = int(1e3)
+        if len(stratum) > max_loci:
+            rng = numpy.random.default_rng(random_state)
+            stratum = stratum[rng.choice(len(stratum), size=max_loci, replace=False)]
+
         # Handle case when data is all the same
         if np.all(stratum == stratum[0]):
             common.WARNING("Omitting strata {} from graph {} because all the "

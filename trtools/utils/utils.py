@@ -35,7 +35,8 @@ def LoadSingleReader(
     reader : Optional[cyvcf2.VCF]
         The cyvcf2.VCF instance, or None if the VCF is not present
     """
-    if not os.path.isfile(vcf_loc):
+    if not os.path.exists(vcf_loc):
+        print(vcf_loc)
         common.WARNING("Could not find VCF file %s"%vcf_loc)
         return None
     if checkgz:
