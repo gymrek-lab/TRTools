@@ -45,9 +45,9 @@ def PlotAlleleFreqs(trrecord,
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
     sampleprefixes : list of str, optional
           Prefixes for each sample list to use in legend
@@ -113,9 +113,9 @@ def GetThresh(trrecord: trh.TRRecord, sample_indexes: List[Any] = [None]) -> Lis
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
 
     Returns
@@ -140,9 +140,9 @@ def GetAFreq(trrecord: trh.TRRecord,
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
     count:
           If True, return allele counts rather than allele frequencies
@@ -188,15 +188,15 @@ def GetHWEP(trrecord: trh.TRRecord,
           The record that we are computing the statistic for
     sample_index:
           List of list of the samples that we include when compute the statistic
-     sample_indexes:
+    sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
-   uselength:
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
@@ -228,15 +228,15 @@ def GetHet(trrecord: trh.TRRecord,
           The record that we are computing the statistic for
     sample_index:
           List of list of the samples that we include when compute the statistic
-      sample_indexes:
+    sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
-  uselength:
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
@@ -267,15 +267,15 @@ def GetEntropy(trrecord: trh.TRRecord,
           The record that we are computing the statistic for
     sample_index:
           List of list of the samples that we include when compute the statistic
-     sample_indexes:
+    sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
-   uselength:
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
@@ -305,9 +305,9 @@ def GetMean(trrecord: trh.TRRecord,
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
 
     Returns
@@ -340,9 +340,9 @@ def GetMode(trrecord: trh.TRRecord,
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
 
     Returns
@@ -367,9 +367,9 @@ def GetVariance(trrecord: trh.TRRecord,
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
 
     Returns
@@ -392,9 +392,9 @@ def GetNumSamples(trrecord, sample_indexes=[None]):
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
           (e.g. [[True, False, False], [False, True, True]] or
-                [[0], [1,2]]
-                to split three samples into two strata - the first sample
-                and the last two)
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
           Can contain None for all samples.
 
     Returns
