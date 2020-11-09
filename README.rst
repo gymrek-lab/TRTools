@@ -26,21 +26,30 @@ See full documentation and examples at https://trtools.readthedocs.io/en/latest/
 Install
 -------
 
-You can install TRTools with conda::
+With conda
+^^^^^^^^^^
+
+::
 
         conda install -c bioconda trtools
 
-Note: Bioconda only supports python versions 3.6 and 3.7 currently,
+Note: Bioconda `only supports <https://bioconda.github.io/user/versions.html#python>`_ python versions 3.6 and 3.7 currently,
 so that is all TRTools supports in conda.
 If you are using a different version of python we support (3.5 or >= 3.8),
 install TRTools using pip.
 
-You can alternatively obtain TRTools from pip::
+With pip
+^^^^^^^^
+
+::
 
         pip install --upgrade pip
         pip install trtools
 
-(Note: trtools installation may fail for pip version 10.0.1, hence the need to upgrade pip first)
+Note: TRTools installation may fail for pip version 10.0.1, hence the need to upgrade pip first
+
+From source
+^^^^^^^^^^^
 
 To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
 checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
@@ -48,9 +57,11 @@ checkout the branch you're interested in, and run the following command from the
         git clone https://github.com/gymreklab/TRTools
         cd TRTools/
         pip install --upgrade pip
-        pip install .
+        pip install -e .
 
-(Note, required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.)
+Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
+
+Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing
 
 Tools
 -----
@@ -106,41 +117,40 @@ Development Notes
 * TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library, which is prohibitively slow for biobank scale VCFs. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_ which is over ten times faster.
 * CompareSTR currently only compares STR loci between two callsets if they have the same start and end coordinates. In the future we will add the capacity to take in a user specificied mapping of loci between the two callsets and use that to compare loci even if they don't completely overlap one another.
 
+Contact Us
+----------
+Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
 
 Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
 1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
-#. Create a clean environment with the dependencies in requirements.txt installed.
+#. Install TRTools from source `as above <From source_>`_.
 #. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ and :code:`sphinx>=3` in your environment.
-#. Fork the trtools repository. 
+#. Fork the TRTools repository.
 #. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
 #. Make your changes. 
 #. Document your changes.
 
-  * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+   * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 
-    If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
+   * If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
 
-  * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
+   * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
+     :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
 
-    :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
+#. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
-8. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
+   * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
-  * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
-
-9. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
+#. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
 ----------
-If you are a trtools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
+If you are a TRTools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
 please see PUBLISHING.rst in the root of the git repo.
 If you are a community member and would like that to happen, contact us (see below).
 
-Contact Us
-----------
-Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
 
