@@ -41,7 +41,7 @@ class Filter_MinLocusCallrate(Base):
 
     name = 'CALLRATE'
     """The name of the filter"""
- 
+
     def __init__(self, min_locus_callrate):
         self.threshold = min_locus_callrate
 
@@ -62,7 +62,7 @@ class Filter_MinLocusHWEP(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -71,7 +71,7 @@ class Filter_MinLocusHWEP(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HWE'
@@ -101,7 +101,7 @@ class Filter_MinLocusHet(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -110,7 +110,7 @@ class Filter_MinLocusHet(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HETLOW'
@@ -139,7 +139,7 @@ class Filter_MaxLocusHet(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -148,7 +148,7 @@ class Filter_MaxLocusHet(Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HETHIGH'
@@ -174,7 +174,7 @@ class Filter_LocusHrun(Base):
 
     This class extends Base
     """
-    
+
     name = 'HRUN'
     """The name of the filter"""
 
@@ -289,7 +289,7 @@ class CallFilterMinValue(Reason):
     Parameters
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
@@ -299,18 +299,18 @@ class CallFilterMinValue(Reason):
     Attributes
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
     threshold : float
-        The minimum allowed value for the field.    
+        The minimum allowed value for the field.
 
     Examples
     --------
     >>> min_dp_filt = CallFilterMinValue("LOWDP","DP",10)
     """
-    
+
     def __init__(self, name, field, threshold):
         self.name = name
         self.field = field
@@ -332,7 +332,7 @@ class CallFilterMaxValue(Reason):
     Parameters
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
@@ -342,12 +342,12 @@ class CallFilterMaxValue(Reason):
     Attributes
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
     threshold : float
-        The maximum allowed value for the field.    
+        The maximum allowed value for the field.
 
     Examples
     --------
@@ -380,13 +380,13 @@ class HipSTRCallFlankIndels(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
-    
+
     Attributes
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
     """
-    
+
     name = "HipSTRCallFlankIndels"
     """The name of the filter"""
 
@@ -410,13 +410,13 @@ class HipSTRCallStutter(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
-    
+
     Attributes
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
     """
-    
+
     name = "HipSTRCallStutter"
     """The name of the filter"""
 
@@ -440,7 +440,7 @@ class HipSTRCallMinSuppReads(Reason):
     ----------
     threshold : int
         Minimum number of reads supporting each allele
-    
+
     Attributes
     ----------
     threshold : int
@@ -493,7 +493,7 @@ class GangSTRCallExpansionProbHom(Reason):
     ----------
     threshold : float
         Minimum homozygous expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -524,7 +524,7 @@ class GangSTRCallExpansionProbHet(Reason):
     ----------
     threshold : float
         Minimum heterozygous expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -555,7 +555,7 @@ class GangSTRCallExpansionProbTotal(Reason):
     ----------
     threshold : float
         Minimum expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -581,7 +581,7 @@ class GangSTRCallSpanOnly(Reason):
     Extends Reason class. Based on RC field.
 
     """
-    
+
     name = "GangSTRCallSpanOnly"
     def __init__(self):
         pass
@@ -672,9 +672,9 @@ class GangSTRCallRequireSupport(Reason)
     threshold : int
        Minimum required number of supporting reads
     readlen : int
-       Read length used for GangSTR calling. 
+       Read length used for GangSTR calling.
     """
-    
+
     name = "GangSTRCallRequireSupport"
     """The name of the filter"""
 
@@ -718,7 +718,7 @@ class GangSTRCallRequireSupport(Reason)
 ###############################
 # ExpansionHunter call-level filters
 ###############################
-    
+
 ###############################
 # PopSTR call level filters
 ###############################
@@ -739,7 +739,7 @@ class PopSTRCallRequireSupport(Reason):
     threshold : int
        Require this many reads supporting each called allele.
     """
-    
+
     name = "PopSTRCallRequireSupport"
     """The name of the filter"""
 

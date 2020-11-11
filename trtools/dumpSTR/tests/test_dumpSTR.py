@@ -58,6 +58,10 @@ def args(tmpdir):
     args.verbose = False
     return args
 
+@pytest.fixture
+def testfiledir(vcfdir):
+    return vcfdir + "/dumpSTR_vcfs"
+
 # Test no such file or directory
 def test_WrongFile(args, vcfdir):
     fname = os.path.join(vcfdir, "test_non_existent.vcf")
@@ -411,149 +415,67 @@ def test_BrokenVCF(args, vcfdir):
     args.verbose = True
     assert main(args)==1
 
+
+
+
 """
-def test_Filters(args, vcfdir):
-    fname = os.path.join(vcfdir, "artificial_gangstr.vcf")
-    args.vcf = fname
-    args.vcftype = "gangstr"
-    artificial_vcf = vcf.Reader(filename=args.vcf)
-
-    ## Test1: call passes with no filter
-    vcfcall = vcf.model._Call # Blank call
-    call_filters = []
-    reasons1 = FilterCall(vcfcall, call_filters)
-    assert reasons1==[]
-
-    # Line 1 of artificial vcf
-    record1 = next(artificial_vcf)
-    call1 = record1.samples[0]
-
-    ## Check call1 attributes:
-    assert record1.CHROM=='chr1'
-    assert record1.POS==3004986
-    assert record1.REF=='tctgtctgtctg'
-    assert record1.INFO['RU']=='tctg'
-    assert call1['DP']==31
-    assert call1['Q']==0.999912
-    assert call1['QEXP']==[0.0, 5.1188e-05, 0.999949]
-    assert call1['RC']=='17,12,0,2'
-
-    ## Test2: call filter: LowCallDepth
-    vcfcall = call1
-    args = base_argparse()
-    args.min_call_DP = 50
-    call_filters = BuildCallFilters(args)
-    reasons2 = FilterCall(vcfcall, call_filters)
-    assert reasons2==['LowCallDepth']
-
-    ## Test3: call filter: HighCallDepth
-    vcfcall = call1
-    args = base_argparse()
-    args.max_call_DP = 10
-    call_filters = BuildCallFilters(args)
-    reasons3 = FilterCall(vcfcall, call_filters)
-    assert reasons3==['HighCallDepth']
-
-    ## Test4: call filter: LowCallQ
-    vcfcall = call1
-    args = base_argparse()
-    args.min_call_Q = 1
-    call_filters = BuildCallFilters(args)
-    reasons4 = FilterCall(vcfcall, call_filters)
-    assert reasons4==['LowCallQ']
-
-    ## Test4: call filter: LowCallQ
-    vcfcall = call1
-    args = base_argparse()
-    args.min_call_Q = 1
-    call_filters = BuildCallFilters(args)
-    reasons4 = FilterCall(vcfcall, call_filters)
-    assert reasons4==['LowCallQ']
-
-    ## Test5: call filter: ProbHom
-    vcfcall = call1
-    args = base_argparse()
-    args.expansion_prob_hom = 1
-    call_filters = BuildCallFilters(args)
-    reasons5 = FilterCall(vcfcall, call_filters)
-    assert reasons5==['ProbHom']
-
-    ## Test6: call filter: ProbHet
-    vcfcall = call1
-    args = base_argparse()
-    args.expansion_prob_het = 0.8
-    call_filters = BuildCallFilters(args)
-    reasons6 = FilterCall(vcfcall, call_filters)
-    assert reasons6==['ProbHet']
-
-    # Line 2 of artificial vcf
-    record2 = next(artificial_vcf)
-    call2 = record2.samples[0]
-
-    ## Check call2 attributes:
-    assert record2.CHROM=='chr1'
-    assert record2.POS==3005549
-    assert record2.REF=='aaaacaaaacaaaacaaaac'
-    assert record2.INFO['RU']=='aaaac'
-    assert call2['DP']==11
-    assert call2['Q']==1
-    assert call2['QEXP']==[0.8, 0.2, 0]
-    assert call2['RC']=='0,11,0,0'
-
-    ## Test7: call filter: ProbTotal
-    vcfcall = call2
-    args = base_argparse()
-    args.expansion_prob_total = 1
-    call_filters = BuildCallFilters(args)
-    reasons7 = FilterCall(vcfcall, call_filters)
-    assert reasons7==['ProbTotal']
-
-    ## Test8: call filter: filter span only
-    vcfcall = call1
-    args = base_argparse()
-    args.filter_span_only = True
-    call_filters = BuildCallFilters(args)
-    reasons71 = FilterCall(vcfcall, call_filters)
-    assert reasons71==[]
-
-    vcfcall = call2
-    args = base_argparse()
-    args.filter_span_only = True
-    call_filters = BuildCallFilters(args)
-    reasons72 = FilterCall(vcfcall, call_filters)
-    assert reasons72==['SpanOnly']
-
-    # Line 3 of artificial vcf
-    record3 = next(artificial_vcf)
-    call3 = record3.samples[0]
-
-    ## Check call2 attributes:
-    assert record3.CHROM=='chr1'
-    assert record3.POS==3009351
-    assert record3.REF=='tgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtg'
-    assert record3.INFO['RU']=='tg'
-    assert call3['DP']==20
-    assert call3['RC']=='0,10,0,10'
-
-    ## Test8: call filter: filter span-bound only
-    vcfcall = call1
-    args = base_argparse()
-    args.filter_spanbound_only = True
-    call_filters = BuildCallFilters(args)
-    reasons81 = FilterCall(vcfcall, call_filters)
-    assert reasons81==[]
-
-    vcfcall = call2
-    args = base_argparse()
-    args.filter_spanbound_only = True
-    call_filters = BuildCallFilters(args)
-    reasons82 = FilterCall(vcfcall, call_filters)
-    assert reasons82==['SpanBoundOnly']
-
-    vcfcall = call3
-    args = base_argparse()
-    args.filter_spanbound_only = True
-    call_filters = BuildCallFilters(args)
-    reasons83 = FilterCall(vcfcall, call_filters)
-    assert reasons83==['SpanBoundOnly']
+These tests run dumpSTR and compare its output
+to output that has been generated by a pervious version of 
+dumpSTR and saved in the repo. The results are expected
+to be identical.
 """
+
+# fname1 should be the output file
+# fname2 should be the control file
+def _assert_same_file(fname1, fname2):
+    with open(fname1) as file1, open(fname2) as file2:
+        iter1 = iter(file1)
+        iter2 = iter(file2)
+        linenum = 0
+        while True:
+            file1ended = False
+            file2ended = False
+            try:
+                line1 = next(iter1)
+            except StopIteration:
+                file1ended = True
+            try:
+                line2 = next(iter2)
+            except StopIteration:
+                file2ended = True
+            if file1ended != file2ended:
+                if file1ended:
+                    raise ValueError(
+                        'Output file ' + fname1 + ' differs from control file '
+                        + fname2 + '. Output file ended after ' + str(linenum) +
+                        ' lines, but control file  did not'
+                    )
+                else:
+                    raise ValueError(
+                        'Output file ' + fname1 + ' differs from control file '
+                        + fname2 + '. Control file ended after ' + str(linenum) +
+                        ' lines, but output file did not'
+                    )
+            if file1ended and file2ended:
+                return
+
+            if line1 != line2:
+                print('Output file ' + fname1 + ' differs from control file'
+                      + fname2 + ' at line ' + str(linenum) + '.\nLine in output'
+                      ' file: ' + line1 + '\nLine in control file: ' + line2)
+
+
+def test_output_locus_filters(args, testfiledir):
+    args.vcf = testfiledir + '/trio_chr21_hipstr.sorted.vcf.gz'
+    args.min_locus_callrate = 0.5
+    args.min_locus_hwp = 0.5
+    args.min_locus_het = 0.05
+    args.max_locus_het = 0.45
+    args.filter_regions_names = 'foo_region'
+    args.filter_regions = testfiledir + '/sample_region.bed.gz'
+    args.vcftype = 'hipstr'
+
+    assert main(args) == 0
+    for ext in '.samplog.tab', '.loclog.tab', '.vcf':
+        _assert_same_file(args.out + ext, testfiledir + 'base_filters' + ext)
+

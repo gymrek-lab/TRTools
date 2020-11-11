@@ -1,0 +1,2 @@
+sample	numcalls	meanDP	GangSTRCallMinDepth	GangSTRCallMaxDepth	GangSTRCallMinQ	GangSTRCallExpansionProbHet	GangSTRCallExpansionProbHom	GangSTRCallExpansionProbTotal	GangSTRCallSpanOnly	GangSTRCallSpanBoundOnly	GangSTRCallBadCI	GangSTRCallRequireSupport
+BXD196_0366	185	28.043243243243243	113	238	700	1816	393	245	106	157	8	679

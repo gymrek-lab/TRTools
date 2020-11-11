@@ -717,13 +717,13 @@ def BuildLocusFilters(args, vcftype: trh.VcfTypes):
         filter_list.append(filters.Filter_MinLocusCallrate(args.min_locus_callrate))
     if args.min_locus_hwep is not None:
         filter_list.append(filters.Filter_MinLocusHWEP(args.min_locus_hwep,
-                                                       vcftype, args.use_length))
+                                                       args.use_length))
     if args.min_locus_het is not None:
         filter_list.append(filters.Filter_MinLocusHet(args.min_locus_het,
-                                                      vcftype, args.use_length))
+                                                      args.use_length))
     if args.max_locus_het is not None:
         filter_list.append(filters.Filter_MaxLocusHet(args.max_locus_het,
-                                                      vcftype, args.use_length))
+                                                      args.use_length))
     if args.filter_hrun:
         filter_list.append(filters.Filter_LocusHrun())
     if args.filter_regions is not None:
@@ -843,18 +843,29 @@ def main(args):
     except ValueError:
         return 1
     filter_list = BuildLocusFilters(args, vcftype)
-    invcf.filters = {}
     for f in filter_list:
-        short_doc = f.__doc__ or ''
-        short_doc = short_doc.split('\n')[0].lstrip()
-        invcf.filters[f.filter_name()] = _Filter(f.filter_name(), short_doc)
+        # TODO no longer removing old filter definitions
+        invcf.add_filter_to_header({
+            "ID": f.name,
+            "Description": ''
+        })
 
     # Set up call-level filters
     call_filters = BuildCallFilters(args)
+    filter_format_field = False
+    for header_line in invcf.header_iter():
+        if header_line['HeaderType'] == 'FORMAT':
+            if header_line['ID'] == 'FILTER':
+                filter_format_field = True
+                break
 
-    # Add new FORMAT fields
-    if "FILTER" not in invcf.formats:
-        invcf.formats["FILTER"] = _Format("FILTER", 1, "String", "Call-level filter")
+    if not filter_format_field:
+        invcf.add_format_to_header({
+            'ID': 'FILTER',
+            'Description': 'Call-level filters that have been applied',
+            'Type': str,
+            'Number': 1
+        })
 
     # Add new INFO fields
     invcf.infos["AC"] = _Info("AC", -1, "Integer", "Alternate allele counts", source=None, version=None)

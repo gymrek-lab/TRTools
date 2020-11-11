@@ -45,7 +45,7 @@ These filters are not specific to any tool and can be applied to any VCF file:
 * :code:`--min-locus-het <float>`: Filters loci with low heteroyzgosity. Where heterozygosity is equal to: 1-sum_i p_i^2, where p_i is the frequency of allele i
 * :code:`--max-locus-het <float>`: Filters loci with high heterozygosity
 * :code:`--use-length`: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles)
-* :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed. 
+* :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed.
 * :code:`--filter-regions-names <string[,string2,...]>`: Filter names for each BED file specified in :code:`--filter-regions`.
 * :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
 * :code:`--drop-filtered`: Do not output loci that were filtered, or loci with no calls remaining after filtering.
@@ -57,50 +57,52 @@ Call-level filters
 
 Different call-level filters are available for each supported TR genotyping tool:
 
+AdVNTR call-level filters
+**************************
+* :code:`--advntr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
+* :code:`--advntr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
+* :code:`--advntr-min-spanning <int>`: Minimum spanning read count (SR field)
+* :code:`--advntr-min-flanking <int>`: Minimum flanking read count (FR field)
+* :code:`--advntr-min-ML <float>`: Minimum value of maximum likelihood (ML field)
+
+
+ExpansionHunter call-level filters
+**********************************
+* :code:`--eh-min-ADFL <int>`: Minimum number of flanking reads consistent with the allele. Based on ADFL field.
+* :code:`--eh-min-ADIR <int>`: Minimum number of in-repeat reads consistent with the allele. Based on ADIR field.
+* :code:`--eh-min-ADSP <int>`: Minimum number of spanning reads consistent with the allele. Based on ADSP field.
+* :code:`--eh-min-call-LC <int>`: Minimum call coverage. Based on LC field.
+* :code:`--eh-max-call-LC <int>`: Maximum call coverage. Based on LC field.
+
+
 GangSTR call-level filters
 **************************
-* :code:`--gangstr-min-call-DP <int>`: Minimum call coverage. Based on DP field. 
-* :code:`--gangstr-max-call-DP <int>`: Maximum call coverage. Based on DP field. 
-* :code:`--gangstr-min-call-Q <float>`: Minimum call quality score. Based on Q field. 
-* :code:`--gangstr-expansion-prob-het <float>`: Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this. Based on QEXP field. 
-* :code:`--gangstr-expansion-prob-hom <float>`: Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this. Based on QEXP field. 
-* :code:`--gangstr-expansion-prob-total <float>`: Expansion prob-value threshold. Filters calls with probability of homozygous  or heterozygous expansion less than this. Based on QEXP field. 
-* :code:`--gangstr-filter-span-only`: Filter out all calls that only have spanning read support. Based on RC field. 
-* :code:`--gangstr-filter-spanbound-only`: Filter out all reads except spanning and bounding. Based on RC field.  
-* :code:`--gangstr-filter-badCI`: Filter regions where the ML estimate is not in the CI. Based on REPCN and REPCI fields. 
+* :code:`--gangstr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
+* :code:`--gangstr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
+* :code:`--gangstr-min-call-Q <float>`: Minimum call quality score. Based on Q field.
+* :code:`--gangstr-expansion-prob-het <float>`: Expansion prob-value threshold. Filters calls with probability of heterozygous expansion less than this. Based on QEXP field.
+* :code:`--gangstr-expansion-prob-hom <float>`: Expansion prob-value threshold. Filters calls with probability of homozygous expansion less than this. Based on QEXP field.
+* :code:`--gangstr-expansion-prob-total <float>`: Expansion prob-value threshold. Filters calls with probability of homozygous  or heterozygous expansion less than this. Based on QEXP field.
+* :code:`--gangstr-filter-span-only`: Filter out all calls that only have spanning read support. Based on RC field.
+* :code:`--gangstr-filter-spanbound-only`: Filter out all reads except spanning and bounding. Based on RC field.
+* :code:`--gangstr-filter-badCI`: Filter regions where the ML estimate is not in the CI. Based on REPCN and REPCI fields.
 * :code:`--gangstr-require-support <int>`: Require each allele call to have at least this many supporting reads. Based on ENCLREADS, RC, and FLNKREADS fields.
 * :code:`--gangstr-readlen <int>`: Read length used (bp). Required if using :code:`--require-support`.
 
 HipSTR call-level filters
 **************************
-* :code:`--hipstr-max-call-flank-indel <float>`: Maximum call flank indel rate. Computed as DFLANKINDEL/DP 
-* :code:`--hipstr-max-call-stutter <float>`: Maximum call stutter rate. PCR stutter artifacts add or remove copies of an STR's motif to sequencing reads, resulting in observed STR sizes that differ from the size of the underlying genotype. (`Source <https://www.nature.com/articles/nmeth.4267>`_). Computed as DSTUTTER/DP 
-* :code:`--hipstr-min-supp-reads <int>`: Minimum supporting reads for each allele. Based on ALLREADS and GB fields 
-* :code:`--hipstr-min-call-DP <int>`: Minimum call coverage. Based on DP field. 
-* :code:`--hipstr-max-call-DP <int>`: Maximum call coverage. Based on DP field. 
-* :code:`--hipstr-min-call-Q <float>`: Minimum call quality score. Based on Q field. 
+* :code:`--hipstr-max-call-flank-indel <float>`: Maximum call flank indel rate. Computed as DFLANKINDEL/DP
+* :code:`--hipstr-max-call-stutter <float>`: Maximum call stutter rate. PCR stutter artifacts add or remove copies of an STR's motif to sequencing reads, resulting in observed STR sizes that differ from the size of the underlying genotype. (`Source <https://www.nature.com/articles/nmeth.4267>`_). Computed as DSTUTTER/DP
+* :code:`--hipstr-min-supp-reads <int>`: Minimum supporting reads for each allele. Based on ALLREADS and GB fields
+* :code:`--hipstr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
+* :code:`--hipstr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
+* :code:`--hipstr-min-call-Q <float>`: Minimum call quality score. Based on Q field.
 
 PopSTR call-level filters
 **************************
-* :code:`--popstr-min-call-DP <int>`: Minimum call coverage. Based on DP field. 
-* :code:`--popstr-max-call-DP <int>`: Maximum call coverage. Based on DP field. 
+* :code:`--popstr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
+* :code:`--popstr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
 * :code:`--popstr-require-support <int>`: Require each allele call to have at least n supporting reads. Based on AD field.
-
-ExpansionHunter call-level filters
-**********************************
-* :code:`--eh-min-ADFL <int>`: Minimum number of flanking reads consistent with the allele. Based on ADFL field. 
-* :code:`--eh-min-ADIR <int>`: Minimum number of in-repeat reads consistent with the allele. Based on ADIR field. 
-* :code:`--eh-min-ADSP <int>`: Minimum number of spanning reads consistent with the allele. Based on ADSP field. 
-* :code:`--eh-min-call-LC <int>`: Minimum call coverage. Based on LC field. 
-* :code:`--eh-max-call-LC <int>`: Maximum call coverage. Based on LC field. 
-
-AdVNTR call-level filters
-**************************
-* :code:`--advntr-min-call-DP <int>`: Minimum call coverage. Based on DP field. 
-* :code:`--advntr-max-call-DP <int>`: Maximum call coverage. Based on DP field. 
-* :code:`--advntr-min-spanning <int>`: Minimum spanning read count (SR field) 
-* :code:`--advntr-min-flanking <int>`: Minimum flanking read count (FR field)  
-* :code:`--advntr-min-ML <float>`: Minimum value of maximum likelihood (ML field) 
 
 Output files
 ------------
@@ -130,4 +132,4 @@ Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data
 
   # PopSTR
   dumpSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100
-  
+
