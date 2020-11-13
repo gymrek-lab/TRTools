@@ -50,12 +50,21 @@ These filters are not specific to any tool and can be applied to any VCF file:
 * :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
 * :code:`--drop-filtered`: Do not output loci that were filtered, or loci with no calls remaining after filtering.
 
-TRs passing all locus-level filters will be marked as "PASS" in the FILTER field. Those failing will have a list of failing filters in the FILTER field. If :code:`drop-filtered` is specified, only loci passing all filters will be output.
+TRs passing all locus-level filters will be marked as "PASS" in the FILTER field.
+Those failing will have a list of failing filters in the FILTER field.
+If :code:`drop-filtered` is specified, only loci passing all filters will be output.
+Otherwise failing loci will be output as well. In that case the only
+indication that they have failed will be the FILTER field. The call-level genotypes will
+still be present in the output VCF.
 
 Call-level filters
 ^^^^^^^^^^^^^^^^^^^
 
-Different call-level filters are available for each supported TR genotyping tool:
+Different call-level filters are available for each supported TR genotyping tool.
+Genotypes which fail any call-level filters are replaced by no calls and the
+FILTER format field for that call is set to the reason(s) that call was filtered.
+Calls which were already nocalls before the dumpSTR run are left unchanged and
+their FILTER format field is set to NOCALL.
 
 AdVNTR call-level filters
 **************************
@@ -110,7 +119,9 @@ Output files
 DumpSTR outputs the following files:
 
 * :code:`$out.vcf`: Filtered VCF file. Filtered loci have a list of failing filters in the FILTER column. An additional FORMAT:FILTER field is added to each call. This is set to PASS for passing calls. For failing calls, this is set to a list of filter reasons and the genotype is set to missing.
-* :code:`$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample. This file also contains a column for each call-level filter indicating how many calls for that sample were filtered due to that reason. e.g. column "AdVNTRCallMinDepth" would indicate the number of adVNTR calls for that sample filtered due to low call depth (based on :code:`--advntr-min-call-DP`).
+* :code:`$out.samplog.tab`: Output sample-level log info. This is a tab-delimited file with columns: sample, number of calls, and mean coverage at that sample across calls that survived dumpSTR filtering.
+  This file also contains a column for each call-level filter indicating how many calls for that sample were filtered due to that reason. e.g. column "AdVNTRCallMinDepth" would indicate the number of adVNTR calls for that sample filtered due to low call depth (based on :code:`--advntr-min-call-DP`).
+  Some calls are filtered for more than one reason, so the sum of filtered calls across all reasons will likely be more than the number of filtered calls.
 * :code:`$out.loclog.tab`: Output locus-level log info. It contains the mean call rate at passing TR loci. It also contains a separate line for each filter with the number of TR loci failing that filter.
 
 Example Commands

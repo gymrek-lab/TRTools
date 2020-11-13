@@ -5,11 +5,13 @@ Tool for filtering and QC of TR genotypes
 
 # Load external libraries
 import argparse
-import inspect
+import itertools
 import os
-# Imports
 import sys
+from typing import Any, Dict, List, Set
 
+import cyvcf2
+import numpy as np
 import vcf
 from vcf.parser import _Filter, _Format, _Info
 
@@ -40,13 +42,11 @@ def MakeWriter(outfile, invcf, command):
        VCF writer initialized with header of input VCF
        Set to None if we had a problem writing the file
     """
-    invcf.metadata["command-DumpSTR"] = [command]
-    try:
-        writer = vcf.Writer(open(outfile, "w"), invcf)
-    except OSError as e:
-        common.WARNING(str(e))
-        writer = None
+    invcf.add_to_header("##command-DumpSTR=" + command)
+    writer = cyvcf2.Writer(outfile, invcf)
     return writer
+    # Are there opening exceptions we need to handle
+    # more gracefully?
 
 def CheckLocusFilters(args, vcftype):
     r"""Perform checks on user inputs for locus-level filters
@@ -94,13 +94,13 @@ def CheckLocusFilters(args, vcftype):
                 return False
     return True
 
-def CheckHipSTRFilters(invcf, args):
+def CheckHipSTRFilters(format_fields, args):
     r"""Check HipSTR call-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
+    format_fields :
+        The format fields used in this VCF
     args : argparse namespace
         Contains user arguments
 
@@ -114,27 +114,27 @@ def CheckHipSTRFilters(invcf, args):
         if args.hipstr_max_call_flank_indel < 0 or args.hipstr_max_call_flank_indel > 1:
             common.WARNING("--hipstr-max-call-flank-indel must be between 0 and 1")
             return False
-        assert "DP" in invcf.formats and "DFLANKINDEL" in invcf.formats # should always be true
+        assert "DP" in format_fields and "DFLANKINDEL" in format_fields # should always be true
     if args.hipstr_max_call_stutter is not None:
         if args.hipstr_max_call_stutter < 0 or args.hipstr_max_call_stutter > 1:
             common.WARNING("--hipstr-max-call-stutter must be between 0 and 1")
             return False
-        assert "DP" in invcf.formats and "DSTUTTER" in invcf.formats # should always be true
+        assert "DP" in format_fields and "DSTUTTER" in format_fields # should always be true
     if args.hipstr_min_supp_reads is not None:
         if args.hipstr_min_supp_reads < 0:
             common.WARNING("--hipstr-min-supp-reads must be >= 0")
             return False
-        assert "ALLREADS" in invcf.formats and "GB" in invcf.formats
+        assert "ALLREADS" in format_fields and "GB" in format_fields
     if args.hipstr_min_call_DP is not None:
         if args.hipstr_min_call_DP < 0:
             common.WARNING("--hipstr-min-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.hipstr_max_call_DP is not None:
         if args.hipstr_max_call_DP < 0:
             common.WARNING("--hipstr-max-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.hipstr_min_call_DP is not None and args.hipstr_max_call_DP is not None:
         if args.hipstr_max_call_DP < args.hipstr_min_call_DP:
             common.WARNING("--hipstr-max-call-DP must be >= --hipstr-min-call-DP")
@@ -143,16 +143,16 @@ def CheckHipSTRFilters(invcf, args):
         if args.hipstr_min_call_Q < 0 or args.hipstr_min_call_Q > 1:
             common.WARNING("--hipstr-min-call-Q must be between 0 and 1")
             return False
-        assert "Q" in invcf.formats
+        assert "Q" in format_fields
     return True
 
-def CheckGangSTRFilters(invcf, args):
+def CheckGangSTRFilters(format_fields, args):
     r"""Check GangSTR call-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
+    format_fields :
+        The format fields used in this VCF
     args : argparse namespace
         Contains user arguments
 
@@ -166,12 +166,12 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_min_call_DP < 0:
             common.WARNING("--gangstr-min-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.gangstr_max_call_DP is not None:
         if args.gangstr_max_call_DP < 0:
             common.WARNING("--gangstr-max-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.gangstr_min_call_DP is not None and args.gangstr_max_call_DP is not None:
         if args.gangstr_max_call_DP < args.gangstr_min_call_DP:
             common.WARNING("--gangstr-max-call-DP must be >= --gangstr-min-call-DP")
@@ -180,22 +180,23 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_min_call_Q < 0 or args.gangstr_min_call_Q > 1:
             common.WARNING("--gangstr-min-call-Q must be between 0 and 1")
             return False
-        assert "Q" in invcf.formats
+        assert "Q" in format_fields
     if args.gangstr_expansion_prob_het is not None:
         if args.gangstr_expansion_prob_het < 0 or args.gangstr_expansion_prob_het > 1:
             common.WARNING("--gangstr-expansion-prob-het must be between 0 and 1")
             return False
-        assert "QEXP" in invcf.formats
+        assert "QEXP" in format_fields
     if args.gangstr_expansion_prob_hom is not None:
         if args.gangstr_expansion_prob_hom < 0 or args.gangstr_expansion_prob_hom > 1:
             common.WARNING("--gangstr-expansion-prob-hom must be between 0 and 1")
             return False
-        assert "QEXP" in invcf.formats
+        assert "QEXP" in format_fields
     if args.gangstr_expansion_prob_total is not None:
         if args.gangstr_expansion_prob_total < 0 or args.gangstr_expansion_prob_total > 1:
             common.WARNING("--gangstr-expansion-prob-total must be between 0 and 1")
             return False
-        assert "QEXP" in invcf.formats
+        assert "QEXP" in format_fields
+    '''
     if args.gangstr_require_support is not None:
         if args.gangstr_require_support < 0:
             common.WARNING("--gangstr-require-support must be >= 0")
@@ -206,16 +207,17 @@ def CheckGangSTRFilters(invcf, args):
         if args.gangstr_readlen is not None and args.gangstr_readlen < 20:
             common.WARNING("--gangstr-readlen must be an integer value >= 20")
             return False
-        assert "ENCLREADS" in invcf.formats and "FLNKREADS" in invcf.formats and "RC" in invcf.formats
+        assert "ENCLREADS" in format_fields and "FLNKREADS" in format_fields and "RC" in format_fields
+    '''
     return True
 
-def CheckAdVNTRFilters(invcf, args):
+def CheckAdVNTRFilters(format_fields, args):
     r"""Check adVNTR call-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
+    format_fields :
+        The format fields used in this VCF
     args : argparse namespace
         Contains user arguments
 
@@ -229,12 +231,12 @@ def CheckAdVNTRFilters(invcf, args):
         if args.advntr_min_call_DP < 0:
             common.WARNING("--advntr-min-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.advntr_max_call_DP is not None:
         if args.advntr_max_call_DP < 0:
             common.WARNING("--advntr-max-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.advntr_min_call_DP is not None and args.advntr_max_call_DP is not None:
         if args.advntr_max_call_DP < args.advntr_min_call_DP:
             common.WARNING("--advntr-max-call-DP must be >= --advntr-min-call-DP")
@@ -243,27 +245,27 @@ def CheckAdVNTRFilters(invcf, args):
         if args.advntr_min_spanning < 0:
             common.WARNING("--advntr-min-spanning must be >=0")
             return False
-        assert "SR" in invcf.formats
+        assert "SR" in format_fields
     if args.advntr_min_flanking is not None:
         if args.advntr_min_flanking < 0:
             common.WARNING("--advntr-min-flanking must be >=0")
             return False
-        assert "FR" in invcf.formats
+        assert "FR" in format_fields
     if args.advntr_min_ML is not None:
         if args.advntr_min_ML < 0:
             common.WARNING("--advntr-min-ML must be >= 0")
             return False
-        assert "ML" in invcf.formats
+        assert "ML" in format_fields
     return True
 
 # TODO remove pragma line when EH implemented
-def CheckEHFilters(invcf, args): # pragma: no cover
+def CheckEHFilters(format_fields, args): # pragma: no cover
     r"""Check ExpansionHunter call-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
+    format_fields :
+        The format fields used in this VCF
     args : argparse namespace
         Contains user arguments
 
@@ -277,40 +279,40 @@ def CheckEHFilters(invcf, args): # pragma: no cover
         if args.eh_min_ADFL < 0:
             common.WARNING("--eh-min-ADFL must be >= 0")
             return False
-        assert "ADFL" in invcf.formats
+        assert "ADFL" in format_fields
     if args.eh_min_ADIR is not None:
         if args.eh_min_ADIR < 0:
             common.WARNING("--eh-min-ADIR must be >= 0")
             return False
-        assert "ADIR" in invcf.formats
+        assert "ADIR" in format_fields
     if args.eh_min_ADSP is not None:
         if args.eh_min_ADSP < 0:
             common.WARNING("--eh-min-ADSP must be >= 0")
             return False
-        assert "ADSP" in invcf.formats
+        assert "ADSP" in format_fields
     if args.eh_min_call_LC is not None:
         if args.eh_min_call_LC < 0:
             common.WARNING("--eh-min-call-LC must be >= 0")
             return False
-        assert "LC" in invcf.formats
+        assert "LC" in format_fields
     if args.eh_max_call_LC is not None:
         if args.eh_max_call_LC < 0:
             common.WARNING("--eh-max-call-LC must be >= 0")
             return False
-        assert "LC" in invcf.formats
+        assert "LC" in format_fields
     if args.eh_min_call_LC is not None and args.eh_max_call_LC is not None:
         if args.eh_max_call_LC < args.eh_min_call_LC:
             common.WARNING("--eh-max-call-LC must be >= --eh-min-call-LC")
             return False
     return True
 
-def CheckPopSTRFilters(invcf, args):
+def CheckPopSTRFilters(format_fields, args):
     r"""Check PopSTR call-level filters
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
+    format_fields :
+        The format fields used in this VCF
     args : argparse namespace
         Contains user arguments
 
@@ -324,12 +326,12 @@ def CheckPopSTRFilters(invcf, args):
         if args.popstr_min_call_DP < 0:
             common.WARNING("--popstr-min-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.popstr_max_call_DP is not None:
         if args.popstr_max_call_DP < 0:
             common.WARNING("--popstr-max-call-DP must be >= 0")
             return False
-        assert "DP" in invcf.formats
+        assert "DP" in format_fields
     if args.popstr_min_call_DP is not None and args.popstr_max_call_DP is not None:
         if args.popstr_max_call_DP < args.popstr_min_call_DP:
             common.WARNING("--popstr-max-call-DP must be >= --popstr-min-call-DP")
@@ -338,21 +340,24 @@ def CheckPopSTRFilters(invcf, args):
         if args.popstr_require_support < 0:
             common.WARNING("--popstr-require-support must be >= 0")
             return False
-        assert "AD" in invcf.formats
+        assert "AD" in format_fields
     return True
 
-def CheckFilters(invcf, args, vcftype):
-    r"""Perform checks on user input for filters
+def CheckFilters(format_fields: Set[str],
+                 args: argparse.Namespace,
+                 vcftype: trh.VcfTypes):
+    r"""Perform checks on user input for filters.
+
+    Assert that user input matches the type of the input vcf.
 
     Parameters
     ----------
-    invcf : str
-        vcf.Reader object
-    args : argparse namespace
+    format_fields :
+        The format fields used in this VCF
+    args :
         Contains user arguments
-    vcftype : enum.
+    vcftype :
         Specifies which tool this VCF came from.
-        Must be included in trh.VCFTYPES
 
     Returns
     -------
@@ -374,7 +379,7 @@ def CheckFilters(invcf, args, vcftype):
             common.WARNING("HipSTR options can only be applied to HipSTR VCFs")
             return False
         else:
-            if not CheckHipSTRFilters(invcf, args):
+            if not CheckHipSTRFilters(format_fields, args):
                 return False
 
     # Check GangSTR specific filters
@@ -387,13 +392,13 @@ def CheckFilters(invcf, args, vcftype):
        args.gangstr_filter_span_only or \
        args.gangstr_filter_spanbound_only or \
        args.gangstr_filter_badCI or \
-       args.gangstr_require_support is not None or \
        args.gangstr_readlen is not None:
+        # args.gangstr_require_support is not None or \
         if vcftype != trh.VcfTypes["gangstr"]:
             common.WARNING("GangSTR options can only be applied to GangSTR VCFs")
             return False
         else:
-            if not CheckGangSTRFilters(invcf, args):
+            if not CheckGangSTRFilters(format_fields, args):
                 return False
 
     # Check adVNTR specific filters
@@ -406,7 +411,7 @@ def CheckFilters(invcf, args, vcftype):
             common.WARNING("adVNTR options can only be applied to adVNTR VCFs")
             return False
         else:
-            if not CheckAdVNTRFilters(invcf, args):
+            if not CheckAdVNTRFilters(format_fields, args):
                 return False
 
     # Check EH specific filters
@@ -419,7 +424,7 @@ def CheckFilters(invcf, args, vcftype):
             common.WARNING("ExpansionHunter options can only be applied to ExpansionHunter VCFs")
             return False
         else:  # pragma: no cover
-            if not CheckEHFilters(invcf, args):  # pragma: no cover
+            if not CheckEHFilters(format_fields, args):  # pragma: no cover
                 return False  # pragma: no cover
 
     # Check popSTR specific filters
@@ -430,7 +435,7 @@ def CheckFilters(invcf, args, vcftype):
             common.WARNING("popSTR options can only be applied to popSTR VCFs")
             return False
         else:
-            if not CheckPopSTRFilters(invcf, args):
+            if not CheckPopSTRFilters(format_fields, args):
                 return False
     return True
 
@@ -464,37 +469,43 @@ def WriteLocLog(loc_info, fname):
     f.close()
     return True
 
-def WriteSampLog(sample_info, reasons, fname):
-    r"""Write sample-level features to log file
+def WriteSampLog(sample_info: Dict[str, np.ndarray],
+                 sample_names: List[str],
+                 fname: str):
+    r"""Write sample-level features to log file.
 
     Parameters
     ----------
-    sample_info : dict of str->value
-        Dictionary of statistics for each sample
-    reasons: list of str
-        List of possible call filter reasons
+    sample_info :
+        Mapping from statistic name to 1D array of values per sample
+    sample_names:
+        List of sample names, same length as above arrays
     fname : str
         Output filename
-
-    Returns
-    -------
-    success : bool
-       Set to true if outputting the log was successful
     """
-    header = ["sample", "numcalls","meanDP"] + reasons
-    f = open(fname, "w")
-    f.write("\t".join(header)+"\n")
-    for s in sample_info:
-        assert "numcalls" in sample_info[s] and "totaldp" in sample_info[s]
-        numcalls = sample_info[s]["numcalls"]
-        if numcalls > 0:
-            meancov = sample_info[s]["totaldp"]*1.0/numcalls
-        else: meancov = 0
-        items = [s, numcalls, meancov]
-        for r in reasons: items.append(sample_info[s][r])
-        f.write("\t".join([str(item) for item in items])+"\n")
-    f.close()
-    return True
+    header = ["sample"]
+    header.extend(sample_info.keys())
+    header[header.index('totaldp')] = 'meanDP'
+    with open(fname, "w") as f:
+        f.write("\t".join(header)+"\n")
+        for samp_idx, s in enumerate(sample_names):
+            f.write(s)
+            f.write("\t")
+
+            numcalls = sample_info["numcalls"][samp_idx]
+            f.write(str(numcalls))
+            f.write("\t")
+
+            if numcalls > 0:
+                f.write(str(sample_info["totaldp"][samp_idx]*1.0/numcalls))
+            else:
+                f.write("0")
+
+            for filt_counts in itertools.islice(sample_info.values(), 2, None):
+                f.write("\t")
+                f.write(str(filt_counts[samp_idx]))
+            f.write("\n")
+
 
 def GetAllCallFilters(call_filters):
     r"""List all possible call filters
@@ -514,102 +525,178 @@ def GetAllCallFilters(call_filters):
         reasons.append(filt.name)
     return reasons
 
-def FilterCall(sample, call_filters):
-    r"""Apply call-level filters and return filter reason.
 
-    Parameters
-    ----------
-    sample : vcf._Call
-       The call to be filtered
-    call_filters : list of filters.Reason
-       List of call-level filters
+_NOCALL_INT_FORMAT_VAL = -2147483648
 
-    Returns
-    -------
-    reasons : list of str
-       List of string description of fitler reasons
-    """
-    reasons = []
-    for cfilt in call_filters:
-        if cfilt(sample) is not None: reasons.append(cfilt.GetReason())
-    return reasons
 
-def ApplyCallFilters(record, reader, call_filters, sample_info):
-    r"""Apply call-level filters to a record
+def ApplyCallFilters(record: trh.TRRecord,
+                     call_filters: List[filters.FilterBase],
+                     sample_info: Dict[str, np.ndarray],
+                     format_filter_field: str,
+                     sample_names: List[str]) -> trh.TRRecord:
+    r"""Apply call-level filters to a record.
 
-    Returns a new record with FILTER populated for each sample.
+    Returns a TRRecord object with the FILTER (or DUMPSTR_FILTER)
+    format field updated for each sample.
     Also updates sample_info with sample level stats
 
     Parameters
     ----------
-    record : vcf._Record
-       The record to apply filters to
-    reader : vcf.Reader
-       The vcf.Reader object we're reading from
-    call_filters : list of filters.Reason
+    record :
+       The record to apply filters to.
+       Note: once this method has been run, this object
+       will be in an inconsistent state. All further use
+       should be directed towards the returned TRRecord object.
+    call_filters :
        List of call filters to apply
-    sample_info : dict of str->value
-       Dictionary of sample stats to keep updated
+    sample_info :
+       Dictionary of sample stats to keep updated,
+       from name of filter to array of length nsamples
+       which counts the number of times that filter has been
+       applied to each sample across all loci
+    format_filter_field:
+        The format field to write to (either FILTER or DUMPSTR_FILTER)
+    sample_names:
+        Names of all the samples in the vcf. Used for formatting
+        error messages.
 
     Returns
     -------
-    new_record : vcf._Record
-       Modified record object with FILTER field set
+    trh.TRRecord
+        A reference to the same underlying cyvcf2.Variant object,
+        which has now been modified to contain all the new call-level
+        filters.
     """
-    # Add FILTER to end of formats
-    if "FILTER" in record.FORMAT:
-        samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':'))
-    else:
-        samp_fmt = vcf.model.make_calldata_tuple(record.FORMAT.split(':')+["FILTER"])
-        record.FORMAT = record.FORMAT+":FILTER"
-    for fmt in samp_fmt._fields:
-        if fmt == "FILTER":
-            samp_fmt._types.append("String")
-            samp_fmt._nums.append(1)
-        else:
-            entry_type = reader.formats[fmt].type
-            entry_num  = reader.formats[fmt].num
-            samp_fmt._types.append(entry_type)
-            samp_fmt._nums.append(entry_num)
-    # Get data
-    new_samples = []
-    for sample in record:
-        sampdat = []
-        if not sample.called:
-            for i in range(len(samp_fmt._fields)):
-                key = samp_fmt._fields[i]
-                if key == "FILTER":
-                    sampdat.append("NOCALL")
-                else: sampdat.append(sample[key])
-            call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
-            new_samples.append(call)
+    all_filter_text = np.empty((record.GetNumSamples()), 'U4')
+    nocalls = ~record.GetCalledSamples()
+
+    for filt in call_filters:
+        filt_output = filt(record)
+        # This will throw a TypeError if passed a non numeric
+        # array. Will need better logic here if we decide to create
+        # call level filters which return nonnumeric output
+        nans = np.isnan(filt_output)
+        if np.all(nans):
             continue
-        filter_reasons = FilterCall(sample, call_filters)
-        if len(filter_reasons) > 0:
-            for r in filter_reasons:
-                sample_info[sample.sample][r] += 1
-            for i in range(len(samp_fmt._fields)):
-                key = samp_fmt._fields[i]
-                if key == "GT":
-                    sampdat.append("./.")
-                else:
-                    if key == "FILTER": sampdat.append(",".join(filter_reasons))
-                    else: sampdat.append(None)
+        sample_info[filt.name] += np.logical_and(~nans, ~nocalls)
+        '''
+        TODO
+        filt_output_text = np.char.mod('%g', filt_output)
+        filt_output_text = np.char.add(filt.name, filt_output_text)
+        '''
+        # TODO remove this line
+        filt_output_text = np.full((record.GetNumSamples()), filt.name)
+        filt_output_text[nans] = ''
+        not_first_filter = np.logical_and(~nans, all_filter_text != '')
+        all_filter_text[not_first_filter] = \
+            np.char.add(all_filter_text[not_first_filter], ',')
+        all_filter_text = np.char.add(all_filter_text, filt_output_text)
+
+    # append NOCALL to each sample that has not been called
+    nocalls = ~record.GetCalledSamples()
+    if np.any(nocalls):
+        nocall_text = np.empty((nocalls.shape[0]), dtype='U6')
+        nocall_text[nocalls] = 'NOCALL'
+        # if there was already a no call, don't say we applied
+        # our filters to it
+        all_filter_text[nocalls] = ''
+        all_filter_text = np.char.add(all_filter_text, nocall_text)
+    all_filter_text[all_filter_text == ''] = 'PASS'
+    record.vcfrecord.set_format(
+        format_filter_field,
+        np.char.encode(all_filter_text)
+    )
+
+    extant_calls = all_filter_text == 'PASS'
+    sample_info['numcalls'] += extant_calls
+    dp_vals = None
+    try:
+        dp_vals = record.format['DP']
+    except KeyError:
+        dp_vals = record.format['LC']
+    except KeyError:
+        pass
+    if dp_vals is not None:
+        dp_vals = dp_vals.reshape(-1)
+        negative_dp_called_samples = np.logical_and(np.logical_and(
+                dp_vals < 0, dp_vals != _NOCALL_INT_FORMAT_VAL), extant_calls)
+        if np.any(negative_dp_called_samples):
+            raise ValueError(
+                "The following samples have calls but negative DP values "
+                "at chromosome {} pos {}: {}".format(
+                    record.chrom, record.pos,
+                    str(sample_names[negative_dp_called_samples]))
+            )
+        accumulate_dp_samples = np.logical_and(extant_calls, dp_vals > 0)
+        sample_info['totaldp'][accumulate_dp_samples] += \
+            dp_vals[accumulate_dp_samples]
+        sample_info['totaldp'][np.logical_and(extant_calls,
+            dp_vals == _NOCALL_INT_FORMAT_VAL)] = np.nan
+    else:
+        sample_info['totaldp'][:] = np.nan
+
+    filtered_samples = np.logical_and(
+            all_filter_text != 'PASS', all_filter_text != 'NOCALL'
+    )
+    if not np.any(filtered_samples):
+        return record #nothing else to do
+    
+    # mask the filtered genotypes
+    ploidy = record.GetMaxPloidy()
+    for idx in filtered_samples.nonzero()[0]:
+        record.vcfrecord.genotypes[idx] = [-1]*ploidy + [False]
+    # This line isn't actually a no-op, see docs here:
+    # https://github.com/brentp/cyvcf2/blob/master/docs/source/writing.rst
+    record.vcfrecord.genotypes = record.vcfrecord.genotypes
+
+    # mask all other format fields
+    for field in record.format:
+        if field == 'GT' or field == 'FILTER':
+            continue
+        vals = record.format[field]
+        # null the filtered values
+        # different null value for different array types
+        if vals.dtype.kind == 'U':
+            vals[filtered_samples] = '.'
+            vals = np.char.encode(vals)
+        elif vals.dtype.kind == 'f':
+            vals[filtered_samples] = np.nan
+        elif vals.dtype.kind == 'i':
+            vals[filtered_samples] = _NOCALL_INT_FORMAT_VAL
         else:
-            sample_info[sample.sample]["numcalls"] += 1
-            try:
-                sample_info[sample.sample]["totaldp"] += sample["DP"]
-            except AttributeError:
-                sample_info[sample.sample]["totaldp"] += sample["LC"] # EH has LC field
-            except AttributeError: pass # If no DP, or LC, no coverage data available
-            for i in range(len(samp_fmt._fields)):
-                key = samp_fmt._fields[i]
-                if key == "FILTER": sampdat.append("PASS")
-                else: sampdat.append(sample[key])
-        call = vcf.model._Call(record, sample.sample, samp_fmt(*sampdat))
-        new_samples.append(call)
-    record.samples = new_samples
-    return record
+            raise ValueError("Found an unexpected format dtype for"
+                             " format field " + field)
+        record.vcfrecord.set_format(field, vals)
+
+    # rebuild the TRRecord with the newly modified cyvcf2 vcfrecord
+    # TODO test that this works under all permuations of inputs
+    if record.HasFabricatedAltAlleles():
+        alt_alleles = None
+        alt_allele_lengths = record.alt_allele_lengths
+    else:
+        alt_alleles = record.alt_alleles
+        alt_allele_lengths = None
+    if record.HasFabricatedRefAllele():
+        ref_allele = None
+        ref_allele_length = record.ref_allele_length
+    else:
+        ref_allele = record.ref_allele
+        ref_allele_length = None
+
+    out_record = trh.TRRecord(
+        record.vcfrecord,
+        ref_allele,
+        alt_alleles,
+        record.motif,
+        record.record_id,
+        record.quality_field,
+        full_alleles=record.full_alleles,
+        ref_allele_length=ref_allele_length,
+        alt_allele_lengths=alt_allele_lengths,
+        quality_score_transform=record.quality_score_transform
+    )
+    return out_record
+
 
 def BuildCallFilters(args):
     r"""Build list of locus-level filters to include
@@ -659,8 +746,10 @@ def BuildCallFilters(args):
         filter_list.append(filters.GangSTRCallSpanBoundOnly())
     if args.gangstr_filter_badCI:
         filter_list.append(filters.GangSTRCallBadCI())
+    '''
     if args.gangstr_require_support is not None:
         filter_list.append(filters.GangSTRCallRequireSupport(args.gangstr_require_support, args.gangstr_readlen))
+    '''
 
     # adVNTR call-level filters
     if args.advntr_min_call_DP is not None:
@@ -781,7 +870,7 @@ def getargs(): # pragma: no cover
     gangstr_call_group.add_argument("--gangstr-filter-span-only", help="Filter out all calls that only have spanning read support", action="store_true")
     gangstr_call_group.add_argument("--gangstr-filter-spanbound-only", help="Filter out all reads except spanning and bounding", action="store_true")
     gangstr_call_group.add_argument("--gangstr-filter-badCI", help="Filter regions where the ML estimate is not in the CI", action="store_true")
-    gangstr_call_group.add_argument("--gangstr-require-support", help="Require each allele call to have at least n supporting reads", type=int)
+    # gangstr_call_group.add_argument("--gangstr-require-support", help="Require each allele call to have at least n supporting reads", type=int)
     gangstr_call_group.add_argument("--gangstr-readlen", help="Read length used (bp). Required if using --require-support", type=int)
 
     advntr_call_group = parser.add_argument_group("Call-level filters specific to adVNTR output")
@@ -831,11 +920,105 @@ def main(args):
                        "directory".format(args.out))
         return 1
 
+    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
+        common.WARNING("Output directory does not exist")
+        return 1
+
     # Set up record harmonizer and infer VCF type
-    vcftype = trh.InferVCFType(invcf, args.vcftype)
+    harmonizer = trh.TRRecordHarmonizer(invcf, args.vcftype)
+    vcftype = harmonizer.vcftype
+
+    format_fields = set()
+    info_fields = set()
+    for header_line in invcf.header_iter():
+        if header_line['HeaderType'] == 'INFO':
+            info_fields.add(header_line['ID'])
+        elif header_line['HeaderType'] == 'FORMAT':
+            format_fields.add(header_line['ID'])
 
     # Check filters all make sense
-    if not CheckFilters(invcf, args, vcftype): return 1
+    if not CheckFilters(format_fields, args, vcftype): return 1
+
+    # figure out which headers are already present
+    # TODO fix this section - what if the second val
+    # is already taken?
+    format_filter = False
+    info_hwep = False
+    info_het = False
+    info_hrun = False
+    for header_line in invcf.header_iter():
+        if header_line['HeaderType'] == 'FORMAT':
+            if header_line['ID'] == 'FILTER':
+                format_filter = True
+                break
+        if header_line['HeaderType'] == 'INFO':
+            if header_line['ID'] == 'HWEP':
+                info_hwep = True
+            elif header_line['ID'] == 'HET':
+                info_het = True
+            elif header_line['ID'] == 'HRUN':
+                info_HRUN = True
+
+    # Add new fields to header
+    # Make sure not to overwrite already existing fields, if present
+    # TODO document that we no longer overwrite fields
+    # TODO document that we no longer append to format filter
+    format_filter_field = 'FILTER'
+    if format_filter:
+        format_filter_field = 'DUMPSTR_FILTER'
+
+    info_hwep_field  = 'HWEP'
+    if info_hwep:
+        info_hwep_field = 'DUMPSTR_HWEP'
+
+    info_het_field  = 'HET'
+    if info_het:
+        info_het_field = 'DUMPSTR_HET'
+
+    info_hrun_field  = 'HRUN'
+    if info_hrun:
+        info_hrun_field = 'DUMPSTR_HRUN'
+
+    invcf.add_format_to_header({
+        'ID': format_filter_field,
+        #'Description': 'call-level filters that have been applied', # TODO
+        'Description': 'Call-level filter',
+        'Type': 'String',
+        'Number': 1
+    })
+    if 'AC' not in info_fields:
+        invcf.add_info_to_header({
+            'ID': 'AC',
+            'Description': 'Alternate allele counts',
+            'Type': 'Integer',
+            'Number': 'A'
+        })
+    if 'REFAC' not in info_fields:
+        invcf.add_info_to_header({
+            'ID': 'REFAC',
+            'Description': 'Reference allele count',
+            'Type': 'Integer',
+            'Number': 1
+        })
+    invcf.add_info_to_header({
+        'ID': info_het_field,
+        'Description': 'Heterozygosity',
+        'Type': 'Float',
+        'Number': 1
+    })
+    invcf.add_info_to_header({
+        'ID': info_hwep_field,
+        'Description': 'HWE p-value for obs. vs. exp het rate',
+        'Type': 'Float',
+        'Number': 1
+    })
+    invcf.add_info_to_header({
+        'ID': info_hrun_field,
+        'Description': 'Length of longest homopolymer run',
+        'Type': 'Integer',
+        'Number': 1
+    })
+
 
     # Set up locus-level filter list
     try:
@@ -844,49 +1027,29 @@ def main(args):
         return 1
     filter_list = BuildLocusFilters(args, vcftype)
     for f in filter_list:
-        # TODO no longer removing old filter definitions
+        # TODO document no longer removing old filter definitions
         invcf.add_filter_to_header({
-            "ID": f.name,
+            "ID": f.filter_name(), # 'HWE0.5', #f.name,
             "Description": ''
         })
 
     # Set up call-level filters
     call_filters = BuildCallFilters(args)
-    filter_format_field = False
-    for header_line in invcf.header_iter():
-        if header_line['HeaderType'] == 'FORMAT':
-            if header_line['ID'] == 'FILTER':
-                filter_format_field = True
-                break
-
-    if not filter_format_field:
-        invcf.add_format_to_header({
-            'ID': 'FILTER',
-            'Description': 'Call-level filters that have been applied',
-            'Type': str,
-            'Number': 1
-        })
-
-    # Add new INFO fields
-    invcf.infos["AC"] = _Info("AC", -1, "Integer", "Alternate allele counts", source=None, version=None)
-    invcf.infos["REFAC"] = _Info("REFAC", 1, "Integer", "Reference allele count", source=None, version=None)
-    invcf.infos["HET"] = _Info("HET", 1, "Float", "Heterozygosity", source=None, version=None)
-    invcf.infos["HWEP"] = _Info("HWEP", 1, "Float", "HWE p-value for obs. vs. exp het rate", source=None, version=None)
-    invcf.infos["HRUN"] = _Info("HRUN", 1, "Integer", "Length of longest homopolymer run", source=None, version=None)
 
     # Set up output files
-    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
-        common.WARNING("Output directory does not exist")
-        return 1
     outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
     if outvcf is None: return 1
 
     # Set up sample info
-    all_reasons = GetAllCallFilters(call_filters)
     sample_info = {}
-    for s in invcf.samples:
-        sample_info[s] = {"numcalls": 0, "totaldp": 0}
-        for r in all_reasons: sample_info[s][r]  = 0
+    # insert 'numcalls' and 'totaldp' in this order so that 
+    # they are printed out in the sample log in this order
+    sample_info['numcalls'] = np.zeros((len(invcf.samples)), dtype=int)
+    # use dtype float to allow for nan values
+    sample_info['totaldp'] = np.zeros((len(invcf.samples)), dtype=float)
+
+    for filter_name in GetAllCallFilters(call_filters):
+        sample_info[filter_name] = np.zeros((len(invcf.samples)), dtype=int)
 
     # Set up locus info
     loc_info = {"totalcalls": 0, "PASS": 0}
@@ -896,56 +1059,80 @@ def main(args):
     record_counter = 0
     while True:
         try:
-            record = next(invcf)
-        except IndexError:
-            common.WARNING("Skipping TR that couldn't be parsed by PyVCF. Check VCF format")
-            if args.die_on_warning: return 1
+            record = next(harmonizer)
+            # TODO does this ever throw errors? For improperly formatted VCFs?
         except StopIteration: break
         if args.verbose:
             common.MSG("Processing %s:%s"%(record.CHROM, record.POS))
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
-        record = ApplyCallFilters(record, invcf, call_filters, sample_info)
+        record = ApplyCallFilters(record, call_filters, sample_info,
+                                  format_filter_field, invcf.samples)
 
         # Locus-level filters
-        record.FILTER = None
-        output_record = True
+        dumpSTR_filtered = False
         for filt in filter_list:
-            if filt(record) == None: continue
-            if args.drop_filtered:
-                output_record = False
-                break
-            record.add_filter(filt.filter_name())
+            if filt(record) is None:
+                continue
             loc_info[filt.filter_name()] += 1
+            if not args.drop_filtered:
+                if not dumpSTR_filtered:
+                    record.vcfrecord.FILTER = filt.filter_name()
+                else:
+                    record.vcfrecord.FILTER += ';' + filt.filter_name()
+            dumpSTR_filtered = True
+
+        n_samples_called = np.sum(record.GetCalledSamples())
         if args.drop_filtered:
-            if record.call_rate == 0: output_record = False
-        if output_record:
-            trrecord = trh.HarmonizeRecord(vcftype, record)
-            # Recalculate locus-level INFO fields
-            record.INFO["HRUN"] = utils.GetHomopolymerRun(record.REF)
-            if record.num_called > 0:
-                allele_freqs = trrecord.GetAlleleFreqs(uselength=args.use_length)
-                genotype_counts = trrecord.GetGenotypeCounts(uselength=args.use_length)
-                record.INFO["HET"] = utils.GetHeterozygosity(allele_freqs)
-                record.INFO["HWEP"] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
-                record.INFO["AC"] = [int(item*(3*record.num_called)) for item in record.aaf]
-                record.INFO["REFAC"] = int((1-sum(record.aaf))*(2*record.num_called))
+            if n_samples_called == 0:
+                dumpSTR_filtered = True
+        if args.drop_filtered and dumpSTR_filtered:
+            continue
+
+        # Recalculate locus-level INFO fields
+        # TODO make calculating these fields optional
+        # and/or don't recalculate them, just use the values the filters have
+        # already calculated
+        if record.HasFullStringGenotypes():
+            record.vcfrecord.INFO[info_hrun_field] = \
+                utils.GetHomopolymerRun(record.full_alleles[0])
+        else:
+            record.vcfrecord.INFO[info_hrun_field] = \
+                utils.GetHomopolymerRun(record.ref_allele)
+        if n_samples_called > 0:
+            allele_freqs = record.GetAlleleFreqs(uselength=args.use_length)
+            genotype_counts = record.GetGenotypeCounts(uselength=args.use_length)
+            record.vcfrecord.INFO[info_het_field] = utils.GetHeterozygosity(allele_freqs)
+            record.vcfrecord.INFO[info_hwep_field] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
+            allele_counts = record.GetAlleleCounts(index = True)
+            n_alleles = len(record.alt_alleles) + 1
+            for idx in range(n_alleles):
+                if idx not in allele_counts:
+                    allele_counts[idx] = 0
+            if n_alleles == 1:
+                record.vcfrecord.INFO['AC'] = 0
             else:
-                record.INFO["HET"] = -1
-                record.INFO["HWEP"] = -1
-                record.INFO["AC"] = [0]*len(record.ALT)
-                record.INFO["REFAC"] = 0
-            # Recalc filter
-            if record.FILTER is None and not args.drop_filtered:
-                record.FILTER = "PASS"
-                loc_info["PASS"] += 1
-                loc_info["totalcalls"] += record.num_called
-            # Output the record
-            outvcf.write_record(record)
+                record.vcfrecord.INFO['AC'] = \
+                    ",".join([str(allele_counts[idx]) for idx in range(1, n_alleles)])
+            record.vcfrecord.INFO['REFAC'] = int(allele_counts[0])
+        else:
+            record.vcfrecord.INFO[info_het_field] = -1
+            record.vcfrecord.INFO[info_hwep_field] = -1
+            if len(record.alt_alleles) == 0:
+                record.vcfrecord.INFO['AC'] = 0
+            else:
+                record.vcfrecord.INFO['AC'] = ','.join(['0']*len(record.alt_alleles))
+            record.vcfrecord.INFO['REFAC'] = 0
+        if not dumpSTR_filtered:
+            record.vcfrecord.FILTER = "PASS"
+            loc_info["PASS"] += 1
+            loc_info["totalcalls"] += n_samples_called
+        # Output the record
+        outvcf.write_record(record.vcfrecord)
 
     # Output log info
-    WriteSampLog(sample_info, all_reasons, args.out + ".samplog.tab")
+    WriteSampLog(sample_info, invcf.samples, args.out + ".samplog.tab")
     WriteLocLog(loc_info, args.out+".loclog.tab")
 
     return 0

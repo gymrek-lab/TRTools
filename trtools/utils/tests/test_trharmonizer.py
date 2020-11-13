@@ -60,9 +60,9 @@ def get_dummy_record():
     )
 
 triploid_gts = np.array([
-    [0, 0, -1],
-    [0, 0, -1],
-    [0, 0, -1],
+    [0, 0, -2],
+    [0, 0, -2],
+    [0, 0, -2],
     [0, 0, 0]
 ])
 def get_triploid_record():
@@ -264,7 +264,7 @@ def test_TRRecord_GetGenotypes():
                 [alt_alleles[0], alt_alleles[0]],
                 [alt_alleles[0], alt_alleles[1]],
                 [alt_alleles[1], alt_alleles[1]],
-                [ref_allele, '']]
+                [ref_allele, '.']]
     true_gts = np.array(true_gts)
     true_len_gts = np.array([[3, 4], [4, 4], [4, 4], [4, 6], [6, 6], [3, -1]])
     assert np.all(rec.GetGenotypeIndicies()[:, :-1] ==
@@ -275,75 +275,77 @@ def test_TRRecord_GetGenotypes():
     # Test example where alt=[]
     triploid_record = get_triploid_record()
     rec = trh.TRRecord(triploid_record, ref_allele, [], "CAG", "", None)
-    called_indicies = triploid_gts != -1
-    called_indicies = np.concatenate((called_indicies,
-                                      np.zeros((4, 1), dtype=bool)),
-                                     axis=1)
-    assert np.all(rec.GetGenotypeIndicies()[called_indicies] == 0)
-    assert np.all(rec.GetLengthGenotypes()[called_indicies] == 3)
-    assert np.all(rec.GetStringGenotypes()[called_indicies] == ref_allele)
+    true_len_gts = [[3, 3, -2],
+                [3, 3, -2],
+                [3, 3, -2],
+                [3, 3, 3]]
+    true_len_gts = np.array(true_len_gts)
+    true_idx_gts = [[0, 0, -2],
+                    [0, 0, -2],
+                    [0, 0, -2],
+                    [0, 0, 0]]
+    true_idx_gts = np.array(true_idx_gts)
+    true_gts = [[ref_allele, ref_allele, ''],
+                [ref_allele, ref_allele, ''],
+                [ref_allele, ref_allele, ''],
+                [ref_allele, ref_allele, ref_allele]]
+    true_gts = np.array(true_gts)
+
+    assert np.all(rec.GetGenotypeIndicies()[:, :-1] == true_idx_gts)
+    assert np.all(rec.GetLengthGenotypes()[:, :-1] == true_len_gts)
+    assert np.all(rec.GetStringGenotypes()[:, :-1] == true_gts)
 
     # Test example with fewer alt_alleles than the max genotype index
     with pytest.raises(ValueError):
         trh.TRRecord(dummy_record, ref_allele, [], "CAG", "", None)
 
 
+def _dicts_equal(dict1, dict2):
+    return (all(k in dict2 and v == dict2[k] for k,v in dict1.items()) and
+            len(dict1) == len(dict2))
+
 def test_GetGenotypeCounts():
-    # Test working example, no sample_index
+    # Test working example, no sample_index,
+    # also a call with a missing haplotype
     dummy_record = get_dummy_record()
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    true_idx_counts = {(0, 1) : 1,
-                       (1, 1) : 2,
-                       (1, 2) : 1,
-                       (2, 2) : 1,
-                       (-1, 0) : 1}
+    true_idx_gt_counts = {(0, 1) : 1,
+                          (1, 1) : 2,
+                          (1, 2) : 1,
+                          (2, 2) : 1}
     true_gt_counts = {(ref_allele, alt_alleles[0]): 1,
                       (alt_alleles[0], alt_alleles[0]): 2,
                       (alt_alleles[0], alt_alleles[1]): 1,
-                      (alt_alleles[1], alt_alleles[1]): 1,
-                      ('', ref_allele): 1}
+                      (alt_alleles[1], alt_alleles[1]): 1}
     true_len_gt_counts = {
-        (3.0, 4.0): 1,
-        (4.0, 4.0): 2,
-        (4.0, 6.0): 1,
-        (6.0, 6.0): 1,
-        (-1.0, 3.0): 1
+        (3, 4): 1,
+        (4, 4): 2,
+        (4, 6): 1,
+        (6, 6): 1
     }
 
     gt_counts_uselength = rec.GetGenotypeCounts()
     gt_counts_nolength = rec.GetGenotypeCounts(uselength=False)
     gt_counts_idx = rec.GetGenotypeCounts(index=True)
-    assert (all(
-        v == true_idx_counts[k] for k, v in gt_counts_idx.items()
-    ) and len(gt_counts_idx) == len(true_idx_counts))
-    assert (all(
-        v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
-    ) and len(gt_counts_uselength) == len(true_len_gt_counts))
-    assert (all(
-        v == true_gt_counts[k] for k, v in gt_counts_nolength.items()
-    ) and len(gt_counts_nolength) == len(true_gt_counts))
+    assert _dicts_equal(true_idx_gt_counts, gt_counts_idx)
+    assert _dicts_equal(true_len_gt_counts, gt_counts_uselength)
+    assert _dicts_equal(true_gt_counts, gt_counts_nolength)
 
     # Test example where alt=[]
     triploid_record = get_triploid_record()
     rec = trh.TRRecord(triploid_record, ref_allele, [], "CAG", "", None)
-    true_idx_gt_counts = {(0, 0, 0): 1, (-1, 0, 0): 3}
-    true_len_gt_counts = {(3.0, 3.0, 3.0): 1, (-1.0, 3.0, 3.0): 3}
+    true_idx_gt_counts = {(0, 0, 0): 1, (-2, 0, 0): 3}
+    true_len_gt_counts = {(3, 3, 3): 1, (-2, 3, 3): 3}
     true_gt_counts = {(ref_allele, ref_allele, ref_allele): 1,
                       ('', ref_allele, ref_allele): 3}
     gt_counts_idx = rec.GetGenotypeCounts(index=True)
     gt_counts_uselength = rec.GetGenotypeCounts()
     gt_counts_nolength = rec.GetGenotypeCounts(uselength=False)
-    assert (all(
-        v == true_idx_gt_counts[k] for k, v in gt_counts_idx.items()
-    ) and len(gt_counts_idx) == len(true_idx_gt_counts))
-    assert (all(
-        v == true_len_gt_counts[k] for k, v in gt_counts_uselength.items()
-    ) and len(gt_counts_uselength) == len(true_len_gt_counts))
-    assert (all(
-        v == true_gt_counts[k] for k, v in gt_counts_nolength.items()
-    ) and len(gt_counts_nolength) == len(true_gt_counts))
+    assert _dicts_equal(true_idx_gt_counts, gt_counts_idx)
+    assert _dicts_equal(true_len_gt_counts, gt_counts_uselength)
+    assert _dicts_equal(true_gt_counts, gt_counts_nolength)
 
     # Test example where there are no samples
     rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
@@ -356,11 +358,10 @@ def test_GetGenotypeCounts():
     assert len(rec.GetGenotypeCounts(uselength=True, include_nocalls=True)) == 1
 
     # Test working example with sample_index
-    true_idx_gt_counts_sindex = {(0, 1): 1, (1, 1): 1, (-1, 0): 1}
+    true_idx_gt_counts_sindex = {(0, 1): 1, (1, 1): 1}
     true_gt_counts_sindex = {(ref_allele, alt_alleles[0]): 1,
-                            (alt_alleles[0], alt_alleles[0]): 1,
-                            ('', ref_allele): 1}
-    true_len_gt_counts_sindex = {(3, 4): 1, (4, 4): 1, (-1, 3): 1}
+                            (alt_alleles[0], alt_alleles[0]): 1}
+    true_len_gt_counts_sindex = {(3, 4): 1, (4, 4): 1}
     sindex = [0, 2, 5]
     dummy_record = get_dummy_record()
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
@@ -368,18 +369,9 @@ def test_GetGenotypeCounts():
     gt_counts_uselength_sindex = rec.GetGenotypeCounts(sample_index=sindex)
     gt_counts_nolength_sindex = rec.GetGenotypeCounts(sample_index=sindex,
                                                      uselength=False)
-    assert (all(
-        v == true_idx_gt_counts_sindex[k] for k, v in
-        gt_counts_idx_sindex.items()
-    ) and len(gt_counts_idx_sindex) == len(true_idx_gt_counts_sindex))
-    assert (all(
-        v == true_len_gt_counts_sindex[k] for k, v in
-        gt_counts_uselength_sindex.items()
-    ) and len(gt_counts_uselength_sindex) == len(true_len_gt_counts_sindex))
-    assert (all(
-        v == true_gt_counts_sindex[k] for k, v
-        in gt_counts_nolength_sindex.items()
-    ) and len(gt_counts_nolength_sindex) == len(true_gt_counts_sindex))
+    assert _dicts_equal(true_idx_gt_counts_sindex, gt_counts_idx_sindex)
+    assert _dicts_equal(true_len_gt_counts_sindex, gt_counts_uselength_sindex)
+    assert _dicts_equal(true_gt_counts_sindex, gt_counts_nolength_sindex)
 
 
 def test_GetAlleleCounts():
@@ -395,15 +387,9 @@ def test_GetAlleleCounts():
     al_counts_uselength = rec.GetAlleleCounts()
     al_counts_nolength = rec.GetAlleleCounts(uselength=False)
     al_counts_idx = rec.GetAlleleCounts(index=True)
-    assert (all(
-        v == true_idx_al_counts[k] for k, v in al_counts_idx.items()
-    ) and len(al_counts_idx) == len(true_idx_al_counts))
-    assert (all(
-        v == true_len_al_counts[k] for k, v in al_counts_uselength.items()
-    ) and len(al_counts_uselength) == len(true_len_al_counts))
-    assert (all(
-        v == true_al_counts[k] for k, v in al_counts_nolength.items()
-    ) and len(al_counts_nolength) == len(true_al_counts))
+    assert _dicts_equal(true_idx_al_counts, al_counts_idx)
+    assert _dicts_equal(true_len_al_counts, al_counts_uselength)
+    assert _dicts_equal(true_al_counts, al_counts_nolength)
 
     # Test example where alt=[]
     rec = trh.TRRecord(get_triploid_record(), ref_allele, [], "CAG", "", None)
@@ -413,15 +399,9 @@ def test_GetAlleleCounts():
     al_counts_idx = rec.GetAlleleCounts(index=True)
     al_counts_uselength = rec.GetAlleleCounts()
     al_counts_nolength = rec.GetAlleleCounts(uselength=False)
-    assert (all(
-        v == true_idx_al_counts[k] for k, v in al_counts_idx.items()
-    ) and len(al_counts_idx) == len(true_idx_al_counts))
-    assert (all(
-        v == true_len_al_counts[k] for k, v in al_counts_uselength.items()
-    ) and len(al_counts_uselength) == len(true_len_al_counts))
-    assert (all(
-        v == true_al_counts[k] for k, v in al_counts_nolength.items()
-    ) and len(al_counts_nolength) == len(true_al_counts))
+    assert _dicts_equal(true_idx_al_counts, al_counts_idx)
+    assert _dicts_equal(true_len_al_counts, al_counts_uselength)
+    assert _dicts_equal(true_al_counts, al_counts_nolength)
 
     # Test example where there are no samples
     rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
@@ -439,18 +419,9 @@ def test_GetAlleleCounts():
     al_counts_uselength_sindex = rec.GetAlleleCounts(sample_index=sindex)
     al_counts_nolength_sindex = rec.GetAlleleCounts(sample_index=sindex,
                                                    uselength=False)
-    assert (all(
-        v == true_idx_al_counts_sindex[k] for k, v in
-        al_counts_idx_sindex.items()
-    ) and len(al_counts_idx_sindex) == len(true_idx_al_counts_sindex))
-    assert (all(
-        v == true_len_al_counts_sindex[k] for k, v in
-        al_counts_uselength_sindex.items()
-    ) and len(al_counts_uselength_sindex) == len(true_len_al_counts_sindex))
-    assert (all(
-        v == true_al_counts_sindex[k] for k, v
-        in al_counts_nolength_sindex.items()
-    ) and len(al_counts_nolength_sindex) == len(true_al_counts_sindex))
+    assert _dicts_equal(true_idx_al_counts_sindex, al_counts_idx_sindex)
+    assert _dicts_equal(true_len_al_counts_sindex, al_counts_uselength_sindex)
+    assert _dicts_equal(true_al_counts_sindex, al_counts_nolength_sindex)
 
 
 def test_GetAlleleFreqs():
@@ -534,13 +505,13 @@ def test_GetMaxAllele():
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
-    true_al_max = 6.0
+    true_al_max = 6
     al_max = rec.GetMaxAllele()
     assert al_max == true_al_max
 
     # Test example where alt=[]
     rec = trh.TRRecord(get_triploid_record(), ref_allele, [], "CAG", "", None)
-    true_al_max = 3.0
+    true_al_max = 3
     al_max = rec.GetMaxAllele()
     assert al_max == true_al_max
 
@@ -552,7 +523,7 @@ def test_GetMaxAllele():
 
     # Test working example with sample_index
     sindex = [0, 2, 5]
-    true_al_max_sindex = 4.0
+    true_al_max_sindex = 4
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     al_max_sindex = rec.GetMaxAllele(sample_index=sindex)
     assert al_max_sindex == true_al_max_sindex

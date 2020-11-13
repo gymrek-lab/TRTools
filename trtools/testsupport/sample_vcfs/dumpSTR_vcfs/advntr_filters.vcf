@@ -1,5 +1,6 @@
 ##fileformat=VCFv4.3
 ##source=adVNTR ver. 1.3.3
+##FILTER=<ID=PASS,Description="All filters passed">
 ##command-DumpSTR=/projects/ps-gymreklab/jmargoli/trtools/release/trtools/dumpSTR/dumpSTR.py --vcf example-files/NA12878_chr21_advntr.sorted.vcf.gz --out ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/advntr_filters --advntr-min-call-DP 50 --advntr-max-call-DP 2000 --advntr-min-spanning 1 --advntr-min-flanking 20 --advntr-min-ML 0.95
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of variant">
 ##INFO=<ID=VID,Number=1,Type=Integer,Description="VNTR ID">
@@ -17,6 +18,7 @@
 ##FORMAT=<ID=ML,Number=1,Type=Float,Description="Maximum likelihood">
 ##FORMAT=<ID=FILTER,Number=1,Type=String,Description="Call-level filter">
 ##contig=<ID=21>
+##contig=<ID=chr21>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	CEUTrio
 chr21	9711934	.	CCATGGAAGATGAGGAGTCCATGGAAGATGAGGAGTCTGTTGAAGATGATTCCGTGGAGAGCAGGAT	.	.	PASS	END=9712001;VID=294762;RU=CCATGGAAGATGAGGAGT;RC=4;AC=0;REFAC=0;HET=-1;HWEP=-1;HRUN=2	GT:DP:SR:FR:ML:FILTER	./.:213:0:213:0.0:NOCALL
 chr21	9719919	.	GTGATTACCCACTTGTGAGTTACCCACTT	.	.	PASS	END=9719948;VID=294763;RU=GTGAGTTACCCACTT;RC=2;AC=0;REFAC=0;HET=-1;HWEP=-1;HRUN=3	GT:DP:SR:FR:ML:FILTER	./.:.:.:.:.:AdVNTRCallMinSpanning
