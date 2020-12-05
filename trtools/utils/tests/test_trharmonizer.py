@@ -285,9 +285,9 @@ def test_TRRecord_GetGenotypes():
                     [0, 0, -2],
                     [0, 0, 0]]
     true_idx_gts = np.array(true_idx_gts)
-    true_gts = [[ref_allele, ref_allele, ''],
-                [ref_allele, ref_allele, ''],
-                [ref_allele, ref_allele, ''],
+    true_gts = [[ref_allele, ref_allele, ','],
+                [ref_allele, ref_allele, ','],
+                [ref_allele, ref_allele, ','],
                 [ref_allele, ref_allele, ref_allele]]
     true_gts = np.array(true_gts)
 
@@ -339,7 +339,7 @@ def test_GetGenotypeCounts():
     true_idx_gt_counts = {(0, 0, 0): 1, (-2, 0, 0): 3}
     true_len_gt_counts = {(3, 3, 3): 1, (-2, 3, 3): 3}
     true_gt_counts = {(ref_allele, ref_allele, ref_allele): 1,
-                      ('', ref_allele, ref_allele): 3}
+                      (',', ref_allele, ref_allele): 3}
     gt_counts_idx = rec.GetGenotypeCounts(index=True)
     gt_counts_uselength = rec.GetGenotypeCounts()
     gt_counts_nolength = rec.GetGenotypeCounts(uselength=False)

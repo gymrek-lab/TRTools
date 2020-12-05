@@ -756,7 +756,7 @@ class TRRecord:
 
         All genotypes will be a tuple of that many haplotypes,
         where samples with a smaller ploidy than that
-        will have haplotypes at the end of the tuple set to ''
+        will have haplotypes at the end of the tuple set to ','
         (for string genotypes) or -2 (for index or length genotypes)
         """
         return self.vcfrecord.ploidy
@@ -845,7 +845,7 @@ class TRRecord:
         for allele_idx, seq_allele in enumerate(seq_alleles):
             seq_array[:, :-1][idx_gts[:, :-1] == allele_idx] = seq_allele
         seq_array[:, :-1][idx_gts[:, :-1] == -1] = '.'
-        seq_array[:, :-1][idx_gts[:, :-1] == -2] = ''
+        seq_array[:, :-1][idx_gts[:, :-1] == -2] = ','
         return seq_array
 
 
@@ -857,7 +857,7 @@ class TRRecord:
         except that the indicies are replaced by their corresponding
         sequences, -1 indicies (nocalls) are replaced by '.',
         -2 indicies (not present due to smaller ploidy) are replaced
-        by '', and the phasing bits (0 or 1) are replaced by the strings
+        by ',', and the phasing bits (0 or 1) are replaced by the strings
         '0' or '1'.
 
         Will not include flanking base pairs. To get genotypes that include
@@ -930,7 +930,7 @@ class TRRecord:
         if idx_gts is None:
             return None
 
-        full_seq_alleles = self.full_alleles[1]
+        full_seq_alleles = self.full_alleles[1].copy()
         full_seq_alleles.insert(0, self.full_alleles[0])
 
         return self._GetStringGenotypeArray(idx_gts, full_seq_alleles)
@@ -1136,12 +1136,13 @@ class TRRecord:
             If True, represent alleles as indexes (0 = ref, 1 = first_alt,
             etc.) instead of sequences or lengths
         fullgenotypes :
-            If True, include flanking basepairs in allele representations
-            Only makes sense when uselength=False and index=False
+            If True, include flanking basepairs in allele representations.
+            Only makes sense when expliictly stating uselength=False.
+            Cannot be combined with index.
         include_nocalls:
             If False, all genotypes with one or more uncalled haplotypes
             (-1 or '.') are excluded from the returned dictionary,
-            they are included if True. Genotypes with lower ploidy (-2 or '')
+            they are included if True. Genotypes with lower ploidy (-2 or ',')
             are included regardless.
 
         Returns
@@ -1226,9 +1227,10 @@ class TRRecord:
         index :
             If True, represent alleles as indexes (0 = ref, 1 = first_alt,
             etc.) instead of sequences or lengths
-        fullgenotypes : bool, optional
+        fullgenotypes :
             If True, include flanking basepairs in allele representations
-            Only makes sense when uselength=False and index=False
+            Only makes sense when expliictly stating uselength=False.
+            Cannot be combined with index.
 
         Returns
         -------
@@ -1254,11 +1256,11 @@ class TRRecord:
         elif not uselength and not fullgenotypes:
             gts = self.GetStringGenotypes()
             nocall_entry = '.'
-            lowploidy_entry = ''
+            lowploidy_entry = ','
         elif fullgenotypes:
             gts = self.GetFullStringGenotypes()
             nocall_entry = '.'
-            lowploidy_entry = ''
+            lowploidy_entry = ','
 
         if gts is None:
             return {}
@@ -1301,8 +1303,9 @@ class TRRecord:
             If True, represent alleles as indexes (0 = ref, 1 = first_alt,
             etc.) instead of sequences or lengths
         fullgenotypes :
-            If True, include flanking basepairs in allele representations
-            Only makes sense when uselength=False and index=False
+            If True, include flanking basepairs in allele representations.
+            Only makes sense when expliictly stating uselength=False.
+            Cannot be combined with index.
 
         Returns
         -------

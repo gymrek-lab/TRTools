@@ -83,7 +83,7 @@ def GetSamples(readers, usefilenames=False):
         return []
     return samples
 
-def GetAndCheckVCFType(vcfreaders, vcftype):
+def GetAndCheckVCFType(vcfs, vcftype):
     """Infer vcf type of readers
 
     Infer VCF type of each reader.
@@ -92,7 +92,7 @@ def GetAndCheckVCFType(vcfreaders, vcftype):
 
     Parameters
     ----------
-    vcfreaders : list of vcf.Reader
+    vcfs: list of cyvcf2.VCF
       Readers being merged
     vcftype : str
       Type of VCF
@@ -103,11 +103,11 @@ def GetAndCheckVCFType(vcfreaders, vcftype):
       Inferred VCF type
     """
     types = []
-    for reader in vcfreaders:
-        reader_type = trh.GetVCFType(reader, vcftype)
-        if reader_type == None:
+    for vcf in vcfs:
+        vcf_type = trh.GetVCFType(vcf, vcftype)
+        if vcf_type == None:
             raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
-        types.append(reader_type)
+        types.append(vcf_type)
     if len(set(types)) == 1:
         return types[0]
     else: raise ValueError("VCF files are of mixed types.")

@@ -7,18 +7,17 @@
 # Note: the thresholds in this file are arbitrary and just used for testing
 # do not assume they are reasonable for data analysis
 
-#out=../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs
-out=../temp
+out=../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs
 
 # locus_filters
 echo "locus filters"
-#time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_hipstr.sorted.vcf.gz --out $out/locus_filters --min-locus-callrate 0.5 --min-locus-hwep 0.5 --min-locus-het 0.05 --max-locus-het 0.45 --filter-regions-names foo_region --filter-regions ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/sample_region.bed.gz --vcftype hipstr
+time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_hipstr.sorted.vcf.gz --out $out/locus_filters --min-locus-callrate 0.5 --min-locus-hwep 0.5 --min-locus-het 0.05 --max-locus-het 0.45 --filter-regions-names foo_region --filter-regions ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/sample_region.bed.gz --vcftype hipstr
 
-echo "locus filters drop"
-# locus_filters_drop - only difference should be the vcf file, so delete the other two
-#time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_hipstr.sorted.vcf.gz --out $out/locus_filters_drop --min-locus-callrate 0.5 --min-locus-hwep 0.5 --min-locus-het 0.05 --max-locus-het 0.45 --filter-regions-names foo_region --filter-regions ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/sample_region.bed.gz --vcftype hipstr --drop-filtered
-#rm $out/locus_filters_drop.samplog.tab
-#rm $out/locus_filters_drop.loclog.tab
+echo "drop filtered"
+# same as above test, only difference should be the vcf file, so delete the other two
+time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_hipstr.sorted.vcf.gz --out $out/drop_filtered --min-locus-callrate 0.5 --min-locus-hwep 0.5 --min-locus-het 0.05 --max-locus-het 0.45 --filter-regions-names foo_region --filter-regions ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/sample_region.bed.gz --vcftype hipstr --drop-filtered
+rm $out/drop_filtered.samplog.tab
+rm $out/drop_filtered.loclog.tab
 
 # advntr_filters
 echo "advntr"
@@ -32,7 +31,7 @@ echo "advntr"
 echo "gangSTR"
 # second one has require support removed
 #time python -m trtools.dumpSTR.dumpSTR --vcf trtools/testsupport/sample_vcfs/test_gangstr.vcf --out $out/gangstr_filters_expansion --gangstr-expansion-prob-het 0.001 --gangstr-expansion-prob-hom 0.0005 --gangstr-expansion-prob-total 0.001
-time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_gangstr.sorted.vcf.gz --out $out/gangstr_filters_most --gangstr-min-call-DP 10 --gangstr-max-call-DP 100 --gangstr-min-call-Q 0.9  --gangstr-filter-span-only --gangstr-filter-spanbound-only --gangstr-filter-badCI # --gangstr-require-support 10 --gangstr-readlen 150
+#time python -m trtools.dumpSTR.dumpSTR --vcf example-files/trio_chr21_gangstr.sorted.vcf.gz --out $out/gangstr_filters_most --gangstr-min-call-DP 10 --gangstr-max-call-DP 100 --gangstr-min-call-Q 0.9  --gangstr-filter-span-only --gangstr-filter-spanbound-only --gangstr-filter-badCI # --gangstr-require-support 10 --gangstr-readlen 150
 
 # hipstr_filters
 echo "hipSTR"

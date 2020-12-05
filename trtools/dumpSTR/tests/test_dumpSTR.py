@@ -15,6 +15,7 @@ def args(tmpdir):
     args.vcf = None
     args.vcftype = "auto"
     args.out = str(tmpdir / "test")
+    args.zip = False
     args.min_locus_callrate = None
     args.min_locus_hwep = None
     args.min_locus_het = None
@@ -60,21 +61,50 @@ def args(tmpdir):
     return args
 
 @pytest.fixture
-def testfiledir(vcfdir):
+def testDumpSTRdir(vcfdir):
     return vcfdir + "/dumpSTR_vcfs"
 
 # Test no such file or directory
-def test_WrongFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_non_existent.vcf")
+def test_WrongFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_non_existent.vcf")
     if os.path.exists(fname):
         os.remove(fname)
     args.vcf = fname
     retcode = main(args)
     assert retcode==1
 
+def test_BadPreexistingFields(args, testDumpSTRdir, capsys):
+    fname = os.path.join(testDumpSTRdir, "bad_preexisting_hrun.vcf")
+    args.vcf = fname
+    retcode = main(args)
+    captured = capsys.readouterr()
+    assert "HRUN" in captured.err
+
+    fname = os.path.join(testDumpSTRdir, "bad_preexisting_het_hwep.vcf")
+    args.vcf = fname
+    retcode = main(args)
+    captured = capsys.readouterr()
+    assert "HWEP" in captured.err and "HET" in captured.err
+
+    fname = os.path.join(testDumpSTRdir, "bad_preexisting_filter_ac_refac.vcf")
+    args.vcf = fname
+    retcode = main(args)
+    captured = capsys.readouterr()
+    assert ("FILTER" in captured.err and "AC" in captured.err
+            and "REFAC" in captured.err)
+
+def test_WorrisomePreexistingFilter(args, testDumpSTRdir, capsys):
+    fname = os.path.join(testDumpSTRdir, "worrisome_preexisting_filter.vcf")
+    args.vcf = fname
+    args.min_locus_hwep = 0.5
+    retcode = main(args)
+    assert retcode == 0
+    captured = capsys.readouterr()
+    assert 'HWE0.5' in captured.err
+
 # Test if basic inputs and threshold filters work for each file
-def test_GangSTRFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_gangstr.vcf")
+def test_GangSTRFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "trio_chr21_gangstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.gangstr_min_call_DP = 10
@@ -104,8 +134,8 @@ def test_GangSTRFile(args, vcfdir):
     retcode = main(args)
     assert retcode==0
 
-def test_HipSTRFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_hipstr.vcf")
+def test_HipSTRFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "trio_chr21_hipstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_min_call_DP = 10
@@ -117,8 +147,8 @@ def test_HipSTRFile(args, vcfdir):
     retcode = main(args)
     assert retcode==0
 
-def test_AdVNTRFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_advntr.vcf")
+def test_AdVNTRFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_advntr.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.advntr_min_call_DP = 10
@@ -129,30 +159,45 @@ def test_AdVNTRFile(args, vcfdir):
     retcode = main(args)
     assert retcode==0
 
-# TODO: uncomment. EH not implemented yet in TR Harmonizer
-"""
-def test_EHFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+def test_EHFile(args, testDumpSTRdir):
+    # TODO add EH options
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_eh.sorted.vcf.gz")
     args.vcf = fname
+    args.use_length = True
     args.num_records = 10
     retcode = main(args)
     assert retcode==0
-"""
 
-def test_PopSTRFile(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_popstr.vcf")
+def test_PopSTRFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_popstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
+    args.use_length = True
     args.popstr_min_call_DP = 5
     args.popstr_max_call_DP = 100
     args.popstr_require_support = 2
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
+    assert retcode==0
+
+def test_zippedOutput(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "trio_chr21_gangstr.sorted.vcf.gz")
+    args.vcf = fname
+    args.num_records = 10
+    args.gangstr_min_call_DP = 10
+    args.gangstr_max_call_DP = 20
+    args.gangstr_min_call_Q = 0.99
+    args.gangstr_filter_span_only = True
+    args.gangstr_filter_spanbound_only = True
+    args.gangstr_filter_badCI = True
+    #args.gangstr_require_support = 2
+    args.gangstr_readlen = 100
+    args.zip = True
+    retcode = main(args)
     assert retcode==0
 
 # Test invalid options
-def test_InvalidOptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_popstr.vcf")
+def test_InvalidOptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_popstr.sorted.vcf.gz")
     args.vcf = fname
     # HWE
     args.min_locus_hwep = -1
@@ -182,10 +227,17 @@ def test_InvalidOptions(args, vcfdir):
     assert retcode==1
 
 # Test locus-level filters
-def test_LocusLevel(args, vcfdir):
-    for tool in ["hipstr","gangstr","popstr","advntr"]:
-        fname = os.path.join(vcfdir, "test_%s.vcf"%tool)
-        args.vcf = fname
+def test_LocusLevel(args, testDumpSTRdir):
+    tool_files = [
+        "trio_chr21_hipstr.sorted.vcf.gz",
+        "trio_chr21_gangstr.sorted.vcf.gz",
+        "NA12878_chr21_eh.sorted.vcf.gz",
+        "NA12878_chr21_popstr.sorted.vcf.gz",
+        "NA12878_chr21_popstr.sorted.vcf.gz",
+        "NA12878_chr21_advntr.sorted.vcf.gz"
+    ]
+    for fname in tool_files:
+        args.vcf = os.path.join(testDumpSTRdir, fname)
         args.num_records = 10
         args.min_locus_callrate = 0.8
         args.min_locus_hwep = 10e-4
@@ -198,8 +250,8 @@ def test_LocusLevel(args, vcfdir):
         args.drop_filtered = True
         assert main(args)==0
 
-def test_RegionFilters(args, regiondir, vcfdir):
-    fname = os.path.join(vcfdir, "test_gangstr.vcf")
+def test_RegionFilters(args, regiondir, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_gangstr.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     # Correct filters
@@ -228,11 +280,11 @@ def test_RegionFilters(args, regiondir, vcfdir):
     # File with no chr
     args.filter_regions = os.path.join(regiondir, "test_regions4.bed.gz")
     assert main(args)==0
-    args.vcf = os.path.join(vcfdir, "test_gangstr_nochr.vcf")
+    args.vcf = os.path.join(testDumpSTRdir, "test_gangstr_nochr.vcf.gz")
     assert main(args)==0
 
-def test_InvalidHipstrOptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_hipstr.vcf")
+def test_InvalidHipstrOptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "trio_chr21_hipstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_max_call_flank_indel = -1
@@ -269,8 +321,8 @@ def test_InvalidHipstrOptions(args, vcfdir):
     args.hipstr_min_call_Q = 2
     assert main(args)==1
 
-def test_InvalidGangSTROptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_gangstr.vcf")
+def test_InvalidGangSTROptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_gangstr.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.gangstr_min_call_DP = -1
@@ -303,15 +355,17 @@ def test_InvalidGangSTROptions(args, vcfdir):
     args.gangstr_expansion_prob_total = 2
     assert main(args)==1
     args.gangstr_expansion_prob_total = None
-    #args.gangstr_require_support = -1
+    '''
+    args.gangstr_require_support = -1
     assert main(args)==1
-    #args.gangstr_require_support = 2
+    args.gangstr_require_support = 2
     assert main(args)==1
     args.gangstr_readlen = 1
     assert main(args)==1
+    '''
 
-def test_InvalidAdVNTROptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_advntr.vcf")
+def test_InvalidAdVNTROptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_advntr.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.advntr_min_call_DP = -1
@@ -333,15 +387,15 @@ def test_InvalidAdVNTROptions(args, vcfdir):
     assert main(args)==1
 
 """
-def test_InvalidEHOptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+def test_InvalidEHOptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "test_ExpansionHunter.vcf")
     args.vcf = fname
     args.num_records = 10
     # TODO add once EH is implemented
 """
 
-def test_InvalidPopSTROptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_popstr.vcf")
+def test_InvalidPopSTROptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_popstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.popstr_min_call_DP = -1
@@ -357,8 +411,8 @@ def test_InvalidPopSTROptions(args, vcfdir):
     args.popstr_require_support = -1
     assert main(args)==1
 
-def test_InvalidGenotyperOptions(args, vcfdir):
-    fname = os.path.join(vcfdir, "test_popstr.vcf")
+def test_InvalidGenotyperOptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_popstr.sorted.vcf.gz")
     args.vcf = fname
     args.num_records = 10
     args.hipstr_min_call_DP = 10
@@ -369,7 +423,7 @@ def test_InvalidGenotyperOptions(args, vcfdir):
     assert main(args)==1
     args.gangstr_min_call_DP = None
 
-    fname = os.path.join(vcfdir, "test_hipstr.vcf")
+    fname = os.path.join(testDumpSTRdir, "trio_chr21_hipstr.sorted..vcf.gz")
     args.vcf = fname
     args.popstr_min_call_DP = 10
     assert main(args)==1
@@ -381,8 +435,8 @@ def test_InvalidGenotyperOptions(args, vcfdir):
     assert main(args)==1
     args.eh_min_call_LC = None
 
-def test_InvalidOutput(capsys, args, vcfdir, tmpdir):
-    fname = os.path.join(vcfdir, "test_popstr.vcf")
+def test_InvalidOutput(capsys, args, testDumpSTRdir, tmpdir):
+    fname = os.path.join(testDumpSTRdir, "NA12878_chr21_popstr.sorted.vcf.gz")
     args.vcf = fname
 
     # Fail when trying to output inside a nonexistant directory
@@ -396,21 +450,22 @@ def test_InvalidOutput(capsys, args, vcfdir, tmpdir):
     args.out = str(tmpdir / "foo")
     assert main(args) == 1
     # Make sure we produce a meaningful error message for this issue
-    assert 'Is a directory:' in str(capsys.readouterr())
+    assert 'is a directory' in str(capsys.readouterr())
 
-def test_TwoDumpSTRRounds(args, vcfdir, tmpdir):
+def test_TwoDumpSTRRounds(args, testDumpSTRdir, tmpdir):
     args.num_records = 10
-    fname = os.path.join(vcfdir, "test_gangstr.vcf")
+    fname = os.path.join(testDumpSTRdir, "test_gangstr.vcf.gz")
     args.vcf = fname
     args.min_locus_callrate = 0
+    args.zip = True
     main(args) # produces DUMPDIR/test.vcf
-    args.vcf = str(tmpdir / "test.vcf")
+    args.vcf = str(tmpdir / "test.vcf.gz")
     args.out = str(tmpdir / "test2")
     assert main(args)==0
 
-def test_BrokenVCF(args, vcfdir):
+def test_BrokenVCF(args, testDumpSTRdir):
     args.num_records = 10
-    fname = os.path.join(vcfdir, "test_broken.vcf")
+    fname = os.path.join(testDumpSTRdir, "test_broken.vcf.gz")
     args.vcf = fname
     args.die_on_warning = True
     args.verbose = True
@@ -453,7 +508,8 @@ def _make_format_list(fmt):
 # fname1 should be the output file
 # fname2 should be the control file
 # allow reordering of header lines
-def _assert_same_vcf(fname1, fname2, info_ignore = set()):
+def _assert_same_vcf(fname1, fname2, info_ignore = set(),
+                     format_ignore = set()):
     open_fn = open
     if fname1[-3:] == '.gz':
         open_fn = gzip.open
@@ -522,6 +578,7 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
         iter1 = iter(file1)
         iter2 = iter(file2)
         linenum = 2 + len(headers1)
+        format_ignore_idxs = set()
         while True:
             linenum += 1
             lines = _grab_line_for_assertion(iter1, iter2)
@@ -533,6 +590,10 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
             line2 = line2.replace('nan', '.').split()
             for idx in range(len(line1)):
                 if idx <= 6 or idx == 8:
+                    if idx == 8:
+                        fmt = line1[idx].split(':')
+                        for val in format_ignore:
+                            format_ignore_idxs.add(fmt.index(val))
                     if line1[idx] == line2[idx]:
                         continue
                     if idx == 0:
@@ -553,8 +614,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
                         field_name = 'FILTER'
                     raise ValueError('Output file differs from control file'
                                      ' at line ' + str(linenum) + ' at field '
-                                     + field_name + '\n' + line1[idx] +
-                                    '\n' + line2[idx])
+                                     + field_name + '\nOutput line: ' + line1[idx] +
+                                     '\nControl line: ' + line2[idx])
                 elif idx == 7:
                     # INFO field, allow permuations and changes from int to
                     # double
@@ -564,8 +625,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
                         raise ValueError(
                             'Output file differs from control file'
                              ' at line ' + str(linenum) + ' where they '
-                             'have different INFO fields' + '\n' +
-                             line1[7] + '\n' + line2[7])
+                            'have different INFO fields' + '\nOutput: ' +
+                            line1[7] + '\nControl: ' + line2[7])
                     for k in info1:
                         if k in info_ignore:
                             continue
@@ -573,8 +634,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
                             raise ValueError(
                                 'Output file differs from control file'
                                 ' at line ' + str(linenum) + ' at INFO '
-                                'field ' + k + '\n' + str(info1[k]) + '\n' +
-                                str(info2[k]))
+                                'field ' + k + '\nOutput: ' + str(info1[k]) +
+                                '\nControl: ' + str(info2[k]))
                 elif idx > 8:
                     # FORMAT field, allow changes from '.' to '.,.' and
                     # allow changes from int to double
@@ -588,6 +649,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
                              'have different numbers of fields for sample #' +
                              sample_num + '\n' + line1[idx] + '\n' + line2[idx])
                     for count, (f1, f2) in enumerate(zip(format1, format2)):
+                        if count in format_ignore_idxs:
+                            continue
                         if (f1.dtype.kind == 'U' and
                                 np.all(f1 == '.') and
                                 np.all(f2 == '.')):
@@ -596,8 +659,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set()):
                             raise ValueError(
                                 'Output file differs from control file'
                                 ' at line ' + str(linenum) + ' at sample #'
-                                + sample_num + ' at field ' + str(count) + '\n' +
-                                str(f1) + '\n' + str(f2))
+                                + sample_num + ' at field ' + str(count + 1) +
+                                '\nOutput: ' + str(f1) + '\nControl: ' + str(f2))
 
 
 # fname1 should be the output file
@@ -654,23 +717,58 @@ def _grab_line_for_assertion(iter1, iter2):
     return line1.strip(), line2.strip()
 
 
-def test_output_locus_filters(args, testfiledir):
-    args.vcf = testfiledir + '/trio_chr21_hipstr.sorted.vcf.gz'
+def test_output_locus_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
     args.min_locus_callrate = 0.5
     args.min_locus_hwep = 0.5
     args.min_locus_het = 0.05
     args.max_locus_het = 0.45
     args.filter_regions_names = 'foo_region'
-    args.filter_regions = testfiledir + '/sample_region.bed.gz'
+    args.filter_regions = testDumpSTRdir + '/sample_region.bed.gz'
     args.vcftype = 'hipstr'
 
     assert main(args) == 0
-    for ext in '.samplog.tab', '.loclog.tab', '.vcf':
-        _assert_same_file(args.out + ext, testfiledir + '/base_filters' + ext)
+    # expect changes in precision for HET and HWEP
+    # that will make them too much of a pain to compare
+    # there are also rounding errors with HipSTR field GLDIFF
+    # that aren't worth worrying about
+    _assert_same_vcf(args.out + '.vcf',
+                     testDumpSTRdir + '/locus_filters.vcf',
+                     info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'},
+                     format_ignore= {'GLDIFF'})
+    for ext in '.samplog.tab', '.loclog.tab':
+        _assert_same_file(args.out + ext,
+                          testDumpSTRdir + '/locus_filters' + ext,
+                          ext)
+
+def test_output_drop_filtered(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
+    args.min_locus_callrate = 0.5
+    args.min_locus_hwep = 0.5
+    args.min_locus_het = 0.05
+    args.max_locus_het = 0.45
+    args.filter_regions_names = 'foo_region'
+    args.filter_regions = testDumpSTRdir + '/sample_region.bed.gz'
+    args.vcftype = 'hipstr'
+    args.drop_filtered = True
+
+    assert main(args) == 0
+    # expect changes in precision for HET and HWEP
+    # that will make them too much of a pain to compare
+    # there are also rounding errors with HipSTR field GLDIFF
+    # that aren't worth worrying about
+    _assert_same_vcf(args.out + '.vcf',
+                     testDumpSTRdir + '/drop_filtered.vcf',
+                     info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'},
+                     format_ignore= {'GLDIFF'})
+    for ext in '.samplog.tab', '.loclog.tab':
+        _assert_same_file(args.out + ext,
+                          testDumpSTRdir + '/locus_filters' + ext,
+                          ext)
 
 
-def test_output_advntr_filters(args, testfiledir):
-    args.vcf = testfiledir + '/NA12878_chr21_advntr.sorted.vcf.gz'
+def test_output_advntr_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/NA12878_chr21_advntr.sorted.vcf.gz'
     args.advntr_min_call_DP = 50
     args.advntr_max_call_DP = 2000
     args.advntr_min_spanning = 1
@@ -681,16 +779,16 @@ def test_output_advntr_filters(args, testfiledir):
     # expect changes in precision for HET and HWEP
     # that will make them too much of a pain to compare
     _assert_same_vcf(args.out + '.vcf',
-                     testfiledir + '/advntr_filters.vcf',
+                     testDumpSTRdir + '/advntr_filters.vcf',
                      info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'})
     for ext in '.samplog.tab', '.loclog.tab':
         _assert_same_file(args.out + ext,
-                          testfiledir + '/advntr_filters' + ext,
+                          testDumpSTRdir + '/advntr_filters' + ext,
                           ext)
 
 
-def test_output_hipstr_filters(args, testfiledir):
-    args.vcf = testfiledir + '/trio_chr21_hipstr.sorted.vcf.gz'
+def test_output_hipstr_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
     args.filter_hrun = True
     args.use_length = True
     args.max_locus_het = 0.45
@@ -707,17 +805,20 @@ def test_output_hipstr_filters(args, testfiledir):
     assert main(args) == 0
     # expect changes in precision for HET and HWEP
     # that will make them too much of a pain to compare
+    # there are also rounding errors with HipSTR field GLDIFF
+    # that aren't worth worrying about
     _assert_same_vcf(args.out + '.vcf',
-                     testfiledir + '/hipstr_filters.vcf',
-                     info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'})
+                     testDumpSTRdir + '/hipstr_filters.vcf',
+                     info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'},
+                     format_ignore= {'GLDIFF'})
     for ext in '.samplog.tab', '.loclog.tab':
         _assert_same_file(args.out + ext,
-                          testfiledir + '/hipstr_filters' + ext,
+                          testDumpSTRdir + '/hipstr_filters' + ext,
                           ext)
 
 
-def test_output_gangstr_most_filters(args, testfiledir):
-    args.vcf = testfiledir + '/trio_chr21_gangstr.sorted.vcf.gz'
+def test_output_gangstr_most_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/trio_chr21_gangstr.sorted.vcf.gz'
     args.gangstr_min_call_DP = 10
     args.gangstr_max_call_DP = 100
     args.gangstr_min_call_Q = 0.9
@@ -731,16 +832,15 @@ def test_output_gangstr_most_filters(args, testfiledir):
     # expect changes in precision for HET and HWEP
     # that will make them too much of a pain to compare
     _assert_same_vcf(args.out + '.vcf',
-                     testfiledir + '/gangstr_filters_most.vcf',
+                     testDumpSTRdir + '/gangstr_filters_most.vcf',
                      info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'})
     for ext in '.samplog.tab', '.loclog.tab':
         _assert_same_file(args.out + ext,
-                          testfiledir + '/gangstr_filters_most' + ext,
+                          testDumpSTRdir + '/gangstr_filters_most' + ext,
                           ext)
 
-
-def test_output_gangstr_expansion_filters(args, testfiledir, vcfdir):
-    args.vcf = vcfdir + '/test_gangstr.vcf'
+def test_output_gangstr_expansion_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/test_gangstr.vcf.gz'
     args.gangstr_expansion_prob_het = 0.001
     args.gangstr_expansion_prob_hom = 0.0005
     args.gangstr_expansion_prob_total =  0.001
@@ -749,29 +849,30 @@ def test_output_gangstr_expansion_filters(args, testfiledir, vcfdir):
     # expect changes in precision for HET and HWEP
     # that will make them too much of a pain to compare
     _assert_same_vcf(args.out + '.vcf',
-                     testfiledir + '/gangstr_filters_expansion.vcf',
+                     testDumpSTRdir + '/gangstr_filters_expansion.vcf',
                      info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'})
     for ext in '.samplog.tab', '.loclog.tab':
         _assert_same_file(args.out + ext,
-                          testfiledir + '/gangstr_filters_expansion' + ext,
+                          testDumpSTRdir + '/gangstr_filters_expansion' + ext,
                           ext)
 
 
-def test_output_popstr_filters(args, testfiledir):
-    args.vcf = testfiledir + '/NA12878_chr21_popstr.sorted.vcf.gz'
+def test_output_popstr_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/NA12878_chr21_popstr.sorted.vcf.gz'
     args.popstr_min_call_DP = 30
     args.popstr_max_call_DP = 200
     args.popstr_require_support = 15
+    args.use_length = True
 
     assert main(args) == 0
     # expect changes in precision for HET and HWEP
     # that will make them too much of a pain to compare
     _assert_same_vcf(args.out + '.vcf',
-                     testfiledir + '/popstr_filters.vcf',
+                     testDumpSTRdir + '/popstr_filters.vcf',
                      info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'})
     for ext in '.samplog.tab', '.loclog.tab':
         _assert_same_file(args.out + ext,
-                          testfiledir + '/popstr_filters' + ext,
+                          testDumpSTRdir + '/popstr_filters' + ext,
                           ext)
 
 

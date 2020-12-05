@@ -7,8 +7,9 @@ Tool for filtering and QC of TR genotypes
 import argparse
 import itertools
 import os
+import subprocess as sp
 import sys
-from typing import Any, Dict, List, Set
+from typing import Dict, List, Set
 
 import cyvcf2
 import numpy as np
@@ -45,8 +46,6 @@ def MakeWriter(outfile, invcf, command):
     invcf.add_to_header("##command-DumpSTR=" + command)
     writer = cyvcf2.Writer(outfile, invcf)
     return writer
-    # Are there opening exceptions we need to handle
-    # more gracefully?
 
 def CheckLocusFilters(args, vcftype):
     r"""Perform checks on user inputs for locus-level filters
@@ -258,8 +257,7 @@ def CheckAdVNTRFilters(format_fields, args):
         assert "ML" in format_fields
     return True
 
-# TODO remove pragma line when EH implemented
-def CheckEHFilters(format_fields, args): # pragma: no cover
+def CheckEHFilters(format_fields, args):
     r"""Check ExpansionHunter call-level filters
 
     Parameters
@@ -532,7 +530,6 @@ _NOCALL_INT_FORMAT_VAL = -2147483648
 def ApplyCallFilters(record: trh.TRRecord,
                      call_filters: List[filters.FilterBase],
                      sample_info: Dict[str, np.ndarray],
-                     format_filter_field: str,
                      sample_names: List[str]) -> trh.TRRecord:
     r"""Apply call-level filters to a record.
 
@@ -554,8 +551,6 @@ def ApplyCallFilters(record: trh.TRRecord,
        from name of filter to array of length nsamples
        which counts the number of times that filter has been
        applied to each sample across all loci
-    format_filter_field:
-        The format field to write to (either FILTER or DUMPSTR_FILTER)
     sample_names:
         Names of all the samples in the vcf. Used for formatting
         error messages.
@@ -579,13 +574,8 @@ def ApplyCallFilters(record: trh.TRRecord,
         if np.all(nans):
             continue
         sample_info[filt.name] += np.logical_and(~nans, ~nocalls)
-        '''
-        TODO
         filt_output_text = np.char.mod('%g', filt_output)
         filt_output_text = np.char.add(filt.name, filt_output_text)
-        '''
-        # TODO remove this line
-        filt_output_text = np.full((record.GetNumSamples()), filt.name)
         filt_output_text[nans] = ''
         not_first_filter = np.logical_and(~nans, all_filter_text != '')
         all_filter_text[not_first_filter] = \
@@ -602,10 +592,7 @@ def ApplyCallFilters(record: trh.TRRecord,
         all_filter_text[nocalls] = ''
         all_filter_text = np.char.add(all_filter_text, nocall_text)
     all_filter_text[all_filter_text == ''] = 'PASS'
-    record.vcfrecord.set_format(
-        format_filter_field,
-        np.char.encode(all_filter_text)
-    )
+    record.vcfrecord.set_format('FILTER', np.char.encode(all_filter_text))
 
     extant_calls = all_filter_text == 'PASS'
     sample_info['numcalls'] += extant_calls
@@ -837,6 +824,7 @@ def getargs(): # pragma: no cover
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
+    inout_group.add_argument("--zip", help="Produce bgzipped and tabix indexed output files", action="store_true")
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
 
     # Locus-level filters are not specific to any tool
@@ -915,7 +903,7 @@ def main(args):
                        " not exist".format(args.out))
         return 1
 
-    if os.path.isdir(args.out) and args.out.endswith(os.sep):
+    if os.path.isdir(args.out + ".vcf"):
         common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
@@ -928,97 +916,131 @@ def main(args):
     harmonizer = trh.TRRecordHarmonizer(invcf, args.vcftype)
     vcftype = harmonizer.vcftype
 
-    format_fields = set()
-    info_fields = set()
+    format_fields = {}
+    info_fields = {}
+    preexisting_filter_fields = {}
+    contig_fields = set()
+
     for header_line in invcf.header_iter():
         if header_line['HeaderType'] == 'INFO':
-            info_fields.add(header_line['ID'])
+            info_fields[header_line['ID']] = header_line
         elif header_line['HeaderType'] == 'FORMAT':
-            format_fields.add(header_line['ID'])
+            format_fields[header_line['ID']] = header_line
+        elif header_line['HeaderType'] == 'FILTER':
+            preexisting_filter_fields[header_line['ID']] = header_line
+        elif header_line['HeaderType'].lower() == 'contig':
+            contig_fields.add(header_line['ID'])
 
     # Check filters all make sense
     if not CheckFilters(format_fields, args, vcftype): return 1
 
-    # figure out which headers are already present
-    # TODO fix this section - what if the second val
-    # is already taken?
-    format_filter = False
-    info_hwep = False
-    info_het = False
-    info_hrun = False
-    for header_line in invcf.header_iter():
-        if header_line['HeaderType'] == 'FORMAT':
-            if header_line['ID'] == 'FILTER':
-                format_filter = True
-                break
-        if header_line['HeaderType'] == 'INFO':
-            if header_line['ID'] == 'HWEP':
-                info_hwep = True
-            elif header_line['ID'] == 'HET':
-                info_het = True
-            elif header_line['ID'] == 'HRUN':
-                info_HRUN = True
+    field_issues = False
+    field_issue_statement = (
+        "The {} field '{}' is present in the input "
+        "VCF and doesn't have the expected Type and Number "
+        "so it can't be worked with. Please "
+        "use TODO to rename or remove the field and then "
+        "rerun dumpSTR. (You can pipe the output of that "
+        "command into dumpSTR if you wish to avoid writing "
+        "another file to disk)"
+    )
 
-    # Add new fields to header
-    # Make sure not to overwrite already existing fields, if present
-    # TODO document that we no longer overwrite fields
-    # TODO document that we no longer append to format filter
-    format_filter_field = 'FILTER'
-    if format_filter:
-        format_filter_field = 'DUMPSTR_FILTER'
+    if 'FILTER' not in format_fields:
+        invcf.add_format_to_header({
+            'ID': 'FILTER',
+            #'Description': 'call-level filters that have been applied', # TODO
+            'Description': 'Call-level filter',
+            'Type': 'String',
+            'Number': 1
+        })
+    else:
+        if (format_fields['FILTER']['Type'] != 'String' or
+            format_fields['FILTER']['Number'] != '1'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('format', 'FILTER'))
 
-    info_hwep_field  = 'HWEP'
-    if info_hwep:
-        info_hwep_field = 'DUMPSTR_HWEP'
-
-    info_het_field  = 'HET'
-    if info_het:
-        info_het_field = 'DUMPSTR_HET'
-
-    info_hrun_field  = 'HRUN'
-    if info_hrun:
-        info_hrun_field = 'DUMPSTR_HRUN'
-
-    invcf.add_format_to_header({
-        'ID': format_filter_field,
-        #'Description': 'call-level filters that have been applied', # TODO
-        'Description': 'Call-level filter',
-        'Type': 'String',
-        'Number': 1
-    })
+    ac_description = 'Alternate allele counts'
     if 'AC' not in info_fields:
         invcf.add_info_to_header({
             'ID': 'AC',
-            'Description': 'Alternate allele counts',
+            'Description': ac_description,
             'Type': 'Integer',
             'Number': 'A'
         })
+    else:
+        if (info_fields['AC']['Type'] != 'Integer' or
+            info_fields['AC']['Number'] != 'A'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('info', 'AC'))
+        elif info_fields['AC']['Description'] != ac_description:
+            common.WARNING("Overwriting preexisting info AC field")
+
+    refac_description = 'Reference allele count'
     if 'REFAC' not in info_fields:
         invcf.add_info_to_header({
             'ID': 'REFAC',
-            'Description': 'Reference allele count',
+            'Description': refac_description,
             'Type': 'Integer',
             'Number': 1
         })
-    invcf.add_info_to_header({
-        'ID': info_het_field,
-        'Description': 'Heterozygosity',
-        'Type': 'Float',
-        'Number': 1
-    })
-    invcf.add_info_to_header({
-        'ID': info_hwep_field,
-        'Description': 'HWE p-value for obs. vs. exp het rate',
-        'Type': 'Float',
-        'Number': 1
-    })
-    invcf.add_info_to_header({
-        'ID': info_hrun_field,
-        'Description': 'Length of longest homopolymer run',
-        'Type': 'Integer',
-        'Number': 1
-    })
+    else:
+        if (info_fields['REFAC']['Type'] != 'Integer' or
+            info_fields['REFAC']['Number'] != '1'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('info', 'REFAC'))
+        elif info_fields['REFAC']['Description'] != refac_description:
+            common.WARNING("Overwriting the preexisting info REFAC field")
 
+    het_description = 'Heterozygosity'
+    if 'HET' not in info_fields:
+        invcf.add_info_to_header({
+           'ID': 'HET',
+           'Description': het_description,
+           'Type': 'Float',
+           'Number': 1
+       })
+    else:
+        if (info_fields['HET']['Type'] != 'Float' or
+            info_fields['HET']['Number'] != '1'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('info', 'HET'))
+        elif info_fields['HET']['Description'] != het_description:
+            common.WARNING("Overwriting the preexisting info HET field")
+
+    hwep_description = 'HWE p-value for obs. vs. exp het rate'
+    if 'HWEP' not in info_fields:
+        invcf.add_info_to_header({
+            'ID': 'HWEP',
+            'Description':  hwep_description,
+            'Type': 'Float',
+            'Number': 1
+        })
+    else:
+        if (info_fields['HWEP']['Type'] != 'Float' or
+            info_fields['HWEP']['Number'] != '1'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('info', 'HWEP'))
+        elif info_fields['HWEP']['Description'] != hwep_description:
+            common.WARNING("Overwriting the preexisting info HWEP field")
+
+    hrun_description = 'Length of longest homopolymer run'
+    if 'HRUN' not in info_fields:
+        invcf.add_info_to_header({
+            'ID': 'HRUN',
+            'Description':  hrun_description,
+            'Type': 'Integer',
+            'Number': 1
+        })
+    else:
+        if (info_fields['HRUN']['Type'] != 'Integer' or
+            info_fields['HRUN']['Number'] != '1'):
+            field_issues = True
+            common.WARNING(field_issue_statement.format('info', 'HRUN'))
+        elif info_fields['HRUN']['Description'] != hrun_description:
+            common.WARNING("Overwriting the preexisting info HRUN field")
+
+    if field_issues:
+        return 1
 
     # Set up locus-level filter list
     try:
@@ -1027,22 +1049,33 @@ def main(args):
         return 1
     filter_list = BuildLocusFilters(args, vcftype)
     for f in filter_list:
-        # TODO document no longer removing old filter definitions
-        invcf.add_filter_to_header({
-            "ID": f.filter_name(), # 'HWE0.5', #f.name,
-            "Description": ''
-        })
+        if f.filter_name() not in preexisting_filter_fields:
+            invcf.add_filter_to_header({
+                "ID": f.filter_name(),
+                "Description": f.description()
+            })
+        elif preexisting_filter_fields[f.filter_name()]['Description'] != f.description():
+            common.WARNING("Using locus level filter " + f.filter_name() +
+                           "which has the same name as a FILTER field that "
+                           "already exists in the input VCF. The filters DumpSTR "
+                           "writes to the output with this name will possibly "
+                           "have different meanings than the filters with "
+                           "the name that are already present.")
 
     # Set up call-level filters
     call_filters = BuildCallFilters(args)
 
     # Set up output files
-    outvcf = MakeWriter(args.out + ".vcf", invcf, " ".join(sys.argv))
+    if args.zip:
+        suffix = '.vcf.gz'
+    else:
+        suffix = '.vcf'
+    outvcf = MakeWriter(args.out + suffix, invcf, " ".join(sys.argv))
     if outvcf is None: return 1
 
     # Set up sample info
     sample_info = {}
-    # insert 'numcalls' and 'totaldp' in this order so that 
+    # insert 'numcalls' and 'totaldp' in this order so that
     # they are printed out in the sample log in this order
     sample_info['numcalls'] = np.zeros((len(invcf.samples)), dtype=int)
     # use dtype float to allow for nan values
@@ -1060,15 +1093,20 @@ def main(args):
     while True:
         try:
             record = next(harmonizer)
-            # TODO does this ever throw errors? For improperly formatted VCFs?
         except StopIteration: break
+        except TypeError as te:
+            message = te.args[0]
+            if 'is not a ' in message and 'record' in message:
+                common.WARNING("Could not parse VCF.\n" + message)
+                return 1
+            else:
+                raise te
         if args.verbose:
-            common.MSG("Processing %s:%s"%(record.CHROM, record.POS))
+            common.MSG("Processing %s:%s"%(record.chrom, record.pos))
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
         # Call-level filters
-        record = ApplyCallFilters(record, call_filters, sample_info,
-                                  format_filter_field, invcf.samples)
+        record = ApplyCallFilters(record, call_filters, sample_info, invcf.samples)
 
         # Locus-level filters
         dumpSTR_filtered = False
@@ -1083,6 +1121,7 @@ def main(args):
                     record.vcfrecord.FILTER += ';' + filt.filter_name()
             dumpSTR_filtered = True
 
+
         n_samples_called = np.sum(record.GetCalledSamples())
         if args.drop_filtered:
             if n_samples_called == 0:
@@ -1091,20 +1130,19 @@ def main(args):
             continue
 
         # Recalculate locus-level INFO fields
-        # TODO make calculating these fields optional
-        # and/or don't recalculate them, just use the values the filters have
-        # already calculated
+        # TODO the filters have already calcualted these values, don't
+        # repeat the calculation here
         if record.HasFullStringGenotypes():
-            record.vcfrecord.INFO[info_hrun_field] = \
+            record.vcfrecord.INFO['HRUN'] = \
                 utils.GetHomopolymerRun(record.full_alleles[0])
         else:
-            record.vcfrecord.INFO[info_hrun_field] = \
+            record.vcfrecord.INFO['HRUN'] = \
                 utils.GetHomopolymerRun(record.ref_allele)
         if n_samples_called > 0:
             allele_freqs = record.GetAlleleFreqs(uselength=args.use_length)
             genotype_counts = record.GetGenotypeCounts(uselength=args.use_length)
-            record.vcfrecord.INFO[info_het_field] = utils.GetHeterozygosity(allele_freqs)
-            record.vcfrecord.INFO[info_hwep_field] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
+            record.vcfrecord.INFO['HET'] = utils.GetHeterozygosity(allele_freqs)
+            record.vcfrecord.INFO['HWEP'] = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
             allele_counts = record.GetAlleleCounts(index = True)
             n_alleles = len(record.alt_alleles) + 1
             for idx in range(n_alleles):
@@ -1117,23 +1155,34 @@ def main(args):
                     ",".join([str(allele_counts[idx]) for idx in range(1, n_alleles)])
             record.vcfrecord.INFO['REFAC'] = int(allele_counts[0])
         else:
-            record.vcfrecord.INFO[info_het_field] = -1
-            record.vcfrecord.INFO[info_hwep_field] = -1
+            record.vcfrecord.INFO['HET'] = -1
+            record.vcfrecord.INFO['HWEP'] = -1
             if len(record.alt_alleles) == 0:
                 record.vcfrecord.INFO['AC'] = 0
             else:
                 record.vcfrecord.INFO['AC'] = ','.join(['0']*len(record.alt_alleles))
             record.vcfrecord.INFO['REFAC'] = 0
         if not dumpSTR_filtered:
-            record.vcfrecord.FILTER = "PASS"
+            if not args.drop_filtered:
+                record.vcfrecord.FILTER = "PASS"
             loc_info["PASS"] += 1
             loc_info["totalcalls"] += n_samples_called
         # Output the record
         outvcf.write_record(record.vcfrecord)
 
+    invcf.close()
+    outvcf.close()
+
     # Output log info
     WriteSampLog(sample_info, invcf.samples, args.out + ".samplog.tab")
     WriteLocLog(loc_info, args.out+".loclog.tab")
+
+    if args.zip:
+        proc = sp.run(["tabix", args.out+suffix])
+        if proc.returncode != 0:
+            common.WARNING("Tabix failed with returncode " +
+                           str(proc.returncode))
+            return 1
 
     return 0
 

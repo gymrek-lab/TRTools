@@ -1,7 +1,7 @@
+import cyvcf2
 import os, sys
 import numpy as np
 import pytest
-import vcf
 
 import trtools.utils.mergeutils as mergeutils
 
@@ -39,9 +39,9 @@ def test_CheckVCFType(vcfdir):
     snps_path = os.path.join(vcfdir, "snps.vcf")
     gangstr_path = os.path.join(vcfdir, "test_gangstr.vcf")
     hipstr_path = os.path.join(vcfdir, "test_hipstr.vcf")
-    gangstr_vcf = vcf.Reader(filename=gangstr_path)
-    hipstr_vcf = vcf.Reader(filename=hipstr_path)
-    snps_vcf = vcf.Reader(filename=snps_path)
+    gangstr_vcf = cyvcf2.VCF(gangstr_path)
+    hipstr_vcf = cyvcf2.VCF(hipstr_path)
+    snps_vcf = cyvcf2.VCF(snps_path)
     # TODO add tests to infer vcf type
     assert "gangstr" == mergeutils.GetAndCheckVCFType([gangstr_vcf], "gangstr")
 
