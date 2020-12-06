@@ -824,7 +824,7 @@ def getargs(): # pragma: no cover
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
-    inout_group.add_argument("--zip", help="Produce bgzipped and tabix indexed output files", action="store_true")
+    inout_group.add_argument("--zip", help="Produce a bgzipped and tabix indexed output VCF", action="store_true")
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
 
     # Locus-level filters are not specific to any tool
