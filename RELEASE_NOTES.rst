@@ -1,9 +1,10 @@
-Release 3.0.0
+Release 4.0.0
 
 Features:
 * Underlying libraries now use cyvcf2 instead of PyVCF for VCF parsing.
-  Reading the underlying VCFs should be > 15x faster for VCFs with many samples,
-  and all the trtools code should also be significantly faster.
+  This makes both the underlying VCF reading code and the TRTools code
+  significantly faster and memory efficient. For instance, the loading of 
+  VCFs into memory is now > 15x faster for VCFs with many samples.
 * DumpSTR has a new flag --zip to produce a bgzipped and tabix-indexed output VCF
 
 Command Line Interface changes:
@@ -15,30 +16,31 @@ Command Line Interface changes:
 
 Output changes:
 * DumpSTR call level filters now have the value of the call which triggered
-  the filter appended to the filter name in the FILTER format field.
+  the filter appended to the filter name in the FILTER format field. (e.g.
+  GangSTRCallMinDepth12 because the field had a depth of 12 and that's lower
+  than the required min depth)
 * DumpSTR locus filter HRUN is now written as HRUN and not HRUN0 in the 
   samplog output file
 * DumpSTR now adds ##FILTER=<ID=PASS,Description="All filters passed">
-  to the header line (TODO even when locus filters are not being run?)
-* When DumpSTR filters a call and replaces the format fields with '.', fields
-  with number>1 are now replaced with '.,.' e.g. for a number=2 field, rather
+  to the header line
+* When DumpSTR filters a call and replaces each of its format fields with the no call
+  '.', fields with number>1 are now replaced with '.,.' e.g. for a number=2 field, rather
   than just a single '.'
 
 Bug fixes:
 * The AC, REFAC fields that DumpSTR output used to be incorrect, are now correct
-* If you specify --drop-filtered DumpSTR will no longer set all the values in the 
+* If you specify --drop-filtered DumpSTR will no longer set all values in the 
   output .loclog.tab file to zero and instead set them to their proper values
   (which are the same as if you had not specified --drop-filtered)
 
 Quality of life improvements:
 * DumpSTR will fail faster if output directory does not exist
 
-Qs:
-* DumpSTR filters? What do I do with half called samples?
-* Currently --gangstr-require--support is disabled
-* Need to undo
-    not putting numeric reasons at end of filter lines
-    not updating format FILTER description
-    update region filter description
-* Need to update tests with current dumpSTR output
-* Need to add bcftools annotate to bad preexisting fields help
+Regressions:
+* The --gangstr-require-support filter has been disabled.
+
+Outstanding bugs:
+* The dumpSTR ExpansionHunter ADFL ADIR ADSP filters have never worked
+* DumpSTR remains untested on ExpansionHunter filters and files
+* DumpSTR remains untested on loci with variable ploidy and/or partially
+  genotyped samples (e.g. .|2)

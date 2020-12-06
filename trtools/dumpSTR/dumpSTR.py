@@ -936,20 +936,22 @@ def main(args):
 
     field_issues = False
     field_issue_statement = (
-        "The {} field '{}' is present in the input "
+        "Error: The {} field '{}' is present in the input "
         "VCF and doesn't have the expected Type and Number "
         "so it can't be worked with. Please "
-        "use TODO to rename or remove the field and then "
-        "rerun dumpSTR. (You can pipe the output of that "
-        "command into dumpSTR if you wish to avoid writing "
-        "another file to disk)"
+        "use 'bcftools annotate --rename-annots' or another equivalent tool to "
+        "rename or remove the field and then rerun dumpSTR. "
+        "(--rename-annots is a flag available in the development version of "
+        "bcftools which can be installed from "
+        "https://samtools.github.io/bcftools/) "
+        "(You can pipe the output of that command into dumpSTR if you wish "
+        "to avoid writing another file to disk)"
     )
 
     if 'FILTER' not in format_fields:
         invcf.add_format_to_header({
             'ID': 'FILTER',
-            #'Description': 'call-level filters that have been applied', # TODO
-            'Description': 'Call-level filter',
+            'Description': 'call-level filters that have been applied',
             'Type': 'String',
             'Number': 1
         })

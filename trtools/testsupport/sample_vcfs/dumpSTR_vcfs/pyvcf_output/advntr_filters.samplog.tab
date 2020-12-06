@@ -1,0 +1,2 @@
+sample	numcalls	meanDP	AdVNTRCallMinDepth	AdVNTRCallMaxDepth	AdVNTRCallMinSpanning	AdVNTRCallMinFlanking	AdVNTRCallMinML
+CEUTrio	23	340.69565217391306	29	12	1902	7	36
