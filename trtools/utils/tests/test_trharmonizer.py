@@ -5,6 +5,7 @@ from typing import List
 import cyvcf2
 import numpy as np
 import pytest
+from pytest import approx
 
 import trtools.utils.tr_harmonizer as trh
 
@@ -224,9 +225,16 @@ def test_TRRecord_full_alleles():
     ID = 'STR1'
     test_rec = DummyCyvcf2Record(None, full_ref, full_alts)
 
+    # confirm that you need to set ref_allele if you wish to set full alleles
     with pytest.raises(ValueError):
-        trh.TRRecord(test_rec, None, None, motif, ID, None,
+        trh.TRRecord(test_rec, None, alt_alleles, motif, ID, None,
                      full_alleles=(full_ref, full_alts))
+    # confirm that you need to set alt_alleles if you wish to set full alleles
+    with pytest.raises(ValueError):
+        trh.TRRecord(test_rec, ref_allele, None, motif, ID, None,
+                     full_alleles=(full_ref, full_alts))
+    # confirm that each allele in full_alleles must contain its corresponding
+    # non-full allele as a substring
     with pytest.raises(ValueError):
         trh.TRRecord(test_rec, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(["CAGCAGCAQQQQQQQQQQQQQQQ"], full_alts))
@@ -460,24 +468,24 @@ def test_GetAlleleFreqs():
     alt_alleles = dummy_record.ALT
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     true_al_freqs = {
-        ref_allele: 0.18181818181818182,
-        alt_alleles[0]: 0.5454545454545454,
-        alt_alleles[1]: 0.2727272727272727
+        ref_allele: 0.1818181,
+        alt_alleles[0]: 0.5454545,
+        alt_alleles[1]: 0.2727272
     }
-    true_len_al_freqs = {3: 0.18181818181818182, 4: 0.5454545454545454, 6: 0.2727272727272727}
-    true_idx_al_freqs = {0: 0.18181818181818182, 1: 0.5454545454545454, 2: 0.2727272727272727}
+    true_len_al_freqs = {3: 0.1818181, 4: 0.5454545, 6: 0.2727272}
+    true_idx_al_freqs = {0: 0.1818181, 1: 0.5454545, 2: 0.2727272}
 
     al_freqs_uselength = rec.GetAlleleFreqs()
     al_freqs_nolength = rec.GetAlleleFreqs(uselength=False)
     al_freqs_idx = rec.GetAlleleFreqs(index=True)
     assert (all(
-        v == true_idx_al_freqs[k] for k, v in al_freqs_idx.items()
+        v == approx(true_idx_al_freqs[k]) for k, v in al_freqs_idx.items()
     ) and len(al_freqs_idx) == len(true_idx_al_freqs))
     assert (all(
-        v == true_len_al_freqs[k] for k, v in al_freqs_uselength.items()
+        v == approx(true_len_al_freqs[k]) for k, v in al_freqs_uselength.items()
     ) and len(al_freqs_uselength) == len(true_len_al_freqs))
     assert (all(
-        v == true_al_freqs[k] for k, v in al_freqs_nolength.items()
+        v == approx(true_al_freqs[k]) for k, v in al_freqs_nolength.items()
     ) and len(al_freqs_nolength) == len(true_al_freqs))
 
     # Test example where alt=[]
