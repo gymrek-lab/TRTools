@@ -1,0 +1,21 @@
+name: trtools_3.6
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.6
+  - sphinx=3.0.4
+  - pytest
+  - pytest-cov
+  - numpy
+  - pybedtools
+  - matplotlib-base
+  - pysam
+  - scipy
+  - pandas
+  - pyvcf
+  - scikit-learn
+  - sphinx-autodoc-typehints
+  - cyvcf2
+
