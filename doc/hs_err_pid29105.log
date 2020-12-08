@@ -1,0 +1,126 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 32744 bytes for ChunkPool::allocate
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Unscaled Compressed Oops mode in which the Java heap is
+#     placed in the first 4GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 4GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (arena.cpp:81), pid=29105, tid=29117
+#
+# JRE version: OpenJDK Runtime Environment (11.0.8) (build 11.0.8-internal+0-adhoc..src)
+# Java VM: OpenJDK 64-Bit Server VM (11.0.8-internal+0-adhoc..src, mixed mode, tiered, compressed oops, g1 gc, linux-amd64)
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dapplication.home=/home/jmargoli/miniconda3/envs/ukb --add-modules=ALL-DEFAULT -Xms8m -Djdk.module.main=jdk.compiler jdk.compiler/com.sun.tools.javac.Main /tmp/Rjavareconf.uJxOUL/A.java
+
+Host: x86_64, 16 cores, 62G, x86_64
+Time: Tue Dec  8 11:32:11 2020 PST elapsed time: 0 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00002b049c130800):  JavaThread "C2 CompilerThread0" daemon [_thread_in_native, id=29117, stack(0x00002b04cd10f000,0x00002b04cd210000)]
+
+
+Current CompileTask:
+C2:    359  147       4       java.lang.String::(null) (15 bytes)
+
+Stack: [0x00002b04cd10f000,0x00002b04cd210000],  sp=0x00002b04cd20cd70,  free space=1015k
+Native frames: (J=compiled Java code, A=aot compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0xda1fda]
+[error occurred during error reporting (printing native stack), id 0xe0000001, Out of Memory Error (./src/hotspot/share/memory/allocation.cpp:46)]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00002b04cdc30010, length=13, elements={
+0x00002b049c014800, 0x00002b049c10c800, 0x00002b049c110800, 0x00002b049c12e800,
+0x00002b049c130800, 0x00002b049c132800, 0x00002b049c135000, 0x00002b049c203000,
+0x00002b04cd650800, 0x00002b04cd76c800, 0x00002b04cd88b800, 0x00002b04cd9fb800,
+0x00002b04cdb16800
+}
+
+Java Threads: ( => current thread )
+  0x00002b049c014800 JavaThread "main" [_thread_in_Java, id=29106, stack(0x00002b049bb31000,0x00002b049bc32000)]
+  0x00002b049c10c800 JavaThread "Reference Handler" daemon [_thread_blocked, id=29114, stack(0x00002b04cce0c000,0x00002b04ccf0d000)]
+  0x00002b049c110800 JavaThread "Finalizer" daemon [_thread_blocked, id=29115, stack(0x00002b04ccf0d000,0x00002b04cd00e000)]
+  0x00002b049c12e800 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=29116, stack(0x00002b04cd00e000,0x00002b04cd10f000)]
+=>0x00002b049c130800 JavaThread "C2 CompilerThread0" daemon [_thread_in_native, id=29117, stack(0x00002b04cd10f000,0x00002b04cd210000)]
+  0x00002b049c132800 JavaThread "C1 CompilerThread0" daemon [_thread_in_vm, id=29118, stack(0x00002b04cd210000,0x00002b04cd311000)]
+  0x00002b049c135000 JavaThread "Sweeper thread" daemon [_thread_blocked, id=29119, stack(0x00002b04cd311000,0x00002b04cd412000)]
+  0x00002b049c203000 JavaThread "Common-Cleaner" daemon [_thread_blocked, id=29120, stack(0x00002b04cd51e000,0x00002b04cd61f000)]
+  0x00002b04cd650800 JavaThread "C1 CompilerThread1" daemon [_thread_in_native, id=29121, stack(0x00002b04cd661000,0x00002b04cd762000)]
+  0x00002b04cd76c800 JavaThread "C1 CompilerThread2" daemon [_thread_in_native, id=29122, stack(0x00002b04cd77e000,0x00002b04cd87f000)]
+  0x00002b04cd88b800 JavaThread "C1 CompilerThread3" daemon [_thread_in_native, id=29123, stack(0x00002b04cd8a2000,0x00002b04cd9a3000)]
+  0x00002b04cd9fb800 JavaThread "C2 CompilerThread1" daemon [_thread_in_native, id=29124, stack(0x00002b04cda0c000,0x00002b04cdb0d000)]
+  0x00002b04cdb16800 JavaThread "C2 CompilerThread2" daemon [_thread_in_native, id=29125, stack(0x00002b04cdb2a000,0x00002b04cdc2b000)]
+
+Other Threads:
+  0x00002b049c104000 VMThread "VM Thread" [stack: 0x00002b04ccd0c000,0x00002b04cce0c000] [id=29113]
+  0x00002b049c02d000 GCTaskThread "GC Thread#0" [stack: 0x00002b04b77e9000,0x00002b04b78e9000] [id=29108]
+  0x00002b049c060000 ConcurrentGCThread "G1 Main Marker" [stack: 0x00002b04c12cd000,0x00002b04c13cd000] [id=29109]
+  0x00002b049c062000 ConcurrentGCThread "G1 Conc#0" [stack: 0x00002b04c13cf000,0x00002b04c14cf000] [id=29110]
+  0x00002b049c0a0800 ConcurrentGCThread "G1 Refine#0" [stack: 0x00002b04cc204000,0x00002b04cc304000] [id=29111]
+  0x00002b049c0a2000 ConcurrentGCThread "G1 Young RemSet Sampling" [stack: 0x00002b04cc306000,0x00002b04cc406000] [id=29112]
+
+Threads with active compile tasks:
+C2 CompilerThread0    360  147       4       java.lang.String::(null) (15 bytes)
+C1 CompilerThread0    360  155       3       java.util.Optional::(null) (15 bytes)
+C1 CompilerThread1    360  157       3       java.lang.String::(null) (29 bytes)
+C1 CompilerThread2    360  158       3       java.lang.StringLatin1::(null) (61 bytes)
+C1 CompilerThread3    360  154       3       java.util.concurrent.ConcurrentHashMap::(null) (289 bytes)
+C2 CompilerThread1    360  143       4       java.util.ImmutableCollections$SetN$SetNIterator::(null) (47 bytes)
+C2 CompilerThread2    360  133       4       java.util.ImmutableCollections$SetN$SetNIterator::(null) (56 bytes)
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00002b049c0125e0] Threads_lock - owner thread: 0x00002b049c014800
+
+Heap address: 0x0000000080000000, size: 2048 MB, Compressed Oops mode: 32-bit
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 3
+Compressed class space size: 1073741824 Address: 0x0000000100000000
+
+Heap:
+ garbage-first heap   total 8192K, used 1024K [0x0000000080000000, 0x0000000100000000)
+  region size 1024K, 2 young (2048K), 0 survivors (0K)
+ Metaspace       used 4675K, capacity 4759K, committed 4864K, reserved 1056768K
+  class space    used 401K, capacity 438K, committed 512K, reserved 1048576K
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, A=archive, TAMS=top-at-mark-start (previous, next)
+|   0|0x0000000080000000, 0x0000000080000000, 0x0000000080100000|  0%| F|  |TAMS 0x0000000080000000, 0x0000000080000000| Untracked 
+|   1|0x0000000080100000, 0x0000000080100000, 0x0000000080200000|  0%| F|  |TAMS 0x0000000080100000, 0x0000000080100000| Untracked 
+|   2|0x0000000080200000, 0x0000000080200000, 0x0000000080300000|  0%| F|  |TAMS 0x0000000080200000, 0x0000000080200000| Untracked 
+|   3|0x0000000080300000, 0x0000000080300000, 0x0000000080400000|  0%| F|  |TAMS 0x0000000080300000, 0x0000000080300000| Untracked 
+|   4|0x0000000080400000, 0x0000000080400000, 0x0000000080500000|  0%| F|  |TAMS 0x0000000080400000, 0x0000000080400000| Untracked 
+|   5|0x0000000080500000, 0x0000000080500000, 0x0000000080600000|  0%| F|  |TAMS 0x0000000080500000, 0x0000000080500000| Untracked 
+|   6|0x0000000080600000, 0x000000008066c2b8, 0x0000000080700000| 42%| E|  |TAMS 0x0000000080600000, 0x0000000080600000| Complete 
+|   7|0x0000000080700000, 0x0000000080800000, 0x0000000080800000|100%| E|CS|TAMS 0x0000000080700000, 0x0000000080700000| Complete 
+
+Card table byte_map: [0x00002b04bca06000,0x00002b04bce06000] _byte_map_base: 0x00002b04bc606000
+
+Marking Bits (Prev, Next): (CMBitMap*) 0x00002b049c0572b8, (CMBitMap*) 0x00002b049c0572f0
+ Prev Bits: [0x00002b04bd206000, 0x00002b04bf206000)
+ Next Bits: [0x00002b04bf206000, 0x00002b04c1206000)
+
+Polling page: 0x00002b0499ce8000
+
+Metaspace:
+
+Usage:
+  Non-class:      4.22 MB capacity,     4.17 MB ( 99%) used, 
