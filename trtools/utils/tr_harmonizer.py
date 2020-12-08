@@ -35,34 +35,6 @@ class VcfTypes(enum.Enum):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
 
-def GetVCFType(vcfreader: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto"):
-    """Infer the vcf type of the reader.
-
-    If vcftype is not auto just return that string (assuming it corresponds
-    to a valid vcf type). If it auto, try to infer the vcftype from vcfreader.
-
-    Parameters
-    ----------
-    vcfreader :
-      cyvcf2 VCF object
-    vcftype :
-      Type of the VCF
-
-    Returns
-    -------
-    vcftype : str
-      Inferred VCF type
-    """
-    tr_harmonizer = TRRecordHarmonizer(vcfreader, vcftype)
-    if vcftype != "auto":
-        if vcftype == tr_harmonizer.vcftype.name:
-            return vcftype
-        else:
-            return None
-    else:
-        return tr_harmonizer.vcftype.name
-
-
 def _ToVCFType(vcftype: Union[str, VcfTypes]):
     # Convert the input to a VcfTypes enum.
     #
@@ -83,7 +55,7 @@ def _ToVCFType(vcftype: Union[str, VcfTypes]):
                         .format(vcftype, type(vcftype))))
 
 
-def MayHaveImpureRepeats(vcftype: VcfTypes):
+def MayHaveImpureRepeats(vcftype: Union[str, VcfTypes]):
     """
     Determine if any of the alleles in this VCF may contain impure repeats.
 
@@ -119,7 +91,7 @@ def MayHaveImpureRepeats(vcftype: VcfTypes):
     _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
-def HasLengthRefGenotype(vcftype: VcfTypes):
+def HasLengthRefGenotype(vcftype: Union[str, VcfTypes]):
     """
     Determine if the reference alleles of variants are given by length.
 
@@ -152,7 +124,7 @@ def HasLengthRefGenotype(vcftype: VcfTypes):
     _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
-def HasLengthAltGenotypes(vcftype: VcfTypes):
+def HasLengthAltGenotypes(vcftype: Union[str, VcfTypes]):
     """
     Determine if the alt alleles of variants are given by length.
 
@@ -183,7 +155,7 @@ def HasLengthAltGenotypes(vcftype: VcfTypes):
     _UnexpectedTypeError(vcftype)  # pragma: no cover
 
 
-def _UnexpectedTypeError(vcftype: VcfTypes):
+def _UnexpectedTypeError(vcftype: Union[str, VcfTypes]):
     raise ValueError("self.vcftype is the unexpected type {}"
                      .format(vcftype))
 
@@ -202,25 +174,31 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
     vcftype :
         If it is unclear which of a few VCF callers produced the underlying
         VCF (because the output markings of those VCF callers are similar)
-        this string can be supplied by the user to choose from amongst
-        those callers. Otherwise this method would fail.
-        Note: this will still fail if the VCF caller does not look at all like
-        the specified vcftype.
+        this string can be supplied by the user to choose from among
+        those callers.
 
     Returns
     -------
     vcftype : VcfTypes
        Type of the VCF file
+
+    Raises
+    ------
+    TypeError
+      If this VCF does not look like it was produced by any supported TR
+      caller, or if it looks like it could have been produced by more than one
+      supported TR caller and vcftype == 'auto', or if vcftype doesn't match
+      any of the callers that could have produced this VCF.
     """
     possible_vcf_types = set()
     header = vcffile.raw_header.lower()
-    if 'command=GangSTR'.lower() in header:
+    if 'command=' in header and 'gangstr' in header:
         possible_vcf_types.add(VcfTypes.gangstr)
-    if 'command=HipSTR'.lower() in header:
+    if 'command=' in header and 'hipstr' in header:
         possible_vcf_types.add(VcfTypes.hipstr)
-    if 'source=adVNTR'.lower() in header:
+    if 'source=advntr' in header:
         possible_vcf_types.add(VcfTypes.advntr)
-    if 'source=PopSTR'.lower() in header:
+    if 'source=popstr' in header:
         possible_vcf_types.add(VcfTypes.popstr)
     if re.search(r'ALT=<ID=STR\d+'.lower(), header):
         possible_vcf_types.add(VcfTypes.eh)
@@ -228,28 +206,26 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
     if len(possible_vcf_types) == 0:
         raise TypeError('Could not identify the type of this vcf')
 
-    if len(possible_vcf_types) == 1:
-        return next(iter(possible_vcf_types))
-
-    if len(possible_vcf_types) > 1:
-        if vcftype == "auto":
+    if vcftype == 'auto':
+        if len(possible_vcf_types) == 1:
+            return next(iter(possible_vcf_types))
+        else:
             raise TypeError(('Confused - this vcf looks like it could have '
                              'been any of the types: {}. Please specify '
                              '--vcftype to choose one of '
                              'them').format(possible_vcf_types))
-        else:
-            user_supplied_type = _ToVCFType(vcftype)
-            if user_supplied_type in possible_vcf_types:
-                return user_supplied_type
 
-            raise TypeError(('Confused - this vcf looks like it could have '
-                             'been any of the types: {}. But you specified: '
-                             '--vcftype {}.which is not one of those types. '
-                             'Please specify one of them with --vcftype'
-                             .format(possible_vcf_types, vcftype)))
+    user_supplied_type = _ToVCFType(vcftype)
+    if user_supplied_type in possible_vcf_types:
+        return user_supplied_type
+    else:
+        raise TypeError(('Confused - this vcf looks like it could have '
+                         'been any of the types: {}. But you specified: '
+                         '--vcftype {} which is not one of those types.'
+                         .format(possible_vcf_types, vcftype)))
 
 
-def HarmonizeRecord(vcftype: VcfTypes, vcfrecord: cyvcf2.Variant):
+def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     """
     Create a standardized TRRecord object out of a cyvcf2.Variant
     object of possibly unknown type.
@@ -284,7 +260,7 @@ def HarmonizeRecord(vcftype: VcfTypes, vcfrecord: cyvcf2.Variant):
 
 def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
     """
-    Turn a vcf.model._Record with GangSTR content into a TRRecord.
+    Turn a cyvcf2.Variant with GangSTR content into a TRRecord.
 
     Parameters
     ----------
@@ -314,7 +290,7 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
 
 def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     """
-    Turn a vcf.model._Record with HipSTR content into a TRRecord.
+    Turn a cyvcf2.Variant with HipSTR content into a TRRecord.
 
     Parameters
     ----------
@@ -390,7 +366,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
 
 def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
     """
-    Turn a vcf.model._Record with adVNTR content into a TRRecord.
+    Turn a cyvcf2.Variant with adVNTR content into a TRRecord.
 
     Parameters
     ----------
@@ -450,7 +426,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
 
 def _HarmonizePopSTRRecord(vcfrecord: cyvcf2.Variant):
     """
-    Turn a vcf.model._Record with popSTR content into a TRRecord.
+    Turn a cyvcf2.Variant with popSTR content into a TRRecord.
 
     Parameters
     ----------
@@ -490,7 +466,7 @@ def _HarmonizePopSTRRecord(vcfrecord: cyvcf2.Variant):
 
 def _HarmonizeEHRecord(vcfrecord: cyvcf2.Variant):
     """
-    Turn a vcf.model._Record with EH content into a TRRecord.
+    Turn a cyvcf2.Variant with EH content into a TRRecord.
 
     Parameters
     ----------
@@ -658,8 +634,6 @@ class TRRecord:
         self.vcfrecord = vcfrecord
         self.ref_allele = ref_allele
         self.alt_alleles = alt_alleles
-        if alt_alleles and self.alt_alleles[0] == 'CAGCAGCAG':
-            raise ValueError("Alt issue!")
         self.motif = motif
         self.record_id = record_id
         self.chrom = vcfrecord.CHROM
@@ -672,7 +646,8 @@ class TRRecord:
         self.quality_field = quality_field
         self.quality_score_transform = quality_score_transform
 
-        if full_alleles is not None and alt_alleles is None:
+        if full_alleles is not None and (alt_alleles is None or ref_allele is
+                                         None):
             raise ValueError("Cannot set full alleles without setting "
                              "regular alleles")
 
@@ -783,8 +758,8 @@ class TRRecord:
 
         max_len = max(len(allele) for allele in seq_alleles)
         seq_array = np.empty(idx_gts.shape, dtype="<U{}".format(max_len))
-        seq_array[:, -1][idx_gts[:, -1] == 0] = 0
-        seq_array[:, -1][idx_gts[:, -1] == 1] = 1
+        seq_array[:, -1][idx_gts[:, -1] == 0] = '0'
+        seq_array[:, -1][idx_gts[:, -1] == 1] = '1'
         for allele_idx, seq_allele in enumerate(seq_alleles):
             seq_array[:, :-1][idx_gts[:, :-1] == allele_idx] = seq_allele
         seq_array[:, :-1][idx_gts[:, :-1] == -1] = ''
@@ -1347,7 +1322,7 @@ class TRRecordHarmonizer:
 
     This class provides the object oriented paradigm for iterating
     through a TR vcf. If you wish to use the functional paradigm and
-    provide the vcf.model._Record objects yourself, use the top-level
+    provide the cyvcf2.Variant objects yourself, use the top-level
     functions in this module.
 
     Parameters
@@ -1362,18 +1337,17 @@ class TRRecordHarmonizer:
     vcffile : cyvcf2.VCF instance
     vcftype : enum
        Type of the VCF file. Must be included in VcfTypes
+
+    Raises
+    ------
+    TypeError
+        If the type of the VCF cannot be properly inferred.
+        See :py:meth:`InferVCFType` for more details.
     """
 
     def __init__(self, vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto"):
         self.vcffile = vcffile
-        if vcftype == "auto":
-            self.vcftype = InferVCFType(vcffile)
-        else:
-            self.vcftype = _ToVCFType(vcftype)
-            inferred_type = InferVCFType(vcffile, vcftype)
-            if inferred_type != self.vcftype:
-                raise TypeError("Trying to read a {} vcf as a {} vcf".format(
-                    inferred_type, self.vcftype))
+        self.vcftype = InferVCFType(vcffile, vcftype)
 
     def MayHaveImpureRepeats(self) -> bool:
         """
