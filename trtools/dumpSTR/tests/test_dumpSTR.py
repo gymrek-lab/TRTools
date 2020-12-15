@@ -144,6 +144,7 @@ def test_HipSTRFile(args, testDumpSTRdir):
     args.hipstr_min_supp_reads = 2
     args.hipstr_max_call_flank_indel = 0.05
     args.hipstr_max_call_stutter = 0.01
+    args.vcftype = 'hipstr'
     retcode = main(args)
     assert retcode==0
 
@@ -246,6 +247,10 @@ def test_LocusLevel(args, testDumpSTRdir):
         args.use_length = True
         args.drop_filtered = False
         args.filter_hrun = True
+        if 'hipstr' in fname:
+            args.vcftype = 'hipstr'
+        else:
+            args.vcftype = 'auto'
         assert main(args)==0
         args.drop_filtered = True
         assert main(args)==0
@@ -288,6 +293,7 @@ def test_InvalidHipstrOptions(args, testDumpSTRdir):
     args.vcf = fname
     args.num_records = 10
     args.hipstr_max_call_flank_indel = -1
+    args.vcftype = 'hipstr'
     retcode = main(args)
     assert retcode==1
     args.hipstr_max_call_flank_indel = None
@@ -593,6 +599,8 @@ def _assert_same_vcf(fname1, fname2, info_ignore = set(),
             if lines is None:
                 return
             line1, line2 = lines
+            line1 = line1.split()
+            line2 = line2.split()
             for idx in range(len(line1)):
                 if idx <= 6 or idx == 8:
                     if idx == 8:

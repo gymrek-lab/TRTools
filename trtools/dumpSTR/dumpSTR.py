@@ -975,7 +975,7 @@ def main(args):
             field_issues = True
             common.WARNING(field_issue_statement.format('info', 'AC'))
         elif info_fields['AC']['Description'] != ac_description:
-            common.WARNING("Overwriting preexisting info AC field")
+            common.WARNING("Overwriting the preexisting info AC field")
 
     refac_description = 'Reference allele count'
     if 'REFAC' not in info_fields:
