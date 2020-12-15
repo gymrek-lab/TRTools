@@ -186,8 +186,6 @@ def GetHWEP(trrecord: trh.TRRecord,
     ----------
     trrecord:
           The record that we are computing the statistic for
-    sample_index:
-          List of list of the samples that we include when compute the statistic
     sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
@@ -226,8 +224,6 @@ def GetHet(trrecord: trh.TRRecord,
     ----------
     trrecord:
           The record that we are computing the statistic for
-    sample_index:
-          List of list of the samples that we include when compute the statistic
     sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
@@ -265,8 +261,6 @@ def GetEntropy(trrecord: trh.TRRecord,
     ----------
     trrecord:
           The record that we are computing the statistic for
-    sample_index:
-          List of list of the samples that we include when compute the statistic
     sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
@@ -299,8 +293,6 @@ def GetMean(trrecord: trh.TRRecord,
     ----------
     trrecord:
           The record that we are computing the statistic for
-    sample_index:
-          List of list of the samples that we include when compute the statistic
     sample_indexes:
           A list of indexes into the numpy rows array to extract subsets of
           genotypes to stratify over.
@@ -324,13 +316,6 @@ def GetMode(trrecord: trh.TRRecord,
             sample_indexes: List[Any] = [None],
             uselength: bool = True) -> List[float]:
     """Compute the mode of the allele lengths
-
-    Parameters
-    ----------
-    trrecord:
-          The record that we are computing the statistic for
-    sample_index:
-          List of list of the samples that we include when compute the statistic
 
     Parameters
     ----------

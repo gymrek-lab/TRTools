@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 import trtools.utils.mergeutils as mergeutils
+import trtools.utils.tr_harmonizer as trh
 
 
 @pytest.fixture
@@ -43,7 +44,7 @@ def test_CheckVCFType(vcfdir):
     hipstr_vcf = cyvcf2.VCF(hipstr_path)
     snps_vcf = cyvcf2.VCF(snps_path)
     # TODO add tests to infer vcf type
-    assert "gangstr" == mergeutils.GetAndCheckVCFType([gangstr_vcf], "gangstr")
+    assert trh.VcfTypes.gangstr == mergeutils.GetAndCheckVCFType([gangstr_vcf], "gangstr")
 
     with pytest.raises(ValueError) as info:
         print(mergeutils.GetAndCheckVCFType([gangstr_vcf, hipstr_vcf], "auto"))

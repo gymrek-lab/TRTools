@@ -84,29 +84,38 @@ def GetSamples(readers, usefilenames=False):
     return samples
 
 def GetAndCheckVCFType(vcfs, vcftype):
-    """Infer vcf type of readers
+    """Infer type of multiple VCFs
 
-    Infer VCF type of each reader.
     If they are all the same, return that type
     If not, return error
 
     Parameters
     ----------
     vcfs: list of cyvcf2.VCF
-      Readers being merged
+      Multiple VCFs
     vcftype : str
-      Type of VCF
+      If it is unclear which of a few VCF callers produced the underlying
+      VCFs (because the output markings of those VCF callers are similar)
+      this string can be supplied by the user to choose from among
+      those callers.
 
     Returns
     -------
     vcftype : str
       Inferred VCF type
+
+    Raises
+    ------
+    TypeError
+      If one of the VCFs does not look like it was produced by any supported TR
+      caller, or if one of the VCFs looks like it could have been produced by
+	  more than one supported TR caller and vcftype == 'auto', or if, for one
+      of the VCFs, vcftype doesn't match any of the callers that could have
+	  produced that VCF, or if the types of the VCFs don't match
     """
     types = []
     for vcf in vcfs:
-        vcf_type = trh.GetVCFType(vcf, vcftype)
-        if vcf_type == None:
-            raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
+        vcf_type = trh.InferVCFType(vcf, vcftype)
         types.append(vcf_type)
     if len(set(types)) == 1:
         return types[0]
