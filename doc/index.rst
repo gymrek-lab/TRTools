@@ -23,5 +23,6 @@ Table of Contents
    UTILITIES
    CALLERS
    LIBRARY
+   RELEASE_NOTES
    site_indices
 

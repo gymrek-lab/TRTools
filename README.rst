@@ -103,8 +103,6 @@ Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
-* TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_.
-
 
 Contributing
 ------------

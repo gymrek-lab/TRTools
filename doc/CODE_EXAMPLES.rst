@@ -19,26 +19,27 @@ See :doc:`here <trtools.utils.utils>` for a complete list of utility functions.
 TR Harmonization
 ----------------
 
-Note: this library is still under development, and this interface will likely be changed in future updates.
+Note: the interfaces provided by this library are still under active development. While their rough shape will likely stay the same, particular details are likely to change in future releases.
 
 The module :doc:`trtools.utils.tr_harmonizer` is responsible for providing a genotyper agnostic view of a VCF containing TR records. The class that provides this functionality is :py:class:`trtools.utils.tr_harmonizer.TRRecord`. There are two coding paradigms for accessing this API. If you just want to iterate through the TRRecords in a vcf, use the TRRecordHarmonizer::
 
-  import vcf
+  import cyvcf2
   import trtools.utils.tr_harmonizer as trh
   
-  invcf = vcf.Reader(filename = ...)
+  invcf = cyvcf2.VCF("path/to/my.vcf")
   harmonizer = trh.TRRecordHarmonizer(invcf)
   for trrecord in harmonizer:
         # do something with the trrecord 
-        for sample in trrecord:
-                print(sample, trrecord.GetLengthGenotype(sample))
+        # here, we print out an array of length genotypes
+        # containing entries for each haplotype of each sample
+        print(trrecord.GetLengthGenotypes())
 
-If you want to first work with the underlying record that pyvcf returns, and then later convert it to a TRRecord, use the module method HarmonizeRecord::
+If you want to work with the cyvcf2 VCF object yourself and then later convert it to a TRRecord, use the module method HarmonizeRecord::
 
-  import vcf
+  import cyvcf2
   import trtools.utils.tr_harmonizer as trh
 
-  invcf = vcf.Reader(filename = ...)
+  invcf = cyvcf2.VCF("path/to/my.vcf")
   #make sure to grab the vcf's filetype
   vcftype = trh.InferVCFType(invcf)
   for record in invcf:
@@ -51,8 +52,9 @@ If you want to first work with the underlying record that pyvcf returns, and the
 
     trrecord = trh.HarmonizeRecord(vcftype, record)
     # do something with the tr record
-    for sample in trrecord:
-       print(sample, trrecord.GetLengthGenotype(sample))
+    # here, we print out an array of string genotypes
+    # containing entries for each haplotype of each sample
+    print(trrecord.GetStringGenotypes())
 
-See :py:mod:`trtools.utils.tr_harmonizer` for a complete list of all functions used for inspecting vcfs and TRRecords.
+See :py:mod:`trtools.utils.tr_harmonizer` for a complete list of all functions used for inspecting VCFs and TRRecords.
 
