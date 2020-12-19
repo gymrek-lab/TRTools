@@ -93,13 +93,13 @@
 ##INFO=<ID=OUTFRAME_PGEOM,Number=1,Type=Float,Description="Parameter for out-of-frame geometric step size distribution">
 ##INFO=<ID=OUTFRAME_UP,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame increase in read's STR size">
 ##INFO=<ID=OUTFRAME_DOWN,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame decrease in read's STR size">
-##INFO=<ID=BPDIFFS,Number=-1,Type=Integer,Description="Base pair difference of each alternate allele from the reference allele">
+##INFO=<ID=BPDIFFS,Number=A,Type=Integer,Description="Base pair difference of each alternate allele from the reference allele">
 ##INFO=<ID=START,Number=1,Type=Integer,Description="Inclusive start coodinate for the repetitive portion of the reference allele">
 ##INFO=<ID=END,Number=1,Type=Integer,Description="Inclusive end coordinate for the repetitive portion of the reference allele">
 ##INFO=<ID=PERIOD,Number=1,Type=Integer,Description="Length of STR motif">
 ##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
 ##INFO=<ID=REFAC,Number=1,Type=Integer,Description="Reference allele count">
-##INFO=<ID=AC,Number=-1,Type=Integer,Description="Alternate allele counts">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Alternate allele counts">
 ##INFO=<ID=NSKIP,Number=1,Type=Integer,Description="Number of samples not genotyped due to various issues">
 ##INFO=<ID=NFILT,Number=1,Type=Integer,Description="Number of samples whose genotypes were filtered due to various issues">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total number of valid reads used to genotype all samples">
@@ -123,4 +123,4 @@
 ##FORMAT=<ID=ALLREADS,Number=1,Type=String,Description="Base pair difference observed in each read's Needleman-Wunsch alignment">
 ##FORMAT=<ID=MALLREADS,Number=1,Type=String,Description="Maximum likelihood bp diff in each read based on haplotype alignments for reads that span the repeat region by at least 5 base pairs">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	GTEX-R55C-0003	GTEX-R55C-0004
-1	16717	STR_2	GGTGGTGGTGGGGGCGGTGGGGGTGGTG	GGTGGTGGTGGGGGCGGTGGTGGTGCTG	.	.	START=16717;END=16744;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0/1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0/0:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2
+1	16717	STR_2	GGTGGTGGTGGGGGCGGTGGGGGTGGTG	GGTGGTGGTGGGGGCGGTGGTGGTGCTG	.	.	START=16717;END=16744;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|0:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2

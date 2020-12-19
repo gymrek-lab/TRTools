@@ -19,6 +19,7 @@ Command line interface changes:
   will overwrite them and issue a warning in case that was not intended)
 
 Output changes:
+
 * DumpSTR call level filters now have the value of the call which triggered
   the filter appended to the filter name in the FILTER format field. (e.g.
   GangSTRCallMinDepth12 because the field had a depth of 12 and that's lower
@@ -30,6 +31,13 @@ Output changes:
 * When DumpSTR filters a call and replaces each of its format fields with the no call
   '.', fields with number>1 are now replaced with '.,.' e.g. for a number=2 field, rather
   than just a single '.'
+* MergeSTR header lines are now copied over from the input VCFs instead of
+  only copying over a few recognized fields (e.g. ID and Length
+  were the only contig fields that were previously retained, but URL wouldn't be)
+* MergeSTR output alt alleles for eh and popstr are now ordered by length.
+  MergeSTR output alt alleles for advntr, gangstr and hipstr, when there are multiple
+  alt alleles of the same length, those alleles are now ordered alphabetically instead
+  of arbitrarily.
 
 Python interface changes:
 
@@ -52,11 +60,20 @@ Bug fixes:
 * If you specify --drop-filtered DumpSTR will no longer set all values in the 
   output .loclog.tab file to zero and instead set them to their proper values
   (which are the same as if you had not specified --drop-filtered)
+* MergeSTR now outputs the same phase as the input files instead of always outputting
+  unphased data
+* MergeSTR now correctly outputs Number=A, G or R correctly in FORMAT fields instead
+  of outputing Number=-1, -2 or -3
 
 Quality of life improvements:
 
 * StatSTR, when printing output to a file, now prints timing diagnostics to stdout.
 * DumpSTR will fail faster if output directory does not exist
+* When encountering issues with identifying the caller type for each input VCF,
+  MergeSTR now prints an error and gracefully returns instead of dying to
+  an uncaught exception
+* MergeSTR incompatible INFO field warnings now specify which locus has an
+  incompatible field
 
 Regressions:
 

@@ -58,15 +58,16 @@ def GetSharedSamples(readers, usefilenames=False):
         samples = samples.intersection(set(r.samples))
     return samples
 
-def GetSamples(readers, usefilenames=False):
+def GetSamples(readers, filenames=None):
     r"""Get list of samples used in all files being merged
 
     Parameters
     ----------
-    readers : list of vcf.Reader objects
-    usefilenames : bool, optional
-       If True, add filename to sample names.
+    readers : list of cyvcf2.VCF
+    usefilenames : optional list of filenames
+       If present, add filename to sample names.
        Useful if sample names overlap across files
+       Must be the same length as readers
 
     Returns
     -------
@@ -74,13 +75,17 @@ def GetSamples(readers, usefilenames=False):
        List of samples in merged list
     """
     samples = []
-    for r in readers:
-        if usefilenames:
-            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
-        else: samples = samples + r.samples
-    if len(set(samples))!=len(samples):
-        common.WARNING("Duplicate samples found.")
-        return []
+    if filenames:
+        if len(readers) != len(filenames):
+            raise ValueError("Must have same number of VCFs and VCF filenames")
+        for r, filename in zip(readers, filenames):
+            filename = filename.strip(".vcf.gz")
+            samples += [filename + ":" + s for s in r.samples]
+    else:
+        for r in readers:
+            if set(samples).intersection(set(r.samples)):
+                raise ValueError("Found the same sample ID(s) in multiple input VCFs")
+            samples += r.samples
     return samples
 
 def GetAndCheckVCFType(vcfs, vcftype):

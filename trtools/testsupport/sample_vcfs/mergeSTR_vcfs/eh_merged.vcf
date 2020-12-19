@@ -1,5 +1,5 @@
 ##fileformat=VCFv4.1
-##command=/home/jmargoliash/trtools/repo/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_eh1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_eh2.vcf.gz --vcftype eh --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/eh_merged
+##command=/home/jmargoliash/anaconda3/envs/trtools/lib/python3.6/site-packages/pytest/__main__.py trtools/mergeSTR/tests/test_mergeSTR.py
 ##contig=<ID=chr4,length=156508116>
 ##ALT=<ID=STR18,Description="Allele comprised of 18 repeat units">
 ##ALT=<ID=STR16,Description="Allele comprised of 16 repeat units">
@@ -19,4 +19,4 @@
 ##FORMAT=<ID=REPCN,Number=1,Type=String,Description="Number of repeat units spanned by the allele">
 ##FORMAT=<ID=SO,Number=1,Type=String,Description="Type of reads that support the allele; can be SPANNING, FLANKING, or INREPEAT meaning that the reads span, flank, or are fully contained in the repeat">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA12878_S1_HTT	NA12822_S1_HTT
-chr4	3076603	.	C	<STR15>,<STR18>,<STR16>	.	.	END=3076660;REF=19;REPID=HTT;RL=57;RU=CAG;VARID=HTT	GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO	3/2:319/320:0/0:4/7:34.624013:16-16/18-18:16/18:SPANNING/SPANNING	1/1:310/322:0/0:3/6:33.461021:15-15/19-19:15/19:SPANNING/SPANNING
+chr4	3076603	.	C	<STR15>,<STR16>,<STR18>	.	.	END=3076660;REF=19;REPID=HTT;RL=57;RU=CAG;VARID=HTT	GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO	2/3:319/320:0/0:4/7:34.624012:16-16/18-18:16/18:SPANNING/SPANNING	1/1:310/322:0/0:3/6:33.46102:15-15/19-19:15/19:SPANNING/SPANNING
