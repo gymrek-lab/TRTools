@@ -497,10 +497,7 @@ def main(args):
 
     # WriteMergedHeader will confirm that the list of contigs is the same for
     # each vcf, so just pulling it from one here is fine
-    chroms = []
-    for header_line in vcfreaders[0].header_iter():
-        if header_line['HeaderType'].lower() == 'contig':
-            chroms += [header_line['ID']]
+    chroms = utils.GetContigs(vcfreaders[0])
 
     ### Check inferred type of each is the same
     try:

@@ -13,8 +13,6 @@ from typing import Dict, List, Set
 
 import cyvcf2
 import numpy as np
-import vcf
-from vcf.parser import _Filter, _Format, _Info
 
 from . import filters as filters
 import trtools.utils.common as common
@@ -583,7 +581,6 @@ def ApplyCallFilters(record: trh.TRRecord,
         all_filter_text = np.char.add(all_filter_text, filt_output_text)
 
     # append NOCALL to each sample that has not been called
-    nocalls = ~record.GetCalledSamples()
     if np.any(nocalls):
         nocall_text = np.empty((nocalls.shape[0]), dtype='U6')
         nocall_text[nocalls] = 'NOCALL'

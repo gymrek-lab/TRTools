@@ -523,7 +523,7 @@ def test_GetMaxAllele():
     al_max = rec.GetMaxAllele()
     assert al_max == true_al_max
 
-    # Test example where there are no samples
+    # Test example where there are no called samples
     rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
     true_al_max = np.nan
     al_max = rec.GetMaxAllele()
@@ -535,6 +535,42 @@ def test_GetMaxAllele():
     rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
     al_max_sindex = rec.GetMaxAllele(sample_index=sindex)
     assert al_max_sindex == true_al_max_sindex
+
+
+def test_GetCalledSamples():
+    # Test working example
+    dummy_record = get_dummy_record()
+    ref_allele = dummy_record.REF
+    alt_alleles = dummy_record.ALT
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
+    assert np.all(rec.GetCalledSamples() == [True] * 5 + [False])
+    assert np.all(rec.GetCalledSamples(strict=False))
+
+    # Test differences in ploidy
+    rec = trh.TRRecord(get_triploid_record(), ref_allele, [], "CAG", "", None)
+    assert np.all(rec.GetCalledSamples(strict=True))
+
+    # Test a true no call
+    rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
+    assert np.all(~rec.GetCalledSamples())
+
+
+def test_GetSamplePloidies():
+    # All samples have the same ploidy
+    # even a partial nocall
+    dummy_record = get_dummy_record()
+    ref_allele = dummy_record.REF
+    alt_alleles = dummy_record.ALT
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
+    assert np.all(rec.GetSamplePloidies() == 2)
+
+    # Test differences in ploidy
+    rec = trh.TRRecord(get_triploid_record(), ref_allele, [], "CAG", "", None)
+    assert np.all(rec.GetSamplePloidies() == [2,2,2,3])
+
+    # Test a no call, sample ploidy should not change
+    rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
+    assert np.all(rec.GetSamplePloidies() == 2)
 
 
 #### Test TRRecordHarmonizer on different files ####

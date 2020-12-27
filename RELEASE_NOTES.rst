@@ -17,6 +17,14 @@ Command line interface changes:
   it now errors out and asks you to rename those fields before rerunning 
   DumpSTR. (If they already exist but have the correct number and type DumpSTR
   will overwrite them and issue a warning in case that was not intended)
+* CompareSTR's docs used to claim that when comparing alleles from different callers
+  those callers must use the same allele notation (e.g. implying that ExpansionHunter's
+  '<STR12>' and GangSTR's 'ACACACACACAC' notation would always mismatch). That statement
+  was never true for length based comparisons - CompareSTR has always been able to
+  do length based comparisons regardless of notation. The incorrect claim has been
+  removed from CompareSTR's docs.
+* CompareSTR's docs now explicitly state how to order phased and unphased calls to
+  prevent calls from spuriously mismatching
 
 Output changes:
 
@@ -38,6 +46,9 @@ Output changes:
   MergeSTR output alt alleles for advntr, gangstr and hipstr, when there are multiple
   alt alleles of the same length, those alleles are now ordered alphabetically instead
   of arbitrarily.
+* CompareSTR no longer outputs the file <prefix>-callcompare.tab - the existence
+  of that file was never documented, and besides, all its information could
+  be seen more easily simply by looking at the input VCFs
 
 Python interface changes:
 
@@ -85,4 +96,10 @@ Outstanding bugs:
 * DumpSTR remains untested on ExpansionHunter filters and files
 * DumpSTR remains untested on loci with variable ploidy and/or partially
   genotyped samples (e.g. .|2)
-
+* When running CompareSTR with the --stratify options where --stratify-file
+  is either not specified or is explicitly set to zero, for each format field
+  all calls where the value of that field in vcf1 does not fall into the same
+  bin as the value of that field in vcf2 are silently not compared for that format field.
+  The correct behavior here is probably to create paired bins based on a range
+  of values from vcf1 and a range from vcf2. Regardless, the behavior here should
+  be documented.

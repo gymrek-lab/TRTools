@@ -785,9 +785,20 @@ class TRRecord:
             return None
         return self.vcfrecord.genotype.array()
 
-    def GetCalledSamples(self) -> Optional[np.ndarray]:
+    def GetCalledSamples(self, strict: bool = True) -> Optional[np.ndarray]:
         """
         Get an array listing which samples have been called at this locus.
+
+        Parameters
+        ----------
+        strict :
+            By default genotypes such as '1/.' are considered not called
+            because at least one of the haplotypes present is not called.
+            Set strict = False to mark these as being called.
+            Note: genotypes having lesser ploidy will not be marked
+            as no calls even when strict = True (e.g. if some samples
+            have tetraploid genotypes at this locus, a genotype of '1/2/2'
+            will be marked as called even though it is triploid)
 
         Returns
         -------
@@ -795,8 +806,6 @@ class TRRecord:
             A bool array of length equal to the number of samples,
             where true indicates a sample has been called
             and false indicates otherwise.
-            Note: a sample with any called haplotypes will be marked
-            as called, even if it has a nonstandard ploidy.
             If there are no samples in the vcf this record comes from
             then return None instead
         """
@@ -804,9 +813,34 @@ class TRRecord:
         if gt_idxs is None:
             return None
 
-        return ~np.all(np.logical_or(gt_idxs[:, :-1] == -1,
-                                     gt_idxs[:, :-1] == -2),
-                       axis=1)
+        if strict:
+            return ~np.any(gt_idxs[:, :-1] == -1, axis=1)
+        else:
+            return ~np.all(np.logical_or(gt_idxs[:, :-1] == -1,
+                                         gt_idxs[:, :-1] == -2),
+                           axis=1)
+
+    def GetSamplePloidies(self) -> Optional[np.ndarray]:
+        """
+        Get an array listing the ploidies of each sample
+
+        Returns
+        -------
+        Optional[np.ndarray]
+            An array of positive ints with length equal to the
+            number of samples where each entry denotes the
+            number of genotypes for each sample at this locus
+            (including no calls)
+            If there are no samples in the vcf this record comes from
+            then return None instead
+        """
+        gt_idxs = self.GetGenotypeIndicies()
+        if gt_idxs is None:
+            return None
+
+        return (
+            gt_idxs.shape[1] - 1 - np.sum(gt_idxs[:, :-1] == -2, axis = 1)
+        )
 
     def _GetStringGenotypeArray(
             self,

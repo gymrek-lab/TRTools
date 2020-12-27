@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
+# pylint: disable=C0411,C0413
 """
 Tool for comparing genotypes from two TR VCFs
 """
 
 # Allow making plots even with no x-forward
-import matplotlib as mpl
-mpl.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Allow plots to be editable in Adobe Illustrator
-import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-# Load external libraries
 import argparse
-import matplotlib.pyplot as plt
+import os
+
+# Load external libraries
 from matplotlib.lines import Line2D
 import numpy as np
-import os
 import pandas as pd
 import scipy.stats
 import sys
-import vcf
 
 import trtools.utils.common as common
 import trtools.utils.mergeutils as mergeutils
@@ -57,23 +56,35 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     """
     if format_fields is None or format_binsizes is None:
         return [], []
+
+    def get_formats(vcf):
+        formats = []
+        for header in vcf.header_iter():
+            if header['HeaderType'] == 'FORMAT':
+                formats.append(header['ID'])
+        return formats
+
+    formats1 = get_formats(vcfreaders[0])
+    formats2 = get_formats(vcfreaders[1])
+
     formats = format_fields.split(",")
     binsizes = format_binsizes.split(",")
     if len(formats) != len(binsizes):
         raise ValueError("--stratify-formats must be same length as --stratify-binsizes")
     binsizes = [[float(x) for x in item.split(":")] for item in binsizes]
     for fmt in formats:
-        check1 = (fmt in vcfreaders[0].formats)
-        check2 = (fmt in vcfreaders[1].formats)
+        check1 = fmt in formats1
+        check2 = fmt in formats2
         if format_fileoption == 0 and not (check1 and check2):
             raise ValueError("FORMAT field %s must be present in both VCFs if --stratify-file=0"%fmt)
         if format_fileoption == 1 and not check1:
             raise ValueError("FORMAT field %s must be present in --vcf1 if --stratify-file=1"%fmt)
         if format_fileoption == 2 and not check2:
             raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2"%fmt)
+        
     return formats, binsizes
 
-def OutputLocusMetrics(data, outprefix, noplot):
+def OutputLocusMetrics(locus_data, outprefix, noplot):
     r"""Output per-locus metrics
 
     Outputs text file and plot of per-locus metrics
@@ -82,15 +93,15 @@ def OutputLocusMetrics(data, outprefix, noplot):
 
     Parameters
     ----------
-    data : pd.Dataframe 
-        Call comparison results
+    locus_data : pd.Dataframe
+        Locus comparison results
     outprefix : str
         Prefix to name output file
     noplot : bool
         If True, don't output plots
     """
     # collapse data by locus and output
-    perloc = data.groupby(["chrom","start"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "sample": len})
+    perloc = locus_data.groupby(["chrom","start"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "sample": len})
     perloc = perloc.sort_values("metric-conc-len", ascending=False)
     perloc.to_csv(outprefix+"-locuscompare.tab", sep="\t", index=False)
 
@@ -109,7 +120,7 @@ def OutputLocusMetrics(data, outprefix, noplot):
     fig.savefig(outprefix+"-locuscompare.pdf")
     plt.close()
 
-def OutputSampleMetrics(data, outprefix, noplot):
+def OutputSampleMetrics(locus_data, outprefix, noplot):
     r"""Output per-sample metrics
 
     Outputs text file and plot of per-sample metrics
@@ -118,15 +129,15 @@ def OutputSampleMetrics(data, outprefix, noplot):
 
     Parameters
     ----------
-    data : pd.Dataframe 
-        Call comparison results
+    locus_data : pd.Dataframe 
+        Locus comparison results
     outprefix : str
         Prefix to name output file
     noplot : bool
         If True, don't output plots
     """
     # collapse data by locus and output
-    persamp = data.groupby(["sample"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "start": len})
+    persamp = locus_data.groupby(["sample"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "start": len})
     persamp.columns = ["sample","metric-conc-seq","metric-conc-len","numcalls"]
     persamp = persamp.sort_values("metric-conc-len", ascending=False)
     persamp.to_csv(outprefix+"-samplecompare.tab", sep="\t", index=False)
@@ -146,7 +157,7 @@ def OutputSampleMetrics(data, outprefix, noplot):
     fig.savefig(outprefix+"-samplecompare.pdf")
     plt.close()
 
-def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, period, outprefix):
+def OutputOverallMetrics(locus_data, format_fields, format_binsizes, stratify_file, period, outprefix):
     r"""Output overall accuracy metrics
 
     Output metrics overall, by period, and by FORMAT bins
@@ -154,8 +165,8 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
 
     Parameters
     ----------
-    data : pd.Dataframe 
-        Call comparison results
+    locus_results: dict
+        Locus comparison results
     format_fields : list of str
         List of FORMAT fields to stratify by
     format_binsizes : list of float,float,float
@@ -174,11 +185,11 @@ def OutputOverallMetrics(data, format_fields, format_binsizes, stratify_file, pe
     f.write("\t".join(header)+"\n")
 
     useperiods = ["ALL"]
-    if period: useperiods.extend(list(set(data["period"])))
+    if period: useperiods.extend(list(set(locus_data["period"])))
     for per in useperiods:
         if per == "ALL":
-            usedata = data
-        else: usedata = data[data["period"]==per]
+            usedata = locus_data
+        else: usedata = locus_data[locus_data["period"]==per]
         if usedata.shape[0] < 2: continue
         # Overall
         items = [per] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
@@ -244,24 +255,24 @@ def GetBubbleLegend(sample_counts):
         mid = int((minval+maxval)/2)
         return sorted(list(set([minval, mid, maxval])))
 
-def OutputBubblePlot(data, period, outprefix, minval=None, maxval=None):
+def OutputBubblePlot(locus_data, period, outprefix, minval=None, maxval=None):
     r"""Output bubble plot of gtsum1 vs. gtsum2
 
     Parameters
     ----------
-    data : pd.Dataframe 
-        Call comparison results
+    locus_data : pd.Dataframe 
+        locus comparison results
     period : bool
         If True, also stratify results by period
     outprefix : str
         Prefix to name output file
     """
     useperiods = ["ALL"]
-    if period: useperiods.extend(list(set(data["period"])))
+    if period: useperiods.extend(list(set(locus_data["period"])))
     for per in useperiods:
         if per == "ALL":
-            usedata = data
-        else: usedata = data[data["period"]==per]
+            usedata = locus_data
+        else: usedata = locus_data[locus_data["period"]==per]
         bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
         scale = 10000/np.mean(bubble_counts["sample"])
         if minval is None:
@@ -331,7 +342,8 @@ def getargs():  # pragma: no cover
     args = parser.parse_args()
     return args
 
-def UpdateComparisonResults(record1, record2, format_fields, samples, results_dir):
+def UpdateComparisonResults(record1, record2, format_fields, sample_idxs,
+                            locus_results, sample_results):
     r"""Extract comparable results from a pair of VCF records
 
     Parameters
@@ -342,50 +354,63 @@ def UpdateComparisonResults(record1, record2, format_fields, samples, results_di
        Second record to compare
     format_fields : list of str
        List of format fields to extract
-    samples : list of str
-       List of samples to consider
-    results_dir : dict
-       Results dictionary to update. Need to update:
-       chrom, start, period, sample, gtstring1, gtstring2
-       gtsum1, gtsum2, metric-conc-seq, metric-conc-len
-       for each matching sample
+    sample_idxs : list of np.array
+        Two arrays, one for each vcf
+        Each array is a list of indicies so that
+        vcf1.samples[index_array1] == vcf2.samples[index_array2]
+        and that this is the set of shared samples
+    locus_results : dict
+       Locus-stratified results dictionary to update.
+    sample_results : dict
+       Sample-stratified results dictionary to update.
     """
     # Extract shared info
     chrom = record1.vcfrecord.CHROM
     pos = record1.vcfrecord.POS
     period = len(record1.motif)
     reflen = len(record1.ref_allele)/period
-    for sample in samples:
-        call1 = record1.vcfrecord.genotype(sample)
-        call2 = record2.vcfrecord.genotype(sample)
-        if not (call1.called and call2.called): continue # Skip if not called in both
-        gt_string_1 = record1.GetStringGenotype(call1)
-        gt_len_1 = record1.GetLengthGenotype(call1)
-        gt_string_2 = record2.GetStringGenotype(call2)
-        gt_len_2 = record2.GetLengthGenotype(call2)
-        # Make sure gts are same ploidy. If not give up
-        if len(gt_string_1) != len(gt_string_2) or len(gt_len_1) != len(gt_len_2):
-            raise ValueError("Found sample %s of different ploidy at %s:%s"%(sample, chrom, pos))
-        # Update results_dir
-        results_dir["chrom"].append(chrom)
-        results_dir["start"].append(pos)
-        results_dir["period"].append(period)
-        results_dir["sample"].append(sample)
-        results_dir["gtstring1"].append(",".join(gt_string_1))
-        results_dir["gtstring2"].append(",".join(gt_string_2))
-        results_dir["gtsum1"].append((sum(gt_len_1)-reflen*2))
-        results_dir["gtsum2"].append((sum(gt_len_2)-reflen*2))
-        results_dir["metric-conc-seq"].append(int(all([(gt_string_1[i]==gt_string_2[i]) for i in range(len(gt_string_1))])))
-        results_dir["metric-conc-len"].append(int(all([(gt_len_1[i]==gt_len_2[i]) for i in range(len(gt_len_1))])))
-        for ff in format_fields:
-            try:
-                val1 = call1[ff]
-            except: val1 = np.nan
-            try:
-                val2 = call2[ff]
-            except: val2 = np.nan
-            results_dir[ff+"1"].append(val1)
-            results_dir[ff+"2"].append(val2)
+
+    both_called = np.logical_and(
+        record1.GetCalledSamples()[sample_idxs[0]],
+        record2.GetCalledSamples()[sample_idxs[1]]
+    )
+
+    locus_results["chrom"].append(chrom)
+    locus_results["start"].append(pos)
+    locus_results["period"].append(period)
+    locus_results["numcalls"].append(np.sum(both_called))
+
+    # build this so indexing later in the method is more intuitive
+    called_sample_idxs = []
+    for record, sample_idx in zip((record1, record2), sample_idxs):
+        called_sample_idxs.append(sample_idx[both_called])
+
+    ploidies1 = record1.GetSamplePloidies()[called_sample_idxs[0]]
+    ploidies2 = record2.GetSamplePloidies()[called_sample_idxs[1]]
+    # Make sure gts are same ploidy. If not give up
+    if ploidies1 != ploidies2:
+        raise ValueError("Found sample(s) of different ploidy at %s:%s"%(chrom, pos))
+
+    gts_string_1 = record1.GetStringGenotypes()[called_sample_idxs[0], :-1]
+    gts_string_2 = record2.GetStringGenotypes()[called_sample_idxs[1], :-1]
+    conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
+    locus_results["metric-conc-seq"].append(conc_seq)
+
+    gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
+    gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1]
+    locus_results["gtsum1"].append(np.sum(gts_length_1, axis=1) - reflen*2)
+    locus_results["gtsum2"].append(np.sum(gts_length_2, axis=1) - reflen*2)
+    conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
+    locus_results["metric-conc-len"].append(conc_len)
+
+    for ff in format_fields:
+        val1 = record1.format(ff)[called_sample_idxs[0], 0]
+        val2 = record2.format(ff)[called_sample_idxs[1], 0]
+        locus_results[ff+"1"].append(val1)
+        locus_results[ff+"2"].append(val2)
+    sample_results['numcalls'] += both_called
+    sample_results['conc-seq-count'] += conc_seq
+    sample_results['conc-len-count'] += conc_len
 
 def main(args):
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
@@ -399,24 +424,30 @@ def main(args):
         return 1
 
     ### Check and load VCF files ###
-    vcfreaders = utils.LoadReaders([args.vcf1, args.vcf2], checkgz=True, region=args.region)
+    vcfreaders = utils.LoadReaders([args.vcf1, args.vcf2], checkgz=True)
     if vcfreaders is None or len(vcfreaders) != 2:
         return 1
-    contigs = vcfreaders[0].contigs
-    chroms = list(contigs)
-    
+    chroms = utils.GetContigs(vcfreaders[0])
+
     ### Load shared samples ###
     samples = mergeutils.GetSharedSamples(vcfreaders)
     if len(samples) == 0:
-        common.WARNING("No shared smaples found between vcf readers")
+        common.WARNING("No shared smaples found between the vcfs")
         return 1
     if args.samples:
         usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
         samples = list(set(samples).intersection(usesamples))
     if len(samples) == 0:
-        common.WARNING("No shared samples found between files")
+        common.WARNING("No shared samples found between the vcfs and the "
+                       "--samples file")
         return 1
-    
+    sample_idxs = []
+    for vcf in vcfreaders:
+        sort = np.argsort(vcf.samples)
+        rank = np.searchsorted(vcf.samples, samples, sorter=sort)
+        sample_idxs.append(np.where(sort[rank]))
+    # now we have vcfreaders[i].samples[sample_idxs[i]] == samples
+
     ### Determine FORMAT fields we should look for ###
     if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
         common.MSG("--stratify-file must be 0,1, or 2")
@@ -424,25 +455,40 @@ def main(args):
     format_fields, format_binsizes = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
     
     ### Keep track of data to summarize at the end ###
-    results_dir = {
+    locus_results = {
         "chrom": [],
         "start": [],
         "period": [],
-        "sample": [],
-        "gtstring1": [],
-        "gtstring2": [],
+        "numcalls": [],
         "gtsum1": [],
         "gtsum2": [],
         "metric-conc-seq": [],
         "metric-conc-len": [],
     }
+    sample_results = {
+        "numcalls": np.zeros((len(samples)), dtype=int),
+        "conc-seq-count": np.zeros((len(samples)), dtype=int),
+        "conc-len-count": np.zeros((len(samples)), dtype=int)
+    }
     for ff in format_fields:
-        results_dir[ff+"1"] = []
-        results_dir[ff+"2"] = []
+        locus_results[ff+"1"] = []
+        locus_results[ff+"2"] = []
 
-    vcftype1 = trh.GetVCFType(vcfreaders[0], args.vcftype1)
-    vcftype2 = trh.GetVCFType(vcfreaders[1], args.vcftype2)
+    try:
+        vcftype1 = trh.InferVCFType(vcfreaders[0], args.vcftype1)
+    except TypeError as te:
+        common.WARNING("Error with type of vcf1: " + str(te))
+        return 1
 
+    try:
+        vcftype2 = trh.InferVCFType(vcfreaders[1], args.vcftype2)
+    except TypeError as te:
+        common.WARNING("Error with type of vcf2: " + str(te))
+        return 1
+
+    # TODO double check this for poorly formatted args.region
+    vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
+    
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
     is_min = mergeutils.GetMinRecords(current_records, chroms)
@@ -459,27 +505,24 @@ def main(args):
                 current_records[0].POS == current_records[1].POS):
                 UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
                                         trh.HarmonizeRecord(vcftype2, current_records[1]), \
-                                        format_fields, samples, results_dir)
+                                        format_fields, sample_idxs,
+                                        locus_results, sample_results)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
 
-    ### Load all results to a dataframe and output full results ###
-    data = pd.DataFrame(results_dir)
-    data.to_csv(args.out + "-callcompare.tab", sep="\t", index=False)
-
     ### Overall metrics ###
-    OutputOverallMetrics(data, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
-    if not args.noplot: OutputBubblePlot(data, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
+    OutputOverallMetrics(locus_results, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
+    if not args.noplot: OutputBubblePlot(locus_results, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
-    OutputLocusMetrics(data, args.out, args.noplot)
+    OutputLocusMetrics(locus_results, args.out, args.noplot)
 
     ### Per-sample metrics ###
-    OutputSampleMetrics(data, args.out, args.noplot)
+    OutputSampleMetrics(sample_results, args.out, args.noplot)
 
-    return 0 
+    return 0
 
 def run(): # pragma: no cover
     args = getargs()

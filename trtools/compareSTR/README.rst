@@ -21,7 +21,9 @@ Note: CompareSTR has the ability to stratify comparisons based on quality scores
 
 Usage
 -----
-CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. The VCF files must also have alleles specified in the same way. e.g. GangSTR-style using full allele sequences, or ExpansionHunter style with SV tags. CompareSTR only considers the subset of samples shared across two VCF files being compared, based on sample ID in the VCF headers.
+CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. CompareSTR only considers the subset of samples shared across two VCF files being compared, based on sample ID in the VCF headers.
+
+Note: if comparing two VCFs with **phased** calls, ensure the chromosome ordering matches. A 'motherAllele|fatherAllele' representation will not match with a 'fatherAllele|motherAllele' representation. If comparing two VCFs with **unphased** calls, ensure that alternate alleles are ordered by length (and then alphabetically, if sequence content is called and there are multiple alleles of the same length) and also ensure that allele indicies are ordered from least to greatest within a call (e.g. '1/2' not '2/1'). The genotype 'len12/len14' will not match the genotype 'len14/len12' despite those representing the same logical call; the above steps will avoid that issue.
 
 To run compareSTR use the following command::
 
@@ -49,10 +51,12 @@ Metrics to stratify results:
 * :code:`--period`: Report results overall and also stratified by repeat unit length (period).
 
 Plotting options:
+
 * :code:`--bubble-min`: Minimum x/y axis value to display on bubble plots.
 * :code:`--bubble-max`: Maximum x/y axis value to display on bubble plots.
 
 Other options:
+
 * :code:`--verbose`: Print helpful debugging info
 * :code:`--noplot`: Don't output any plots. Only produce text output.
 * :code:`--vcftype1 <string>`: Type of VCF file 1.

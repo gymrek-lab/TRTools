@@ -76,6 +76,26 @@ def LoadReaders(
 
     return readers
 
+def GetContigs(vcf: cyvcf2.VCF) -> List[str]:
+    '''
+    Returns the contig IDs in the VCF.
+
+    Parameters
+    ----------
+    vcf :
+        The vcf to get contigs from
+
+    Returns
+    -------
+    List[str] :
+        A list of contig IDs
+    '''
+    contigs = []
+    for header_line in vcf.header_iter():
+        if header_line['HeaderType'].lower() == 'contig':
+            contigs.append(header_line['ID'])
+    return contigs
+
 def ValidateAlleleFreqs(allele_freqs):
     r"""Check that the allele frequency distribution is valid.
 
