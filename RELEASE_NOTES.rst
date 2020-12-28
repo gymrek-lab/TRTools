@@ -87,6 +87,9 @@ Bug fixes:
   unphased data
 * MergeSTR now correctly outputs Number=A, G or R correctly in FORMAT fields instead
   of outputing Number=-1, -2 or -3
+* CompareSTR claimed it was outputting the square (Pearson) correlation coefficient
+  but was actually outputting the raw (unsquared) correlation coefficient. It is now
+  outputting the squared coefficient as documented.
 * CompareSTR now correctly compares unphased calls without regard to order in the VCF
   (e.g. 'AAAA/AAA' now matches against 'AAA/AAAA')
 * When using binned format fields in CompareSTR where the range of values did not
@@ -101,9 +104,10 @@ Bug fixes:
   evenly divided into the requested binsize, loci which obtained the requested
   maximum would be excluded. They are now included.
   E.g. binsizes 0:200:50 used to create the bins
-  [0,50), [50,100), [100,150), [150, 200)
-  and now create the bins
-  [0,50), [50,100), [100,150), [150, 200]
+  [0,50), [50,100), [100,150), [150, 200) and samples with value 200 would
+  not fall into any bin. This now creates the bins
+  [0,50), [50,100), [100,150), [150, 200] and samples with value 200 fall into
+  the last bin
 
 Quality of life improvements:
 

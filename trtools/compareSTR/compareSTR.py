@@ -76,7 +76,7 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     # TODO confirm len(binsize) == 3 for each binsize
     bins = []
     for start, stop, step in binsizes:
-        bins.append([x for x in range(start, stop, step)])
+        bins.append(np.arange(start, stop, step).tolist())
         bins[-1].append(stop)
 
     for fmt in formats:
@@ -107,9 +107,8 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
     noplot : bool
         If True, don't output plots
     """
-    # collapse data by locus and output
     with open(outprefix + '-locuscompare.tab', 'w') as tabfile:
-        tabfile.write('chrom\tstart\tmetric-conc-seq\tmetric-conc-len\tsample\n')
+        tabfile.write('chrom\tstart\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
         for chrom, start, metric_conc_seq, metric_conc_len, numcalls in zip(
             locus_results['chrom'],
             locus_results['start'],
@@ -129,7 +128,7 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
 
     nloci = len(locus_results['chrom'])
     if nloci <= 20:
-        sort_idx = np.argsort(locus_results['metric-conc-len'])
+        sort_idx = np.argsort(locus_results['metric-conc-len'])[::-1]
         for key in {'chrom', 'start', 'metric-conc-len'}:
             locus_results[key] = np.array(locus_results[key])[sort_idx]
         ax.scatter(np.arange(nloci), locus_results['metric-conc-len'], color="darkblue")
@@ -148,7 +147,7 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
     fig.savefig(outprefix+"-locuscompare.pdf")
     plt.close()
 
-def OutputSampleMetrics(locus_data, outprefix, noplot):
+def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     r"""Output per-sample metrics
 
     Outputs text file and plot of per-sample metrics
@@ -157,35 +156,50 @@ def OutputSampleMetrics(locus_data, outprefix, noplot):
 
     Parameters
     ----------
-    locus_data : pd.Dataframe
-        Locus comparison results
+    sample_results : Dict[str, any]
+        The info needed to write the output file
+    sample_names : List[str]
     outprefix : str
         Prefix to name output file
     noplot : bool
         If True, don't output plots
     """
-    # collapse data by locus and output
-    persamp = locus_data.groupby(["sample"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "start": len})
-    persamp.columns = ["sample","metric-conc-seq","metric-conc-len","numcalls"]
-    persamp = persamp.sort_values("metric-conc-len", ascending=False)
-    persamp.to_csv(outprefix+"-samplecompare.tab", sep="\t", index=False)
+    sample_results['conc-seq-count'] = \
+            sample_results['conc-seq-count'] / sample_results['numcalls']
+    sample_results['conc-len-count'] = \
+            sample_results['conc-len-count'] / sample_results['numcalls']
+    with open(outprefix + '-samplecompare.tab', 'w') as tabfile:
+        tabfile.write('sample\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
+        for idx, sample in enumerate(sample_names):
+            tabfile.write('{}\t{}\t{}\t{}\n'.format(
+                sample,
+                sample_results['conc-seq-count'][idx],
+                sample_results['conc-len-count'][idx],
+                sample_results['numcalls'][idx]
+            ))
 
     # Create per-locus plot
     if noplot: return
+    nsamples = len(sample_names)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.scatter([item for item in range(persamp.shape[0])], persamp["metric-conc-len"], color="darkblue")
-    ax.set_ylabel("Concordance", size=15)
-    if persamp.shape[0]<=20:
-        ax.set_xticks([item for item in range(persamp.shape[0])])
-        ax.set_xticklabels(persamp["sample"], size=12, rotation=90)
+    if nsamples <= 20:
+        sort_idx = np.argsort(sample_results['conc-len-count'])[::-1]
+        ax.scatter(np.arange(nsamples),
+                   sample_results['conc-len-count'][sort_idx],
+                   color="darkblue")
+        ax.set_xticks(np.arange(nsamples))
+        ax.set_xticklabels(np.array(sample_names)[sort_idx], size=12, rotation=90)
     else:
-        ax.set_xlabel("Sample", size=15)
+        sorted_results = np.sort(sample_results['conc-len-count'])[::-1]
+        ax.scatter(np.arange(nsamples), sorted_results, color="darkblue")
+        ax.set_xlabel("Successive samples", size=15)
+    ax.set_ylabel("Length Concordance", size=15)
     plt.tight_layout()
     fig.savefig(outprefix+"-samplecompare.pdf")
     plt.close()
 
-def OutputOverallMetrics(locus_data, format_fields, format_bins, stratify_file, period, outprefix):
+def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix):
     r"""Output overall accuracy metrics
 
     Output metrics overall, by period, and by FORMAT bins
@@ -193,61 +207,72 @@ def OutputOverallMetrics(locus_data, format_fields, format_bins, stratify_file, 
 
     Parameters
     ----------
-    locus_results: dict
-        Locus comparison results
-    format_fields : list of str
+    overall_results : Dict[str, Any]
+        Info needed to write the tabfile
+    format_fields : List[str]
         List of FORMAT fields to stratify by
     format_bins : List[List[float]]
         List of bin start/stop coords for each FORMAT field
-    stratify_file : {0, 1, 2}
-        Specify whether to apply FORMAT stratification to both files (0), or only (1) or (2)
-    period : bool
-        If True, also stratify results by period
     outprefix : str
         Prefix to name output file
     """
-    f = open(outprefix+"-overall.tab", "w")
-    header = ["period"]
-    for ff in format_fields: header.append(ff)
-    header.extend(["concordance-seq","concordance-len","r2","numcalls"])
-    f.write("\t".join(header)+"\n")
+    # get periods in sort order
+    periods = set(overall_results.keys())
+    periods.remove('ALL')
+    periods = list(periods)
+    periods.sort()
+    periods.insert(0, 'ALL')
 
-    useperiods = ["ALL"]
-    if period: useperiods.extend(list(set(locus_data["period"])))
-    for per in useperiods:
-        if per == "ALL":
-            usedata = locus_data
-        else: usedata = locus_data[locus_data["period"]==per]
-        if usedata.shape[0] < 2: continue
-        # Overall
-        items = [per] + ["NA"]*len(format_fields)+[np.mean(usedata["metric-conc-seq"]), np.mean(usedata["metric-conc-len"]), \
-                                                scipy.stats.pearsonr(usedata["gtsum1"], usedata["gtsum2"])[0],
-                                                usedata.shape[0]]
-        f.write("\t".join([str(item) for item in items])+"\n")
-        
-        # By format fields (each separately)
-        for i in range(len(format_fields)):
-            ff = format_fields[i]
-            minval, maxval, binsize = format_binsizes[i]
-            bins = np.arange(minval, maxval+binsize, binsize)
-            for j in range(len(bins)-1):
-                lb = bins[j]
-                ub = bins[j+1]
-                if stratify_file == 0:
-                    ffdata = usedata[(usedata[ff+"1"]>=lb) & (usedata[ff+"1"]<ub) & \
-                                     (usedata[ff+"2"]>=lb) & (usedata[ff+"2"]<ub)]
-                elif stratify_file == 1:
-                    ffdata = usedata[(usedata[ff+"1"]>=lb) & (usedata[ff+"1"]<ub)]
-                else:
-                    ffdata = usedata[(usedata[ff+"2"]>=lb) & (usedata[ff+"2"]<ub)]
-                if ffdata.shape[0] < 2: continue
-                ff_vals = ["NA"]*len(format_fields)
-                ff_vals[i] = "%s-%s"%(lb,ub)
-                items = [per]+ff_vals+[np.mean(ffdata["metric-conc-seq"]), np.mean(ffdata["metric-conc-len"]), \
-                                       scipy.stats.pearsonr(ffdata["gtsum1"], ffdata["gtsum2"])[0],
-                                       ffdata.shape[0]]
-                f.write("\t".join([str(item) for item in items])+"\n")
-    f.close()
+    def write_format_bin(tabfile, format_bin_results, per, fmt_idx,
+                         format_bin_string):
+        numcalls = format_bin_results['numcalls']
+        if numcalls == 0:
+            return
+
+        tabfile.write(str(per))
+        tabfile.write('\t')
+        for idx in range(len(format_fields)):
+            if idx == fmt_idx:
+                tabfile.write(format_bin_string)
+                tabfile.write('\t')
+            else:
+                tabfile.write('NA\t')
+        tabfile.write('{}\t{}\t{}\t{}\n'.format(
+            format_bin_results['conc_seq_count']/numcalls,
+            format_bin_results['conc_len_count']/numcalls,
+            CalcR2(format_bin_results),
+            numcalls
+        ))
+
+    with open(outprefix+"-overall.tab", "w") as tabfile:
+        tabfile.write('period\t')
+        for fmt in format_fields:
+            tabfile.write(fmt)
+            tabfile.write('\t')
+        tabfile.write("concordance-seq\tconcordance-len\tr2\tnumcalls\n")
+
+        for per in periods:
+            # write the entry that is not stratified across formats
+            write_format_bin(tabfile, overall_results[per]['ALL'],
+                             per, None, None)
+            # stratify across formats
+            for fmt_idx, (fmt, bins) in enumerate(zip(format_fields,format_bins)):
+                for bin_idx in range(len(bins) - 2):
+                    bin_string = "[{}, {})".format(bins[bin_idx],
+                                                   bins[bin_idx+1])
+                    write_format_bin(tabfile,
+                                     overall_results[per][fmt][bins[bin_idx]],
+                                     per,
+                                     fmt_idx,
+                                     bin_string)
+                bin_string = "[{}, {}]".format(bins[-2],
+                                               bins[-1])
+                write_format_bin(tabfile,
+                                 overall_results[per][fmt][bins[-2]],
+                                 per,
+                                 fmt_idx,
+                                 bin_string)
+
 
 def GetBubbleLegend(sample_counts):
     r"""Get three good bubble legend sizes to use
@@ -377,7 +402,7 @@ def NewOverallFormatBin():
 
     Returns
     -------
-    Dict[str, int] :
+    Dict[str, Union[int, float]] :
         Contains the fields:
         conc_len_count
         conc_seq_cont
@@ -398,6 +423,38 @@ def NewOverallFormatBin():
         'total_len_12': 0,
         'total_len_22': 0
     }
+
+def CalcR2(format_bin_results):
+    """
+    Calculate the squared (pearson) correlation coefficient
+    for the values in this bin.
+
+    Calculation is done using the formulas:
+        n = numcalls
+        var(X) = sum(X_i**2)/n - [sum(X_i)/n]**2
+        covar(X,Y) = sum(X_i*Y_i)/n - sum(X_i)/n * sum(Y_i)/n
+        r^2 = covar(X,Y)**2/(var(X) * var(Y))
+
+    Parameters
+    ----------
+    format_bin_results : Dict[str, int]
+        See the method NewOverallForamtBin
+    
+    Returns
+    -------
+    float:
+        r^2, or np.nan if one of the two vcfs has
+        no variance in this format bin
+    """
+    f = format_bin_results
+    n = f['numcalls']
+    var1 = f['total_len_11']/n - (f['total_len_1']/n)**2
+    var2 = f['total_len_22']/n - (f['total_len_2']/n)**2
+    if var1 == 0 or var2 == 0:
+        return np.nan
+    covar = f['total_len_12']/n - f['total_len_1']*f['total_len_2']/n**2
+    return covar**2/(var1*var2)
+
 
 def NewOverallPeriod(format_fields, format_bins):
     """
@@ -473,7 +530,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
 
     # build this so indexing later in the method is more intuitive
     called_sample_idxs = []
-    for record, sample_idx in zip((record1, record2), sample_idxs):
+    for sample_idx in sample_idxs:
         called_sample_idxs.append(sample_idx[both_called])
 
     ploidies1 = record1.GetSamplePloidies()[called_sample_idxs[0]]
@@ -514,6 +571,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     locus_results["metric-conc-len"].append(np.sum(conc_len)/numcalls)
     sample_results['conc-len-count'][both_called] += conc_len
 
+    sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
+    sum_length_2 = np.sum(gts_length_2 - reflen, axis=1)
+
     # handle overall
     outer_keys = ['ALL']
     if stratify_by_period:
@@ -525,51 +585,64 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         overall_results[key]['ALL']['numcalls'] += numcalls
         overall_results[key]['ALL']['conc_seq_count'] += np.sum(conc_seq)
         overall_results[key]['ALL']['conc_len_count'] += np.sum(conc_len)
-        overall_results[key]['ALL']['total_len_1'] += np.sum(gts_length_1)
-        overall_results[key]['ALL']['total_len_2'] += np.sum(gts_length_2)
-        overall_results[key]['ALL']['total_len_11'] += np.sum(gts_length_1**2)
-        overall_results[key]['ALL']['total_len_12'] += np.sum(gts_length_1 * gts_length_2)
-        overall_results[key]['ALL']['total_len_22'] += np.sum(gts_length_2**2)
+        overall_results[key]['ALL']['total_len_1'] += np.sum(sum_length_1)
+        overall_results[key]['ALL']['total_len_2'] += np.sum(sum_length_2)
+        overall_results[key]['ALL']['total_len_11'] += np.sum(sum_length_1**2)
+        overall_results[key]['ALL']['total_len_12'] += np.sum(sum_length_1 * sum_length_2)
+        overall_results[key]['ALL']['total_len_22'] += np.sum(sum_length_2**2)
 
     for fmt, bins in zip(format_fields, format_bins):
-        fmt1 = record1.format(fmt)[called_sample_idxs[0], 0]
-        fmt2 = record2.format(fmt)[called_sample_idxs[1], 0]
+        fmt1 = record1.format[fmt][sample_idxs[0], 0]
+        fmt2 = record2.format[fmt][sample_idxs[1], 0]
         masks = []
         for idx in range(len(bins) - 2):
             if stratify_file == 0:
-                masks.append(fmt1 >= bins[idx] & fmt1 < bins[idx + 1] &
-                             fmt2 >= bins[idx] & fmt2 < bins[idx + 1])
+                mask = ((fmt1 >= bins[idx]) & (fmt1 < bins[idx + 1]) &
+                        (fmt2 >= bins[idx]) & (fmt2 < bins[idx + 1]))
             elif stratify_file == 1:
-                masks.append(fmt1 >= bins[idx] & fmt1 < bins[idx + 1])
+                mask = (fmt1 >= bins[idx]) & (fmt1 < bins[idx + 1])
             elif stratify_file == 2:
-                masks.append(fmt2 >= bins[idx] & fmt2 < bins[idx + 1])
+                mask = (fmt2 >= bins[idx]) & (fmt2 < bins[idx + 1])
+            masks.append(mask[both_called])
+
         # last bin has inclusive end
         if stratify_file == 0:
-            masks.append(fmt1 >= bins[-2] & fmt1 <= bins[-1] &
-                         fmt2 >= bins[-2] & fmt2 <= bins[-1])
+            mask = ((fmt1 >= bins[-2]) & (fmt1 <= bins[-1]) &
+                    (fmt2 >= bins[-2]) & (fmt2 <= bins[-1]))
         elif stratify_file == 1:
-            masks.append(fmt1 >= bins[-2] & fmt1 <= bins[-1])
+            mask = (fmt1 >= bins[-2]) & (fmt1 <= bins[-1])
         elif stratify_file == 2:
-            masks.append(fmt2 >= bins[-2] & fmt2 <= bins[-1])
+            mask = (fmt2 >= bins[-2]) & (fmt2 <= bins[-1])
+        masks.append(mask[both_called])
 
         for _bin, mask in zip(bins[:-1], masks):
+            ncalls = np.sum(mask)
+            if ncalls == 0:
+                continue
+            conc_seq_count = np.sum(conc_seq[mask])
+            conc_len_count = np.sum(conc_len[mask])
+            total_len_1 = np.sum(sum_length_1[mask])
+            total_len_2 = np.sum(sum_length_2[mask])
+            total_len_11 = np.sum(sum_length_1[mask]**2)
+            total_len_12 = np.sum(sum_length_1[mask] * sum_length_2[mask])
+            total_len_22 = np.sum(sum_length_2[mask]**2)
             for key in outer_keys:
                 overall_results[key][fmt][_bin]['numcalls'] += \
-                    np.sum(both_called[mask])
+                        ncalls
                 overall_results[key][fmt][_bin]['conc_seq_count'] += \
-                    np.sum(conc_seq[mask])
+                        conc_seq_count
                 overall_results[key][fmt][_bin]['conc_len_count'] += \
-                    np.sum(conc_len[mask])
+                        conc_len_count
                 overall_results[key][fmt][_bin]['total_len_1'] += \
-                    np.sum(gts_length_1[mask, :])
+                        total_len_1
                 overall_results[key][fmt][_bin]['total_len_2'] += \
-                    np.sum(gts_length_2[mask, :])
+                        total_len_2
                 overall_results[key][fmt][_bin]['total_len_11'] += \
-                        np.sum(gts_length_1[mask, :]**2)
+                        total_len_11
                 overall_results[key][fmt][_bin]['total_len_12'] += \
-                        np.sum(gts_length_1[mask, :] * gts_length_2[mask, :])
+                        total_len_12
                 overall_results[key][fmt][_bin]['total_len_22'] += \
-                        np.sum(gts_length_2[mask, :]**2)
+                        total_len_22
 
 
 def main(args):
@@ -676,14 +749,14 @@ def main(args):
         num_records += 1
 
     ### Overall metrics ###
-    #OutputOverallMetrics(overall_results, format_fields, format_bins, args.stratify_file, args.period, args.out)
+    OutputOverallMetrics(overall_results, format_fields, format_bins, args.out)
     #if not args.noplot: OutputBubblePlot(locus_results, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
     OutputLocusMetrics(locus_results, args.out, args.noplot)
 
     ### Per-sample metrics ###
-    #OutputSampleMetrics(sample_results, args.out, args.noplot)
+    OutputSampleMetrics(sample_results, samples, args.out, args.noplot)
 
     return 0
 

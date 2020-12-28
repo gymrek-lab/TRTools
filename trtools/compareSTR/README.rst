@@ -70,7 +70,9 @@ In output files, compareSTR reports the following metrics:
 
 * Length concordance: % of genotypes concordant between the two VCF files when only considering TR allele lengths
 * Sequence concordance: % of genotypes concordant between the two VCF files when considering TR allele sequence. Currently only relevant for HipSTR. Otherwise will be identical to length concordance
-* R2: Pearson r2 between the sum of allele lengths at each call compared between the two VCF files.
+* R2: Pearson r2 between the sum of allele lengths at each call compared between the two VCF files, where allele lengths are measured as number of repeat copies different from the reference.
+
+These metrics and numcalls only reflect the (sample, locus) pairs that were called by both callers
 
 compareSTR outputs the following text files and plots:
 
