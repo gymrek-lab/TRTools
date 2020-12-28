@@ -51,8 +51,8 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     -------
     formats : list of str
         List of FORMAT fields to stratify on
-    binsizes : list of float
-        List of binsizes for each FORMAT field
+    format_bins : List[List[float]]
+        List of bin start/stop coords for each FORMAT field
     """
     if format_fields is None or format_binsizes is None:
         return [], []
@@ -68,10 +68,17 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     formats2 = get_formats(vcfreaders[1])
 
     formats = format_fields.split(",")
+    # TODO confirm that these are all Int of Float type and Number == 1
     binsizes = format_binsizes.split(",")
     if len(formats) != len(binsizes):
         raise ValueError("--stratify-formats must be same length as --stratify-binsizes")
     binsizes = [[float(x) for x in item.split(":")] for item in binsizes]
+    # TODO confirm len(binsize) == 3 for each binsize
+    bins = []
+    for start, stop, step in binsizes:
+        bins.append([x for x in range(start, stop, step)])
+        bins[-1].append(stop)
+
     for fmt in formats:
         check1 = fmt in formats1
         check2 = fmt in formats2
@@ -82,9 +89,9 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
         if format_fileoption == 2 and not check2:
             raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2"%fmt)
         
-    return formats, binsizes
+    return formats, bins
 
-def OutputLocusMetrics(locus_data, outprefix, noplot):
+def OutputLocusMetrics(locus_results, outprefix, noplot):
     r"""Output per-locus metrics
 
     Outputs text file and plot of per-locus metrics
@@ -93,29 +100,50 @@ def OutputLocusMetrics(locus_data, outprefix, noplot):
 
     Parameters
     ----------
-    locus_data : pd.Dataframe
-        Locus comparison results
+    locus_results: Dict[str, Any]
+        The info needed to write the output file
     outprefix : str
         Prefix to name output file
     noplot : bool
         If True, don't output plots
     """
     # collapse data by locus and output
-    perloc = locus_data.groupby(["chrom","start"], as_index=False).agg({"metric-conc-seq": np.mean, "metric-conc-len": np.mean, "sample": len})
-    perloc = perloc.sort_values("metric-conc-len", ascending=False)
-    perloc.to_csv(outprefix+"-locuscompare.tab", sep="\t", index=False)
+    with open(outprefix + '-locuscompare.tab', 'w') as tabfile:
+        tabfile.write('chrom\tstart\tmetric-conc-seq\tmetric-conc-len\tsample\n')
+        for chrom, start, metric_conc_seq, metric_conc_len, numcalls in zip(
+            locus_results['chrom'],
+            locus_results['start'],
+            locus_results['metric-conc-seq'],
+            locus_results['metric-conc-len'],
+            locus_results['numcalls']
+        ):
+            tabfile.write('{}\t{}\t{}\t{}\t{}\n'.format(
+                chrom, start, metric_conc_seq, metric_conc_len, numcalls
+            ))
 
     # Create per-locus plot
     if noplot: return
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.scatter([item for item in range(perloc.shape[0])], perloc["metric-conc-len"], color="darkblue")
-    ax.set_ylabel("Concordance", size=15)
-    if perloc.shape[0]<=20:
-        ax.set_xticks([item for item in range(perloc.shape[0])])
-        ax.set_xticklabels(perloc.apply(lambda x: "%s:%s"%(x["chrom"],x["start"]), 1), size=12, rotation=90)
+
+    nloci = len(locus_results['chrom'])
+    if nloci <= 20:
+        sort_idx = np.argsort(locus_results['metric-conc-len'])
+        for key in {'chrom', 'start', 'metric-conc-len'}:
+            locus_results[key] = np.array(locus_results[key])[sort_idx]
+        ax.scatter(np.arange(nloci), locus_results['metric-conc-len'], color="darkblue")
+        ax.set_xticks(np.arange(nloci))
+        ax.set_xticklabels(
+            ["{}:{}".format(chrom, start) for chrom, start in zip(
+                locus_results['chrom'], locus_results['start']
+            )], size=12, rotation=90
+        )
     else:
-        ax.set_xlabel("TR Locus", size=15)
+        sorted_results = np.sort(locus_results['metric-conc-len'])[::-1]
+        ax.scatter(np.arange(nloci), sorted_results, color="darkblue")
+        ax.set_xlabel("Successive TR Loci", size=15)
+    ax.set_ylabel("Length Concordance", size=15)
     plt.tight_layout()
     fig.savefig(outprefix+"-locuscompare.pdf")
     plt.close()
@@ -129,7 +157,7 @@ def OutputSampleMetrics(locus_data, outprefix, noplot):
 
     Parameters
     ----------
-    locus_data : pd.Dataframe 
+    locus_data : pd.Dataframe
         Locus comparison results
     outprefix : str
         Prefix to name output file
@@ -157,7 +185,7 @@ def OutputSampleMetrics(locus_data, outprefix, noplot):
     fig.savefig(outprefix+"-samplecompare.pdf")
     plt.close()
 
-def OutputOverallMetrics(locus_data, format_fields, format_binsizes, stratify_file, period, outprefix):
+def OutputOverallMetrics(locus_data, format_fields, format_bins, stratify_file, period, outprefix):
     r"""Output overall accuracy metrics
 
     Output metrics overall, by period, and by FORMAT bins
@@ -169,8 +197,8 @@ def OutputOverallMetrics(locus_data, format_fields, format_binsizes, stratify_fi
         Locus comparison results
     format_fields : list of str
         List of FORMAT fields to stratify by
-    format_binsizes : list of float,float,float
-        List of min,max,binsize to stratify formats
+    format_bins : List[List[float]]
+        List of bin start/stop coords for each FORMAT field
     stratify_file : {0, 1, 2}
         Specify whether to apply FORMAT stratification to both files (0), or only (1) or (2)
     period : bool
@@ -260,7 +288,7 @@ def OutputBubblePlot(locus_data, period, outprefix, minval=None, maxval=None):
 
     Parameters
     ----------
-    locus_data : pd.Dataframe 
+    locus_data : pd.Dataframe
         locus comparison results
     period : bool
         If True, also stratify results by period
@@ -316,8 +344,6 @@ def getargs():  # pragma: no cover
     req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
-    req_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-    req_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     ### Options for filtering input ###
     filter_group = parser.add_argument_group("Filtering options")
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
@@ -337,13 +363,67 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
     option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
     option_group.add_argument("--noplot", help="Don't output any plots. Only produce text output", action="store_true")
+    option_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    option_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    option_group.add_argument("--ignore-phasing", help="Treat all calls as if they are unphased", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
     return args
 
-def UpdateComparisonResults(record1, record2, format_fields, sample_idxs,
-                            locus_results, sample_results):
+def NewOverallFormatBin():
+    """
+    Return an empty bin for the overall dictionary.
+
+    Returns
+    -------
+    Dict[str, int] :
+        Contains the fields:
+        conc_len_count
+        conc_seq_cont
+        numcalls
+        total_len_1
+        total_len_2
+        total_len_11
+        total_len_12
+        total_len_22
+    """
+    return {
+        'conc_seq_count': 0,
+        'conc_len_count': 0,
+        'numcalls': 0,
+        'total_len_1': 0,
+        'total_len_2': 0,
+        'total_len_11': 0,
+        'total_len_12': 0,
+        'total_len_22': 0
+    }
+
+def NewOverallPeriod(format_fields, format_bins):
+    """
+    Return an empty dictionary containing
+    bins for each format stratification and for
+    'ALL' (no format stratification).
+
+    Returns
+    -------
+    The empty dictionary.
+    """
+    period_dict = {
+        'ALL': NewOverallFormatBin()
+    }
+    for fmt, bins in zip(format_fields, format_bins):
+        period_dict[fmt] = {}
+        for _bin in bins[:-1]:
+            period_dict[fmt][_bin] = NewOverallFormatBin()
+    return period_dict
+
+
+def UpdateComparisonResults(record1, record2, sample_idxs,
+                            ignore_phasing,
+                            stratify_by_period,
+                            format_fields, format_bins, stratify_file,
+                            overall_results, locus_results, sample_results):
     r"""Extract comparable results from a pair of VCF records
 
     Parameters
@@ -352,13 +432,21 @@ def UpdateComparisonResults(record1, record2, format_fields, sample_idxs,
        First record to compare
     record2 : trh.TRRecord
        Second record to compare
-    format_fields : list of str
-       List of format fields to extract
     sample_idxs : list of np.array
         Two arrays, one for each vcf
         Each array is a list of indicies so that
         vcf1.samples[index_array1] == vcf2.samples[index_array2]
         and that this is the set of shared samples
+    stratify_by_period : bool
+        If True, also stratify results by period
+    format_fields : list of str
+       List of format fields to extract
+    format_bins : List[List[float]]
+        List of bin start/stop coords for each FORMAT field
+    stratify_file : {0, 1, 2}
+        Specify whether to apply FORMAT stratification to both files (0), or only (1) or (2)
+    overall_results : dict
+        Period and format nested dictionary to update.
     locus_results : dict
        Locus-stratified results dictionary to update.
     sample_results : dict
@@ -374,11 +462,14 @@ def UpdateComparisonResults(record1, record2, format_fields, sample_idxs,
         record1.GetCalledSamples()[sample_idxs[0]],
         record2.GetCalledSamples()[sample_idxs[1]]
     )
+    numcalls = np.sum(both_called)
+    if numcalls == 0:
+        return
 
     locus_results["chrom"].append(chrom)
     locus_results["start"].append(pos)
-    locus_results["period"].append(period)
-    locus_results["numcalls"].append(np.sum(both_called))
+    locus_results["numcalls"].append(numcalls)
+    sample_results['numcalls'] += both_called
 
     # build this so indexing later in the method is more intuitive
     called_sample_idxs = []
@@ -388,29 +479,98 @@ def UpdateComparisonResults(record1, record2, format_fields, sample_idxs,
     ploidies1 = record1.GetSamplePloidies()[called_sample_idxs[0]]
     ploidies2 = record2.GetSamplePloidies()[called_sample_idxs[1]]
     # Make sure gts are same ploidy. If not give up
-    if ploidies1 != ploidies2:
+    if not np.all(ploidies1 == ploidies2):
         raise ValueError("Found sample(s) of different ploidy at %s:%s"%(chrom, pos))
 
-    gts_string_1 = record1.GetStringGenotypes()[called_sample_idxs[0], :-1]
-    gts_string_2 = record2.GetStringGenotypes()[called_sample_idxs[1], :-1]
+    gts_string_1 = record1.GetStringGenotypes()[called_sample_idxs[0], :]
+    gts_string_2 = record2.GetStringGenotypes()[called_sample_idxs[1], :]
+
+    # Make sure same phasedness between calls. If not, give up
+    if ignore_phasing:
+        all_unphased = True
+    else:
+        unphased = (gts_string_1[:, -1] == '0') & (gts_string_2[:, -1] == '0')
+        all_unphased = np.all(unphased)
+        if not (all_unphased or np.all(~unphased)):
+            raise ValueError("Found sample(s) with different phasedness at %s:%s"%(chrom, pos))
+
+    gts_string_1 = gts_string_1[:, :-1]
+    gts_string_2 = gts_string_2[:, :-1]
+    if all_unphased:
+        gts_string_1 = np.sort(gts_string_1, axis=1)
+        gts_string_2 = np.sort(gts_string_2, axis=1)
     conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
-    locus_results["metric-conc-seq"].append(conc_seq)
+
+    locus_results["metric-conc-seq"].append(np.sum(conc_seq)/numcalls)
+    sample_results['conc-seq-count'][both_called] += conc_seq
 
     gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
     gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1]
-    locus_results["gtsum1"].append(np.sum(gts_length_1, axis=1) - reflen*2)
-    locus_results["gtsum2"].append(np.sum(gts_length_2, axis=1) - reflen*2)
+    if all_unphased:
+        gts_length_1 = np.sort(gts_length_1, axis=1)
+        gts_length_2 = np.sort(gts_length_2, axis=1)
     conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
-    locus_results["metric-conc-len"].append(conc_len)
 
-    for ff in format_fields:
-        val1 = record1.format(ff)[called_sample_idxs[0], 0]
-        val2 = record2.format(ff)[called_sample_idxs[1], 0]
-        locus_results[ff+"1"].append(val1)
-        locus_results[ff+"2"].append(val2)
-    sample_results['numcalls'] += both_called
-    sample_results['conc-seq-count'] += conc_seq
-    sample_results['conc-len-count'] += conc_len
+    locus_results["metric-conc-len"].append(np.sum(conc_len)/numcalls)
+    sample_results['conc-len-count'][both_called] += conc_len
+
+    # handle overall
+    outer_keys = ['ALL']
+    if stratify_by_period:
+        outer_keys.append(period)
+        if period not in overall_results:
+            overall_results[period] = NewOverallPeriod(format_fields, format_bins)
+
+    for key in outer_keys:
+        overall_results[key]['ALL']['numcalls'] += numcalls
+        overall_results[key]['ALL']['conc_seq_count'] += np.sum(conc_seq)
+        overall_results[key]['ALL']['conc_len_count'] += np.sum(conc_len)
+        overall_results[key]['ALL']['total_len_1'] += np.sum(gts_length_1)
+        overall_results[key]['ALL']['total_len_2'] += np.sum(gts_length_2)
+        overall_results[key]['ALL']['total_len_11'] += np.sum(gts_length_1**2)
+        overall_results[key]['ALL']['total_len_12'] += np.sum(gts_length_1 * gts_length_2)
+        overall_results[key]['ALL']['total_len_22'] += np.sum(gts_length_2**2)
+
+    for fmt, bins in zip(format_fields, format_bins):
+        fmt1 = record1.format(fmt)[called_sample_idxs[0], 0]
+        fmt2 = record2.format(fmt)[called_sample_idxs[1], 0]
+        masks = []
+        for idx in range(len(bins) - 2):
+            if stratify_file == 0:
+                masks.append(fmt1 >= bins[idx] & fmt1 < bins[idx + 1] &
+                             fmt2 >= bins[idx] & fmt2 < bins[idx + 1])
+            elif stratify_file == 1:
+                masks.append(fmt1 >= bins[idx] & fmt1 < bins[idx + 1])
+            elif stratify_file == 2:
+                masks.append(fmt2 >= bins[idx] & fmt2 < bins[idx + 1])
+        # last bin has inclusive end
+        if stratify_file == 0:
+            masks.append(fmt1 >= bins[-2] & fmt1 <= bins[-1] &
+                         fmt2 >= bins[-2] & fmt2 <= bins[-1])
+        elif stratify_file == 1:
+            masks.append(fmt1 >= bins[-2] & fmt1 <= bins[-1])
+        elif stratify_file == 2:
+            masks.append(fmt2 >= bins[-2] & fmt2 <= bins[-1])
+
+        for _bin, mask in zip(bins[:-1], masks):
+            for key in outer_keys:
+                overall_results[key][fmt][_bin]['numcalls'] += \
+                    np.sum(both_called[mask])
+                overall_results[key][fmt][_bin]['conc_seq_count'] += \
+                    np.sum(conc_seq[mask])
+                overall_results[key][fmt][_bin]['conc_len_count'] += \
+                    np.sum(conc_len[mask])
+                overall_results[key][fmt][_bin]['total_len_1'] += \
+                    np.sum(gts_length_1[mask, :])
+                overall_results[key][fmt][_bin]['total_len_2'] += \
+                    np.sum(gts_length_2[mask, :])
+                overall_results[key][fmt][_bin]['total_len_11'] += \
+                        np.sum(gts_length_1[mask, :]**2)
+                overall_results[key][fmt][_bin]['total_len_12'] += \
+                        np.sum(gts_length_1[mask, :] * gts_length_2[mask, :])
+                overall_results[key][fmt][_bin]['total_len_22'] += \
+                        np.sum(gts_length_2[mask, :]**2)
+
 
 def main(args):
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
@@ -441,27 +601,25 @@ def main(args):
         common.WARNING("No shared samples found between the vcfs and the "
                        "--samples file")
         return 1
+    samples.sort()
     sample_idxs = []
     for vcf in vcfreaders:
         sort = np.argsort(vcf.samples)
         rank = np.searchsorted(vcf.samples, samples, sorter=sort)
-        sample_idxs.append(np.where(sort[rank]))
+        sample_idxs.append(sort[rank])
     # now we have vcfreaders[i].samples[sample_idxs[i]] == samples
 
     ### Determine FORMAT fields we should look for ###
     if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
         common.MSG("--stratify-file must be 0,1, or 2")
         return 1
-    format_fields, format_binsizes = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
-    
+    format_fields, format_bins = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
+
     ### Keep track of data to summarize at the end ###
     locus_results = {
         "chrom": [],
         "start": [],
-        "period": [],
         "numcalls": [],
-        "gtsum1": [],
-        "gtsum2": [],
         "metric-conc-seq": [],
         "metric-conc-len": [],
     }
@@ -470,9 +628,11 @@ def main(args):
         "conc-seq-count": np.zeros((len(samples)), dtype=int),
         "conc-len-count": np.zeros((len(samples)), dtype=int)
     }
-    for ff in format_fields:
-        locus_results[ff+"1"] = []
-        locus_results[ff+"2"] = []
+    # nested dicts period -> format -> val
+    # record running totals so results do not need to be stored in memory
+    overall_results = {
+        'ALL': NewOverallPeriod(format_fields, format_bins)
+    }
 
     try:
         vcftype1 = trh.InferVCFType(vcfreaders[0], args.vcftype1)
@@ -505,22 +665,25 @@ def main(args):
                 current_records[0].POS == current_records[1].POS):
                 UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
                                         trh.HarmonizeRecord(vcftype2, current_records[1]), \
-                                        format_fields, sample_idxs,
-                                        locus_results, sample_results)
-        current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
+                                        sample_idxs, 
+                                        args.ignore_phasing, args.period,
+                                        format_fields, format_bins,
+                                        args.stratify_file,
+                                        overall_results, locus_results, sample_results)
+        current_records = mergeutils.GetNextRecords(vcfregions, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
 
     ### Overall metrics ###
-    OutputOverallMetrics(locus_results, format_fields, format_binsizes, args.stratify_file, args.period, args.out)
-    if not args.noplot: OutputBubblePlot(locus_results, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
+    #OutputOverallMetrics(overall_results, format_fields, format_bins, args.stratify_file, args.period, args.out)
+    #if not args.noplot: OutputBubblePlot(locus_results, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
     OutputLocusMetrics(locus_results, args.out, args.noplot)
 
     ### Per-sample metrics ###
-    OutputSampleMetrics(sample_results, args.out, args.noplot)
+    #OutputSampleMetrics(sample_results, args.out, args.noplot)
 
     return 0
 

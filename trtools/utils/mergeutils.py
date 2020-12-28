@@ -55,7 +55,7 @@ def GetSharedSamples(readers):
     if len(readers) == 1: return samples
     for r in readers[1:]:
         samples = samples.intersection(set(r.samples))
-    return samples
+    return list(samples)
 
 def GetSamples(readers, filenames=None):
     r"""Get list of samples used in all files being merged

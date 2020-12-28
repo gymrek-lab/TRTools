@@ -7,6 +7,10 @@ Features:
   This makes both the underlying VCF reading code and the TRTools code
   significantly faster and memory efficient. For instance, the loading of 
   VCFs into memory is now > 15x faster for VCFs with many samples.
+  Some tools will still need further updates to be usable for large datasets,
+  but those updates should now be possible and much easier.
+  (e.g. emitting progress reports to stdout as needed, flags to disable
+  computations that cannot be done at such scale)
 * DumpSTR has a new flag --zip to produce a bgzipped and tabix-indexed output VCF
 
 Command line interface changes:
@@ -23,8 +27,10 @@ Command line interface changes:
   was never true for length based comparisons - CompareSTR has always been able to
   do length based comparisons regardless of notation. The incorrect claim has been
   removed from CompareSTR's docs.
-* CompareSTR's docs now explicitly state how to order phased and unphased calls to
-  prevent calls from spuriously mismatching
+* CompareSTR's docs now explicitly tell the user to order phased calls to
+  prevent spurious mismatching. If phasing is not desired, use --ignore-phasing
+* CompareSTR will now error if at a single locus both files do not have either all
+  unphased calls, or all phased calls. If phasing is not desired, use --ignore-phasing
 
 Output changes:
 
@@ -49,6 +55,12 @@ Output changes:
 * CompareSTR no longer outputs the file <prefix>-callcompare.tab - the existence
   of that file was never documented, and besides, all its information could
   be seen more easily simply by looking at the input VCFs
+* In CompareSTR's overall.tab file, the ranges in the format columns are now written
+  [a,b) or [a,b] instead of a-b
+* CompareSTR's locuscompare.tab file now outputs loci in the order they were
+  encountered in the input VCfs as opposed to an arbitrary order
+* The 'sample' column in CompareSTR's locuscompare.tab file has been renamed to
+  'numcalls' to match the other two tab files.
 
 Python interface changes:
 
@@ -75,6 +87,23 @@ Bug fixes:
   unphased data
 * MergeSTR now correctly outputs Number=A, G or R correctly in FORMAT fields instead
   of outputing Number=-1, -2 or -3
+* CompareSTR now correctly compares unphased calls without regard to order in the VCF
+  (e.g. 'AAAA/AAA' now matches against 'AAA/AAAA')
+* When using binned format fields in CompareSTR where the range of values did not
+  evenly divide into the requested binsize, the highest valued bin used to always
+  be the same size as all the other bins and include values over the
+  limit specified by the user. Now it caps at that maximum.
+  E.g. binsizes 0:210:50 used to create the bins
+  [0,50), [50,100), [100,150), [150, 200), [200, 250)
+  and now create the bins
+  [0,50), [50,100), [100,150), [150, 200), [200, 210]
+* When using binned format fields in CompareSTR where the range of values 
+  evenly divided into the requested binsize, loci which obtained the requested
+  maximum would be excluded. They are now included.
+  E.g. binsizes 0:200:50 used to create the bins
+  [0,50), [50,100), [100,150), [150, 200)
+  and now create the bins
+  [0,50), [50,100), [100,150), [150, 200]
 
 Quality of life improvements:
 

@@ -23,7 +23,7 @@ Usage
 -----
 CompareSTR takes as input two VCF files with overlapping TRs and samples and outputs metrics and plots based on comparing calls across the two VCFs. The input VCF files must be sorted, indexed, and have the appropriate `##contig` header lines. CompareSTR only considers the subset of samples shared across two VCF files being compared, based on sample ID in the VCF headers.
 
-Note: if comparing two VCFs with **phased** calls, ensure the chromosome ordering matches. A 'motherAllele|fatherAllele' representation will not match with a 'fatherAllele|motherAllele' representation. If comparing two VCFs with **unphased** calls, ensure that alternate alleles are ordered by length (and then alphabetically, if sequence content is called and there are multiple alleles of the same length) and also ensure that allele indicies are ordered from least to greatest within a call (e.g. '1/2' not '2/1'). The genotype 'len12/len14' will not match the genotype 'len14/len12' despite those representing the same logical call; the above steps will avoid that issue.
+Note: if comparing two VCFs with **phased** calls, ensure the chromosome ordering matches. A 'motherAllele|fatherAllele' representation will not match with a 'fatherAllele|motherAllele' representation.
 
 To run compareSTR use the following command::
 
@@ -46,7 +46,7 @@ Filtering Options:
 Metrics to stratify results:
 
 * :code:`--stratify-fields`: Comma-separated list of FORMAT fields to stratify by. e.g. DP,Q
-* :code:`--stratify-binsizes`: Comma-separated list of min:max:binsize to stratify each field on. Must be same length as :code:`--stratify-fields`. e.g. 0:50:5,0:1:0.1
+* :code:`--stratify-binsizes`: Comma-separated list of min:max:binsize to stratify each field on. Must be same length as :code:`--stratify-fields`. e.g. 0:50:5,0:1:0.1 . The range [min, max] is inclusive.
 * :code:`--stratify-file`: Specify which file to look at the :code:`--stratify-fields` in. If set to 0, apply to both files. If set to 1, apply only to :code:`--vcf1`. If set to 2, apply only to :code:`--vcf2`.
 * :code:`--period`: Report results overall and also stratified by repeat unit length (period).
 
@@ -61,6 +61,7 @@ Other options:
 * :code:`--noplot`: Don't output any plots. Only produce text output.
 * :code:`--vcftype1 <string>`: Type of VCF file 1.
 * :code:`--vcftype2 <string>`: Type of VCF file 2.
+* :code:`--ignore-phasing`: Treat all calls as if they are unphased
 
 Outputs
 -------
@@ -75,7 +76,7 @@ compareSTR outputs the following text files and plots:
 
 * :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
 * :code:`<outprefix>-bubble-period$period.pdf`: "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of bp difference from the reference genome. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period.
-* :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, metric-conc-seq, metric-conc-len, sample. last column gives the number of samples considered at each locus. There is one line for each TR.
+* :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, metric-conc-seq, metric-conc-len, numcalls. There is one line for each TR.
 * :code:`<outprefix>-locuscompare.pdf`: Plots the length concordance metric for each TR locus considered.
 * :code:`<outprefix>-samplecompare.tab`: Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
 * :code:`<outprefix>-samplecompare.pdf`: Plots the length concordance metric for each sample considered.
