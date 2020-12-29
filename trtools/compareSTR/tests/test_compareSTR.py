@@ -1,9 +1,10 @@
 import argparse
-import os, sys
+import os
+
 import numpy as np
 import pytest
 
-from ..compareSTR import * 
+from ..compareSTR import *
 
 
 # Set up base argparser
@@ -24,6 +25,7 @@ def base_argparse(tmpdir):
     args.vcftype2 = "auto"
     args.verbose = False
     args.noplot = False
+    args.ignore_phasing = False
     args.bubble_min = -5
     args.bubble_max = 5
     return args
@@ -196,7 +198,7 @@ def test_region(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)
     args.vcf1 = GangSTR_VCF1
     args.vcftype1 = 'gangstr'
-    args.vcf2 = GangSTR_VCF2 
+    args.vcf2 = GangSTR_VCF2
     args.vcftype2 = 'gangstr'
 
     # test correct region strings
@@ -223,20 +225,19 @@ def test_region(tmpdir, vcfdir, capsys):
 
 def test_GetBubbleLegend():
     # only 3 values
-    sample_counts = [1,1,1,2,2,3,3,3,3]
+    sample_counts = [1,2,3]
     actual = GetBubbleLegend(sample_counts)
     expected = [1, 2, 3]
     assert all([a == b for a, b in zip(actual, expected)])
 
     # More than three, linear plot (max(val)/min(val) < 10)
-    sample_counts = [1,1,1,2,2,3,3,3,3,4,4,4,5,5]
+    sample_counts = [1,2,3,4,5]
     actual = GetBubbleLegend(sample_counts)
     expected = [1, 3, 5]
     assert all([a == b for a, b in zip(actual, expected)])
 
-
     # More than three, log plot (max(val)/min(val) > 10)
-    sample_counts = [1,1,1,5,5,10,10,10,10,14,14,14,100,100]
+    sample_counts = [1,5,10,14,100]
     actual = GetBubbleLegend(sample_counts)
     expected = [1, 10, 100]
     assert all([a == b for a, b in zip(actual, expected)])

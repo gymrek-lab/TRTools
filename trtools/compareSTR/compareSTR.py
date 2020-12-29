@@ -274,26 +274,25 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
                                  bin_string)
 
 
-def GetBubbleLegend(period_results):
+def GetBubbleLegend(coordinate_counts):
     r"""Get three good bubble legend sizes to use
 
     They should be nice round numbers spanning the orders of magnitude of the dataset
 
     Parameters
     ----------
-    period_results :
-        Dict from coord to count for this period
+    coordinate_counts :
+        set of counts for coordinates in the graph
 
     Returns
     -------
     legend_values : list of int
         List of three or fewer representative sample sizes to use for bubble legend
     """
-    values = set(period_results.values())
-    if len(values) <= 3: return list(values) # if only three values, return three of them
+    if len(coordinate_counts) <= 3: return list(coordinate_counts) # if only three values, return three of them
     # Determine if we do log10 or linear scale
-    minval = min(values)
-    maxval = max(values)
+    minval = min(coordinate_counts)
+    maxval = max(coordinate_counts)
     if maxval/minval > 10:
         # Do log10 scale
         # Find max power of 10
@@ -358,7 +357,7 @@ def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
         ax.axhline(y=0, linestyle="dashed", color="gray", alpha=0.75)
         ax.axvline(x=0, linestyle="dashed", color="gray", alpha=0.75)
         # plot dummy points for legend
-        legend_values = GetBubbleLegend(per_results)
+        legend_values = GetBubbleLegend(set(per_results.values()))
         xval = (maxval-minval)/10+minval
         for i, val in enumerate(legend_values):
             step=(maxval-minval)/15
@@ -673,6 +672,53 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                 overall_results[key][fmt][_bin]['total_len_22'] += \
                         total_len_22
 
+def check_region(contigs1, contigs2, region_str):
+    def check_contig(contig):
+        if contig not in contigs1 or contig not in contigs2:
+            common.WARNING("contig {} was not found in both input vcfs".format(contig))
+            return 1
+        return 0
+
+    if ':' not in region_str:
+        return check_contig(region_str)
+
+    parts = region_str.split(':')
+    if not len(parts) == 2:
+        common.WARNING("--region should have the format contig:range")
+        return 1
+
+    contig, _range = parts
+    if check_contig(contig) == 1:
+        return 1
+    
+    def bad_range():
+        common.WARNING("The range portion of --region should have one of "
+                       "the forms: 42, -42, 42- or 13-42")
+        return 1
+    try:
+        if '-' not in _range:
+            int(_range)
+            return 0
+
+        parts = _range.split('-')
+        if not len(parts) == 2:
+            return bad_range()
+        start, end = parts
+        if start != '':
+            int(start)
+        if end != '':
+            int(end)
+        if end == '' and start == '':
+            return bad_range()
+        if end != '' and start != '' and int(end) <= int(start):
+            common.WARNING("Cannot have range portion of --region "
+                           "start-end where end <= start")
+            return 1
+    except ValueError: # an int() cast failed
+        return bad_range()
+
+    return 0
+
 
 def main(args):
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
@@ -753,8 +799,14 @@ def main(args):
         common.WARNING("Error with type of vcf2: " + str(te))
         return 1
 
-    # TODO double check this for poorly formatted args.region
-    vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
+    if not args.region:
+        vcfregions = vcfreaders
+    else:
+        contigs1 = utils.GetContigs(vcfreaders[0])
+        contigs2 = utils.GetContigs(vcfreaders[0])
+        if check_region(contigs1, contigs2, args.region) == 1:
+            return 1
+        vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
     
     ### Walk through sorted readers, merging records as we go ###
     current_records = [next(reader) for reader in vcfreaders]
@@ -772,7 +824,7 @@ def main(args):
                 current_records[0].POS == current_records[1].POS):
                 UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
                                         trh.HarmonizeRecord(vcftype2, current_records[1]), \
-                                        sample_idxs, 
+                                        sample_idxs,
                                         args.ignore_phasing, args.period,
                                         format_fields, format_bins,
                                         args.stratify_file,
