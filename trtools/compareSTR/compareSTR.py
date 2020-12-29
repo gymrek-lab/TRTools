@@ -274,22 +274,22 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
                                  bin_string)
 
 
-def GetBubbleLegend(sample_counts):
+def GetBubbleLegend(period_results):
     r"""Get three good bubble legend sizes to use
-    
+
     They should be nice round numbers spanning the orders of magnitude of the dataset
 
     Parameters
     ----------
-    sample_counts : array-like of int
-        Sample counts for each bubble size
+    period_results :
+        Dict from coord to count for this period
 
     Returns
     -------
     legend_values : list of int
         List of three or fewer representative sample sizes to use for bubble legend
     """
-    values = set(sample_counts)
+    values = set(period_results.values())
     if len(values) <= 3: return list(values) # if only three values, return three of them
     # Determine if we do log10 or linear scale
     minval = min(values)
@@ -308,55 +308,65 @@ def GetBubbleLegend(sample_counts):
         mid = int((minval+maxval)/2)
         return sorted(list(set([minval, mid, maxval])))
 
-def OutputBubblePlot(locus_data, period, outprefix, minval=None, maxval=None):
+def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
     r"""Output bubble plot of gtsum1 vs. gtsum2
 
     Parameters
     ----------
-    locus_data : pd.Dataframe
-        locus comparison results
-    period : bool
-        If True, also stratify results by period
+    bubble_results :
+        counts of sum1 vs sum2
     outprefix : str
         Prefix to name output file
     """
-    useperiods = ["ALL"]
-    if period: useperiods.extend(list(set(locus_data["period"])))
-    for per in useperiods:
-        if per == "ALL":
-            usedata = locus_data
-        else: usedata = locus_data[locus_data["period"]==per]
-        bubble_counts = usedata.groupby(["gtsum1","gtsum2"], as_index=False).agg({"sample": len})
-        scale = 10000/np.mean(bubble_counts["sample"])
+    # get periods in sort order
+    periods = set(bubble_results.keys())
+    periods.remove('ALL')
+    periods = list(periods)
+    periods.sort()
+    periods.insert(0, 'ALL')
+
+    for per in periods:
+        per_results = bubble_results[per]
+        x_vals = [x for x, y in per_results.keys()]
+        y_vals = [y for x, y in per_results.keys()]
+        scale = 10000/np.mean(list(per_results.values()))
         if minval is None:
-            minval = min(min(usedata["gtsum1"]), min(usedata["gtsum2"]))
+            minval = min(min(x_vals), min(y_vals))
         if maxval is None:
-            maxval = max(max(usedata["gtsum1"]), max(usedata["gtsum2"]))
+            maxval = max(max(x_vals), max(y_vals))
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        # Plot (0,0) separately
-        b00 = bubble_counts[(bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0)]
-        brest = bubble_counts[~((bubble_counts["gtsum1"]==0) & (bubble_counts["gtsum2"]==0))]
-        scatter = ax.scatter(b00["gtsum1"], b00["gtsum2"], s=np.sqrt(b00["sample"]*scale), color="darkblue", alpha=0.5)
-        scatter = ax.scatter(brest["gtsum1"], brest["gtsum2"], s=np.sqrt(brest["sample"]*scale), color="darkblue", alpha=0.5)
-        ax.set_xlabel("GT sum - file 1", size=15)
-        ax.set_ylabel("GT sum - file 2", size=15)
-        ax.plot([minval, maxval], [minval, maxval], linestyle="dashed", color="gray")
+        # Plot (0,0) separately so everything else is in front of it
+        if (0, 0) in per_results:
+            ax.scatter(0, 0,
+                    s=np.sqrt(per_results[(0,0)]*scale),
+                    color="darkblue",
+                    alpha=0.5)
+        for coord, count in per_results.items():
+            if coord == (0, 0):
+                continue
+            ax.scatter(coord[0], coord[1],
+                       s=np.sqrt(count*scale),
+                       color="darkblue",
+                       alpha=0.5)
+        ax.set_xlabel("sum # repeats - file 1\n(diff from ref)", size=15)
+        ax.set_ylabel("sum # repeats - file 2\n(diff from ref)", size=15)
+        ax.plot([minval, maxval], [minval, maxval], linestyle="dashed",
+                color="gray", alpha=0.75)
         ax.set_xlim(left=minval, right=maxval)
         ax.set_ylim(bottom=minval, top=maxval)
-        ax.axhline(y=0, linestyle="dashed", color="gray")
-        ax.axvline(x=0, linestyle="dashed", color="gray")
+        ax.axhline(y=0, linestyle="dashed", color="gray", alpha=0.75)
+        ax.axvline(x=0, linestyle="dashed", color="gray", alpha=0.75)
         # plot dummy points for legend
-        legend_values = GetBubbleLegend(bubble_counts["sample"])
-        handles = []
+        legend_values = GetBubbleLegend(per_results)
         xval = (maxval-minval)/10+minval
-        for i in range(len(legend_values)):
-            val = legend_values[i]
+        for i, val in enumerate(legend_values):
             step=(maxval-minval)/15
             yval = step*(i+3)
             ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val*scale))
             ax.annotate(val, xy=(xval+step,yval))
-        fig.savefig(outprefix + "-bubble-period%s.pdf"%per)
+        fig.savefig(outprefix + "-bubble-period%s.pdf"%per,
+                    bbox_inches='tight')
         plt.close()
 
 def getargs():  # pragma: no cover
@@ -480,7 +490,8 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                             ignore_phasing,
                             stratify_by_period,
                             format_fields, format_bins, stratify_file,
-                            overall_results, locus_results, sample_results):
+                            overall_results, locus_results, sample_results,
+                            bubble_results):
     r"""Extract comparable results from a pair of VCF records
 
     Parameters
@@ -508,6 +519,8 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
        Locus-stratified results dictionary to update.
     sample_results : dict
        Sample-stratified results dictionary to update.
+    bubble_results : dict
+        dictionary of counts to update
     """
     # Extract shared info
     chrom = record1.vcfrecord.CHROM
@@ -574,13 +587,29 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
     sum_length_2 = np.sum(gts_length_2 - reflen, axis=1)
 
-    # handle overall
     outer_keys = ['ALL']
     if stratify_by_period:
         outer_keys.append(period)
         if period not in overall_results:
             overall_results[period] = NewOverallPeriod(format_fields, format_bins)
+            if bubble_results:
+                bubble_results[period] = {}
 
+    # handle bubble results
+    if bubble_results:
+        length_sums = np.stack((sum_length_1, sum_length_2)).T
+        coords, counts = np.unique(length_sums, axis=0, return_counts=True)
+        for coord, count in zip((tuple(row) for row in coords), counts):
+            if coord not in bubble_results['ALL']:
+                bubble_results['ALL'][coord] = 0
+            if stratify_by_period and coord not in bubble_results[period]:
+                bubble_results[period][coord] = 0
+
+            bubble_results['ALL'][coord] += count
+            if stratify_by_period:
+                bubble_results[period][coord] += count
+
+    # handle overall results
     for key in outer_keys:
         overall_results[key]['ALL']['numcalls'] += numcalls
         overall_results[key]['ALL']['conc_seq_count'] += np.sum(conc_seq)
@@ -707,6 +736,11 @@ def main(args):
         'ALL': NewOverallPeriod(format_fields, format_bins)
     }
 
+    if not args.noplot:
+        bubble_results = {'ALL': {}}
+    else:
+        bubble_results = None
+
     try:
         vcftype1 = trh.InferVCFType(vcfreaders[0], args.vcftype1)
     except TypeError as te:
@@ -742,7 +776,8 @@ def main(args):
                                         args.ignore_phasing, args.period,
                                         format_fields, format_bins,
                                         args.stratify_file,
-                                        overall_results, locus_results, sample_results)
+                                        overall_results, locus_results,
+                                        sample_results, bubble_results)
         current_records = mergeutils.GetNextRecords(vcfregions, current_records, is_min)
         is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
@@ -750,7 +785,7 @@ def main(args):
 
     ### Overall metrics ###
     OutputOverallMetrics(overall_results, format_fields, format_bins, args.out)
-    #if not args.noplot: OutputBubblePlot(locus_results, args.period, args.out, minval=args.bubble_min, maxval=args.bubble_max)
+    if not args.noplot: OutputBubblePlot(bubble_results, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
     OutputLocusMetrics(locus_results, args.out, args.noplot)

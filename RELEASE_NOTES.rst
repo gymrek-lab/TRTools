@@ -92,6 +92,10 @@ Bug fixes:
   outputting the squared coefficient as documented.
 * CompareSTR now correctly compares unphased calls without regard to order in the VCF
   (e.g. 'AAAA/AAA' now matches against 'AAA/AAAA')
+* CompareSTR's docs claimed the bubble plots axes were measured in basepair difference 
+  from the reference, but they were actually measured in number of repeats different
+  from the reference. The behavior has not been changed and the claim has been updated
+  to match the behavior.
 * When using binned format fields in CompareSTR where the range of values did not
   evenly divide into the requested binsize, the highest valued bin used to always
   be the same size as all the other bins and include values over the

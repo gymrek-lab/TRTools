@@ -76,8 +76,8 @@ These metrics and numcalls only reflect the (sample, locus) pairs that were call
 
 compareSTR outputs the following text files and plots:
 
-* :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
-* :code:`<outprefix>-bubble-period$period.pdf`: "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of bp difference from the reference genome. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period.
+* :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately if request by :code:`--period`. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
+* :code:`<outprefix>-bubble-period$period.pdf`: "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of difference in number of repeat units from the reference. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period if requested by :code:`--period`.
 * :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, metric-conc-seq, metric-conc-len, numcalls. There is one line for each TR.
 * :code:`<outprefix>-locuscompare.pdf`: Plots the length concordance metric for each TR locus considered.
 * :code:`<outprefix>-samplecompare.tab`: Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
