@@ -5,6 +5,7 @@ Tool for filtering and QC of TR genotypes
 
 # Load external libraries
 import argparse
+import collections
 import itertools
 import os
 import subprocess as sp
@@ -1076,7 +1077,9 @@ def main(args):
     if outvcf is None: return 1
 
     # Set up sample info
-    sample_info = {}
+    # use an ordered dict so we write out the filters in samplog.tab
+    # in a reproducible order
+    sample_info = collections.OrderedDict()
     # insert 'numcalls' and 'totaldp' in this order so that
     # they are printed out in the sample log in this order
     sample_info['numcalls'] = np.zeros((len(invcf.samples)), dtype=int)
@@ -1087,7 +1090,11 @@ def main(args):
         sample_info[filter_name] = np.zeros((len(invcf.samples)), dtype=int)
 
     # Set up locus info
-    loc_info = {"totalcalls": 0, "PASS": 0}
+    # use an ordered dict so we write out the filters in loclog.tab
+    # in a reproducible order
+    loc_info = collections.OrderedDict()
+    loc_info["totalcalls"] = 0
+    loc_info["PASS"] = 0
     for filt in filter_list: loc_info[filt.filter_name()] = 0
 
     # Go through each record
