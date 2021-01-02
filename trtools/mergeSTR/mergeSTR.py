@@ -396,6 +396,9 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
     use_ind = [i for i in range(len(mergelist)) if mergelist[i]]
     if len(use_ind)==0: return
 
+    chrom = current_records[use_ind[0]].CHROM
+    pos = str(current_records[use_ind[0]].POS)
+
     ref_allele = GetRefAllele(current_records, mergelist)
     if ref_allele is None:
         common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
@@ -404,9 +407,9 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
     alt_alleles, mappings = GetAltAlleles(current_records, mergelist, vcftype)
 
     # Set common fields
-    vcfw.write(current_records[use_ind[0]].CHROM) #CHROM
+    vcfw.write(chrom) #CHROM
     vcfw.write('\t')
-    vcfw.write(str(current_records[use_ind[0]].POS)) #POS
+    vcfw.write(pos) #POS
     vcfw.write('\t')
     # TODO complain if records have different IDs
     vcfw.write(GetID(current_records[use_ind[0]].ID)) # ID

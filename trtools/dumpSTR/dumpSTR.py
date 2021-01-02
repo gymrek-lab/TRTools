@@ -906,8 +906,8 @@ def main(args):
                        "directory".format(args.out))
         return 1
 
-    if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
-        common.WARNING("Output directory does not exist")
+    if args.out[-1] in {'.', '/'}:
+        common.WARNING("Output prefix must not end in '/' or '.'")
         return 1
 
     # Set up record harmonizer and infer VCF type
