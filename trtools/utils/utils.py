@@ -6,73 +6,70 @@ import argparse
 import itertools
 import math
 import os
-import sys
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
+import cyvcf2
 import numpy as np
 import scipy.stats
-import vcf
 
 import trtools.utils.common as common # pragma: no cover
 
 nucToNumber={"A":0,"C":1,"G":2,"T":3}
-    
-def LoadSingleReader(vcffile, checkgz=True, region=None):
-    r"""Return VCF reader
+
+def LoadSingleReader(
+        vcf_loc: str,
+        checkgz: bool = True) -> Optional[cyvcf2.VCF]:
+    """
+    Return a VCF reader
 
     Parameters
     ----------
-    vcffile : str
-        VCF files to read
-    checkgz: boolean, optional
-        Check whether VCF file is gzipped and indexed
-    region : str, optional
-        Chrom:start-end to restrict to
-    
+    vcf_loc :
+        The location of the VCF file to read
+    checkgz:
+        Check whether VCF file is gzipped and indexed,
+        if not return None
+
     Returns
     -------
-    reader : vcf.Reader
-        VCF reader
+    reader : Optional[cyvcf2.VCF]
+        The cyvcf2.VCF instance, or None if the VCF is not present
     """
-    if not os.path.isfile(vcffile):
-        common.WARNING("Could not find VCF file %s"%vcffile)
+    if not os.path.isfile(vcf_loc):
+        common.WARNING("Could not find VCF file %s"%vcf_loc)
         return None
     if checkgz:
-        if not vcffile.endswith(".vcf.gz") and not vcffile.endswith(".vcf.bgz"):
-            common.WARNING("Make sure %s is bgzipped and indexed"%vcffile)
+        if not vcf_loc.endswith(".vcf.gz") and not vcf_loc.endswith(".vcf.bgz"):
+            common.WARNING("Make sure %s is bgzipped and indexed"%vcf_loc)
             return None
-        if not os.path.isfile(vcffile+".tbi"):
-            common.WARNING("Could not find VCF index %s.tbi"%vcffile)
+        if not os.path.isfile(vcf_loc+".tbi"):
+            common.WARNING("Could not find VCF index %s.tbi"%vcf_loc)
             return None
-    if vcffile.endswith(".vcf.gz") or vcffile.endswith(".vcf.bgz"):
-        reader = vcf.Reader(open(vcffile, "rb"))
-    else:
-        reader = vcf.Reader(open(vcffile))
-    
-    if region is None:
-        return reader
-    else: return reader.fetch(region)
+    return cyvcf2.VCF(vcf_loc)
 
-def LoadReaders(vcffiles, checkgz=True, region=None):
-    r"""Return list of VCF readers
+def LoadReaders(
+        vcf_locs: List[str],
+        checkgz: bool = True) -> Optional[List[cyvcf2.VCF]]:
+    """
+    Return a list of VCF readers
 
     Parameters
     ----------
-    vcffiles : list of str
-        List of VCF files to merge
-    checkgz: bool, optional
+    vcf_locs :
+        A list of vcf locations
+    checkgz:
         Check if each VCF file is gzipped and indexed
-    region : str, optional
-        Chrom:start-end to restrict to
-    
+        If any are not, return None
+
     Returns
     -------
-    readers : list of vcf.Reader
-        VCF readers list for all files to merge
+    readers : Optional[List[cvycf2.VCF]]
+        A list of VCF readers, or none if any of them could not be found
+        or failed the gz check if applicable.
     """
     readers = []
-    for f in vcffiles:
-        rdr = LoadSingleReader(f, checkgz, region)
+    for f in vcf_locs:
+        rdr = LoadSingleReader(f, checkgz)
         if rdr is None:
             return None
         readers.append(rdr)
@@ -200,7 +197,11 @@ def GetMean(allele_freqs):
     return sum([key*allele_freqs[key] for key in allele_freqs])
 
 def GetMode(allele_freqs):
-    r"""Compute the mode allele length
+    """
+    Compute the mode allele length.
+
+    If more than one allele has the maximum number of copies out of all
+    alleles, choose one at random (but reproducibly)
 
     Parameters
     ----------
@@ -220,13 +221,15 @@ def GetMode(allele_freqs):
     """
     if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
-    mode_allele = None
     mode_freq = -1
-    for key in allele_freqs.keys():
-        if allele_freqs[key] > mode_freq:
-            mode_allele = key
-            mode_freq = allele_freqs[key]
-    return mode_allele
+    modes = set()
+    for allele, freq in allele_freqs.items():
+        if freq > mode_freq:
+            modes = {allele}
+            mode_freq = freq
+        if freq == mode_freq:
+            modes.add(allele)
+    return min(modes)  # use min to make this arbitrary selection reproducible
 
 def GetVariance(allele_freqs):
     r"""Compute the variance of the allele lengths

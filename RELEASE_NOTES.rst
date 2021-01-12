@@ -8,6 +8,10 @@ Features:
   significantly faster and more memory efficient. For instance, the loading of
   VCFs into memory is now > 15x faster for VCFs with many samples.
 
+Command line interface changes:
+
+* StatSTR's --region option now requires the input VCF to be bgzipped and tabix indexed.
+
 Python interface changes:
 
 * The trtools.utils.tr_harmonizer module has been reworked to use cyvcf2,
@@ -22,3 +26,7 @@ Python interface changes:
   of these genotypes have been aligned with cyvcf2's standards.
   For more info, see the docs of the index, length and 
   string genotype getter methods.
+
+Quality of life improvements:
+
+* StatSTR, when printing output to a file, now prints timing diagnostics to stdout.
