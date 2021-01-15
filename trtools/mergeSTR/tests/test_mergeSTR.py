@@ -1,5 +1,7 @@
 import argparse
 import os
+import re
+
 import numpy as np
 import pytest
 
@@ -155,7 +157,7 @@ def test_DifferentContigs(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
-    assert "Different contigs found across VCF files." in str(info.value)
+    assert "Different contigs (or contig orderings) found across VCF files." in str(info.value)
 
 def test_DifferentContigLengths(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
@@ -163,7 +165,7 @@ def test_DifferentContigLengths(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     with pytest.raises(ValueError) as info:
         main(args)
-    assert "Different contigs found across VCF files." in str(info.value)
+    assert "Different contigs (or contig orderings) found across VCF files." in str(info.value)
 
 def test_SameContigsDifferentOrder(args, vcfdir, mrgvcfdir):
     fname1 = os.path.join(vcfdir, "one_sample_multiple_chroms.vcf.gz")
@@ -172,7 +174,9 @@ def test_SameContigsDifferentOrder(args, vcfdir, mrgvcfdir):
         "one_sample_multiple_chroms_diff_contig_order.vcf.gz"
     )
     args.vcfs = fname1 + "," + fname2
-    assert main(args) == 0
+    with pytest.raises(ValueError) as info:
+        main(args)
+    assert "Different contigs (or contig orderings) found across VCF files." in str(info.value)
 
 def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missinginfo1.vcf.gz")
@@ -201,6 +205,32 @@ def test_ConflictingRefs():
 
     retval = GetRefAllele(dummy_records, [True, True, False])
     assert retval == "CAGCAG"
+
+
+def test_conflicting_refs_merge(capsys, args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "diff_ref2.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "diff_ref.vcf.gz")
+    # confirm that output is independent of file order
+    for fnames in fname1 + ',' + fname2, fname2 + ',' + fname1:
+        args.vcfs = fnames
+        main(args)
+        captured = capsys.readouterr().err
+        # looking for four skipped records
+        # the first has different start coords
+        # the second has different end coords
+        # the third has smaller different start and end coords
+        # the fourth has a greater start and smaller end coord
+        assert re.search('3029300.*overlaps', captured) is not None
+        assert re.search('3068357.*overlaps', captured) is not None
+        assert re.search('3074665.*overlaps', captured) is not None
+        assert re.search('3086956.*overlaps', captured) is not None
+        # looking for one merged record - same refs
+        vcf = cyvcf2.VCF(args.out + ".vcf")
+        var = next(vcf)
+        assert var.POS == 3045469
+        with pytest.raises(StopIteration):
+            next(vcf)
+
 
 def test_GetInfoItem(capsys):
     # Set up dummy records

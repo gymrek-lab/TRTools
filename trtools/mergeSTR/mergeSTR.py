@@ -86,11 +86,11 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     # Check contigs the same for all readers
     contigs = get_header_lines('contig', readers[0])
     for i in range(1, len(readers)):
-        if set(get_header_lines('contig', readers[i])) != set(contigs):
+        if get_header_lines('contig', readers[i]) != contigs:
             raise ValueError(
-                "Different contigs found across VCF files. Make sure all "
-                "files used the same reference. Consider using this "
-                "command:\n\t"
+                "Different contigs (or contig orderings) found across VCF "
+                "files. Make sure all files used the same reference. "
+                "Consider using this command:\n\t"
                 "bcftools reheader -f ref.fa.fai file.vcf.gz -o file_rh.vcf.gz")
     # Write VCF format, commands, and contigs
     vcfw.write("##fileformat=VCFv4.1\n")
@@ -364,7 +364,7 @@ def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
                     format_arrays[fmt][sample_idx, :]
                 ))
 
-def MergeRecords(readers, vcftype, num_samples, current_records,
+def MergeRecords(vcftype, num_samples, current_records,
                  mergelist, vcfw, useinfo,
                  useformat, format_type):
     r"""Merge records from different files
@@ -374,8 +374,6 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
 
     Parameters
     ----------
-    readers : list of vcf.Reader
-       List of readers being merged
     vcftype :
        Type of the readers
     num_samples : list of int
@@ -478,6 +476,165 @@ def getargs():  # pragma: no cover
     args = parser.parse_args()
     return args
 
+
+def _end_pos(record):
+    return record.POS + len(record.REF) - 1
+
+
+class BadOrderException(Exception):
+    pass
+
+
+def _next_assert_order(reader, record, chroms, idx):
+    try:
+        next_rec = next(reader)
+    except StopIteration:
+        return None
+    if next_rec.CHROM not in chroms:
+        common.WARNING((
+            "Error: found a record in file {} with "
+            "chromosome '{}' which was not found in the contig list "
+            "({})").format(idx + 1, next_rec.CHROM, ", ".join(chroms)))
+        common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
+        common.WARNING(
+            "If this is only a technical issue and all the vcf "
+            "files were truly built against against the "
+            "same reference, use bcftools "
+            "(https://github.com/samtools/bcftools) to fix the contigs"
+            ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
+        raise BadOrderException()
+
+    if record is None:
+        return next_rec
+    if ((chroms.index(next_rec.CHROM), next_rec.POS) <
+            (chroms.index(record.CHROM), record.POS)):
+        common.WARNING((
+            "Error: In file {} the record following the variant at {}:{} "
+            "comes before it. Input files must be sorted."
+        ).format(idx + 1, record.CHROM, record.POS))
+        raise BadOrderException()
+    return next_rec
+
+
+def RecordIterator(readers, chroms, verbose=False):
+    """
+    TODO
+    Get the next set of records with the same refs
+
+    First skip the records marked by increment which
+    have already been processed
+
+    Parameters
+    ----------
+    readers : list of cyvcf2.VCF
+        The VCFs being read
+    current_records : list of cyvcf2.Variant
+        The records that have already been read
+    increment : list of bool
+        Which of the current records have been processed
+
+    Returns
+    -------
+    new_records : list of cyvcf2.Variant
+        List of records for each file where the records
+        with minimum position have the same refs
+    min_pos : list of bool
+        Indicates which of the returned records have minimum position
+    """
+    is_min = [True]*len(readers)
+    records = [None]*len(readers)
+    curr_chrom_idx = 0 # the chrom of the min records
+    prev_pos_end = -np.inf # the pos of the end of any record
+                           # marked as min so far
+    # iterate until done
+    while True:
+        # increment all readers that have already been processed because:
+        # * they've already been returned to the user
+        # * they have bad overlaps and the user has been told they are being
+        #   skipped
+        # * this is the start and we need to completely refresh the list
+        for idx in range(len(readers)):
+            if is_min[idx]:
+                is_min[idx] = False
+                try:
+                    records[idx] = _next_assert_order(
+                        readers[idx], records[idx], chroms, idx
+                    )
+                except StopIteration:
+                    records.append(None)
+
+        # stop if there are no more records
+        if all(r is None for r in records):
+            break
+
+        # iterate through the records, collecting the records of minimum
+        # position and seeing if they imporperly overlap any other records.
+        # repeat only if we don't find any records with the
+        # current chromosome, in that case increment the chrom by one and
+        # repeat
+        min_pos = np.inf # the minimum position seen so far
+        min_idxs = None
+        overlap = False
+        curr_pos_end = -np.inf
+        seen_chrom = False
+        while not seen_chrom:
+            seen_chrom = True
+            for idx in range(len(readers)):
+                rec = records[idx]
+                if rec is None:
+                    continue
+                chrom_idx = chroms.index(rec.CHROM)
+                if chrom_idx > curr_chrom_idx:
+                    continue
+                ## chrom_idx == cur_chrom_idx
+
+                end_pos = _end_pos(rec)
+
+                # figure out if there is an overlap
+                if rec.POS <= prev_pos_end: # overlaps with prev round
+                    overlap = True
+                # strictly less than the current best or matches the current best
+                elif end_pos <= min_pos or (rec.POS == min_pos and end_pos ==
+                                            curr_pos_end):
+                    overlap = False
+                # overlaps the current best
+                elif (rec.POS <= min_pos <= end_pos or
+                      min_pos <= rec.POS <= curr_pos_end):
+                    overlap = True
+
+                if rec.POS < min_pos:
+                    # found a new min record
+                    min_idxs = {idx}
+                    min_pos = rec.POS
+                    curr_pos_end = end_pos
+                    continue
+                if (rec.POS, end_pos) == (min_pos, curr_pos_end):
+                    # found an identical record to merge
+                    min_idxs.add(idx)
+                    continue
+            if min_pos == np.inf:
+                seen_chrom = False
+                curr_chrom_idx += 1
+                prev_pos_end = -np.inf
+        prev_pos_end = max(prev_pos_end, curr_pos_end)
+        for idx in min_idxs:
+            is_min[idx] = True
+
+        if overlap:
+            for idx in min_idxs:
+                common.WARNING(
+                    "Warning: locus {}:{} in file {} overlaps a previous record in "
+                    "the same file or a record in another file. Skipping.".format(
+                        records[idx].CHROM, records[idx].POS, idx+1
+                ))
+        else:
+            if verbose:
+                mergeutils.DebugPrintRecordLocations(records,
+                                                     is_min)
+            yield records, is_min
+        # continue while iteration over all records
+
+
 def main(args):
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Error: The directory which contains the output location {} does"
@@ -524,33 +681,15 @@ def main(args):
         format_type.append(vcfreaders[0].get_header_type(fmt)['Type'])
 
     ### Walk through sorted readers, merging records as we go ###
-    current_records = [next(reader) for reader in vcfreaders]
-    # Check if contig ID is set in VCF header for all records
-    done = mergeutils.DoneReading(current_records)
-    while not done:
-        for vcf_num, (r, reader) in enumerate(zip(current_records, vcfreaders)):
-            if r is None: continue
-            if not r.CHROM in chroms:
-                common.WARNING((
-                    "Error: found a record in file {} with "
-                    "chromosome '{}' which was not found in the contig list "
-                    "({})").format(filenames[vcf_num], r.CHROM, ", ".join(chroms)))
-                common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
-                common.WARNING(
-                    "If this is only a technical issue and all the vcf "
-                    "files were truly built against against the "
-                    "same reference, use bcftools "
-                    "(https://github.com/samtools/bcftools) to fix the contigs"
-                    ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
-                return 1
-        is_min = mergeutils.GetMinRecords(current_records, chroms)
-        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
-        if mergeutils.CheckMin(is_min): return 1
-        MergeRecords(vcfreaders, vcftype, num_samples, current_records, is_min, vcfw, useinfo,
-                     useformat, format_type)
-        current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
-        done = mergeutils.DoneReading(current_records)
-    return 0 
+    try:
+        for records, is_min in RecordIterator(
+                vcfreaders, chroms, verbose=args.verbose):
+            MergeRecords(vcftype, num_samples, records, is_min, vcfw, useinfo,
+                         useformat, format_type)
+    except BadOrderException:
+        return 1
+
+    return 0
 
 def run(): # pragma: no cover
     args = getargs()

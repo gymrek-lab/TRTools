@@ -1,3 +1,17 @@
+Unreleased
+----------
+Command line interface changes:
+* If MergeSTR encounters input files with the same contigs but in 
+  different orderings, it will exit with a warning asking the user
+  to reheader the files
+
+Output changes:
+* If MergeSTR encounters two records in the same file whose ref alleles overlap,
+  it will emit the first one and then warn about and skip the second.
+* If MergeSTR encounters records across different files whose ref alleles
+  partially overlap it will warn about all of them and skip them. Previously
+  this was only done if the ref alleles had the same start position
+
 4.0.0
 -----
 

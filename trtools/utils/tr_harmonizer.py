@@ -575,7 +575,9 @@ class TRRecord:
     chrom : str
         The chromosome this locus is in
     pos : int
-        The bp along the chromosome that this locus is at
+        The bp along the chromosome that this locus starts at.
+        If this locus has full sequence genotypes, then this
+        is the start of the full sequence
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
