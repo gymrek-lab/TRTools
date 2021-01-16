@@ -73,26 +73,40 @@ def test_WrongFile(args, testDumpSTRdir):
     retcode = main(args)
     assert retcode==1
 
+
+# Test a file that already has Filter IDs defined
+# that we want to use that are of either the wrong number of type.
+# Since cyvcf2 currently won't allow us to overwrite them,
+# error out
 def test_BadPreexistingFields(args, testDumpSTRdir, capsys):
     fname = os.path.join(testDumpSTRdir, "bad_preexisting_hrun.vcf")
     args.vcf = fname
     retcode = main(args)
+    assert retcode == 1
     captured = capsys.readouterr()
     assert "HRUN" in captured.err
 
     fname = os.path.join(testDumpSTRdir, "bad_preexisting_het_hwep.vcf")
     args.vcf = fname
     retcode = main(args)
+    assert retcode == 1
     captured = capsys.readouterr()
     assert "HWEP" in captured.err and "HET" in captured.err
 
     fname = os.path.join(testDumpSTRdir, "bad_preexisting_filter_ac_refac.vcf")
     args.vcf = fname
     retcode = main(args)
+    assert retcode == 1
     captured = capsys.readouterr()
     assert ("FILTER" in captured.err and "AC" in captured.err
             and "REFAC" in captured.err)
 
+
+# Test a file that already has a HWE Filter ID defined
+# if the field is of the correct type and number, as in this case
+# we overwrite it and emit a warning instead of failing
+# this allows dumpSTR to be run multiple times in succession
+# on the same file
 def test_WorrisomePreexistingFilter(args, testDumpSTRdir, capsys):
     fname = os.path.join(testDumpSTRdir, "worrisome_preexisting_filter.vcf")
     args.vcf = fname
@@ -180,6 +194,7 @@ def test_PopSTRFile(args, testDumpSTRdir):
     retcode = main(args)
     assert retcode==0
 
+# confirm that producing zipped output doesn't crash
 def test_zippedOutput(args, testDumpSTRdir):
     fname = os.path.join(testDumpSTRdir, "trio_chr21_gangstr.sorted.vcf.gz")
     args.vcf = fname
@@ -728,6 +743,7 @@ def _grab_line_for_assertion(iter1, iter2):
     return line1.strip(), line2.strip()
 
 
+# make sure locus level filters produce the same output
 def test_output_locus_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
     args.min_locus_callrate = 0.5
@@ -752,6 +768,9 @@ def test_output_locus_filters(args, testDumpSTRdir):
                           testDumpSTRdir + '/locus_filters' + ext,
                           ext)
 
+
+# make sure locus level filters produce the same output when
+# --drop-filtered is set
 def test_output_drop_filtered(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
     args.min_locus_callrate = 0.5
@@ -778,6 +797,7 @@ def test_output_drop_filtered(args, testDumpSTRdir):
                           ext)
 
 
+# test advntr call level filters
 def test_output_advntr_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/NA12878_chr21_advntr.sorted.vcf.gz'
     args.advntr_min_call_DP = 50
@@ -798,6 +818,7 @@ def test_output_advntr_filters(args, testDumpSTRdir):
                           ext)
 
 
+# test hipstr call and locus level filters
 def test_output_hipstr_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/trio_chr21_hipstr.sorted.vcf.gz'
     args.filter_hrun = True
@@ -828,6 +849,8 @@ def test_output_hipstr_filters(args, testDumpSTRdir):
                           ext)
 
 
+# test gangstr call level filters that don't begin
+# with 'expansion' - those are tested on another file
 def test_output_gangstr_most_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/trio_chr21_gangstr.sorted.vcf.gz'
     args.gangstr_min_call_DP = 10
@@ -850,6 +873,10 @@ def test_output_gangstr_most_filters(args, testDumpSTRdir):
                           testDumpSTRdir + '/gangstr_filters_most' + ext,
                           ext)
 
+
+# test gangstr call level filters that begin with
+# 'expansion' - the other gangstr call level filters
+# are tested on another file
 def test_output_gangstr_expansion_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/test_gangstr.vcf.gz'
     args.gangstr_expansion_prob_het = 0.001
@@ -868,6 +895,7 @@ def test_output_gangstr_expansion_filters(args, testDumpSTRdir):
                           ext)
 
 
+# test popstr call level filters
 def test_output_popstr_filters(args, testDumpSTRdir):
     args.vcf = testDumpSTRdir + '/NA12878_chr21_popstr.sorted.vcf.gz'
     args.popstr_min_call_DP = 30
@@ -885,6 +913,4 @@ def test_output_popstr_filters(args, testDumpSTRdir):
         _assert_same_file(args.out + ext,
                           testDumpSTRdir + '/popstr_filters' + ext,
                           ext)
-
-
 

@@ -5,7 +5,7 @@ Features:
 
 * Underlying libraries now use cyvcf2 instead of PyVCF for VCF parsing.
   This makes both the underlying VCF reading code and the TRTools code
-  significantly faster and memory efficient. For instance, the loading of 
+  significantly faster and more memory efficient. For instance, the loading of
   VCFs into memory is now > 15x faster for VCFs with many samples.
 * DumpSTR has a new flag --zip to produce a bgzipped and tabix-indexed output VCF
 
@@ -28,8 +28,8 @@ Output changes:
 * DumpSTR now adds ##FILTER=<ID=PASS,Description="All filters passed">
   to the header line
 * When DumpSTR filters a call and replaces each of its format fields with the no call
-  '.', fields with number>1 are now replaced with '.,.' e.g. for a number=2 field, rather
-  than just a single '.'
+  '.', fields with more than one value are now represented correctly. For example,
+  for 2 values '.,.' is used rather than just a single '.'
 
 Python interface changes:
 

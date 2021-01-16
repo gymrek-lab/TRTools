@@ -563,6 +563,8 @@ def ApplyCallFilters(record: trh.TRRecord,
         which has now been modified to contain all the new call-level
         filters.
     """
+    # this array will contain the text to append in the Filter FORMAT
+    # field for each sample
     all_filter_text = np.empty((record.GetNumSamples()), 'U4')
     nocalls = ~record.GetCalledSamples()
 
@@ -575,9 +577,13 @@ def ApplyCallFilters(record: trh.TRRecord,
         if np.all(nans):
             continue
         sample_info[filt.name] += np.logical_and(~nans, ~nocalls)
+        # append ',<filter_name><value_that_triggered_fitler>' to each
+        # call that has a filter applied to it
         filt_output_text = np.char.mod('%g', filt_output)
         filt_output_text = np.char.add(filt.name, filt_output_text)
-        filt_output_text[nans] = ''
+        filt_output_text[nans] = '' # don't add text to calls that haven't been filtered
+        # only append a ',' if this is the second (or more) filter applied
+        # to this call
         not_first_filter = np.logical_and(~nans, all_filter_text != '')
         all_filter_text[not_first_filter] = \
             np.char.add(all_filter_text[not_first_filter], ',')
@@ -588,8 +594,8 @@ def ApplyCallFilters(record: trh.TRRecord,
     if np.any(nocalls):
         nocall_text = np.empty((nocalls.shape[0]), dtype='U6')
         nocall_text[nocalls] = 'NOCALL'
-        # if there was already a no call, don't say we applied
-        # our filters to it
+        # if there was already a no call, leave an empty filter
+        # field instead of NOCALL
         all_filter_text[nocalls] = ''
         all_filter_text = np.char.add(all_filter_text, nocall_text)
     all_filter_text[all_filter_text == ''] = 'PASS'
@@ -657,7 +663,6 @@ def ApplyCallFilters(record: trh.TRRecord,
         record.vcfrecord.set_format(field, vals)
 
     # rebuild the TRRecord with the newly modified cyvcf2 vcfrecord
-    # TODO test that this works under all permuations of inputs
     if record.HasFabricatedAltAlleles():
         alt_alleles = None
         alt_allele_lengths = record.alt_allele_lengths
