@@ -158,7 +158,7 @@ def WriteMergedHeader(vcfw, args, readers, cmd, vcftype):
     vcfw.write("#"+"\t".join(header_fields+samples)+"\n")
     return useinfo, useformat
 
-def GetRefAllele(current_records, mergelist):
+def GetRefAllele(current_records, mergelist, trim=False):
     r"""Get reference allele for a set of records
 
     Parameters
@@ -174,20 +174,21 @@ def GetRefAllele(current_records, mergelist):
        Reference allele string. Set to None if conflicting references are found.
     """
     refs = []
-    chrom = ""
-    pos = -1
     for i in range(len(mergelist)):
         if mergelist[i]:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
-            refs.append(current_records[i].REF.upper())
+            chrom = current_records[i].chrom
+            pos = current_records[i].pos
+            if not trim:
+                refs.append(current_records[i].vcfrecord.REF.upper())
+            else:
+                refs.append(current_records[i].ref_allele.upper())
     if len(set(refs)) != 1:
         return None
     return refs[0]
 
-def GetAltAlleles(current_records, mergelist, vcftype):
+def GetAltAlleles(current_records, mergelist, vcftype, trim=False):
     r"""Get list of alt alleles
-    
+
     Parameters
     ----------
     current_records : list of vcf.Record
@@ -211,9 +212,15 @@ def GetAltAlleles(current_records, mergelist, vcftype):
        the mapping for the current record would be np.array(['0', '3', '2'])
     """
     alts = set()
+    def get_alts(record):
+        if not trim:
+            return record.vcfrecord.ALT
+        else:
+            return record.alt_alleles
+
     for i in range(len(mergelist)):
         if mergelist[i]:
-            ralts = current_records[i].ALT
+            ralts = get_alts(current_records[i])
             for item in ralts:
                 alts.add(item.upper())
     if vcftype == trh.VcfTypes.eh:
@@ -230,11 +237,12 @@ def GetAltAlleles(current_records, mergelist, vcftype):
     mappings = []
     for i in range(len(mergelist)):
         if mergelist[i]:
-            ralts = current_records[i].ALT
+            ralts = get_alts(current_records[i])
             mappings.append(
                 np.array([0] + [out_alts.index(ralt.upper()) + 1 for ralt in ralts]).astype(str)
             )
     return out_alts, mappings
+
 
 def GetID(idval):
     r"""Get the ID for a a record
@@ -283,16 +291,16 @@ def GetInfoItem(current_records, mergelist, info_field, fail=True):
     for i in range(len(mergelist)):
         if mergelist[i]:
             a_merged_rec = current_records[i]
-            if info_field in dict(current_records[i].INFO):
-                vals.add(current_records[i].INFO[info_field])
+            if info_field in current_records[i].info:
+                vals.add(current_records[i].info[info_field])
             else:
                 raise ValueError("Missing info field %s"%info_field)
     if len(vals)==1:
         return "%s=%s"%(info_field, vals.pop())
     else:
         common.WARNING("Incompatible values %s for info field %s at position "
-                       "%s:%i"%(vals, info_field, a_merged_rec.CHROM,
-                                a_merged_rec.POS))
+                       "%s:%i"%(vals, info_field, a_merged_rec.chrom,
+                                a_merged_rec.pos))
         return None
 
 def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
@@ -319,7 +327,7 @@ def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
     """
     assert "GT" not in formats # since we will add that
 
-    genotypes = record.genotype.array()
+    genotypes = record.GetGenotypeIndicies()
     not_called_samples = np.all(
         np.logical_or(genotypes[:, :-1] == -1, genotypes[:, :-1] == -2),
         axis=1
@@ -331,15 +339,15 @@ def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
     format_arrays = {}
     for format_idx, fmt in enumerate(formats):
         if format_type[format_idx] == 'String':
-            format_arrays[fmt] = record.format(fmt)
+            format_arrays[fmt] = record.format[fmt]
         elif format_type[format_idx] == 'Float':
-            format_arr = record.format(fmt)
+            format_arr = record.format[fmt]
             nans = np.isnan(format_arr)
             format_arr = format_arr.astype(str)
             format_arr[nans] = '.'
             format_arrays[fmt] = format_arr
         else:
-            format_arrays[fmt] = record.format(fmt).astype(str)
+            format_arrays[fmt] = record.format[fmt].astype(str)
 
     for sample_idx in range(genotypes.shape[0]):
         vcfw.write('\t')
@@ -366,7 +374,7 @@ def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
 
 def MergeRecords(vcftype, num_samples, current_records,
                  mergelist, vcfw, useinfo,
-                 useformat, format_type):
+                 useformat, format_type, trim=False):
     r"""Merge records from different files
 
     Merge all records with indicator set to True in mergelist
@@ -394,10 +402,10 @@ def MergeRecords(vcftype, num_samples, current_records,
     use_ind = [i for i in range(len(mergelist)) if mergelist[i]]
     if len(use_ind)==0: return
 
-    chrom = current_records[use_ind[0]].CHROM
-    pos = str(current_records[use_ind[0]].POS)
+    chrom = current_records[use_ind[0]].chrom
+    pos = str(current_records[use_ind[0]].pos)
 
-    ref_allele = GetRefAllele(current_records, mergelist)
+    ref_allele = GetRefAllele(current_records, mergelist, trim=trim)
     if ref_allele is None:
         common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
         return
@@ -410,7 +418,7 @@ def MergeRecords(vcftype, num_samples, current_records,
     vcfw.write(pos) #POS
     vcfw.write('\t')
     # TODO complain if records have different IDs
-    vcfw.write(GetID(current_records[use_ind[0]].ID)) # ID
+    vcfw.write(GetID(current_records[use_ind[0]].vcfrecord.ID)) # ID
     vcfw.write('\t')
     vcfw.write(ref_allele) # REF
     vcfw.write('\t')
@@ -465,6 +473,7 @@ def getargs():  # pragma: no cover
     ### Special merge options ###
     spec_group = parser.add_argument_group("Special merge options")
     spec_group.add_argument("--update-sample-from-file", help="Use file names, rather than sample header names, when merging", action="store_true")
+    spec_group.add_argument("--trim", help="Trim flanking bps and variants from TRs before merging (only for TR callers that specify flanking bps)", action="store_true")
     ### Optional arguments ###
     opt_group = parser.add_argument_group("Optional arguments")
     opt_group.add_argument("--verbose", help="Print out extra info", action="store_true")
@@ -477,10 +486,6 @@ def getargs():  # pragma: no cover
     return args
 
 
-def _end_pos(record):
-    return record.POS + len(record.REF) - 1
-
-
 class BadOrderException(Exception):
     pass
 
@@ -490,11 +495,11 @@ def _next_assert_order(reader, record, chroms, idx):
         next_rec = next(reader)
     except StopIteration:
         return None
-    if next_rec.CHROM not in chroms:
+    if next_rec.chrom not in chroms:
         common.WARNING((
             "Error: found a record in file {} with "
             "chromosome '{}' which was not found in the contig list "
-            "({})").format(idx + 1, next_rec.CHROM, ", ".join(chroms)))
+            "({})").format(idx + 1, next_rec.chrom, ", ".join(chroms)))
         common.WARNING("VCF files must contain a ##contig header line for each chromosome.")
         common.WARNING(
             "If this is only a technical issue and all the vcf "
@@ -506,17 +511,17 @@ def _next_assert_order(reader, record, chroms, idx):
 
     if record is None:
         return next_rec
-    if ((chroms.index(next_rec.CHROM), next_rec.POS) <
-            (chroms.index(record.CHROM), record.POS)):
+    if ((chroms.index(next_rec.chrom), next_rec.pos) <
+            (chroms.index(record.chrom), record.pos)):
         common.WARNING((
             "Error: In file {} the record following the variant at {}:{} "
             "comes before it. Input files must be sorted."
-        ).format(idx + 1, record.CHROM, record.POS))
+        ).format(idx + 1, record.chrom, record.pos))
         raise BadOrderException()
     return next_rec
 
 
-def RecordIterator(readers, chroms, verbose=False):
+def RecordIterator(readers, chroms, verbose=False, trim=False):
     """
     TODO
     Get the next set of records with the same refs
@@ -583,32 +588,37 @@ def RecordIterator(readers, chroms, verbose=False):
                 rec = records[idx]
                 if rec is None:
                     continue
-                chrom_idx = chroms.index(rec.CHROM)
+                chrom_idx = chroms.index(rec.chrom)
                 if chrom_idx > curr_chrom_idx:
                     continue
                 ## chrom_idx == cur_chrom_idx
 
-                end_pos = _end_pos(rec)
+                if trim:
+                    pos = rec.trimmed_pos
+                    end_pos = rec.trimmed_end_pos
+                else:
+                    pos = rec.pos
+                    end_pos = rec.end_pos
 
                 # figure out if there is an overlap
-                if rec.POS <= prev_pos_end: # overlaps with prev round
+                if pos <= prev_pos_end: # overlaps with prev round
                     overlap = True
                 # strictly less than the current best or matches the current best
-                elif end_pos <= min_pos or (rec.POS == min_pos and end_pos ==
+                elif end_pos <= min_pos or (pos == min_pos and end_pos ==
                                             curr_pos_end):
                     overlap = False
                 # overlaps the current best
-                elif (rec.POS <= min_pos <= end_pos or
-                      min_pos <= rec.POS <= curr_pos_end):
+                elif (pos <= min_pos <= end_pos or
+                      min_pos <= pos <= curr_pos_end):
                     overlap = True
 
-                if rec.POS < min_pos:
+                if pos < min_pos:
                     # found a new min record
                     min_idxs = {idx}
-                    min_pos = rec.POS
+                    min_pos = pos
                     curr_pos_end = end_pos
                     continue
-                if (rec.POS, end_pos) == (min_pos, curr_pos_end):
+                if (pos, end_pos) == (min_pos, curr_pos_end):
                     # found an identical record to merge
                     min_idxs.add(idx)
                     continue
@@ -625,12 +635,14 @@ def RecordIterator(readers, chroms, verbose=False):
                 common.WARNING(
                     "Warning: locus {}:{} in file {} overlaps a previous record in "
                     "the same file or a record in another file. Skipping.".format(
-                        records[idx].CHROM, records[idx].POS, idx+1
+                        records[idx].chrom, records[idx].pos, idx+1
                 ))
         else:
             if verbose:
-                mergeutils.DebugPrintRecordLocations(records,
-                                                     is_min)
+                mergeutils.DebugPrintRecordLocations(
+                    [record.vcfrecord for record in records],
+                    is_min
+                )
             yield records, is_min
         # continue while iteration over all records
 
@@ -666,6 +678,11 @@ def main(args):
         common.WARNING('Error: ' + str(ve))
         return 1
 
+    if args.trim and vcftype != trh.VcfTypes.hipstr:
+        common.WARNING("Error: trimming flanking bps currently only works "
+                       "with HipSTR input.")
+        return 1
+
     ### Set up VCF writer ###
     vcfw = open(args.out + ".vcf", "w")
 
@@ -680,12 +697,16 @@ def main(args):
     for fmt in useformat:
         format_type.append(vcfreaders[0].get_header_type(fmt)['Type'])
 
+    # wrap each reader in the TRHarmonizer
+    for idx in range(len(vcfreaders)):
+        vcfreaders[idx] = trh.TRRecordHarmonizer(vcfreaders[idx], vcftype)
+
     ### Walk through sorted readers, merging records as we go ###
     try:
         for records, is_min in RecordIterator(
-                vcfreaders, chroms, verbose=args.verbose):
+                vcfreaders, chroms, verbose=args.verbose, trim=args.trim):
             MergeRecords(vcftype, num_samples, records, is_min, vcfw, useinfo,
-                         useformat, format_type)
+                         useformat, format_type, trim=args.trim)
     except BadOrderException:
         return 1
 

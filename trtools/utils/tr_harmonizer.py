@@ -354,13 +354,23 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                                       vcfrecord.INFO["PERIOD"])
     record_id = vcfrecord.ID
 
-    return TRRecord(vcfrecord,
-                    ref_allele,
-                    alt_alleles,
-                    motif,
-                    record_id,
-                    'Q',
-                    full_alleles=full_alleles)
+    if full_alleles:
+        return TRRecord(vcfrecord,
+                        ref_allele,
+                        alt_alleles,
+                        motif,
+                        record_id,
+                        'Q',
+                        full_alleles=full_alleles,
+                        trimmed_pos=vcfrecord.INFO["START"],
+                        trimmed_end_pos=vcfrecord.INFO["END"])
+    else:
+        return TRRecord(vcfrecord,
+                        ref_allele,
+                        alt_alleles,
+                        motif,
+                        record_id,
+                        'Q')
 
 
 def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
@@ -384,7 +394,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
     else:
         alt_alleles = []
     motif = vcfrecord.INFO["RU"].upper()
-    record_id = vcfrecord.INFO["VID"]
+    record_id = str(vcfrecord.INFO["VID"])
 
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'ML')
 
@@ -577,7 +587,13 @@ class TRRecord:
     pos : int
         The bp along the chromosome that this locus starts at.
         If this locus has full sequence genotypes, then this
-        is the start of the full sequence
+        is the start of the full sequence, and trimed_pos
+        is for the trimmed sequence.
+    end_pos : int
+        The bp along the chromosome that this locus ends at, inclusive.
+        If this locus has full sequence genotypes, then this
+        is the end of the full sequence, and trimmed_end_pos
+        is for the trimmed sequence.
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
@@ -597,6 +613,16 @@ class TRRecord:
         If set, these can be accessed through :py:meth:`GetFullStringGenotypes`
         If the alt alleles have differently sized flanks than the ref allele
         then those alt alleles will be improperly trimmed.
+        If set, trimmed_pos and trimmed_end_pos must also be set.
+        The full alt alleles must contain the same number of alleles as
+        the regular alt alleles, in that case it is okay for the regular
+        alt alleles to contain duplicates
+    trimmed_pos :
+        The start position of the trimmed reference allele.
+        If no flanking basepairs have been trimmed, then this is just pos.
+    trimmed_end_pos :
+        The end position of the trimmed reference allele
+        If no flanking basepairs have been trimmed, then this is just end_pos.
     alt_allele_lengths :
         The lengths of each of the alt alleles, in order.
         Thus is measured in number of copies of repeat unit,
@@ -636,6 +662,8 @@ class TRRecord:
                  quality_field: str,
                  *,
                  full_alleles: Optional[Tuple[str, List[str]]] = None,
+                 trimmed_pos: Optional[int] = None,
+                 trimmed_end_pos: Optional[int] = None,
                  ref_allele_length: Optional[float] = None,
                  alt_allele_lengths: Optional[List[float]] = None,
                  quality_score_transform: Optional[Callable[..., float]] = None):
@@ -659,6 +687,16 @@ class TRRecord:
             raise ValueError("Cannot set full alleles without setting "
                              "regular alleles")
 
+        if full_alleles is not None and (trimmed_pos is None or
+                                         trimmed_end_pos is None):
+            raise ValueError("Cannot set full alleles without setting "
+                             "trimmed positions")
+
+        if full_alleles is None and (trimmed_pos is not None or
+                                     trimmed_end_pos is not None):
+            raise ValueError("Cannot set trimmed positions without setting "
+                             "full alleles")
+
         if alt_allele_lengths is not None and alt_alleles is not None:
             raise ValueError("Must specify only the sequences or the lengths"
                              " of the alt alleles, not both.")
@@ -670,9 +708,14 @@ class TRRecord:
         if ref_allele_length is not None:
             self.has_fabricated_ref_allele = True
             self.ref_allele = utils.FabricateAllele(motif, ref_allele_length)
+            self.end_pos = self.pos + ref_allele_length - 1
         else:
             self.has_fabricated_ref_allele = False
             self.ref_allele_length = len(ref_allele)/len(motif)
+            if full_alleles is None:
+                self.end_pos = self.pos + len(ref_allele) - 1
+            else:
+                self.end_pos = self.pos + len(full_alleles[0]) - 1
 
         if alt_allele_lengths is not None:
             self.has_fabricated_alt_alleles = True
@@ -685,6 +728,13 @@ class TRRecord:
             self.alt_allele_lengths = [
                 len(allele)/len(motif) for allele in self.alt_alleles
             ]
+
+        if full_alleles is None:
+            self.trimmed_pos = self.pos
+            self.trimmed_end_pos = self.end_pos
+        else:
+            self.trimmed_pos = trimmed_pos
+            self.trimmed_end_pos = trimmed_end_pos
 
         try:
             self._CheckRecord()
@@ -726,6 +776,14 @@ class TRRecord:
                     raise ValueError(("Could not find alt allele {} "
                                       "inside its full alt "
                                       "allele").format(idx))
+            if self.trimmed_pos < self.pos:
+                raise ValueError("Trimmed allele start position {} is before "
+                                  "untrimmed ref allele start {}".format(
+                                  self.trimmed_pos, self.pos))
+            if self.trimmed_end_pos > self.end_pos:
+                raise ValueError("Trimmed allele end position {} is after "
+                                  "untrimmed ref allele end {}".format(
+                                  self.trimmed_end_pos, self.end_pos))
 
     def GetMaxPloidy(self) -> int:
         """

@@ -19,6 +19,7 @@ def args(tmpdir):
     args.quiet = False
     args.verbose = False
     args.vcftype = "auto"
+    args.trim = False
     return args
 
 
@@ -30,11 +31,12 @@ def mrgvcfdir(vcfdir):
 # Set up dummy class
 class DummyRecord:
     def __init__(self, chrom, pos, ref, alts=[], info = {}):
-        self.CHROM = chrom
-        self.POS = pos
-        self.REF = ref
-        self.ALTS = alts
-        self.INFO = info
+        self.chrom = chrom
+        self.pos = pos
+        self.info = info
+        self.vcfrecord = argparse.Namespace()
+        self.vcfrecord.REF = ref
+        self.vcfrecord.ALT = alts
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile(args, mrgvcfdir):
