@@ -84,7 +84,7 @@ def CheckLocusFilters(args, vcftype):
     if args.use_length and vcftype not in [trh.VcfTypes["hipstr"]]:
         common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
     if args.filter_hrun and vcftype not in [trh.VcfTypes["hipstr"]]:
-        common.WARNING("--filter-run only relevant to HipSTR files. This filter will have no effect.")
+        common.WARNING("--filter-hrun only relevant to HipSTR files. This filter will have no effect.")
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
             filter_region_files = args.filter_regions.split(",")
@@ -580,6 +580,7 @@ def ApplyCallFilters(record: trh.TRRecord,
         # append ',<filter_name><value_that_triggered_fitler>' to each
         # call that has a filter applied to it
         filt_output_text = np.char.mod('%g', filt_output)
+        filt_output_text = np.char.add('_', filt_output_text)
         filt_output_text = np.char.add(filt.name, filt_output_text)
         filt_output_text[nans] = '' # don't add text to calls that haven't been filtered
         # only append a ',' if this is the second (or more) filter applied
@@ -777,7 +778,7 @@ def BuildCallFilters(args):
         filter_list.append(filters.PopSTRCallRequireSupport(args.popstr_require_support))
     return filter_list
 
-def BuildLocusFilters(args, vcftype: trh.VcfTypes):
+def BuildLocusFilters(args):
     r"""Build list of locus-level filters to include.
 
     These filters should in general not be tool specific
@@ -786,8 +787,6 @@ def BuildLocusFilters(args, vcftype: trh.VcfTypes):
     ---------
     args : argparse namespace
        User input arguments used to decide on filters
-    vcftype:
-        the type of the vcf we're working with
 
     Returns
     -------
@@ -820,6 +819,65 @@ def BuildLocusFilters(args, vcftype: trh.VcfTypes):
             else:
                 raise ValueError('Could not load regions file: {}'.format(filter_region_files[i]))
     return filter_list
+
+def ApplyLocusFilters(record: trh.TRRecord,
+                      locus_filters: List[filters.FilterBase],
+                      loc_info: Dict[str, int],
+                      drop_filtered: bool) -> bool:
+    """Apply locus-level filters to a record.
+
+    If not drop_filtered, then the input record's FILTER
+    field is set as either PASS or the names of the filters which filtered it.
+
+    Parameters
+    ----------
+    record :
+       The record to apply filters to.
+    call_filters :
+       List of locus filters to apply
+    loc_info :
+       Dictionary of locus stats to keep updated,
+       from name of filter to count of times the filter has been applied
+    drop_filtered :
+        Whether or not filtered loci should be written to or dropped from
+        the output vcf.
+
+    Returns
+    -------
+    locus_filtered: bool
+        True if this locus was filtered
+    """
+
+    filtered = False
+    for filt in locus_filters:
+        if filt(record) is None:
+            continue
+        loc_info[filt.filter_name()] += 1
+        if not drop_filtered:
+            if not filtered:
+                record.vcfrecord.FILTER = filt.filter_name()
+            else:
+                record.vcfrecord.FILTER += ';' + filt.filter_name()
+        filtered = True
+
+    n_samples_called = np.sum(record.GetCalledSamples())
+    if n_samples_called == 0:
+        loc_info['NO_CALLS_REMAINING'] += 1
+        if not drop_filtered:
+            if not filtered:
+                record.vcfrecord.FILTER = 'NO_CALLS_REMAINING'
+            else:
+                record.vcfrecord.FILTER += ';' + 'NO_CALLS_REMAINING'
+        filtered = True
+
+    if not filtered:
+        if not drop_filtered:
+            record.vcfrecord.FILTER = "PASS"
+        loc_info["PASS"] += 1
+        loc_info["totalcalls"] += n_samples_called
+
+    return filtered
+
 
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
@@ -1051,12 +1109,16 @@ def main(args):
         return 1
 
     # Set up locus-level filter list
+    invcf.add_filter_to_header({
+        "ID": "NO_CALLS_REMAINING",
+        "Description": ("All calls at this locus were already nocalls or were individually "
+                "filtered before the locus level filters were applied.")
+    })
     try:
-        filter_list = BuildLocusFilters(args, vcftype)
+        locus_filters = BuildLocusFilters(args)
     except ValueError:
         return 1
-    filter_list = BuildLocusFilters(args, vcftype)
-    for f in filter_list:
+    for f in locus_filters:
         if f.filter_name() not in preexisting_filter_fields:
             invcf.add_filter_to_header({
                 "ID": f.filter_name(),
@@ -1100,7 +1162,8 @@ def main(args):
     loc_info = collections.OrderedDict()
     loc_info["totalcalls"] = 0
     loc_info["PASS"] = 0
-    for filt in filter_list: loc_info[filt.filter_name()] = 0
+    loc_info["NO_CALLS_REMAINING"] = 0
+    for filt in locus_filters: loc_info[filt.filter_name()] = 0
 
     # Go through each record
     record_counter = 0
@@ -1119,28 +1182,14 @@ def main(args):
             common.MSG("Processing %s:%s"%(record.chrom, record.pos))
         record_counter += 1
         if args.num_records is not None and record_counter > args.num_records: break
+
         # Call-level filters
         record = ApplyCallFilters(record, call_filters, sample_info, invcf.samples)
 
         # Locus-level filters
-        dumpSTR_filtered = False
-        for filt in filter_list:
-            if filt(record) is None:
-                continue
-            loc_info[filt.filter_name()] += 1
-            if not args.drop_filtered:
-                if not dumpSTR_filtered:
-                    record.vcfrecord.FILTER = filt.filter_name()
-                else:
-                    record.vcfrecord.FILTER += ';' + filt.filter_name()
-            dumpSTR_filtered = True
+        locus_filtered = ApplyLocusFilters(record, locus_filters, loc_info, args.drop_filtered)
 
-
-        n_samples_called = np.sum(record.GetCalledSamples())
-        if args.drop_filtered:
-            if n_samples_called == 0:
-                dumpSTR_filtered = True
-        if args.drop_filtered and dumpSTR_filtered:
+        if args.drop_filtered and locus_filtered:
             continue
 
         # Recalculate locus-level INFO fields
@@ -1152,7 +1201,7 @@ def main(args):
         else:
             record.vcfrecord.INFO['HRUN'] = \
                 utils.GetHomopolymerRun(record.ref_allele)
-        if n_samples_called > 0:
+        if np.sum(record.GetCalledSamples()) > 0:
             allele_freqs = record.GetAlleleFreqs(uselength=args.use_length)
             genotype_counts = record.GetGenotypeCounts(uselength=args.use_length)
             record.vcfrecord.INFO['HET'] = utils.GetHeterozygosity(allele_freqs)
@@ -1176,11 +1225,6 @@ def main(args):
             else:
                 record.vcfrecord.INFO['AC'] = ','.join(['0']*len(record.alt_alleles))
             record.vcfrecord.INFO['REFAC'] = 0
-        if not dumpSTR_filtered:
-            if not args.drop_filtered:
-                record.vcfrecord.FILTER = "PASS"
-            loc_info["PASS"] += 1
-            loc_info["totalcalls"] += n_samples_called
         # Output the record
         outvcf.write_record(record.vcfrecord)
 

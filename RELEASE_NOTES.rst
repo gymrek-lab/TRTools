@@ -19,14 +19,16 @@ Command line interface changes:
   will overwrite them and issue a warning in case that was not intended)
 
 Output changes:
+
 * DumpSTR call level filters now have the value of the call which triggered
   the filter appended to the filter name in the FILTER format field. (e.g.
   GangSTRCallMinDepth12 because the field had a depth of 12 and that's lower
   than the required min depth)
 * DumpSTR locus filter HRUN is now written as HRUN and not HRUN0 in the 
   samplog output file
-* DumpSTR now adds ##FILTER=<ID=PASS,Description="All filters passed">
-  to the header line
+* When running DumpSTR, loci where all the calls were either already nocalls
+  or were filtered by call-level filters before the locus-level filters were run are now
+  marked as 'NO_CALLS_REMAINING' instead of 'PASS'.
 * When DumpSTR filters a call and replaces each of its format fields with the no call
   '.', fields with more than one value are now represented correctly. For example,
   for 2 values '.,.' is used rather than just a single '.'
@@ -52,6 +54,9 @@ Bug fixes:
 * If you specify --drop-filtered DumpSTR will no longer set all values in the 
   output .loclog.tab file to zero and instead set them to their proper values
   (which are the same as if you had not specified --drop-filtered)
+* DumpSTR now correctly adds ##FILTER=<ID=PASS,Description="All filters passed">
+  to the header line
+* DumpSTR now no longer says HipSTRCallFlankIndels is applied to nocalls
 
 Quality of life improvements:
 
