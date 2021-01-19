@@ -497,6 +497,21 @@ def test_trimmed_hipstr_output(args, mrgvcfdir):
     )
 
 
+def test_output_calls_with_missing_int_format_fields(args, mrgvcfdir):
+    args.vcftype = "gangstr"
+    # just "merge" one VCF
+    # effectively we're copying it and making sure we don't
+    # miscopy anything
+    args.vcfs = os.path.join(mrgvcfdir,
+                             "call_missing_int_format_field.vcf.gz")
+    assert main(args) == 0
+    with open(args.out + '.vcf') as out:
+        for line in out:
+            # make sure we're not emitting the special
+            # int no call character
+            assert '-2147483648' not in line
+
+
 # TODO questions and issues to confirm, test or  address:
 # confirm conflicting samples cause this to fail unless --update-sample-from-file is given
 # required info fields cause failure when a record is missing them but not when the entire VCF is missing them

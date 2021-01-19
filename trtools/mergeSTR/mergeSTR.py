@@ -346,6 +346,12 @@ def WriteSampleData(vcfw, record, alleles, formats, format_type, mapping):
             format_arr = format_arr.astype(str)
             format_arr[nans] = '.'
             format_arrays[fmt] = format_arr
+        elif format_type[format_idx] == 'Integer':
+            format_arr = record.format[fmt].astype(str)
+            # this special value stands in for no calls when reading with
+            # cyvcf2
+            format_arr[format_arr == '-2147483648'] = '.'
+            format_arrays[fmt] = format_arr
         else:
             format_arrays[fmt] = record.format[fmt].astype(str)
 
@@ -533,7 +539,7 @@ def _next_assert_order(reader, record, chroms, idx):
     return next_rec
 
 
-def RecordIterator(readers, chroms, verbose=False, trim=False):
+def RecordIterator(readers, chroms, vcftype, verbose=False, trim=False):
     """
     Iterate over the records from readers, returning
     sets of records with the same refs.
@@ -548,6 +554,8 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
         The VCFs being read
     chroms :
         The possible contigs in the order we expect them
+    vcftype :
+        The type of the vcf
     verbose :
         Should each returned record location be printed to stdout?
     trim :
@@ -676,6 +684,9 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
                     "another file or the next record in the same file. Skipping.".format(
                         records[idx].chrom, records[idx].pos, idx+1
                 ))
+                if vcftype == trh.VcfTypes.hipstr:
+                    common.WARNING("Because these are HipSTR calls, consider "
+                                   "using --trim?")
         else:
             if verbose:
                 mergeutils.DebugPrintRecordLocations(
@@ -743,7 +754,7 @@ def main(args):
     ### Walk through sorted readers, merging records as we go ###
     try:
         for records, is_min in RecordIterator(
-                vcfreaders, chroms, verbose=args.verbose, trim=args.trim):
+                vcfreaders, chroms, vcftype, verbose=args.verbose, trim=args.trim):
             MergeRecords(vcftype, num_samples, records, is_min, vcfw, useinfo,
                          useformat, format_type, trim=args.trim)
     except _BadOrderException:

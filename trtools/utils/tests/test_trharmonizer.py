@@ -32,6 +32,7 @@ class DummyCyvcf2Record:
         self.INFO = {}
         self.ALT = list(alt)
         self.REF = ref
+        self.ID = 'foop'
 
         if gts is not None:
             self.genotype = types.SimpleNamespace()
@@ -92,6 +93,75 @@ def test_unexpected_vcf_type():
     with pytest.raises(ValueError):
         trh._UnexpectedTypeError(trh.VcfTypes.gangstr)  # pylint: disable=W0212
 
+# Test TRRecord creation methods
+
+def test_harmonize_hipstr_record():
+    ref = 'CAGCAG'
+    alts=['CAGCAGCAG', 'CAGCAGCAGCAG']
+    mod_alts=['CAGCAGCAG', 'CAGCAGCAG', 'CAGCAGCAGCAG']
+
+    no_flank_rec = DummyCyvcf2Record(
+        None, ref, alts
+    )
+    no_flank_rec.POS = 100
+    no_flank_rec.INFO['START'] = 100
+    no_flank_rec.INFO['END'] = 105
+    no_flank_rec.INFO['PERIOD'] = 3
+    trrec = trh._HarmonizeHipSTRRecord(no_flank_rec)
+    assert not trrec.HasFullStringGenotypes()
+    assert trrec.ref_allele == ref
+    assert trrec.alt_alleles == alts
+
+
+    pre_flank_rec = DummyCyvcf2Record(
+        None, 'TTCAGCAG',
+        ['TTCAGCAGCAG', 'TGCAGCAGCAG', 'TTCAGCAGCAGCAG']
+    )
+    pre_flank_rec.POS = 98
+    pre_flank_rec.INFO['START'] = 100
+    pre_flank_rec.INFO['END'] = 105
+    pre_flank_rec.INFO['PERIOD'] = 3
+    trrec = trh._HarmonizeHipSTRRecord(pre_flank_rec)
+    assert trrec.HasFullStringGenotypes()
+    assert trrec.ref_allele == ref
+    assert trrec.alt_alleles == mod_alts
+    assert trrec.trimmed_pos == 100
+    assert trrec.trimmed_end_pos == 105
+
+
+    post_flank_rec = DummyCyvcf2Record(
+        None, 'CAGCAGTT',
+        ['CAGCAGCAGTT', 'CAGCAGCAGGT', 'CAGCAGCAGCAGTT']
+    )
+    post_flank_rec.POS = 100
+    post_flank_rec.INFO['START'] = 100
+    post_flank_rec.INFO['END'] = 105
+    post_flank_rec.INFO['PERIOD'] = 3
+    trrec = trh._HarmonizeHipSTRRecord(post_flank_rec)
+    assert trrec.HasFullStringGenotypes()
+    assert trrec.ref_allele == ref
+    assert trrec.alt_alleles == mod_alts
+    assert trrec.trimmed_pos == 100
+    assert trrec.trimmed_end_pos == 105
+
+
+    both_flank_rec = DummyCyvcf2Record(
+        None, 'AACAGCAGTT',
+        ['ATCAGCAGCAGTT', 'AACAGCAGCAGGT', 'AACAGCAGCAGCAGTT']
+    )
+    both_flank_rec.POS = 98
+    both_flank_rec.INFO['START'] = 100
+    both_flank_rec.INFO['END'] = 105
+    both_flank_rec.INFO['PERIOD'] = 3
+    trrec = trh._HarmonizeHipSTRRecord(both_flank_rec)
+    assert trrec.HasFullStringGenotypes()
+    assert trrec.ref_allele == ref
+    assert trrec.alt_alleles == mod_alts
+    assert trrec.trimmed_pos == 100
+    assert trrec.trimmed_end_pos == 105
+
+
+# Test TRRecord methods
 
 def test_TRRecord_print():
     ref = "ABC"
