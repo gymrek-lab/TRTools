@@ -770,6 +770,10 @@ class TRRecord:
             if self.ref_allele not in full_ref:
                 raise ValueError("could not find ref allele inside "
                                  "full ref allele")
+            if (len(self.ref_allele) !=
+                self.trimmed_end_pos - self.trimmed_pos + 1):
+                raise ValueError("Ref allele is wrong length compared to "
+                                 "trimmed positions")
             for idx, (full_alt, alt) \
                     in enumerate(zip(full_alts, self.alt_alleles)):
                 if alt not in full_alt:
@@ -1610,6 +1614,10 @@ class TRRecordHarmonizer:
     def __next__(self) -> TRRecord:
         """Iterate over TRRecord produced from the underlying vcf."""
         return HarmonizeRecord(self.vcftype, next(self.vcffile))
+
+    def __enter__(self):
+        """ No special functionality upon entering a with ... : block"""
+        pass
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Close this object after leaving a with ... : block"""

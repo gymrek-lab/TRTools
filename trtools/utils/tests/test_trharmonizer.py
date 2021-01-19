@@ -119,8 +119,9 @@ def test_TRRecord_print():
 
 
     # full alleles are printed over short alleles when present
-    record = trh.TRRecord(test_rec, "B", ["E", "H"], motif, ID, None,
-                          full_alleles=(ref, alt))
+    record = trh.TRRecord(test_rec, "A", ["E", "H"], motif, ID, None,
+                          full_alleles=(ref, alt), trimmed_pos=43,
+                          trimmed_end_pos=43)
     assert str(record) == "{} {} {} {},{}".format(ID, motif, ref, alt[0],
                                                   alt[1])
 
@@ -228,11 +229,13 @@ def test_TRRecord_full_alleles():
     # confirm that you need to set ref_allele if you wish to set full alleles
     with pytest.raises(ValueError):
         trh.TRRecord(test_rec, None, alt_alleles, motif, ID, None,
-                     full_alleles=(full_ref, full_alts))
+                     full_alleles=(full_ref, full_alts),
+                     trimmed_pos=43, trimmed_end_pos=51)
     # confirm that you need to set alt_alleles if you wish to set full alleles
     with pytest.raises(ValueError):
         trh.TRRecord(test_rec, ref_allele, None, motif, ID, None,
-                     full_alleles=(full_ref, full_alts))
+                     full_alleles=(full_ref, full_alts),
+                     trimmed_pos=43, trimmed_end_pos=51)
     # confirm that each allele in full_alleles must contain its corresponding
     # non-full allele as a substring
     with pytest.raises(ValueError):
@@ -246,9 +249,23 @@ def test_TRRecord_full_alleles():
         trh.TRRecord(test_rec, ref_allele, alt_alleles, motif, ID, None,
                      full_alleles=(ref_allele, bad_alts))
 
+    # confirm that you need to set trimmed_pos and trimmed_end_pos
+    # if you wish to set full alleles
+    with pytest.raises(ValueError):
+        trh.TRRecord(test_rec, ref_allele, alt_alleles, motif, ID,
+                              None,
+                              full_alleles=(full_ref, full_alts),
+                              trimmed_end_pos=51)
+    with pytest.raises(ValueError):
+        trh.TRRecord(test_rec, ref_allele, alt_alleles, motif, ID,
+                              None,
+                              full_alleles=(full_ref, full_alts),
+                              trimmed_pos=43)
+
     record = trh.TRRecord(test_rec, ref_allele, alt_alleles, motif, ID,
                           None,
-                          full_alleles=(ref_allele, alt_alleles))
+                          full_alleles=(full_ref, full_alts),
+                          trimmed_pos=43, trimmed_end_pos=51)
 
     assert record.UniqueStringGenotypes() == {0, 1, 2, 5}
     assert record.UniqueStringGenotypeMapping() == {
@@ -915,4 +932,29 @@ def test_TRRecord_Quality(vcfdir):
     assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
+
+
+def test_close(vcfdir):
+    # show that this doesn't initially cause a problem
+    reset_vcfs(vcfdir)
+    next(gangstr_vcf)
+
+    reset_vcfs(vcfdir)
+    harmonizer = trh.TRRecordHarmonizer(gangstr_vcf)
+    harmonizer.close()
+    with pytest.raises(Exception):
+        next(gangstr_vcf)
+
+
+def test_exit_after_with(vcfdir):
+    # show that this doesn't initially cause a problem
+    reset_vcfs(vcfdir)
+    next(gangstr_vcf)
+
+    reset_vcfs(vcfdir)
+    with trh.TRRecordHarmonizer(gangstr_vcf) as harmonizer:
+        pass
+
+    with pytest.raises(Exception):
+        next(gangstr_vcf)
 

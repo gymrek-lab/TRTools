@@ -667,6 +667,13 @@ def ApplyCallFilters(record: trh.TRRecord,
     else:
         ref_allele = record.ref_allele
         ref_allele_length = None
+    if record.HasFullStringGenotypes():
+        trimmed_end_pos = record.trimmed_end_pos
+        trimmed_pos = record.trimmed_pos
+    else:
+        trimmed_end_pos = None
+        trimmed_pos = None
+
 
     out_record = trh.TRRecord(
         record.vcfrecord,
@@ -676,6 +683,8 @@ def ApplyCallFilters(record: trh.TRRecord,
         record.record_id,
         record.quality_field,
         full_alleles=record.full_alleles,
+        trimmed_pos=trimmed_pos,
+        trimmed_end_pos=trimmed_end_pos,
         ref_allele_length=ref_allele_length,
         alt_allele_lengths=alt_allele_lengths,
         quality_score_transform=record.quality_score_transform
