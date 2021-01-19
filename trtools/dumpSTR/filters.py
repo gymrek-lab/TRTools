@@ -2,24 +2,41 @@
 Locus-level and Call-level VCF filters
 """
 
-from pybedtools import BedTool
+import ast
 import os
-import sys
-import vcf.filters
+
+import numpy as np
+from pybedtools import BedTool
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 
+class FilterBase:
+    '''
+    Base class for locus level filters.
+    Just defines the interface
+    '''
+    name = 'NotYetImplemented'
+
+    def __call__(self, record: trh.TRRecord):
+        raise NotImplementedError
+
+    def filter_name(self):
+        raise NotImplementedError
+
+    def description(self):
+        return ''
+
 ###################################
 # Locus level filters
 ###################################
 
-class Filter_MinLocusCallrate(vcf.filters.Base):
+class Filter_MinLocusCallrate(FilterBase):
     """
     Class to filter VCF records by call rate
 
-    This class extends vcf.filters.Base
+    This class extends Base
 
     Parameters
     ----------
@@ -35,19 +52,22 @@ class Filter_MinLocusCallrate(vcf.filters.Base):
 
     name = 'CALLRATE'
     """The name of the filter"""
- 
+
     def __init__(self, min_locus_callrate):
         self.threshold = min_locus_callrate
 
-    def __call__(self, record):
-        if record.call_rate < self.threshold: return record.call_rate
+    def __call__(self, record: trh.TRRecord):
+        if record.GetCallRate() < self.threshold: return record.GetCallRate()
         else: return None
 
-class Filter_MinLocusHWEP(vcf.filters.Base):
+    def filter_name(self):
+        return self.name + str(self.threshold)
+
+class Filter_MinLocusHWEP(FilterBase):
     """
     Class to filter VCF records by minimum HWE p-value
 
-    This class extends vcf.filters.Base
+    This class extends Base
 
     Parameters
     ----------
@@ -56,7 +76,7 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -65,30 +85,31 @@ class Filter_MinLocusHWEP(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HWE'
     """The name of the filter"""
 
-    def __init__(self, min_locus_hwep, vcftype, uselength=False):
+    def __init__(self, min_locus_hwep, uselength=False):
         self.threshold = min_locus_hwep
-        self.vcftype = vcftype
         self.uselength = uselength
 
-    def __call__(self, record):
-        trrecord = trh.HarmonizeRecord(self.vcftype, record)
-        allele_freqs = trrecord.GetAlleleFreqs(uselength=self.uselength)
-        genotype_counts = trrecord.GetGenotypeCounts(uselength=self.uselength)
+    def __call__(self, record: trh.TRRecord):
+        allele_freqs = record.GetAlleleFreqs(uselength=self.uselength)
+        genotype_counts = record.GetGenotypeCounts(uselength=self.uselength)
         hwep = utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts)
         if hwep < self.threshold: return hwep
         else: return None
 
-class Filter_MinLocusHet(vcf.filters.Base):
+    def filter_name(self):
+        return self.name + str(self.threshold)
+
+class Filter_MinLocusHet(FilterBase):
     """
     Class to filter VCF records by minimum heterozygosity
 
-    This class extends vcf.filters.Base
+    This class extends Base
 
     Parameters
     ----------
@@ -97,7 +118,7 @@ class Filter_MinLocusHet(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -106,29 +127,30 @@ class Filter_MinLocusHet(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HETLOW'
     """The name of the filter"""
 
-    def __init__(self, min_locus_het, vcftype, uselength=False):
+    def __init__(self, min_locus_het, uselength=False):
         self.threshold = min_locus_het
-        self.vcftype = vcftype
         self.uselength = uselength
 
-    def __call__(self, record):
-        trrecord = trh.HarmonizeRecord(self.vcftype, record)
-        het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
+    def __call__(self, record: trh.TRRecord):
+        het = utils.GetHeterozygosity(record.GetAlleleFreqs(uselength=self.uselength))
         if het < self.threshold:
             return het
         return None
 
-class Filter_MaxLocusHet(vcf.filters.Base):
+    def filter_name(self):
+        return self.name + str(self.threshold)
+
+class Filter_MaxLocusHet(FilterBase):
     """
     Class to filter VCF records by maximum heterozygosity
 
-    This class extends vcf.filters.Base
+    This class extends Base
 
     Parameters
     ----------
@@ -137,7 +159,7 @@ class Filter_MaxLocusHet(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
 
     Attributes
     ----------
@@ -146,52 +168,58 @@ class Filter_MaxLocusHet(vcf.filters.Base):
     vcftype: trh.VCFTYPES
         the type of the VCF we're working with
     uselength : bool, optional
-       If set to true, consider all alleles with the same length as the same    
+       If set to true, consider all alleles with the same length as the same
     """
 
     name = 'HETHIGH'
     """The name of the filter"""
 
-    def __init__(self, max_locus_het, vcftype, uselength=False):
+    def __init__(self, max_locus_het, uselength=False):
         self.threshold = max_locus_het
-        self.vcftype = vcftype
         self.uselength = uselength
 
-    def __call__(self, record):
-        trrecord = trh.HarmonizeRecord(self.vcftype, record)
-        het = utils.GetHeterozygosity(trrecord.GetAlleleFreqs(uselength=self.uselength))
+    def __call__(self, record: trh.TRRecord):
+        het = utils.GetHeterozygosity(record.GetAlleleFreqs(uselength=self.uselength))
         if het > self.threshold:
             return het
         return None
 
-class Filter_LocusHrun(vcf.filters.Base):
+    def filter_name(self):
+        return self.name + str(self.threshold)
+
+class Filter_LocusHrun(FilterBase):
     """
     Class to filter VCF records for penta- or hexanucleotide STRs with long homopolymer runs
 
-    This is relevant only for HipSTR VCFs. 5-mer and 6-mer STRs with long T runs have been
-    shown to be problematic. This filter removes 5-mers with stretches of T >= 5bp or 6-mers
-    with stretches of T >= 6bp. If PERIOD is not in record.INFO, this class does nothing.
-
-    This class extends vcf.filters.Base
+    This only works on HipSTR VCFs. STRs with long homopolymer runs have been
+    shown to be difficult for HipSTR to call.
+    This filter removes 5-mers with homopolymer runs >= len 5
+    and 6-mers with homopolymer runs >= len 6
     """
-    
+
     name = 'HRUN'
     """The name of the filter"""
 
     def __init__(self):
-        self.threshold = 0 # e.g. pentamers with hruns of 5+threshold, hexa with 6+threshold
+        pass
 
-    def __call__(self, record):
-        hrun = utils.GetHomopolymerRun(record.REF)
-        if "PERIOD" not in record.INFO: return None # Don't apply if we don't know the period
-        if record.INFO["PERIOD"] in [5,6] and hrun >= self.threshold+record.INFO["PERIOD"]:
+    def __call__(self, record: trh.TRRecord):
+        if record.HasFullStringGenotypes():
+            hrun = utils.GetHomopolymerRun(record.full_alleles[0])
+        else:
+            hrun = utils.GetHomopolymerRun(record.ref_allele)
+        if "PERIOD" not in record.info: return None # Don't apply if we don't know the period
+        if record.info["PERIOD"] in [5, 6] and hrun >= record.info["PERIOD"]:
             return hrun
         return None
+
+    def filter_name(self):
+        return self.name
 
 def create_region_filter(name, filename):
     """Creates a locus-level filter based on a file of regions.
 
-    Builds and returns a class extending vcf.filters.Base that
+    Builds and returns a class extending Base that
     can be used to filter any records overlapping intervals in the
     input BED file
 
@@ -205,13 +233,12 @@ def create_region_filter(name, filename):
        If it's not bgzipped and tabixed, we'll attempt to do that.
 
     Returns
-    filter_regions : vcf.filters.Base object.
+    filter_regions : Base object.
        Returns None if we fail to load the regions
     -------
 
     """
-    class Filter_Regions(vcf.filters.Base):
-        'Filter regions from file'
+    class Filter_Regions(FilterBase):
         def __init__(self, name, filename):
             self.threshold = ""
             self.name = name
@@ -237,8 +264,9 @@ def create_region_filter(name, filename):
                 self.pass_checks = False
                 return
             self.regions = BedTool(filename)
-        def __call__(self, record):
-            interval = "%s:%s-%s"%(record.CHROM, record.POS, record.POS+len(record.REF))
+        def __call__(self, record: trh.TRRecord):
+            interval = "%s:%s-%s"%(record.chrom, record.pos,
+                                   record.pos + record.ref_allele_length)
             if self.regions is None: return None
             if "chr" in interval:
                 interval2 = interval.replace("chr","")
@@ -249,6 +277,10 @@ def create_region_filter(name, filename):
             tb2 = self.regions.tabix_intervals(interval2)
             if tb2.count() > 0: return self.name
             return None
+        def filter_name(self):
+            return self.name
+        def description(self):
+            return 'Filter TRs overlapping this region'
     f = Filter_Regions(name, filename)
     if not f.pass_checks: return None
     return f
@@ -262,10 +294,10 @@ class Reason:
 
     Other classes extend this for each different call-level filter.
     Classes that extend this must implement a __call__ function that
-    gets applied to each call. The __call__ function returns None for
-    calls passing the filter, and something besides None for samples
-    failing the filter.
-
+    gets applied to each call. The __call__ function returns a 1D array of
+    values, one per sample. For numeric arrays, nan values indicate the sample
+    wasn't filtered, and any other value indicates that the sample was
+    filtered (where the value indicates why).
     """
 
     name = ""
@@ -277,6 +309,7 @@ class Reason:
     def GetReason(self):
         return self.name
 
+
 class CallFilterMinValue(Reason):
     """Generic call-level filter based on minimum allowed value for a field.
 
@@ -287,7 +320,7 @@ class CallFilterMinValue(Reason):
     Parameters
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
@@ -297,25 +330,27 @@ class CallFilterMinValue(Reason):
     Attributes
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
     threshold : float
-        The minimum allowed value for the field.    
+        The minimum allowed value for the field.
 
     Examples
     --------
     >>> min_dp_filt = CallFilterMinValue("LOWDP","DP",10)
     """
-    
+
     def __init__(self, name, field, threshold):
-        self.name = name
+        self.name = name + str(threshold)
         self.field = field
         self.threshold = threshold
-    def __call__(self, sample):
-        if sample[self.field] < self.threshold: return sample[self.field]
-        else: return None
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        fieldvals = record.format[self.field][:, 0]
+        sample_filter[fieldvals < self.threshold] = fieldvals[fieldvals < self.threshold]
+        return sample_filter
 
 class CallFilterMaxValue(Reason):
     """Generic call-level filter based on maximum allowed value for a field.
@@ -327,7 +362,7 @@ class CallFilterMaxValue(Reason):
     Parameters
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
@@ -337,12 +372,12 @@ class CallFilterMaxValue(Reason):
     Attributes
     ----------
     name : str
-        The name of the filter to put in the FORMAT:FILTER field of 
+        The name of the filter to put in the FORMAT:FILTER field of
         filtered calls.
     field : str
         The FORMAT field to filter on
     threshold : float
-        The maximum allowed value for the field.    
+        The maximum allowed value for the field.
 
     Examples
     --------
@@ -350,12 +385,14 @@ class CallFilterMaxValue(Reason):
     """
 
     def __init__(self, name, field, threshold):
-        self.name = name
+        self.name = name + str(threshold)
         self.field = field
         self.threshold = threshold
-    def __call__(self, sample):
-        if sample[self.field] > self.threshold: return sample[self.field]
-        else: return None
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        fieldvals = record.format[self.field][:, 0]
+        sample_filter[fieldvals > self.threshold] = fieldvals[fieldvals > self.threshold]
+        return sample_filter
 
 ###################################
 # Call level filters - HipSTR
@@ -372,22 +409,25 @@ class HipSTRCallFlankIndels(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
-    
+
     Attributes
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
     """
-    
+
     name = "HipSTRCallFlankIndels"
     """The name of the filter"""
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        if 1.0*sample['DFLANKINDEL']/sample['DP'] > self.threshold:
-            return 1.0*sample['DFLANKINDEL']/sample['DP']
-        else: return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        ratio = record.format['DFLANKINDEL'][:, 0]/record.format['DP'][:, 0]
+        sample_filter[ratio <= self.threshold] = np.nan
+        sample_filter[ratio > self.threshold] = ratio[ratio > self.threshold]
+        return sample_filter
 
 class HipSTRCallStutter(Reason):
     """Filter HipSTR calls with many stutter reads
@@ -400,22 +440,25 @@ class HipSTRCallStutter(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
-    
+
     Attributes
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
     """
-    
+
     name = "HipSTRCallStutter"
     """The name of the filter"""
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        if 1.0*sample['DSTUTTER']/sample['DP'] > self.threshold:
-            return 1.0*sample['DSTUTTER']/sample['DP']
-        else: return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        ratio = record.format['DSTUTTER'][:, 0]/record.format['DP'][:, 0]
+        sample_filter[ratio <= self.threshold] = np.nan
+        sample_filter[ratio > self.threshold] = ratio[ratio > self.threshold]
+        return sample_filter
 
 class HipSTRCallMinSuppReads(Reason):
     """Filter HipSTR calls for which alleles are supported by too few reads
@@ -423,12 +466,16 @@ class HipSTRCallMinSuppReads(Reason):
     Extends Reason class.
     Filters on the number of reads supporting each called allele.
     Based on FORMAT:ALLREADS and FORMAT:GB fields.
+    Assumes that number of supporting reads is zero if:
+    * that read length is not present in ALLREADS
+    * or ALLREADS is unset for that sample ('.')
+    * or ALLREADS is not present at that locus
 
     Parameters
     ----------
     threshold : int
         Minimum number of reads supporting each allele
-    
+
     Attributes
     ----------
     threshold : int
@@ -440,21 +487,44 @@ class HipSTRCallMinSuppReads(Reason):
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        if sample["ALLREADS"] is None: return 0
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return np.full((record.GetNumSamples()), np.nan)
+
+        if "ALLREADS" not in record.format:
+            sample_filter = np.zeros((record.GetNumSamples()), dtype=float)
+            return sample_filter
+        samples_to_check = (called_samples &
+                          (record.format["ALLREADS"] != '') &
+                          (record.format["ALLREADS"] != '.'))
+
         delim = "|"
-        if "/" in sample["GB"]: delim = "/"
-        gb = [int(item) for item in sample["GB"].split(delim)]
-        allreads = sample["ALLREADS"].split(";")
-        r1 = 0
-        r2 = 0
-        for item in allreads:
-            allele, readcount = [int(item) for item in item.split("|")]
-            if allele == gb[0]: r1 += readcount
-            if allele == gb[1]: r2 += readcount
-        min_read_count = min([r1, r2])
-        if min_read_count < self.threshold: return min_read_count
-        else: return None
+        # Going to assume that either all samples are phased or none are
+        if "/" in record.format["GB"][samples_to_check][0]: delim = "/"
+        gb = np.char.split(record.format["GB"][samples_to_check], delim)
+        gb = np.stack(gb).astype(int)
+        # Format allreads like a python dict literal so we can interpret it
+        # like that
+        allreads = np.char.replace(record.format["ALLREADS"][samples_to_check], ";", ',')
+        allreads = np.char.replace(allreads, '|', ':')
+        allreads = np.char.add('{', np.char.add(allreads, '}'))
+        min_counts = np.full((record.GetNumSamples()), np.nan)
+        for idx, single_allreads in enumerate(allreads):
+            reads_dict = ast.literal_eval(single_allreads)
+            min_count = np.inf
+            for gt in gb[idx, :]:
+                gt = int(gt)
+                if gt not in reads_dict:
+                    min_count = 0
+                else:
+                    min_count = min(min_count, reads_dict[gt])
+            min_counts[np.nonzero(samples_to_check)[0][idx]] = min_count
+        min_counts[min_counts >= self.threshold] = np.nan
+        # if ALLREADS is missing but the sample is present, filter
+        min_counts[called_samples & ~samples_to_check] = 0
+        return min_counts
 
 ###############################
 # GangSTR filters
@@ -464,14 +534,14 @@ class GangSTRCallExpansionProbHom(Reason):
     """Filter GangSTR calls with low probability for homozygous expansion.
 
     Extends Reason class.
-    Based on the QEXP field. Filter if QEXP[2] (prob hom expansion above INFO:THRESHOLD)
+    Based on the QEXP field. Filter if QEXP[:, 2] (prob hom expansion above INFO:THRESHOLD)
     is less than the threshold.
 
     Parameters
     ----------
     threshold : float
         Minimum homozygous expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -483,22 +553,29 @@ class GangSTRCallExpansionProbHom(Reason):
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        if sample["QEXP"][2] < self.threshold: return sample["QEXP"][2]
-        else: return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        hom_expansion_prob = record.format["QEXP"][called_samples, 2]
+        sample_filter[np.nonzero(called_samples)[0][hom_expansion_prob < self.threshold]] = \
+            hom_expansion_prob[hom_expansion_prob < self.threshold]
+        return sample_filter
 
 class GangSTRCallExpansionProbHet(Reason):
     """Filter GangSTR calls with low probability for heterozygous expansion.
 
     Extends Reason class.
-    Based on the QEXP field. Filter if QEXP[1] (prob het expansion above INFO:THRESHOLD)
+    Based on the QEXP field. Filter if QEXP[:, 1] (prob het expansion above INFO:THRESHOLD)
     is less than the threshold.
 
     Parameters
     ----------
     threshold : float
         Minimum heterozygous expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -510,10 +587,16 @@ class GangSTRCallExpansionProbHet(Reason):
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        #### Prob het expansion
-        if sample["QEXP"][1] < self.threshold: return sample["QEXP"][1]
-        else: return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        het_expansion_prob = record.format["QEXP"][called_samples, 1]
+        sample_filter[np.nonzero(called_samples)[0][het_expansion_prob < self.threshold]] = \
+            het_expansion_prob[het_expansion_prob < self.threshold]
+        return sample_filter
 
 class GangSTRCallExpansionProbTotal(Reason):
     """Filter GangSTR calls with low probability for expansion (heterozygous or homozygous)
@@ -526,7 +609,7 @@ class GangSTRCallExpansionProbTotal(Reason):
     ----------
     threshold : float
         Minimum expansion probability
-    
+
     Attributes
     ----------
     threshold : float
@@ -538,10 +621,17 @@ class GangSTRCallExpansionProbTotal(Reason):
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        #### Prob het and hom expansion
-        if (sample["QEXP"][1]+sample["QEXP"][2]) < self.threshold: return sample["QEXP"][1]+sample["QEXP"][2]
-        else: return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        expansion_prob = record.format["QEXP"][called_samples, 1] + \
+                record.format["QEXP"][called_samples, 2]
+        sample_filter[np.nonzero(called_samples)[0][expansion_prob < self.threshold]] = \
+                expansion_prob[expansion_prob < self.threshold]
+        return sample_filter
 
 class GangSTRCallSpanOnly(Reason):
     """Filter GangSTR calls where only spanning reads were identified.
@@ -549,15 +639,22 @@ class GangSTRCallSpanOnly(Reason):
     Extends Reason class. Based on RC field.
 
     """
-    
+
     name = "GangSTRCallSpanOnly"
     def __init__(self):
         pass
-    def __call__(self, sample):
+    def __call__(self, record: trh.TRRecord):
         #### Only spanning reads
-        rcvals = [int(item) for item in sample["RC"].split(",")]
-        if sample["DP"] == rcvals[1] : return rcvals[1]
-        else: return None
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        rcvals = np.char.split(record.format['RC'][called_samples], ',')
+        rcvals = np.stack(rcvals, axis=0).astype(int)
+        filter_indicies = rcvals[:, 1] == record.format['DP'][called_samples, 0]
+        sample_filter[np.nonzero(called_samples)[0][filter_indicies]] = \
+            rcvals[:, 1][filter_indicies]
+        return sample_filter
 
 class GangSTRCallSpanBoundOnly(Reason):
     """Filter GangSTR calls where only spanning or flanking reads were identified.
@@ -571,11 +668,18 @@ class GangSTRCallSpanBoundOnly(Reason):
 
     def __init__(self):
         pass
-    def __call__(self, sample):
-        #### Only spanning and bounded
-        rcvals = [int(item) for item in sample["RC"].split(",")]
-        if sample["DP"] == rcvals[1]+rcvals[3] : return rcvals[1]+rcvals[3]
-        else: return None
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        rcvals = np.char.split(record.format['RC'][called_samples], ',')
+        rcvals = np.stack(rcvals, axis=0).astype(int)
+        span_bound = rcvals[:, 1] + rcvals[:, 3]
+        filter_indicies = span_bound == record.format['DP'][called_samples, 0]
+        sample_filter[np.nonzero(called_samples)[0][filter_indicies]] = \
+            span_bound[filter_indicies]
+        return sample_filter
 
 class GangSTRCallBadCI(Reason):
     """Filter GangSTR calls where the ML genotype estimate is outside of CI.
@@ -592,25 +696,37 @@ class GangSTRCallBadCI(Reason):
 
     def __init__(self):
         pass
-    def __call__(self, sample):
-        #### If ML estimate outside of CI
-        ml = [int(item) for item in sample["REPCN"]]
-        ci = sample["REPCI"].split(",")
-        for i in range(len(ml)):
-            ml_est = ml[i]
-            ci_low = int(ci[i].split("-")[0])
-            ci_high = int(ci[i].split("-")[1])
-            if ml_est<ci_low or ml_est>ci_high: return ml_est
-        return None
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        called_samples = record.GetCalledSamples()
+        if not np.any(called_samples):
+            return sample_filter
+        ml = record.format["REPCN"][called_samples]
+        ci = np.char.split(record.format["REPCI"][called_samples], ",")
+        ci = np.stack(ci)
+        ci = np.char.split(ci, '-')
+        ci = np.array(ci.tolist(), dtype=int) # now sample x ploidy x 2 (min, max)
+        filter_per_gt = np.logical_or(ml < ci[:, :, 0], ci[:, :, 1] < ml)
+        filter_indicies = np.any(filter_per_gt, axis=1)
+        if not np.any(filter_indicies):
+            return sample_filter
+        problem_gt_indicies = np.argmax(filter_per_gt[filter_indicies, :],
+                                        axis=1)
+        sample_filter[np.nonzero(called_samples)[0][filter_indicies]] = \
+                ml[filter_indicies, problem_gt_indicies]
+        return sample_filter
 
-class GangSTRCallRequireSupport(Reason):
+'''
+Since this class is experimental, I'm just not converting it from pyvcf to
+cyvcf2 for now
+class GangSTRCallRequireSupport(Reason)
     """Fitler GangSTR calls where alleles not supported by enough reads.
 
-    Extends Reason class. 
+    Extends Reason class.
     This filter is still experimental and should be used with caution.
     For short alleles, require enclosing reads. If we see enough enclosing, the
     call is kept. If the allele was very short (20% of readlength) and we don't see
-    enough enclosing, filter. If the call is longer, require that we at least see 
+    enough enclosing, filter. If the call is longer, require that we at least see
     supporting flanking reads.
 
     Parameters
@@ -625,16 +741,16 @@ class GangSTRCallRequireSupport(Reason):
     threshold : int
        Minimum required number of supporting reads
     readlen : int
-       Read length used for GangSTR calling. 
+       Read length used for GangSTR calling.
     """
-    
+
     name = "GangSTRCallRequireSupport"
     """The name of the filter"""
 
     def __init__(self, threshold, readlen):
         self.threshold = threshold
         self.readlen = readlen
-    def __call__(self, sample):
+    def __call__(self, record: trh.TRRecord):
         ### Require x number of reads supporting
         try:
             encl = dict([(int(item.split(",")[0]), int(item.split(",")[1])) for item in sample["ENCLREADS"].split("|")])
@@ -662,6 +778,7 @@ class GangSTRCallRequireSupport(Reason):
             if numflank < self.threshold:
                 return self.threshold
         return None
+'''
 
 ###############################
 # AdVNTR filters
@@ -670,7 +787,7 @@ class GangSTRCallRequireSupport(Reason):
 ###############################
 # ExpansionHunter call-level filters
 ###############################
-    
+
 ###############################
 # PopSTR call level filters
 ###############################
@@ -691,16 +808,21 @@ class PopSTRCallRequireSupport(Reason):
     threshold : int
        Require this many reads supporting each called allele.
     """
-    
+
     name = "PopSTRCallRequireSupport"
     """The name of the filter"""
 
     def __init__(self, threshold):
         self.threshold = threshold
-    def __call__(self, sample):
-        read_support = sample["AD"]
-        gts = sample.gt_alleles
-        for gt in gts:
-            if read_support[int(gt)] < self.threshold: return self.threshold
-        return None
+        self.name += str(threshold)
+    def __call__(self, record: trh.TRRecord):
+        sample_filter = np.full((record.GetNumSamples()), np.nan)
+        sample_list = np.arange(record.GetNumSamples())
+        read_support = record.format["AD"] # samples x n_alleles
+        gt_indicies = record.GetGenotypeIndicies()[:, :-1]
+        for ploid in range(gt_indicies.shape[1]):
+            # iterate over ploidy
+            new_filters = read_support[sample_list, gt_indicies[:, ploid]] < self.threshold
+            sample_filter[new_filters] = read_support[new_filters, gt_indicies[:, ploid]]
+        return sample_filter
 
