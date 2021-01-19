@@ -66,10 +66,10 @@ def assert_same_vcf(fname1, fname2, info_ignore = set(),
         num_commands_header1 = len([0 for line in headers1 if '##command' in line])
         num_commands_header2 = len([0 for line in headers2 if '##command' in line])
         if num_commands_header1 != num_commands_header2:
-            raise ValueError(
-                'Found {num_commands_header1} ##command lines in the output '
-                'vcf but {num_commands_header2} in the control vcf'
-            )
+            raise ValueError((
+                'Found {} ##command lines in the output '
+                'vcf but {} in the control vcf'
+            ).format(num_commands_header1, num_commands_header2))
 
         # ignore command lines, they will be different
         headers1 = [line for line in headers1 if not '##command' in line]

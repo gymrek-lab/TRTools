@@ -7,18 +7,18 @@ MergeSTR
 
 |mergeSTR overview|
 
-If TR genotyping was performed separately on different samples or batches of samples, mergeSTR can be used to combine the resulting VCFs into one file. This is often necessary for downstream steps such as: computing per-locus statistics, performing per-locus filtering, and association testing.
+If TR genotyping was performed separately on different samples or batches of samples, MergeSTR can be used to combine the resulting VCFs into one file. This is often necessary for downstream steps such as: computing per-locus statistics, performing per-locus filtering, and association testing.
 
 While other VCF libraries have capabilities to merge VCF files, they do not always handle multi-allelic TRs properly, especially if the allele definitions are different across files. MergeSTR is TR-aware and currently handles VCF files obtained by: GangSTR, HipSTR, ExpansionHunter, popSTR, or adVNTR. See below for specific VCF fields supported for each genotyper.
 
-mergeSTR does not support merging VCFs produced by different TR genotypers as the desired outcome of such an operation is highly dependant on the use-case at hand. mergeSTR also does not support merging loci with partially but not completely overlapping reference alleles.
-If either of those features are necessary for you and you wish them to be supported, consider `filing an issue <https://github.com/gymreklab/TRTools/issues>`_ with us.
+MergeSTR does not support merging VCFs produced by different TR genotypers as the desired outcome of such an operation is highly dependant on the use-case at hand. In addition, MergeSTR only supports merging partially overlapping TRs when the repeat portions align exactly and the portions which overlap partially are flanking base pairs. See the :code:`--trim` flag.
+If either of those constraints make MergeSTR unusable for you and you wish them to be supported, consider `filing an issue <https://github.com/gymreklab/TRTools/issues>`_ with us.
 
 Usage
 -----
 MergeSTR takes as input two or more VCF files with TR genotypes and outputs a combined VCF file. Note, input VCF files must be bgzipped, sorted, indexed, and have the appropriate :code:`##contig` header lines. See `Instructions on Compressing and Indexing VCF files`_ below for commands for preparing tabix-indexed VCF files.
 
-To run mergeSTR use the following command::
+To run MergeSTR use the following command::
 
 	mergeSTR \
   	  --vcfs <file1.vcf.gz,file2.vcf.gz,...> \
@@ -34,13 +34,16 @@ Required Parameters:
 Special Merge Options:
 
 * :code:`--update-sample-from-file`: Append file names to sample names. Useful if sample names are repeated across VCF files.
+* :code:`--trim`: Trim away flanking base pairs from alleles before merging. Currently HipSTR is the only supported caller which emits flanking bps. This allows merging when the loci would otherwise not align exactly and would be skipped. (For example, this allows merging when one locus has reference allele :code:`chr1 1000 CAT|GCGCGC|` and the other has reference allele :code:`chr1 1003 |GCGCGC|TTG`, where the bars are just visual aids to distinguish between the TRs and the flanking bps within the allele). When using this option, the meaning of some of the output INFO and FORMAT fields change. See below.
+
+  * Note: this will trim the same number of basepairs from the beginning and end of each allele. If some alternate alleles have indels within the flanking region relative to the reference allele, then those alleles will be misrepresented.
 
 Optional Additional Parameters:
 
 * :code:`--verbose`: Prints out extra information
 * :code:`--quiet`: Doesn't print out anything
 
-MergeSTR outputs a merged VCF file :code:`$out.vcf` with the merged genotypes. See `Example Commands`_ below for example mergeSTR commands for different supported TR genotypers based on example data files in this repository.
+MergeSTR outputs a merged VCF file :code:`$out.vcf` with the merged genotypes. See `Example Commands`_ below for example MergeSTR commands for different supported TR genotypers based on example data files in this repository.
 
 Supported VCF fields
 --------------------
@@ -66,6 +69,8 @@ In addition to proper merging of alleles at multi-allelic sites, MergeSTR suppor
 
 * Supported INFO fields: START, END, PERIOD
 * Supported FORMAT fields: GB, Q, PQ, DP, DSNP, PSNP, PDP, GLDIFF, DSTUTTER, DFLANKINDEL, AB, FS, DAB, ALLREADS, MALLREADS
+
+  * Note: when using :code:`--trim`, the output :code:`Q, PQ` and :code:`GLDIFF` values are lower bounds for what the true values of those fields actually are. (For example, seeing a Q score of 0.8 for a call in the merged file means (a) the true Q score for that call relative to the alleles in the original file was 0.8, but (b) the true Q score for that call relative to the alleles in the merged file is at least 0.8, but might be higher). This is because these fields measure the uncertainty of choosing between different alleles, and trimming sometimes collapses alleles which only differed within the trimmed regions into a single allele, which lowers uncertainty.
 
 **PopSTR**
 

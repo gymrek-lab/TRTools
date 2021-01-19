@@ -403,14 +403,18 @@ def MergeRecords(vcftype, num_samples, current_records,
     if len(use_ind)==0: return
 
     chrom = current_records[use_ind[0]].chrom
-    pos = str(current_records[use_ind[0]].pos)
+    if not trim:
+        pos = str(current_records[use_ind[0]].pos)
+    else:
+        pos = str(current_records[use_ind[0]].trimmed_pos)
 
     ref_allele = GetRefAllele(current_records, mergelist, trim=trim)
     if ref_allele is None:
         common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
         return
 
-    alt_alleles, mappings = GetAltAlleles(current_records, mergelist, vcftype)
+    alt_alleles, mappings = GetAltAlleles(current_records, mergelist, vcftype,
+                                         trim=trim)
 
     # Set common fields
     vcfw.write(chrom) #CHROM
@@ -435,7 +439,15 @@ def MergeRecords(vcftype, num_samples, current_records,
     # INFO
     first = True
     for (field, reqd) in useinfo:
-        inf = GetInfoItem(current_records, mergelist, field, fail=reqd)
+        if vcftype == trh.VcfTypes.hipstr and trim:
+            if field == 'START':
+                inf = 'START=' + str(pos)
+            elif field == 'END':
+                inf = 'END=' + str(current_records[use_ind[0]].trimmed_end_pos)
+            else:
+                inf = GetInfoItem(current_records, mergelist, field, fail=reqd)
+        else:
+            inf = GetInfoItem(current_records, mergelist, field, fail=reqd)
         if inf is not None:
             if not first:
                 vcfw.write(';')
@@ -486,7 +498,7 @@ def getargs():  # pragma: no cover
     return args
 
 
-class BadOrderException(Exception):
+class _BadOrderException(Exception):
     pass
 
 
@@ -507,7 +519,7 @@ def _next_assert_order(reader, record, chroms, idx):
             "same reference, use bcftools "
             "(https://github.com/samtools/bcftools) to fix the contigs"
             ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
-        raise BadOrderException()
+        raise _BadOrderException()
 
     if record is None:
         return next_rec
@@ -517,26 +529,29 @@ def _next_assert_order(reader, record, chroms, idx):
             "Error: In file {} the record following the variant at {}:{} "
             "comes before it. Input files must be sorted."
         ).format(idx + 1, record.chrom, record.pos))
-        raise BadOrderException()
+        raise _BadOrderException()
     return next_rec
 
 
 def RecordIterator(readers, chroms, verbose=False, trim=False):
     """
-    TODO
-    Get the next set of records with the same refs
+    Iterate over the records from readers, returning
+    sets of records with the same refs.
 
-    First skip the records marked by increment which
-    have already been processed
+    If records from different files are encountered which partially overlap,
+    skip them. If two consecutive records in the same file overlap,
+    skip them. When a record is skipped due to overlaps, warn about it.
 
     Parameters
     ----------
     readers : list of cyvcf2.VCF
         The VCFs being read
-    current_records : list of cyvcf2.Variant
-        The records that have already been read
-    increment : list of bool
-        Which of the current records have been processed
+    chroms :
+        The possible contigs in the order we expect them
+    verbose :
+        Should each returned record location be printed to stdout?
+    trim :
+        Trim alleles before checking record locations.
 
     Returns
     -------
@@ -547,10 +562,23 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
         Indicates which of the returned records have minimum position
     """
     is_min = [True]*len(readers)
+    # the next unmerged records in each file
     records = [None]*len(readers)
+    # the records one step after in each file
+    peek_records = [None]*len(readers)
     curr_chrom_idx = 0 # the chrom of the min records
     prev_pos_end = -np.inf # the pos of the end of any record
                            # marked as min so far
+
+    # set up for the beginning
+    for idx in range(len(readers)):
+        try:
+            peek_records[idx] = _next_assert_order(
+                readers[idx], None, chroms, idx
+            )
+        except StopIteration:
+            peek_records[idx] = None
+
     # iterate until done
     while True:
         # increment all readers that have already been processed because:
@@ -561,12 +589,13 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
         for idx in range(len(readers)):
             if is_min[idx]:
                 is_min[idx] = False
+                records[idx] = peek_records[idx]
                 try:
-                    records[idx] = _next_assert_order(
-                        readers[idx], records[idx], chroms, idx
+                    peek_records[idx] = _next_assert_order(
+                        readers[idx], peek_records[idx], chroms, idx
                     )
                 except StopIteration:
-                    records.append(None)
+                    peek_records[idx] = None
 
         # stop if there are no more records
         if all(r is None for r in records):
@@ -591,7 +620,7 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
                 chrom_idx = chroms.index(rec.chrom)
                 if chrom_idx > curr_chrom_idx:
                     continue
-                ## chrom_idx == cur_chrom_idx
+                # thus chrom_idx == cur_chrom_idx
 
                 if trim:
                     pos = rec.trimmed_pos
@@ -603,13 +632,23 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
                 # figure out if there is an overlap
                 if pos <= prev_pos_end: # overlaps with prev round
                     overlap = True
-                # strictly less than the current best or matches the current best
-                elif end_pos <= min_pos or (pos == min_pos and end_pos ==
-                                            curr_pos_end):
-                    overlap = False
-                # overlaps the current best
-                elif (pos <= min_pos <= end_pos or
-                      min_pos <= pos <= curr_pos_end):
+                elif end_pos <= min_pos: # strictly less than the current best
+                    # only an overlap if it overlaps the next record in the
+                    # same file
+                    if peek_records[idx] is not None:
+                        overlap = peek_records[idx].pos <= end_pos
+                elif (pos, end_pos) == (min_pos, curr_pos_end):
+                    # exactly matches the current best
+
+                    # an overlap if it overlaps the next record in the
+                    # same file (but otherwise could still be an overlap
+                    # if the previous record had overlaps)
+                    if peek_records[idx] is not None:
+                        overlap = overlap or peek_records[idx].pos <= end_pos
+                elif ((pos <= min_pos <= end_pos or
+                       min_pos <= pos <= curr_pos_end) and not
+                      (pos == min_pos and end_pos == curr_pos_end)):
+                    # partially overlaps the current best
                     overlap = True
 
                 if pos < min_pos:
@@ -633,8 +672,8 @@ def RecordIterator(readers, chroms, verbose=False, trim=False):
         if overlap:
             for idx in min_idxs:
                 common.WARNING(
-                    "Warning: locus {}:{} in file {} overlaps a previous record in "
-                    "the same file or a record in another file. Skipping.".format(
+                    "Warning: locus {}:{} in file {} partially overlaps a record in "
+                    "another file or the next record in the same file. Skipping.".format(
                         records[idx].chrom, records[idx].pos, idx+1
                 ))
         else:
@@ -707,7 +746,7 @@ def main(args):
                 vcfreaders, chroms, verbose=args.verbose, trim=args.trim):
             MergeRecords(vcftype, num_samples, records, is_min, vcfw, useinfo,
                          useformat, format_type, trim=args.trim)
-    except BadOrderException:
+    except _BadOrderException:
         return 1
 
     return 0

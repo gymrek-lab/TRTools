@@ -1,16 +1,29 @@
 Unreleased
 ----------
+Features:
+
+* MergeSTR now has an option :code:`--trim` for aligning TR loci with flanking base pairs
+  (currently only output by HipSTR) where the TRs align exactly but the flanks do
+  not. (For example, this allows merging when one locus has reference allele
+  :code:`chr1 1000 CAT|GCGCGC|` and the other has reference allele
+  :code:`chr1 1003 |GCGCGC|TTG`, where the bars are just visual aids to distinguish
+  between the TRs and the flanking bps within the allele.) Without :code:`--trim`, such loci would
+  be skipped due to partial overlaps.
+
 Command line interface changes:
-* If MergeSTR encounters input files with the same contigs but in 
+
+* If MergeSTR encounters input files with the same contigs but in
   different orderings, it will exit with a warning asking the user
   to reheader the files
 
 Output changes:
-* If MergeSTR encounters two records in the same file whose ref alleles overlap,
-  it will emit the first one and then warn about and skip the second.
-* If MergeSTR encounters records across different files whose ref alleles
-  partially overlap it will warn about all of them and skip them. Previously
-  this was only done if the ref alleles had the same start position
+
+* If MergeSTR encounters two records from the same or different files whose
+  ref alleles partially overlap it will warn about all of them and skip them.
+  Previously this was only done if the ref alleles were from different files
+  and had the same start position
+* MergeSTR now enforces that input files must be sorted - it will fail out
+  if it encounters records out of sort order
 
 4.0.0
 -----

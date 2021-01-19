@@ -1599,6 +1599,10 @@ class TRRecordHarmonizer:
         # would only be reachable if VcfTypes is expanded in the future)
         _UnexpectedTypeError(self.vcftype)  # pragma: no cover
 
+    def close(self):
+        """Close the underlying VCF file object"""
+        self.vcffile.close()
+
     def __iter__(self) -> Iterator[TRRecord]:
         """Iterate over TRRecords produced from the underlying vcf."""
         return self
@@ -1606,6 +1610,10 @@ class TRRecordHarmonizer:
     def __next__(self) -> TRRecord:
         """Iterate over TRRecord produced from the underlying vcf."""
         return HarmonizeRecord(self.vcftype, next(self.vcffile))
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Close this object after leaving a with ... : block"""
+        self.vcffile.close()
 
 
 #TODO check all users of this class for new options
