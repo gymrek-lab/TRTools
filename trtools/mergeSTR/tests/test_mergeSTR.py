@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 
+import cyvcf2
 import numpy as np
 import pytest
 
@@ -495,6 +496,13 @@ def test_trimmed_hipstr_output(args, mrgvcfdir):
          mrgvcfdir + "/NA12892_chr21_hipstr.sorted.vcf.gz"],
         trh.VcfTypes.hipstr
     )
+    vcf = cyvcf2.VCF(args.out + '.vcf')
+    # make sure all the alternate alleles we're emitting are unique
+    # and that we're emitting trimmed alleles
+    for rec in vcf:
+        assert len(set(rec.ALT)) == len(rec.ALT)
+        assert rec.INFO['START'] == rec.POS
+        assert rec.INFO['END'] == rec.POS + len(rec.REF) - 1
 
 
 def test_output_calls_with_missing_int_format_fields(args, mrgvcfdir):
