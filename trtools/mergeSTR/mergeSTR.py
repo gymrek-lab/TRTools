@@ -186,7 +186,7 @@ def GetRefAllele(current_records, mergelist, trim=False):
         return None
     return refs[0]
 
-def GetAltAlleles(current_records, mergelist, vcftype, trim=False):
+def GetAltAlleles(current_records, mergelist, ref_allele, vcftype, trim=False):
     r"""Get list of alt alleles
 
     Parameters
@@ -195,8 +195,12 @@ def GetAltAlleles(current_records, mergelist, vcftype, trim=False):
        List of records being merged
     mergelist : list of bool
        Indicates whether each record is included in merge
+    ref_allele : str
+        The ref allele to be output at this locus
     vcftype :
         The type of the VCFs these records came from
+    trim : bool
+        Whether flanking bps are being trimmed or not
 
     Returns
     -------
@@ -223,6 +227,12 @@ def GetAltAlleles(current_records, mergelist, vcftype, trim=False):
             ralts = get_alts(current_records[i])
             for item in ralts:
                 alts.add(item.upper())
+
+    # in the case of trimmed alleles, sometimes one of the alt alleles
+    # when trimmed becoems identical to the trimmed ref
+    # in that case, just map to the trimmed ref
+    alts -= {ref_allele}
+
     if vcftype == trh.VcfTypes.eh:
         # EH alleles look like <STR42> where 42 is the
         # number of repeat units so sort accordingly
@@ -234,12 +244,14 @@ def GetAltAlleles(current_records, mergelist, vcftype, trim=False):
     else:
         out_alts = sorted(alts, key=lambda x: (len(x), x))
 
+    all_alleles = [ref_allele] + out_alts
+
     mappings = []
     for i in range(len(mergelist)):
         if mergelist[i]:
             ralts = get_alts(current_records[i])
             mappings.append(
-                np.array([0] + [out_alts.index(ralt.upper()) + 1 for ralt in ralts]).astype(str)
+                np.array([0] + [all_alleles.index(ralt.upper()) for ralt in ralts]).astype(str)
             )
     return out_alts, mappings
 
@@ -419,8 +431,9 @@ def MergeRecords(vcftype, num_samples, current_records,
         common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
         return
 
-    alt_alleles, mappings = GetAltAlleles(current_records, mergelist, vcftype,
-                                         trim=trim)
+    alt_alleles, mappings = GetAltAlleles(
+        current_records, mergelist, ref_allele, vcftype, trim=trim
+    )
 
     # Set common fields
     vcfw.write(chrom) #CHROM

@@ -497,10 +497,10 @@ def test_trimmed_hipstr_output(args, mrgvcfdir):
         trh.VcfTypes.hipstr
     )
     vcf = cyvcf2.VCF(args.out + '.vcf')
-    # make sure all the alternate alleles we're emitting are unique
+    # make sure all the alleles we're emitting are unique
     # and that we're emitting trimmed alleles
     for rec in vcf:
-        assert len(set(rec.ALT)) == len(rec.ALT)
+        assert len(set(rec.ALT) | {rec.REF}) == len(rec.ALT) + 1
         assert rec.INFO['START'] == rec.POS
         assert rec.INFO['END'] == rec.POS + len(rec.REF) - 1
 
