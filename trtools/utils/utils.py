@@ -59,13 +59,13 @@ def LoadReaders(
         A list of vcf locations
     checkgz:
         Check if each VCF file is gzipped and indexed
-        If any are not, return None
 
     Returns
     -------
     readers : Optional[List[cvycf2.VCF]]
-        A list of VCF readers, or none if any of them could not be found
-        or failed the gz check if applicable.
+        A list of VCF readers, or None if any of them could not be found.
+        If checkgz, then also return None if any of the VCF readers
+        were not gzipped and tabix indexed.
     """
     readers = []
     for f in vcf_locs:
