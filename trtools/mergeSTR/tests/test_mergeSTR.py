@@ -246,7 +246,7 @@ def test_conflicting_refs_same_file():
              DummyRecord('chr1', 1000, 'CAG', 'CAGCAGCAG')]
     for test_count, readers in enumerate([(iter(recs1), iter(recs2)),
                                           (iter(recs2), iter(recs1))]):
-        itr = RecordIterator(readers, ['chr1'])
+        itr = RecordIterator(readers, ['chr1'], vcftype=trh.VcfTypes.gangstr)
 
         recs, mins = next(itr)
         if test_count == 1:
@@ -290,7 +290,7 @@ def test_conflicting_refs_threeway():
         readers = [iter(list_of_recs[idxs[0]]),
                    iter(list_of_recs[idxs[1]]),
                    iter(list_of_recs[idxs[2]])]
-        itr = RecordIterator(readers, ['chr1'])
+        itr = RecordIterator(readers, ['chr1'], vcftype=trh.VcfTypes.gangstr)
 
         recs, mins = next(itr)
         recs = order(recs, idxs)
