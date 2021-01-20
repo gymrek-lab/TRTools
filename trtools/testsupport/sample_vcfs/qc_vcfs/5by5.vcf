@@ -1,0 +1,131 @@
+##fileformat=VCFv4.1
+##FILTER=<ID=PASS,Description="All filters passed">
+##command=HipSTR-v0.6.1 --bam-files /pedigree/projects/s1saini/hipstr.1kg/bam.eur.list --fasta /pedigree/projects/s1saini/ref/human_g1k_v37.fasta --regions bedfile.10 --str-vcf str.chr1.10.vcf.gz --bam-samps HG00096,HG00098,HG00101,HG00103,HG00107,HG00108,HG00109,HG00115,HG00116,HG00117,HG00119,HG00131,HG00136,HG00139,HG00181,HG00185,HG00190,HG00256,HG00264,HG00267,HG00273,HG00277,HG00280,HG00284,HG00351,HG00358,HG00366,HG00369,HG00371,HG00372,HG01619,HG01620,HG01623,HG01624,HG01625,HG01626,HG01628,HG01630,HG01682,HG01684,HG01685,HG01686,HG01707,HG01708,HG01756,HG01757,HG01761,HG01762,HG01770,HG01771 --lib-from-samp --log log.part10.txt
+##reference=/pedigree/projects/s1saini/ref/human_g1k_v37.fasta
+##contig=<ID=1,length=249250621>
+##contig=<ID=2,length=243199373>
+##contig=<ID=3,length=198022430>
+##contig=<ID=4,length=191154276>
+##contig=<ID=5,length=180915260>
+##contig=<ID=6,length=171115067>
+##contig=<ID=7,length=159138663>
+##contig=<ID=8,length=146364022>
+##contig=<ID=9,length=141213431>
+##contig=<ID=10,length=135534747>
+##contig=<ID=11,length=135006516>
+##contig=<ID=12,length=133851895>
+##contig=<ID=13,length=115169878>
+##contig=<ID=14,length=107349540>
+##contig=<ID=15,length=102531392>
+##contig=<ID=16,length=90354753>
+##contig=<ID=17,length=81195210>
+##contig=<ID=18,length=78077248>
+##contig=<ID=19,length=59128983>
+##contig=<ID=20,length=63025520>
+##contig=<ID=21,length=48129895>
+##contig=<ID=22,length=51304566>
+##contig=<ID=X,length=155270560>
+##contig=<ID=Y,length=59373566>
+##contig=<ID=MT,length=16569>
+##contig=<ID=GL000207.1,length=4262>
+##contig=<ID=GL000226.1,length=15008>
+##contig=<ID=GL000229.1,length=19913>
+##contig=<ID=GL000231.1,length=27386>
+##contig=<ID=GL000210.1,length=27682>
+##contig=<ID=GL000239.1,length=33824>
+##contig=<ID=GL000235.1,length=34474>
+##contig=<ID=GL000201.1,length=36148>
+##contig=<ID=GL000247.1,length=36422>
+##contig=<ID=GL000245.1,length=36651>
+##contig=<ID=GL000197.1,length=37175>
+##contig=<ID=GL000203.1,length=37498>
+##contig=<ID=GL000246.1,length=38154>
+##contig=<ID=GL000249.1,length=38502>
+##contig=<ID=GL000196.1,length=38914>
+##contig=<ID=GL000248.1,length=39786>
+##contig=<ID=GL000244.1,length=39929>
+##contig=<ID=GL000238.1,length=39939>
+##contig=<ID=GL000202.1,length=40103>
+##contig=<ID=GL000234.1,length=40531>
+##contig=<ID=GL000232.1,length=40652>
+##contig=<ID=GL000206.1,length=41001>
+##contig=<ID=GL000240.1,length=41933>
+##contig=<ID=GL000236.1,length=41934>
+##contig=<ID=GL000241.1,length=42152>
+##contig=<ID=GL000243.1,length=43341>
+##contig=<ID=GL000242.1,length=43523>
+##contig=<ID=GL000230.1,length=43691>
+##contig=<ID=GL000237.1,length=45867>
+##contig=<ID=GL000233.1,length=45941>
+##contig=<ID=GL000204.1,length=81310>
+##contig=<ID=GL000198.1,length=90085>
+##contig=<ID=GL000208.1,length=92689>
+##contig=<ID=GL000191.1,length=106433>
+##contig=<ID=GL000227.1,length=128374>
+##contig=<ID=GL000228.1,length=129120>
+##contig=<ID=GL000214.1,length=137718>
+##contig=<ID=GL000221.1,length=155397>
+##contig=<ID=GL000209.1,length=159169>
+##contig=<ID=GL000218.1,length=161147>
+##contig=<ID=GL000220.1,length=161802>
+##contig=<ID=GL000213.1,length=164239>
+##contig=<ID=GL000211.1,length=166566>
+##contig=<ID=GL000199.1,length=169874>
+##contig=<ID=GL000217.1,length=172149>
+##contig=<ID=GL000216.1,length=172294>
+##contig=<ID=GL000215.1,length=172545>
+##contig=<ID=GL000205.1,length=174588>
+##contig=<ID=GL000219.1,length=179198>
+##contig=<ID=GL000224.1,length=179693>
+##contig=<ID=GL000223.1,length=180455>
+##contig=<ID=GL000195.1,length=182896>
+##contig=<ID=GL000212.1,length=186858>
+##contig=<ID=GL000222.1,length=186861>
+##contig=<ID=GL000200.1,length=187035>
+##contig=<ID=GL000193.1,length=189789>
+##contig=<ID=GL000194.1,length=191469>
+##contig=<ID=GL000225.1,length=211173>
+##contig=<ID=GL000192.1,length=547496>
+##INFO=<ID=INFRAME_PGEOM,Number=1,Type=Float,Description="Parameter for in-frame geometric step size distribution">
+##INFO=<ID=INFRAME_UP,Number=1,Type=Float,Description="Probability that stutter causes an in-frame increase in obs. STR size">
+##INFO=<ID=INFRAME_DOWN,Number=1,Type=Float,Description="Probability that stutter causes an in-frame decrease in obs. STR size">
+##INFO=<ID=OUTFRAME_PGEOM,Number=1,Type=Float,Description="Parameter for out-of-frame geometric step size distribution">
+##INFO=<ID=OUTFRAME_UP,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame increase in read's STR size">
+##INFO=<ID=OUTFRAME_DOWN,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame decrease in read's STR size">
+##INFO=<ID=BPDIFFS,Number=A,Type=Integer,Description="Base pair difference of each alternate allele from the reference allele">
+##INFO=<ID=START,Number=1,Type=Integer,Description="Inclusive start coodinate for the repetitive portion of the reference allele">
+##INFO=<ID=END,Number=1,Type=Integer,Description="Inclusive end coordinate for the repetitive portion of the reference allele">
+##INFO=<ID=PERIOD,Number=1,Type=Integer,Description="Length of STR motif">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=REFAC,Number=1,Type=Integer,Description="Reference allele count">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Alternate allele counts">
+##INFO=<ID=NSKIP,Number=1,Type=Integer,Description="Number of samples not genotyped due to various issues">
+##INFO=<ID=NFILT,Number=1,Type=Integer,Description="Number of samples whose genotypes were filtered due to various issues">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total number of valid reads used to genotype all samples">
+##INFO=<ID=DSNP,Number=1,Type=Integer,Description="Total number of reads with SNP phasing information">
+##INFO=<ID=DSTUTTER,Number=1,Type=Integer,Description="Total number of reads with a stutter indel in the STR region">
+##INFO=<ID=DFLANKINDEL,Number=1,Type=Integer,Description="Total number of reads with an indel in the regions flanking the STR">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GB,Number=1,Type=String,Description="Base pair differences of genotype from reference">
+##FORMAT=<ID=Q,Number=1,Type=Float,Description="Posterior probability of unphased genotype">
+##FORMAT=<ID=PQ,Number=1,Type=Float,Description="Posterior probability of phased genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Number of valid reads used for sample's genotype">
+##FORMAT=<ID=DSNP,Number=1,Type=Integer,Description="Number of reads with SNP phasing information">
+##FORMAT=<ID=PSNP,Number=1,Type=String,Description="Number of reads with SNPs supporting each haploid genotype">
+##FORMAT=<ID=PDP,Number=1,Type=String,Description="Fractional reads supporting each haploid genotype">
+##FORMAT=<ID=GLDIFF,Number=1,Type=Float,Description="Difference in likelihood between the reported and next best genotypes">
+##FORMAT=<ID=DSTUTTER,Number=1,Type=Integer,Description="Number of reads with a stutter indel in the STR region">
+##FORMAT=<ID=DFLANKINDEL,Number=1,Type=Integer,Description="Number of reads with an indel in the regions flanking the STR">
+##FORMAT=<ID=AB,Number=1,Type=Float,Description="log10 of the allele bias pvalue, where 0 is no bias and more negative values are increasingly biased. 0 for all homozygous genotypes">
+##FORMAT=<ID=FS,Number=1,Type=Float,Description="log10 of the strand bias pvalue from Fisher's exact test, where 0 is no bias and more negative values are increasingly biased. 0 for all homozygous genotypes">
+##FORMAT=<ID=DAB,Number=1,Type=Integer,Description="Number of reads used in the AB and FS calculations">
+##FORMAT=<ID=ALLREADS,Number=1,Type=String,Description="Base pair difference observed in each read's Needleman-Wunsch alignment">
+##FORMAT=<ID=MALLREADS,Number=1,Type=String,Description="Maximum likelihood bp diff in each read based on haplotype alignments for reads that span the repeat region by at least 5 base pairs">
+##bcftools_concatVersion=1.7+htslib-1.7
+##bcftools_concatCommand=concat -f files.list -a -d all -O z -o hipstr.chr1.eur.vcf.gz --threads 8; Date=Sun Feb 25 11:05:06 2018
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	HG00096	HG00098	HG00101	HG00103	HG00107
+1	26454	STR_3	GTGTGTGTGTGT	GTGTGTGTGTGA,GTGTGTGTTTGT	.	.	INFRAME_PGEOM=0.95;INFRAME_UP=0;INFRAME_DOWN=0;OUTFRAME_PGEOM=0.94;OUTFRAME_UP=0;OUTFRAME_DOWN=0;START=26454;END=26465;PERIOD=2;NSKIP=0;NFILT=0;BPDIFFS=0,0;DP=4181;DSNP=0;DSTUTTER=0;DFLANKINDEL=133;AN=100;REFAC=50;AC=11,39	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS	0|1:0|0:1:0.5:103:0:0:2:81.96|21.04:0|0:22.09:-10.26:91:-0.11:-12|1;-5|1;0|80:0|74	0|2:0|0:.8:0.5:72:0:0:2:61.00|11.00:0|0:18.71:-9.1:70:-0.3:0|68:0|62	0|2:0|0:.7:0.5:110:0:0:0:97.97|12.03:0|0:10.2:-18.52:104:-0.13:0|96:0|94	0|2:0|0:.6:0.5:74:0:0:3:62.00|12.00:0|0:23.9:-9.1:70:-0.13:0|64:0|61	0|2:0|0:.8:0.5:105:0:0:3:87.49|17.51:0|0:29.58:-12.92:96:-0.88:0|88:0|83
+1	31720	STR_6	AAAAAAAAAAAAAA	AAAAAAAAAAAAA,AAAAAAAAAAAAAAA	.	.	INFRAME_PGEOM=0.96;INFRAME_UP=0.07;INFRAME_DOWN=0.15;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0;OUTFRAME_DOWN=0;START=31720;END=31733;PERIOD=1;NSKIP=0;NFILT=0;BPDIFFS=-1,1;DP=2646;DSNP=0;DSTUTTER=427;DFLANKINDEL=55;AN=100;REFAC=95;AC=3,2	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS	.:0|0:.2:1:72:0:6:2:36.00|36.00:0|0:7.98:0:.:0:-1|3;0|41;1|2:-1|2;0|36;1|2	1|1:0|0:1:1:38:0:5:1:19.00|19.00:0|0:4.19:0:.:0:-1|5;0|22;1|1:-1|3;0|18;1|1	0|0:0|0:.2:1:70:0:9:3:35.00|35.00:0|0:8.36:0:.:0:-11|1;-1|6;0|43;1|2:-1|4;0|38;1|1	0|0:0|0:1:1:45:0:5:1:22.50|22.50:0|0:5.91:0:.:0:-1|5;0|30:-1|4;0|27	0|0:0|0:.75:1:72:0:12:3:36.00|36.00:0|0:6.65:0:.:0:-2|1;-1|7;0|40;1|5:-2|1;-1|6;0|36;1|5
+1	33450	STR_7	ATATATATATATATATATATATATATATAT	ATATATATATATATATATATATAT,ATATATATATATATCTATATATATAT,ATATATATATATATATATATATATATATATAT	.	.	INFRAME_PGEOM=0.5;INFRAME_UP=0.02;INFRAME_DOWN=0.13;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0;OUTFRAME_DOWN=0;START=33450;END=33479;PERIOD=2;NSKIP=0;NFILT=7;BPDIFFS=-3,-2,1;DP=846;DSNP=0;DSTUTTER=73;DFLANKINDEL=53;AN=86;REFAC=49;AC=3,3,31	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS	0|0:0|0:0.77:0.77:12:0:1:0:6.00|6.00:0|0:0.53:0:.:0:0|8;1|1:0|7;1|1	0|3:0|1:1:0.5:22:0:0:2:12.89|9.11:0|0:5.11:-0.52:15:0:0|12;1|5:0|8;1|3	0|3:0|1:.5:0.5:26:0:1:1:16.73|9.27:0|0:5.43:-1.46:23:-0.2:-2|1;0|17;1|6:-2|1;0|14;1|6	1|0:0|0:0.72:0.72:17:0:2:1:8.91|8.09:0|0:0.4:0:.:0:-2|1;0|11;1|1:-2|1;0|9;1|1	0|2:0|-2:0.97:0.48:17:0:3:2:14.84|2.16:0|0:1.52:-3.01:15:-0.4:-2|1;-1|1;0|10;1|1:-2|1;-1|1;0|6;1|1
+1	35484	STR_9	ATAAAAAATAAATAAATAAATAAAAAC	ATAAAAAATAAATAAATAAATAAAAAG,ATAAAAAATAAATAAATAAATAAATAAAAAC	.	.	INFRAME_PGEOM=0.95;INFRAME_UP=0;INFRAME_DOWN=0;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0;OUTFRAME_DOWN=0;START=35484;END=35507;PERIOD=4;NSKIP=0;NFILT=0;BPDIFFS=0,4;DP=1719;DSNP=0;DSTUTTER=0;DFLANKINDEL=10;AN=100;REFAC=67;AC=31,2	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS	.:0|0:1:0.5:48:0:0:2:35.50|12.50:0|0:8.98:-4.47:31:-0.97:0|25:0|21	0|1:0|0:.9:0.5:34:0:0:0:25.50|8.50:0|0:2.83:-3.66:21:-0.3:0|15:0|15	2|0:0|0:0.99:0.99:38:0:0:1:19.00|19.00:0|0:2.06:0:.:0:0|14:0|12	0|1:0|0:.6:0.5:29:0:0:0:21.00|8.00:0|0:4.04:-2.63:17:-0.69:0|11:0|11	.:0|0:1:0.5:32:0:0:0:20.52|11.48:0|0:20.41:-1.03:23:-1.28:0|17:0|17
+1	36352	STR_10	AAAAAAAAAAAAA	AAAAAAAAAAAA,AAGAAAAAAAAAA,AAAAAAAAAAAAAA	.	.	INFRAME_PGEOM=0.97;INFRAME_UP=0.22;INFRAME_DOWN=0.13;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0;OUTFRAME_DOWN=0;START=36352;END=36364;PERIOD=1;NSKIP=0;NFILT=0;BPDIFFS=-1,0,1;DP=2966;DSNP=0;DSTUTTER=858;DFLANKINDEL=37;AN=100;REFAC=56;AC=8,32,4	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS	.:0|1:1:0.5:65:0:1:0:33.19|31.81:0|0:4.2:-0.28:60:-0.6:-1|1;0|26;1|33:-1|1;0|26;1|33	.:0|0:1:0.5:37:0:4:0:29.95|7.05:0|0:12.96:-4.41:34:-0.88:-1|1;0|28;1|3:-1|1;0|27;1|3	0|0:0|0:0.98:0.98:71:0:13:2:35.50|35.50:0|0:1.74:0:.:0:0|46;1|9;2|4:0|42;1|9;2|4	.:0|0:1:0.5:38:0:15:2:31.69|6.31:0|0:3.31:-6.12:34:0:-1|5;0|18;1|9;2|2:-1|4;0|15;1|9;2|1	3|2:0|0:1:0.5:78:0:27:3:67.77|10.23:0|0:5.99:-12.61:70:0:0|37;1|25;2|2;4|1:0|34;1|26

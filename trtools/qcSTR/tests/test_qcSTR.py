@@ -296,3 +296,83 @@ def test_main(tmpdir, vcfdir):
     args.vcf = os.path.join(qcdir, "test_non_exist.vcf")
     retcode = main(args)
     assert retcode == 1
+
+# manually verified that all the plots produced by this data looks good
+def test_GatherData(vcfdir):
+    all_q_types = ['per-locus',
+                   'sample-stratified',
+                   'per-sample',
+                   'locus-stratified',
+                   'per-call']
+    called_samples = [[True, True, True, True, True],
+                      [False, True, True, True, True],
+                      [True, True, True, True, True],
+                      [False, True, True, True, False],
+                      [False, False, True, False, True]]
+    called_samples = np.array(called_samples)
+    q_scores = [[1,          .8,  .7,     .6,    .8],
+                [np.nan,      1,  .2,      1,    .75],
+                [.77,         1,  .5,    .72,    .97],
+                [np.nan,     .9, .99,     .6, np.nan],
+                [np.nan, np.nan, .98, np.nan,     1]]
+    q_scores = np.array(q_scores)
+    with trh.TRRecordHarmonizer(cyvcf2.VCF(vcfdir + "/qc_vcfs/5by5.vcf")) as harmonizer:
+        numrecords, \
+            chrom_calls, \
+            sample_calls, \
+            diffs_from_ref_bp, \
+            diffs_from_ref_unit, \
+            reflens_bp, \
+            per_sample_total_qual, \
+            locus_ids, \
+            per_locus_data, \
+            per_call_data = GatherData(
+                harmonizer,
+                5,
+                np.array([True]*5),
+                None,
+                None,
+                all_q_types,
+                False)
+
+    assert numrecords == 5
+    assert chrom_calls == {'1': 19}
+    assert np.all(sample_calls == np.array([2,4,5,4,4]))
+    assert diffs_from_ref_bp == ([0]*10 + [-1, -1, 0, 0, 0, 0, 0, 0] +
+       [-6,-4,0,0,0,0,0,0,2,2] + [0,0,0,0,0,4] + [0,0,0,1] )
+    assert diffs_from_ref_unit == ([0]*10 + [-1, -1, 0, 0, 0, 0, 0, 0] +
+       [-3,-2,0,0,0,0,0,0,1,1] + [0,0,0,0,0,1] + [0,0,0,1] )
+    assert reflens_bp == [12]*10 + [14]*8 + [30]*10 + [24]*6 + [13]*4
+    assert (per_call_data[called_samples] ==
+            pytest.approx(q_scores[called_samples]))
+    assert per_sample_total_qual == \
+            pytest.approx([1.77,  3.7, 3.37, 2.92, 3.52])
+    assert locus_ids == ['STR_3', 'STR_6', 'STR_7', 'STR_9', 'STR_10']
+    assert per_locus_data == pytest.approx([3.9/5, 2.95/5, 3.96/5, 2.49/5,
+                                            1.98/5])
+
+    # test with quality ignore no call == TRUE
+    with trh.TRRecordHarmonizer(cyvcf2.VCF(vcfdir + "/qc_vcfs/5by5.vcf")) as harmonizer:
+        numrecords, \
+            chrom_calls, \
+            sample_calls, \
+            diffs_from_ref_bp, \
+            diffs_from_ref_unit, \
+            reflens_bp, \
+            per_sample_total_qual, \
+            locus_ids, \
+            per_locus_data, \
+            per_call_data = GatherData(
+                harmonizer,
+                5,
+                np.array([True]*5),
+                None,
+                None,
+                all_q_types,
+                True)
+
+    assert per_sample_total_qual == \
+            pytest.approx([1.77,  3.7, 3.37, 2.92, 3.52])
+    assert per_locus_data == pytest.approx([3.9/5, 2.95/4, 3.96/5, 2.49/3,
+                                            1.98/2])
+

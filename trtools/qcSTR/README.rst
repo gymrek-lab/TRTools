@@ -57,7 +57,7 @@ qcSTR outputs the following plots:
 
 .. image:: images/diffref-histogram.png
 
-:code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length.
+:code:`<outprefix>-diffref-bias.pdf`: plots reference length (bp) vs. the mean (or median) difference in length of each allele called compared to the reference allele. It is expected that the mean difference should be around 0 for most settings. When this value starts to deviate from 0, e.g. for very long repeats, it could indicate a drop in call quality. The red line gives the cumulative fraction of TRs below each reference length. For callers that call flanking basepairs (currently only HipSTR), the length is of the reference repeat not including the flanking basepairs.
 
 .. image:: images/diffref-bias.png
 

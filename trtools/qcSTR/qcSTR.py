@@ -212,7 +212,6 @@ def _BetterCDF(data: np.ndarray,
             np.arange(n_points - 1, -1, -1) / np.float(n_points),
             [0]
         ))
-    #ax.step(data, ys)#, where='post')
     ax.step(data, ys, where='post')
 
 
@@ -330,6 +329,157 @@ def OutputQualityLocusStrat(
         raise ValueError("loci should have the same length as"
                          " the number of rows in per_call_data")
     _OutputQualityHist(per_call_data, fname, "calls", strat_names=loci)
+
+
+def GatherData(harmonizer: trh.TRRecordHarmonizer,
+               nsamples: int,
+               sample_index: np.ndarray, # bool array
+               max_records: Optional[int],
+               period: Optional[int],
+               quality_types: List[str], #list of _QualityTypes.XXX.value
+               quality_ignore_no_call: bool):
+    """
+    Read the VCF and gather the data necessary to make the plots.
+
+    Parameters
+    ----------
+    harmonizer :
+        The TRRecord Harmonizer for the VCF
+    nsamples :
+        number of samples in the VCF
+    sample_index :
+        bool array of which samples should/should not be included
+    period :
+        optional restriction on the period of the TRs that should be included
+    quality_types :
+        which quality plots should be produced?
+    quality_ignore_no_call :
+        should no calls be ignored instead of treated as zeros?
+
+    Returns
+    -------
+    numrecords : int
+        number of TRs analyzed
+    chrom_calls : Dict[str, int]
+        Mapping from chroms with at least one call -> number of calls
+    sample_calls : np.ndarray
+        1D array of length nsamples, number of calls made per sample
+    diffs_from_ref_bp : List[int]
+        list of all calls measured in diff in length from ref in bp
+    diffs_from_ref_unit : List[float]
+        list of all calls measured in diff in length from ref in repeat units
+    reflens_bp : List[int]
+        a list containing one entry for each call, the entry being the length
+        of the reference allele of the locus that call was made at in bp.
+        Calls are in the same order as the above two arrays.
+    per_sample_total_qual : np.ndarray
+        1D array of length nsamples, the sum of the quality scores
+        of all calls made for taht sample
+    locus_ids : List[str]
+        The ids of each locus, in order
+    per_locus_data : List[float]
+        A list of floats, one for each locus, with the mean quality at that
+        locus
+    per_call_data : np.ndarray
+        A 2D array where rows are loci and columns are samples and cells
+        are the quality score for that call
+    """
+    # Set up data to keep track of
+    sample_calls = np.zeros(nsamples)
+    chrom_calls = {} # chrom->numcalls
+    diffs_from_ref_bp = [] # for each allele call, keep track of diff (bp) from ref
+    diffs_from_ref_unit = [] # for each allele call, keep track of diff
+                             # (repeat units) from ref
+    reflens_bp = [] # for each allele call, keep track of reference length (bp)
+    if _QualityTypes.per_locus.value in quality_types:
+        per_locus_data = []
+    else:
+        per_locus_data = None
+    if _QualityTypes.per_sample.value in quality_types:
+        per_sample_total_qual = np.zeros(nsamples)
+    else:
+        per_sample_total_qual = None
+    if (_QualityTypes.per_call.value in quality_types or
+            _QualityTypes.sample_stratified.value in quality_types or
+            _QualityTypes.locus_stratified.value in quality_types):
+        per_call_data = []
+    else:
+        per_call_data = None
+    if _QualityTypes.locus_stratified.value in quality_types:
+        locus_ids = []
+    else:
+        locus_ids = None
+
+
+    # read the vcf
+    numrecords = 0
+    for trrecord in harmonizer:
+        if max_records is not None and numrecords >= max_records: break
+        if period is not None and len(trrecord.motif) != period: continue
+
+        chrom = trrecord.chrom
+        if chrom not in chrom_calls:
+            chrom_calls[chrom] = 0
+        allele_counts = trrecord.GetAlleleCounts(uselength=True,
+                                                 sample_index=sample_index)
+
+        calls = trrecord.GetCalledSamples()
+        sample_calls += calls
+        chrom_calls[chrom] += np.sum(calls)
+
+        if len(quality_types) != 0:
+            quality_scores = trrecord.GetQualityScores()[sample_index, :]
+            quality_scores[~calls] = np.nan
+            if not quality_ignore_no_call:
+                quality_scores[np.isnan(quality_scores)] = 0
+            else:
+                quality_idxs = ~np.isnan(quality_scores)
+
+        if _QualityTypes.per_sample.value in quality_types:
+            if not quality_ignore_no_call:
+                per_sample_total_qual += quality_scores.reshape(-1)
+            else:
+                per_sample_total_qual[quality_idxs.reshape(-1)] += \
+                    quality_scores[quality_idxs].reshape(-1)
+        if _QualityTypes.per_locus.value in quality_types:
+            if not quality_ignore_no_call: per_locus_data.append(np.mean(quality_scores))
+            else:
+                per_locus_data.append(np.mean(quality_scores[quality_idxs]))
+        if (_QualityTypes.sample_stratified.value in quality_types or
+                _QualityTypes.locus_stratified.value in quality_types or
+                _QualityTypes.per_call.value in quality_types):
+            per_call_data.append(quality_scores)
+        if _QualityTypes.locus_stratified.value in quality_types:
+            locus_ids.append(trrecord.record_id)
+
+        for allele in allele_counts.keys():
+            allelediff_unit = allele - trrecord.ref_allele_length
+            count = allele_counts[allele]
+            reflens_bp.extend([trrecord.ref_allele_length*len(trrecord.motif)]*count)
+            diffs_from_ref_unit.extend([allelediff_unit]*count)
+            diffs_from_ref_bp.extend([allelediff_unit*len(trrecord.motif)]*count)
+
+        numrecords += 1
+
+    # now rows are loci, cols are samples
+    if (_QualityTypes.sample_stratified.value in quality_types or
+            _QualityTypes.locus_stratified.value in quality_types or
+            _QualityTypes.per_call.value in quality_types):
+        per_call_data = np.concatenate(per_call_data, axis=1).T
+        if not quality_ignore_no_call:
+            per_call_data[np.isnan(per_call_data)] = 0
+
+    return (numrecords,
+        chrom_calls,
+        sample_calls,
+        diffs_from_ref_bp,
+        diffs_from_ref_unit,
+        reflens_bp,
+        per_sample_total_qual,
+        locus_ids,
+        per_locus_data,
+        per_call_data)
+
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(
@@ -481,85 +631,24 @@ def main(args):
         else:
             args.quality = [_QualityTypes.per_locus.value]
 
-    # Set up data to keep track of
-    sample_calls = np.zeros(len(sample_list))
-    chrom_calls = {} # chrom->numcalls
-    diffs_from_ref_bp = [] # for each allele call, keep track of diff (bp) from ref
-    diffs_from_ref_unit = [] # for each allele call, keep track of diff
-                             # (repeat units) from ref
-    reflens_bp = [] # for each allele call, keep track of reference length (bp)
-    if _QualityTypes.per_locus.value in args.quality:
-        per_locus_data = []
-    if _QualityTypes.per_sample.value in args.quality:
-        per_sample_total_qual = np.zeros(len(sample_list))
-    if (_QualityTypes.per_call.value in args.quality or
-            _QualityTypes.sample_stratified.value in args.quality or
-            _QualityTypes.locus_stratified.value in args.quality):
-        per_call_data = []
-    if _QualityTypes.locus_stratified.value in args.quality:
-        locus_ids = []
-
-
-    # read the vcf
-    numrecords = 0
-    for trrecord in harmonizer:
-        if args.numrecords is not None and numrecords >= args.numrecords: break
-        if args.period is not None and len(trrecord.motif) != args.period: continue
-
-        chrom = trrecord.chrom
-        if chrom not in chrom_calls:
-            chrom_calls[chrom] = 0
-        allele_counts = trrecord.GetAlleleCounts(uselength=True,
-                                                 sample_index=sample_index)
-
-        idx_gts = trrecord.GetGenotypeIndicies()[sample_index, :-1]
-        nocall = np.full((1, idx_gts.shape[1]), -1)
-        calls = ~np.all(idx_gts == nocall, axis=1)
-        sample_calls += calls
-        chrom_calls[chrom] += np.sum(calls)
-
-        if len(args.quality) != 0:
-            quality_scores = trrecord.GetQualityScores()[sample_index, :]
-            quality_scores[~calls] = np.nan
-            if not args.quality_ignore_no_call:
-                quality_scores[np.isnan(quality_scores)] = 0
-            else:
-                quality_idxs = ~np.isnan(quality_scores)
-
-        if _QualityTypes.per_sample.value in args.quality:
-            if not args.quality_ignore_no_call:
-                per_sample_total_qual += quality_scores.reshape(-1)
-            else:
-                per_sample_total_qual[quality_idxs.reshape(-1)] += \
-                    quality_scores[quality_idxs].reshape(-1)
-        if _QualityTypes.per_locus.value in args.quality:
-            if not args.quality_ignore_no_call:
-                per_locus_data.append(np.mean(quality_scores))
-            else:
-                per_locus_data.append(np.mean(quality_scores[quality_idxs]))
-        if (_QualityTypes.sample_stratified.value in args.quality or
-                _QualityTypes.locus_stratified.value in args.quality or
-                _QualityTypes.per_call.value in args.quality):
-            per_call_data.append(quality_scores)
-        if _QualityTypes.locus_stratified.value in args.quality:
-            locus_ids.append(trrecord.record_id)
-
-        for allele in allele_counts.keys():
-            allelediff_unit = allele - trrecord.ref_allele_length
-            count = allele_counts[allele]
-            reflens_bp.extend([trrecord.ref_allele_length*len(trrecord.motif)]*count)
-            diffs_from_ref_unit.extend([allelediff_unit]*count)
-            diffs_from_ref_bp.extend([allelediff_unit*len(trrecord.motif)]*count)
-
-        numrecords += 1
-
-    # now rows are loci, cols are samples
-    if (_QualityTypes.sample_stratified.value in args.quality or
-            _QualityTypes.locus_stratified.value in args.quality or
-            _QualityTypes.per_call.value in args.quality):
-        per_call_data = np.concatenate(per_call_data, axis=1).T
-        if not args.quality_ignore_no_call:
-            per_call_data[np.isnan(per_call_data)] = 0
+    numrecords, \
+        chrom_calls, \
+        sample_calls, \
+        diffs_from_ref_bp, \
+        diffs_from_ref_unit, \
+        reflens_bp, \
+        per_sample_total_qual, \
+        locus_ids, \
+        per_locus_data, \
+        per_call_data = GatherData(
+           harmonizer,
+           len(sample_list),
+           sample_index,
+           args.numrecords,
+           args.period,
+           args.quality,
+           args.quality_ignore_no_call
+        )
 
     print("Producing " + args.out + "-diffref-bias.pdf ... ", end='',
           flush=True)
