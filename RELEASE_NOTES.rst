@@ -25,6 +25,11 @@ Output changes:
 * MergeSTR now enforces that input files must be sorted - it will fail out
   if it encounters records out of sort order
 
+Quality of life improvements:
+
+* qcSTR now prints out the progress it is making as it reads data, in addition
+  to as it plots.
+
 4.0.0
 -----
 

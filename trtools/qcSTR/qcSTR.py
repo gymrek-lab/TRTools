@@ -17,6 +17,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 # Imports
 import argparse
 import enum
+import time
 import os
 import sys
 from typing import Dict, List, Optional, Union
@@ -413,6 +414,8 @@ def GatherData(harmonizer: trh.TRRecordHarmonizer,
 
     # read the vcf
     numrecords = 0
+    start = time.time()
+    last_notification = start
     for trrecord in harmonizer:
         if max_records is not None and numrecords >= max_records: break
         if period is not None and len(trrecord.motif) != period: continue
@@ -460,6 +463,15 @@ def GatherData(harmonizer: trh.TRRecordHarmonizer,
             diffs_from_ref_bp.extend([allelediff_unit*len(trrecord.motif)]*count)
 
         numrecords += 1
+        # print to stdout if elapsed time is more than 5 sec
+        if time.time() - last_notification > 5:
+            last_notification = time.time()
+            sys.stdout.write('\033[2K\033[1G')
+            print("Processed {} loci. Time per locus: {:0.3g}".format(
+                numrecords, (time.time() - start)/numrecords), end='\r',
+                flush=True)
+    sys.stdout.write('\033[2K\033[1G')
+    print("Done reading data.", flush=True)
 
     # now rows are loci, cols are samples
     if (_QualityTypes.sample_stratified.value in quality_types or
