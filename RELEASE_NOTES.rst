@@ -24,6 +24,11 @@ Output changes:
   and had the same start position
 * MergeSTR now enforces that input files must be sorted - it will fail out
   if it encounters records out of sort order
+* qcSTR now produces a sample-callrate.png plot instead of a sample-callnum.png plot.
+* The sample-callrate plot now switches to a scatter plot
+  if there are enough samples that the default bar plot would be illegible.
+* qcSTR now sorts chromosomes appropriately when producing the chrom callnum
+  plot if they conform to one of the standard human chrom notations.
 
 Quality of life improvements:
 

@@ -45,9 +45,9 @@ Outputs
 
 qcSTR outputs the following plots:
 
-:code:`<outprefix>-sample-callnum.pdf`: a barplot giving the number of calls for each sample. Can be used to determine failed or outlier samples.
+:code:`<outprefix>-sample-callrate.pdf`: a barplot giving the callrate for each sample. Can be used to determine failed or outlier samples.
 
-.. image:: images/sample-callnum.png
+.. image:: images/sample-callrate.png
 
 :code:`<outprefix>-chrom-callnum.pdf`: a barplot giving the number of calls for each chromosome. Can be useful to determine if the expected number of calls per chromosome are present.
 
