@@ -128,8 +128,9 @@ def OutputDiffRefBias(diffs_from_ref, reflens, fname, xlim=(0, 100), \
 
 def OutputSampleCallrate(sample_calls: np.ndarray,
                          samples: List[str],
+                         numrecords: int,
                          fname: str):
-    r"""Plot number of calls per sample
+    r"""Plot call rate per sample
 
     Parameters
     ----------
@@ -137,6 +138,8 @@ def OutputSampleCallrate(sample_calls: np.ndarray,
         1D array, number of calls for each sample
     samples:
         List of names of samples, same len as sample_calls
+    numrecords:
+        Number of TRs analyzed
     fname :
         Filename of output plot
     """
@@ -145,13 +148,20 @@ def OutputSampleCallrate(sample_calls: np.ndarray,
     if len(samples) != sample_calls.shape[0]:
         raise ValueError("samples should have the same length as"
                          " sample_calls")
-    data = pd.DataFrame({"sample": samples, "numcalls": sample_calls})
+    callrate = sample_calls/numrecords
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.bar(range(data.shape[0]), data["numcalls"])
-    ax.set_xticks(range(data.shape[0]))
-    ax.set_xticklabels(samples, rotation=90)
-    ax.set_ylabel("Number of calls", size=15)
+    if len(samples) < 20:
+        data = pd.DataFrame({"sample": samples, "callrate": callrate})
+        ax.bar(range(data.shape[0]), data["callrate"])
+        ax.set_xticks(range(data.shape[0]))
+        ax.set_xticklabels(samples, rotation=90)
+    else:
+        sorted_results = np.sort(callrate)
+        ax.scatter(np.arange(len(samples)), sorted_results)
+        ax.set_xlabel("Samples (sorted by callrate)")
+    ax.set_ylabel("Callrate", size=15)
     fig.tight_layout()
     fig.savefig(fname)
     plt.close()
@@ -168,6 +178,18 @@ def OutputChromCallrate(chrom_calls, fname):
     """
     chroms = sorted(chrom for chrom in chrom_calls.keys()
                     if chrom_calls[chrom] > 0)
+
+    # properly sort the contigs if they are default human contigs
+    default_chroms = [str(n) for n in range(1, 23)] + ['X', 'Y', 'M']
+    if all(chrom in default_chroms for chrom in chroms):
+        chroms = [def_chrom for def_chrom in
+                  default_chroms if def_chrom in chroms]
+    else:
+        default_chroms = ['chr' + chrom for chrom in default_chroms]
+        if all(chrom in default_chroms for chrom in chroms):
+            chroms = [def_chrom for def_chrom in
+                      default_chroms if def_chrom in chroms]
+
     counts = [chrom_calls[chrom] for chrom in chroms]
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -669,9 +691,10 @@ def main(args):
                       mingts=args.refbias_mingts, metric=args.refbias_metric, \
                       binsize=args.refbias_binsize)
     if len(sample_list) > 1:
-        print("Done.\nProducing " + args.out + "-sample-callnum.pdf ... ",
+        print("Done.\nProducing " + args.out + "-sample-callrate.pdf ... ",
               end='', flush=True)
-        OutputSampleCallrate(sample_calls, sample_list, args.out+"-sample-callnum.pdf")
+        OutputSampleCallrate(sample_calls, sample_list, numrecords,
+                             args.out+"-sample-callrate.pdf")
         print("Done.")
     else:
         print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")

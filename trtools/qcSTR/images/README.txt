@@ -1,8 +1,11 @@
 There is a copy of each of these images in doc/source/images. If changed here
 please update them there (as well as the READMEs in both folders)
 
-diffref-bias, diffref-histogram and sample-callnum were produced by running qcSTR on
+diffref-bias and diffref-histogram were produced by running qcSTR on
 example-files/trio_chr21_popstr.sorted.vcf.gz
+
+sample-callrate.png was produced by running qcSTR on
+trtools/testsupport/sample_vcfs/many_samples.vcf.gz
 
 chrom-callnum was produced by running qcSTR on
 trtools/testsupport/sample_vcfs/many_samples_multiple_chroms.vcf.gz
