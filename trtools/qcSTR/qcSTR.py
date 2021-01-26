@@ -449,7 +449,7 @@ def GatherData(harmonizer: trh.TRRecordHarmonizer,
                                                  sample_index=sample_index)
 
         calls = trrecord.GetCalledSamples()
-        sample_calls += calls
+        sample_calls += calls[sample_index]
         chrom_calls[chrom] += np.sum(calls)
 
         if len(quality_types) != 0:
@@ -524,7 +524,7 @@ def getargs():  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcf", help="VCF file to analyze.", type=str, required=True)
     req_group.add_argument("--out", help="Output prefix for files generated", type=str, required=True)
-    inp_group = parser.add_argument_group("Optional input arguments")
+    inp_group = parser.add_argument_group("Optional input/output arguments")
 
     vcftype_options = [str(item) for item in trh.VcfTypes.__members__]
     vcftype_options.append("auto")
@@ -536,6 +536,8 @@ def getargs():  # pragma: no cover
         default="auto",
         choices = vcftype_options
     )
+    inp_group.add_argument("--outtype", default="pdf", help="Output image type",
+                           choices=['pdf', 'png'])
 
     inp_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     inp_group.add_argument("--period", help="Only consider repeats with this motif length", type=int)
@@ -684,39 +686,41 @@ def main(args):
            args.quality_ignore_no_call
         )
 
-    print("Producing " + args.out + "-diffref-bias.pdf ... ", end='',
+    ext = args.outtype
+
+    print("Producing " + args.out + "-diffref-bias." + ext + " ... ", end='',
           flush=True)
-    OutputDiffRefBias(diffs_from_ref_bp, reflens_bp, args.out + "-diffref-bias.pdf", \
+    OutputDiffRefBias(diffs_from_ref_bp, reflens_bp, args.out + "-diffref-bias." + ext, \
                       xlim=(args.refbias_xrange_min, args.refbias_xrange_max), \
                       mingts=args.refbias_mingts, metric=args.refbias_metric, \
                       binsize=args.refbias_binsize)
     if len(sample_list) > 1:
-        print("Done.\nProducing " + args.out + "-sample-callrate.pdf ... ",
+        print("Done.\nProducing " + args.out + "-sample-callrate." + ext + " ... ",
               end='', flush=True)
         OutputSampleCallrate(sample_calls, sample_list, numrecords,
-                             args.out+"-sample-callrate.pdf")
+                             args.out+"-sample-callrate." + ext)
         print("Done.")
     else:
-        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callnum.pdf ...")
+        print("Done.\nOnly one sample, so skipping " + args.out + "-sample-callrate." + ext + " ...")
     if 1 < len(list(chrom for chrom, value in chrom_calls.items()
                     if value > 0)):
-        print("Producing " + args.out + "-chrom-callnum.pdf ... ", end='',
+        print("Producing " + args.out + "-chrom-callnum." + ext + " ... ", end='',
               flush=True)
-        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum.pdf")
+        OutputChromCallrate(chrom_calls, args.out+"-chrom-callnum." + ext)
         print("Done.\n", end='')
     else:
-        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum.pdf ...")
-    print("Producing " + args.out + "-diffref-histogram.pdf ... ", end='',
+        print("Only one chromosome, so skipping " + args.out + "-chrom-callnum." + ext + " ...")
+    print("Producing " + args.out + "-diffref-histogram." + ext + " ... ", end='',
           flush=True)
-    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram.pdf")
+    OutputDiffRefHistogram(diffs_from_ref_unit, args.out + "-diffref-histogram." + ext)
     print("Done.")
 
     if default_quality:
         def quality_output_loc(quality_value):
-            return args.out+"-quality.pdf"
+            return args.out+"-quality." + ext
     else:
         def quality_output_loc(quality_value):
-            return args.out+"-quality-{}.pdf".format(quality_value)
+            return (args.out+"-quality-{}." + ext).format(quality_value)
 
     prior_qual_plot = False
     if _QualityTypes.per_sample.value in args.quality:

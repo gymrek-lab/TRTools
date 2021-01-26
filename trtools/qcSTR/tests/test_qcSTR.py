@@ -23,6 +23,7 @@ def base_argparse(tmpdir):
     args.refbias_xrange_min = 0
     args.refbias_xrange_max = 100
     args.refbias_binsize = 5
+    args.outtype = 'pdf'
     return args
 
 # Just confirm that the method doesn't throw an error
@@ -44,8 +45,9 @@ def test_OutputDiffRefBias(tmpdir):
 def test_OutputSampleCallrate(tmpdir):
     sample_calls = np.array([120, 10])
     samples = ['s1', 's2']
+    numrecords = 130
     fname = str(tmpdir / "test_qc1.pdf")
-    OutputSampleCallrate(sample_calls, samples, fname)
+    OutputSampleCallrate(sample_calls, samples, numrecords, fname)
 
 # Just confirm that the method doesn't throw an error
 def test_OutputChromCallrate(tmpdir):
@@ -215,19 +217,21 @@ def test_all_qual_plots_with_ignore_no_call(tmpdir, vcfdir):
 
 
 def test_output_all_files(tmpdir, vcfdir, capsys):
-    args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "many_samples_multiple_chroms.vcf.gz")
-    retcode = main(args)
-    assert retcode == 0
-    stdout = capsys.readouterr().out
-    for suffix in ["-sample-callnum",
-                   "-chrom-callnum",
-                   "-diffref-histogram",
-                   "-diffref-bias",
-                   "-quality"]:
-        outfile = str(tmpdir / "test_qc") + suffix + ".pdf"
-        assert "Producing " + outfile in stdout
-        assert os.path.exists(outfile)
+    for ext in 'pdf', 'png':
+        args = base_argparse(tmpdir)
+        args.vcf = os.path.join(vcfdir, "many_samples_multiple_chroms.vcf.gz")
+        args.outtype = ext
+        retcode = main(args)
+        assert retcode == 0
+        stdout = capsys.readouterr().out
+        for suffix in ["-sample-callrate",
+                       "-chrom-callnum",
+                       "-diffref-histogram",
+                       "-diffref-bias",
+                       "-quality"]:
+            outfile = str(tmpdir / "test_qc") + suffix + "." + ext
+            assert "Producing " + outfile in stdout
+            assert os.path.exists(outfile)
 
 
 def test_omit_callnum_one_chrom(tmpdir, vcfdir, capsys):
@@ -236,7 +240,7 @@ def test_omit_callnum_one_chrom(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert retcode == 0
     stdout = capsys.readouterr().out
-    for suffix in ["-sample-callnum",
+    for suffix in ["-sample-callrate",
                    "-diffref-histogram",
                    "-diffref-bias",
                    "-quality"]:
@@ -262,7 +266,7 @@ def test_omit_callnum_one_sample(tmpdir, vcfdir, capsys):
         outfile = str(tmpdir / "test_qc") + suffix + ".pdf"
         assert "Producing " + outfile in stdout
         assert os.path.exists(outfile)
-    outfile = str(tmpdir / "test_qc") + "-sample-callnum.pdf"
+    outfile = str(tmpdir / "test_qc") + "-sample-callrate.pdf"
     assert not os.path.exists(outfile)
     assert "skipping " + outfile in stdout
 
@@ -296,6 +300,7 @@ def test_main(tmpdir, vcfdir):
     args.vcf = os.path.join(qcdir, "test_non_exist.vcf")
     retcode = main(args)
     assert retcode == 1
+
 
 # manually verified that all the plots produced by this data looks good
 def test_GatherData(vcfdir):

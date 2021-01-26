@@ -25,6 +25,7 @@ Required Parameters:
 General Optional Parameters:
 
 * :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--outtype <string>` Type of the output image files. Must be one of :code:`pdf` or :code:`png`. If :code:`png`, all the output files below will end in :code:`.png` instead of :code:`.pdf`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
   Samples in the list that are not included in the input vcf or
   are misspelled are silently ignored.
