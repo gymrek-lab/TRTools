@@ -20,10 +20,10 @@ Command line interface changes:
 
 Output changes:
 
-* DumpSTR call level filters now have the value of the call which triggered
-  the filter appended to the filter name in the FILTER format field. (e.g.
-  GangSTRCallMinDepth12 because the field had a depth of 12 and that's lower
-  than the required min depth)
+* DumpSTR call level filters now have the value of the filter and the value 
+  which triggered the filter appended to the filter name in the FILTER format field.
+  (e.g. GangSTRCallMinDepth20_12 because the field had a depth of 12 and that's lower
+  than the required min depth of 20)
 * DumpSTR locus filter HRUN is now written as HRUN and not HRUN0 in the 
   samplog output file
 * When running DumpSTR, loci where all the calls were either already nocalls
@@ -32,6 +32,13 @@ Output changes:
 * When DumpSTR filters a call and replaces each of its format fields with the no call
   '.', fields with more than one value are now represented correctly. For example,
   for 2 values '.,.' is used rather than just a single '.'
+* MergeSTR header lines are now copied over from the input VCFs instead of
+  only copying over a few recognized fields (e.g. ID and Length
+  were the only contig fields that were previously retained, but URL wouldn't be)
+* MergeSTR output alt alleles for eh and popstr are now ordered by length.
+  MergeSTR output alt alleles for advntr, gangstr and hipstr, when there are multiple
+  alt alleles of the same length, are now ordered alphabetically instead
+  of arbitrarily.
 
 Python interface changes:
 
@@ -57,11 +64,22 @@ Bug fixes:
 * DumpSTR now correctly adds ##FILTER=<ID=PASS,Description="All filters passed">
   to the header line
 * DumpSTR now no longer says HipSTRCallFlankIndels is applied to nocalls
+* MergeSTR now outputs the same phase as the input files instead of always outputting
+  unphased data
+* MergeSTR now correctly outputs Number=A, G or R (number of entries in this field equal
+  to number of alternate alleles at this locus, the number of alleles including the ref,
+  or the number of unique polyploid genotypes) correctly in INFO and FORMAT fields instead
+  of outputing Number=-1, -2 or -3
 
 Quality of life improvements:
 
 * StatSTR, when printing output to a file, now prints timing diagnostics to stdout.
 * DumpSTR will fail faster if output directory does not exist
+* When encountering issues with identifying the caller type for each input VCF,
+  MergeSTR now prints an error and gracefully returns instead of dying to
+  an uncaught exception
+* MergeSTR incompatible INFO field warnings now specify which locus has an
+  incompatible field
 
 Regressions:
 
