@@ -59,11 +59,13 @@ where p_i is the frequency of allele i
 * :code:`--use-length`: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles)
 * :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed.
 * :code:`--filter-regions-names <string[,string2,...]>`: Filter names for each BED file specified in :code:`--filter-regions`.
-* :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Ignores pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
+* :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Filters pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
 * :code:`--drop-filtered`: Do not output loci that were filtered, or loci with no calls remaining after filtering.
 
 TRs passing all locus-level filters will be marked as "PASS" in the FILTER field.
 Those failing will have a list of failing filters in the FILTER field.
+If a TR has no calls remaining after applying the call-level filters, then it will be
+marked as "NO_CALLS_REMAINING" and not "PASS".
 If :code:`drop-filtered` is specified, only loci passing all filters will be output.
 Otherwise failing loci will be output as well. In that case the only
 indication that they have failed will be the FILTER field. The call-level genotypes will
@@ -75,8 +77,11 @@ Call-level filters
 Different call-level filters are available for each supported TR genotyping tool.
 Genotypes which fail any call-level filters are replaced by no calls and the
 FILTER format field for that call is set to the reason(s) that call was filtered.
+For example, if running with :code:`--hipstr-min-call-DP 100`, a call with DP
+34 would be filtered with the text :code:`HipSTRCallMinDepth100_34`.
 Calls which were already nocalls before the dumpSTR run are left unchanged and
 their FILTER format field is set to NOCALL.
+
 
 AdVNTR call-level filters
 **************************

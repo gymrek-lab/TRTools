@@ -66,12 +66,13 @@
 ##INFO=<ID=HET,Number=1,Type=Float,Description="Heterozygosity">
 ##INFO=<ID=HWEP,Number=1,Type=Float,Description="HWE p-value for obs. vs. exp het rate">
 ##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Length of longest homopolymer run">
+##FILTER=<ID=NO_CALLS_REMAINING,Description="All calls at this locus were already nocalls or were individually filtered before the locus level filters were applied.">
 ##FILTER=<ID=CALLRATE0.5,Description="">
 ##FILTER=<ID=HWE0.5,Description="">
 ##FILTER=<ID=HETLOW0.05,Description="">
 ##FILTER=<ID=HETHIGH0.45,Description="">
 ##FILTER=<ID=foo_region,Description="Filter TRs overlapping this region">
-##command-DumpSTR=/home/jmargoli/miniconda3/envs/ukb/lib/python3.7/site-packages/pytest/__main__.py trtools/dumpSTR/tests/test_dumpSTR.py
+##command-DumpSTR=/home/jmargoliash/trtools/repo/trtools/dumpSTR/dumpSTR.py --vcf example-files/trio_chr21_hipstr.sorted.vcf.gz --out trtools/testsupport/sample_vcfs/dumpSTR_vcfs/drop_filtered --min-locus-callrate 0.5 --min-locus-hwep 0.5 --min-locus-het 0.05 --max-locus-het 0.45 --filter-regions-names foo_region --filter-regions ../repo/trtools/testsupport/sample_vcfs/dumpSTR_vcfs/sample_region.bed.gz --vcftype hipstr --drop-filtered
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA12878	NA12891	NA12892
 chr21	14619083	GANGSTR_437074	TGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTG	TGTGTGTGTGTGTGTGTGTGTGTGTG	.	.	INFRAME_PGEOM=0.55;INFRAME_UP=0.02;INFRAME_DOWN=0.02;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0.01;OUTFRAME_DOWN=0.01;START=14619083;END=14619116;PERIOD=2;NSKIP=0;NFILT=0;BPDIFFS=-8;DP=185;DSNP=0;DSTUTTER=2;DFLANKINDEL=7;AN=6;REFAC=2;AC=4;HRUN=1;HET=0.444444;HWEP=0.588477	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS:FILTER	0|1:0|-8:1:0.5:60:0:1:3:30.36|29.64:0|0:34.14:-0:33:0:-10|2;-8|13;0|14:-8|13;0|12:PASS	1|1:-8|-8:1:1:60:0:1:3:30.00|30.00:0|0:11.3:0:.:0:-10|1;-8|36;0|1:-8|32;-4|1:PASS	0|1:0|-8:1:0.5:65:0:0:1:31.51|33.49:0|0:36.71:-0.06:36:-0.14:-8|18;0|14:-8|17;0|13:PASS
 chr21	14640145	GANGSTR_437086	AAATAAATAAATAAATAAATAAATAAATAAATAAATAAATAAAT	AAATAAATAAATAAATAAATAAATAAAT	.	.	INFRAME_PGEOM=0.95;INFRAME_UP=0.02;INFRAME_DOWN=0.02;OUTFRAME_PGEOM=0.95;OUTFRAME_UP=0.02;OUTFRAME_DOWN=0.02;START=14640145;END=14640188;PERIOD=4;NSKIP=0;NFILT=0;BPDIFFS=-16;DP=189;DSNP=0;DSTUTTER=0;DFLANKINDEL=0;AN=6;REFAC=2;AC=4;HRUN=3;HET=0.444444;HWEP=0.588477	GT:GB:Q:PQ:DP:DSNP:DSTUTTER:DFLANKINDEL:PDP:PSNP:GLDIFF:AB:DAB:FS:ALLREADS:MALLREADS:FILTER	0|1:0|-16:1:0.5:79:0:0:0:43.42|35.58:0|0:83.52:-0.54:44:-0.12:-16|17;0|14:-16|16;0|14:PASS	1|1:-16|-16:1:1:52:0:0:0:26.00|26.00:0|0:7.5:0:.:0:-16|19:-16|19:PASS	0|1:0|-16:1:0.5:58:0:0:0:30.98|27.02:0|0:69.8:-0.22:32:0:-16|13;0|9:-16|13;0|8:PASS

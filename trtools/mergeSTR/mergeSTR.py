@@ -202,13 +202,20 @@ def GetAltAlleles(current_records, mergelist, vcftype):
     (alts, mappings) : (list of str, list of np.ndarray)
        alts is a list of alternate allele strings in all uppercase.
        mappings is a list of length equal to the number of
-       records being merged. for each record, it is a numpy
+       records being merged. For record n, mappings[n] is a numpy
        array where an allele with index i in the original
-       record has an index of arr[i] in the output merged record.
-       (the indecies stored in the arrays are strings for fast
-       output) e.g. if the output record has alleles 'A' 'AA,AAA,AAAA'
-       and the current record has alleles 'A' 'AAAA,AAA' then
-       the mapping for the current record would be np.array(['0', '3', '2'])
+       record has an index of mappings[n][i] in the output merged record.
+       (the indicies stored in the arrays are number strings for fast
+       output, e.g. '1' or '2')
+       For example if the output record has ref allele 'A'
+       and alternate alleles 'AA,AAA,AAAA'
+       and input record n has ref allele 'A' and alternate alleles
+       'AAAA,AAA' then mappings[n] would be np.array(['0', '3', '2']). ::
+
+         original index      new index
+         rec_n.alleles[0] == out_rec.alleles[0] == 'A'
+         rec_n.alleles[1] == out_rec.alleles[3] == 'AAAA'
+         rec_n.alleles[2] == out_rec.alleles[2] == 'AAA'
     """
     alts = set()
     for i in range(len(mergelist)):
