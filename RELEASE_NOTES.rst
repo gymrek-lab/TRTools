@@ -66,7 +66,9 @@ Bug fixes:
 * DumpSTR now no longer says HipSTRCallFlankIndels is applied to nocalls
 * MergeSTR now outputs the same phase as the input files instead of always outputting
   unphased data
-* MergeSTR now correctly outputs Number=A, G or R correctly in FORMAT fields instead
+* MergeSTR now correctly outputs Number=A, G or R (number of entries in this field equal
+  to number of alternate alleles at this locus, the number of alleles including the ref,
+  or the number of unique polyploid genotypes) correctly in INFO and FORMAT fields instead
   of outputing Number=-1, -2 or -3
 
 Quality of life improvements:
