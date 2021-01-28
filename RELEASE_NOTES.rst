@@ -35,8 +35,8 @@ Output changes:
 
 Quality of life improvements:
 
-* qcSTR now prints out the progress it is making as it reads data, in addition
-  to as it plots.
+* qcSTR and dumpSTR now print out the progress they are making as they read
+  the input VCF.
 
 4.0.0
 -----

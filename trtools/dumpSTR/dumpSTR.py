@@ -10,6 +10,7 @@ import itertools
 import os
 import subprocess as sp
 import sys
+import time
 from typing import Dict, List, Set
 
 import cyvcf2
@@ -1181,6 +1182,9 @@ def main(args):
 
     # Go through each record
     record_counter = 0
+    start = time.time()
+    last_notification = start
+    print("Starting filtering", flush=True)
     while True:
         try:
             record = next(harmonizer)
@@ -1241,9 +1245,19 @@ def main(args):
             record.vcfrecord.INFO['REFAC'] = 0
         # Output the record
         outvcf.write_record(record.vcfrecord)
+        # print to stdout if elapsed time is more than 5 sec
+        if time.time() - last_notification > 5:
+            last_notification = time.time()
+            sys.stdout.write('\033[2K\033[1G')
+            print("Processed {} loci. Time per locus: {:0.3g}".format(
+                record_counter, (time.time() - start)/record_counter), end='\r',
+                flush=True)
 
     invcf.close()
     outvcf.close()
+
+    sys.stdout.write('\033[2K\033[1G')
+    print("Done.", flush=True)
 
     # Output log info
     WriteSampLog(sample_info, invcf.samples, args.out + ".samplog.tab")
