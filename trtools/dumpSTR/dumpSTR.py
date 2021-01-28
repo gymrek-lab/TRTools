@@ -1208,6 +1208,12 @@ def main(args):
         locus_filtered = ApplyLocusFilters(record, locus_filters, loc_info, args.drop_filtered)
 
         if args.drop_filtered and locus_filtered:
+            if time.time() - last_notification > 5:
+                last_notification = time.time()
+                sys.stdout.write('\033[2K\033[1G')
+                print("Processed {} loci. Time per locus: {:0.3g}".format(
+                    record_counter, (time.time() - start)/record_counter), end='\r',
+                    flush=True)
             continue
 
         # Recalculate locus-level INFO fields
