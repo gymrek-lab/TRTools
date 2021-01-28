@@ -800,12 +800,6 @@ class TRRecord:
         """
         return self.vcfrecord.ploidy
 
-    def GetCallRate(self) -> float:
-        """
-        Return the call rate at this locus.
-        """
-        return self.vcfrecord.call_rate
-
     def GetNumSamples(self) -> int:
         """
         Return the number of samples at this locus (called or not).
@@ -905,6 +899,33 @@ class TRRecord:
         return (
             gt_idxs.shape[1] - 1 - np.sum(gt_idxs[:, :-1] == -2, axis = 1)
         )
+
+    def GetCallRate(self, strict: bool = True) -> float:
+        """
+        Return the call rate at this locus.
+
+        Parameters
+        ----------
+        strict :
+            By default genotypes such as '1/.' are considered not called
+            because at least one of the haplotypes present is not called.
+            Set strict = False to mark these as being called.
+            Note: genotypes having lesser ploidy will not be marked
+            as no calls even when strict = True (e.g. if some samples
+            have tetraploid genotypes at this locus, a genotype of '1/2/2'
+            will be marked as called even though it is triploid)
+
+        Returns
+        -------
+            The fraction of the samples at this locus that have been
+            called. If there are no samples in the vcf this record comes from
+            then return np.nan instead
+        """
+        called_samples = self.GetCalledSamples(strict=strict)
+        if called_samples is None:
+            return None
+        else:
+            return np.sum(called_samples)/called_samples.shape[0]
 
     def _GetStringGenotypeArray(
             self,

@@ -43,7 +43,7 @@ Features:
 
 * Underlying libraries now use cyvcf2 instead of PyVCF for VCF parsing.
   This makes both the underlying VCF reading code and the TRTools code
-  significantly faster and memory efficient. For instance, the loading of 
+  significantly faster and more memory efficient. For instance, the loading of
   VCFs into memory is now > 15x faster for VCFs with many samples.
   Some tools will still need further updates to be usable for large datasets,
   but those updates should now be possible and much easier.
@@ -72,23 +72,24 @@ Command line interface changes:
 
 Output changes:
 
-* DumpSTR call level filters now have the value of the call which triggered
-  the filter appended to the filter name in the FILTER format field. (e.g.
-  GangSTRCallMinDepth12 because the field had a depth of 12 and that's lower
-  than the required min depth)
+* DumpSTR call level filters now have the value of the filter and the value 
+  which triggered the filter appended to the filter name in the FILTER format field.
+  (e.g. GangSTRCallMinDepth20_12 because the field had a depth of 12 and that's lower
+  than the required min depth of 20)
 * DumpSTR locus filter HRUN is now written as HRUN and not HRUN0 in the 
   samplog output file
-* DumpSTR now adds ##FILTER=<ID=PASS,Description="All filters passed">
-  to the header line
+* When running DumpSTR, loci where all the calls were either already nocalls
+  or were filtered by call-level filters before the locus-level filters were run are now
+  marked as 'NO_CALLS_REMAINING' instead of 'PASS'.
 * When DumpSTR filters a call and replaces each of its format fields with the no call
-  '.', fields with number>1 are now replaced with '.,.' e.g. for a number=2 field, rather
-  than just a single '.'
+  '.', fields with more than one value are now represented correctly. For example,
+  for 2 values '.,.' is used rather than just a single '.'
 * MergeSTR header lines are now copied over from the input VCFs instead of
   only copying over a few recognized fields (e.g. ID and Length
   were the only contig fields that were previously retained, but URL wouldn't be)
 * MergeSTR output alt alleles for eh and popstr are now ordered by length.
   MergeSTR output alt alleles for advntr, gangstr and hipstr, when there are multiple
-  alt alleles of the same length, those alleles are now ordered alphabetically instead
+  alt alleles of the same length, are now ordered alphabetically instead
   of arbitrarily.
 * CompareSTR no longer outputs the file <prefix>-callcompare.tab - the existence
   of that file was never documented, and besides, all its information could
@@ -121,16 +122,21 @@ Bug fixes:
 * If you specify --drop-filtered DumpSTR will no longer set all values in the 
   output .loclog.tab file to zero and instead set them to their proper values
   (which are the same as if you had not specified --drop-filtered)
+* DumpSTR now correctly adds ##FILTER=<ID=PASS,Description="All filters passed">
+  to the header line
+* DumpSTR now no longer says HipSTRCallFlankIndels is applied to nocalls
 * MergeSTR now outputs the same phase as the input files instead of always outputting
   unphased data
-* MergeSTR now correctly outputs Number=A, G or R correctly in FORMAT fields instead
+* MergeSTR now correctly outputs Number=A, G or R (number of entries in this field equal
+  to number of alternate alleles at this locus, the number of alleles including the ref,
+  or the number of unique polyploid genotypes) correctly in INFO and FORMAT fields instead
   of outputing Number=-1, -2 or -3
 * CompareSTR claimed it was outputting the square (Pearson) correlation coefficient
   but was actually outputting the raw (unsquared) correlation coefficient. It is now
   outputting the squared coefficient as documented.
 * CompareSTR now correctly compares unphased calls without regard to order in the VCF
   (e.g. 'AAAA/AAA' now matches against 'AAA/AAAA')
-* CompareSTR's docs claimed the bubble plots axes were measured in basepair difference 
+* CompareSTR's docs claimed the bubble plots axes were measured in basepair difference
   from the reference, but they were actually measured in number of repeats different
   from the reference. The behavior has not been changed and the claim has been updated
   to match the behavior.
@@ -142,7 +148,7 @@ Bug fixes:
   [0,50), [50,100), [100,150), [150, 200), [200, 250)
   and now create the bins
   [0,50), [50,100), [100,150), [150, 200), [200, 210]
-* When using binned format fields in CompareSTR where the range of values 
+* When using binned format fields in CompareSTR where the range of values
   evenly divided into the requested binsize, loci which obtained the requested
   maximum would be excluded. They are now included.
   E.g. binsizes 0:200:50 used to create the bins
