@@ -1,7 +1,6 @@
 import argparse
 import os,sys
 import pytest
-import vcf
 
 from ..dumpSTR import *
 from ..filters import *

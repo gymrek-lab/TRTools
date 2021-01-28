@@ -6,7 +6,6 @@ and keeping them in sync.
 import numpy as np
 import os
 import sys
-import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
@@ -39,12 +38,12 @@ def LoadReaders(vcffiles, region=None):
         return readers
     else: return [r.fetch(region) for r in readers]
 
-def GetSharedSamples(readers, usefilenames=False):
+def GetSharedSamples(readers):
     r"""Get list of samples used in all files being merged
 
     Parameters
     ----------
-    readers : list of vcf.Reader objects
+    readers : list of cyvcf.VCF objects
 
     Returns
     -------
@@ -56,7 +55,7 @@ def GetSharedSamples(readers, usefilenames=False):
     if len(readers) == 1: return samples
     for r in readers[1:]:
         samples = samples.intersection(set(r.samples))
-    return samples
+    return list(samples)
 
 def GetSamples(readers, filenames=None):
     r"""Get list of samples used in all files being merged

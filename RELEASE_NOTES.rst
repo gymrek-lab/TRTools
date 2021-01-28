@@ -7,6 +7,10 @@ Features:
   This makes both the underlying VCF reading code and the TRTools code
   significantly faster and more memory efficient. For instance, the loading of
   VCFs into memory is now > 15x faster for VCFs with many samples.
+  Some tools will still need further updates to be usable for large datasets,
+  but those updates should now be possible and much easier.
+  (e.g. emitting progress reports to stdout as needed, flags to disable
+  computations that cannot be done at such scale)
 * DumpSTR has a new flag --zip to produce a bgzipped and tabix-indexed output VCF
 
 Command line interface changes:
@@ -17,6 +21,16 @@ Command line interface changes:
   it now errors out and asks you to rename those fields before rerunning 
   DumpSTR. (If they already exist but have the correct number and type DumpSTR
   will overwrite them and issue a warning in case that was not intended)
+* CompareSTR's docs used to claim that when comparing alleles from different callers
+  those callers must use the same allele notation (e.g. implying that ExpansionHunter's
+  '<STR12>' and GangSTR's 'ACACACACACAC' notation would always mismatch). That statement
+  was never true for length based comparisons - CompareSTR has always been able to
+  do length based comparisons regardless of notation. The incorrect claim has been
+  removed from CompareSTR's docs.
+* CompareSTR's docs now explicitly tell the user to order phased calls to
+  prevent spurious mismatching. If phasing is not desired, use --ignore-phasing
+* CompareSTR will now error if at a single locus both files do not have either all
+  unphased calls, or all phased calls. If phasing is not desired, use --ignore-phasing
 
 Output changes:
 
@@ -39,6 +53,15 @@ Output changes:
   MergeSTR output alt alleles for advntr, gangstr and hipstr, when there are multiple
   alt alleles of the same length, are now ordered alphabetically instead
   of arbitrarily.
+* CompareSTR no longer outputs the file <prefix>-callcompare.tab - the existence
+  of that file was never documented, and besides, all its information could
+  be seen more easily simply by looking at the input VCFs
+* In CompareSTR's overall.tab file, the ranges in the format columns are now written
+  [a,b) or [a,b] instead of a-b
+* CompareSTR's locuscompare.tab file now outputs loci in the order they were
+  encountered in the input VCfs as opposed to an arbitrary order
+* The 'sample' column in CompareSTR's locuscompare.tab file has been renamed to
+  'numcalls' to match the other two tab files.
 
 Python interface changes:
 
@@ -70,6 +93,31 @@ Bug fixes:
   to number of alternate alleles at this locus, the number of alleles including the ref,
   or the number of unique polyploid genotypes) correctly in INFO and FORMAT fields instead
   of outputing Number=-1, -2 or -3
+* CompareSTR claimed it was outputting the square (Pearson) correlation coefficient
+  but was actually outputting the raw (unsquared) correlation coefficient. It is now
+  outputting the squared coefficient as documented.
+* CompareSTR now correctly compares unphased calls without regard to order in the VCF
+  (e.g. 'AAAA/AAA' now matches against 'AAA/AAAA')
+* CompareSTR's docs claimed the bubble plots axes were measured in basepair difference
+  from the reference, but they were actually measured in number of repeats different
+  from the reference. The behavior has not been changed and the claim has been updated
+  to match the behavior.
+* When using binned format fields in CompareSTR where the range of values did not
+  evenly divide into the requested binsize, the highest valued bin used to always
+  be the same size as all the other bins and include values over the
+  limit specified by the user. Now it caps at that maximum.
+  E.g. binsizes 0:210:50 used to create the bins
+  [0,50), [50,100), [100,150), [150, 200), [200, 250)
+  and now create the bins
+  [0,50), [50,100), [100,150), [150, 200), [200, 210]
+* When using binned format fields in CompareSTR where the range of values
+  evenly divided into the requested binsize, loci which obtained the requested
+  maximum would be excluded. They are now included.
+  E.g. binsizes 0:200:50 used to create the bins
+  [0,50), [50,100), [100,150), [150, 200) and samples with value 200 would
+  not fall into any bin. This now creates the bins
+  [0,50), [50,100), [100,150), [150, 200] and samples with value 200 fall into
+  the last bin
 
 Quality of life improvements:
 
@@ -91,4 +139,10 @@ Outstanding bugs:
 * DumpSTR remains untested on ExpansionHunter filters and files
 * DumpSTR remains untested on loci with variable ploidy and/or partially
   genotyped samples (e.g. .|2)
-
+* When running CompareSTR with the --stratify options where --stratify-file
+  is either not specified or is explicitly set to zero, for each format field
+  all calls where the value of that field in vcf1 does not fall into the same
+  bin as the value of that field in vcf2 are silently not compared for that format field.
+  The correct behavior here is probably to create paired bins based on a range
+  of values from vcf1 and a range from vcf2. Regardless, the behavior here should
+  be documented.

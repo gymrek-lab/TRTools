@@ -56,7 +56,6 @@ setup(name=NAME,
                         'pandas',
                         'pybedtools',
                         'pysam',
-                        'pyvcf',
                         'scikit-learn',
                         'scipy'],
       classifiers=['Development Status :: 4 - Beta',\

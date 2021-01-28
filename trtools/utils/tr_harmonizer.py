@@ -779,7 +779,6 @@ class TRRecord:
             return None
         return self.vcfrecord.genotype.array()
 
-
     def GetCalledSamples(self, strict: bool = True) -> Optional[np.ndarray]:
         """
         Get an array listing which samples have been called at this locus.
@@ -814,6 +813,28 @@ class TRRecord:
             return ~np.all(np.logical_or(gt_idxs[:, :-1] == -1,
                                          gt_idxs[:, :-1] == -2),
                            axis=1)
+
+    def GetSamplePloidies(self) -> Optional[np.ndarray]:
+        """
+        Get an array listing the ploidies of each sample
+
+        Returns
+        -------
+        Optional[np.ndarray]
+            An array of positive ints with length equal to the
+            number of samples where each entry denotes the
+            number of genotypes for each sample at this locus
+            (including no calls)
+            If there are no samples in the vcf this record comes from
+            then return None instead
+        """
+        gt_idxs = self.GetGenotypeIndicies()
+        if gt_idxs is None:
+            return None
+
+        return (
+            gt_idxs.shape[1] - 1 - np.sum(gt_idxs[:, :-1] == -2, axis = 1)
+        )
 
     def GetCallRate(self, strict: bool = True) -> float:
         """

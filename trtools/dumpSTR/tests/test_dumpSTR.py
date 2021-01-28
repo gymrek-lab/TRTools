@@ -3,7 +3,6 @@ import gzip
 import os
 
 import pytest
-import vcf
 
 from ..dumpSTR import *
 from trtools.testsupport.utils import assert_same_vcf, assert_same_file
