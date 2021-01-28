@@ -49,10 +49,12 @@ Metrics to stratify results:
 * :code:`--period`: Report results overall and also stratified by repeat unit length (period).
 
 Plotting options:
+
 * :code:`--bubble-min`: Minimum x/y axis value to display on bubble plots.
 * :code:`--bubble-max`: Maximum x/y axis value to display on bubble plots.
 
 Other options:
+
 * :code:`--verbose`: Print helpful debugging info
 * :code:`--noplot`: Don't output any plots. Only produce text output.
 * :code:`--vcftype1 <string>`: Type of VCF file 1.
