@@ -7,13 +7,14 @@ jobs:
     - os: linux
       python: 3.6
     - os: osx
-      language: sh
-      addons:
-        homebrew:
-          packages:
-          - python3
-          - openssl
-          update: true
+      python: 3.5
+      # language: sh
+      # addons:
+      #   homebrew:
+      #     packages:
+      #     - python3
+      #     - openssl
+      #     update: true
       before_install:
         - pip3 install virtualenv
         - virtualenv -p python3 ~/venv
