@@ -32,6 +32,8 @@ Output changes:
   if there are enough samples that the default bar plot would be illegible.
 * qcSTR now sorts chromosomes appropriately when producing the chrom callnum
   plot if they conform to one of the standard human chrom notations.
+* When DumpSTR emits the samplog file, before each of the sample lines there is
+  now a 'Total' line.
 
 Quality of life improvements:
 

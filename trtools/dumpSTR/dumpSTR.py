@@ -488,6 +488,22 @@ def WriteSampLog(sample_info: Dict[str, np.ndarray],
     header[header.index('totaldp')] = 'meanDP'
     with open(fname, "w") as f:
         f.write("\t".join(header)+"\n")
+        # write Total row
+        f.write("Total\t")
+        numcalls = np.sum(sample_info['numcalls'])
+        f.write(str(numcalls))
+        f.write('\t')
+        if numcalls > 0:
+            f.write(str(np.sum(sample_info['totaldp'])/numcalls))
+        else:
+            f.write("0")
+
+        for filt_counts in itertools.islice(sample_info.values(), 2, None):
+            f.write("\t")
+            f.write(str(np.sum(filt_counts)))
+        f.write("\n")
+
+        # write a row for each sample
         for samp_idx, s in enumerate(sample_names):
             f.write(s)
             f.write("\t")

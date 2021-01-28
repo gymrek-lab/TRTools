@@ -31,6 +31,8 @@ def args(tmpdir):
     args.hipstr_max_call_flank_indel = None
     args.hipstr_max_call_stutter = None
     args.hipstr_min_supp_reads = None
+    args.hipstr_min_call_allele_bias = None
+    args.hipstr_min_call_strand_bias = None
     args.gangstr_expansion_prob_het = None
     args.gangstr_expansion_prob_hom = None
     args.gangstr_expansion_prob_total = None
