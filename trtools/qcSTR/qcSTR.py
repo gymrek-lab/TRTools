@@ -160,7 +160,7 @@ def OutputSampleCallrate(sample_calls: np.ndarray,
     else:
         sorted_results = np.sort(callrate)
         ax.scatter(np.arange(len(samples)), sorted_results)
-        ax.set_xlabel("Samples (sorted by callrate)")
+        ax.set_xlabel("Samples (sorted by callrate)", size=15)
     ax.set_ylabel("Callrate", size=15)
     fig.tight_layout()
     fig.savefig(fname)
@@ -197,6 +197,7 @@ def OutputChromCallrate(chrom_calls, fname):
     ax.set_xticks(range(len(counts)))
     ax.set_xticklabels(chroms, rotation=90)
     ax.set_ylabel("Number of calls", size=15)
+    ax.set_xlabel("Chromosome", size=15)
     fig.tight_layout()
     fig.savefig(fname)
     plt.close()
