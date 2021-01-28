@@ -10,6 +10,8 @@ Features:
   between the TRs and the flanking bps within the allele.) Without :code:`--trim`, such loci would
   be skipped due to partial overlaps.
 * qcSTR now has an option :code:`--outtype png` to produce pngs instead of pdfs
+* dumpSTR now has the HipSTR filters ``--hipstr-min-call-allele-bias`` and
+  ``--hipstr-min-call-strand-bias``
 
 Command line interface changes:
 

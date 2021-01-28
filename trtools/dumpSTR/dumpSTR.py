@@ -371,7 +371,9 @@ def CheckFilters(format_fields: Set[str],
        args.hipstr_min_supp_reads is not None or \
        args.hipstr_min_call_DP is not None or \
        args.hipstr_max_call_DP is not None or \
-       args.hipstr_min_call_Q is not None:
+       args.hipstr_min_call_Q is not None or \
+       args.hipstr_min_call_allele_bias is not None or \
+       args.hipstr_min_call_strand_bias is not None:
         if vcftype != trh.VcfTypes["hipstr"]:
             common.WARNING("HipSTR options can only be applied to HipSTR VCFs")
             return False
@@ -726,6 +728,10 @@ def BuildCallFilters(args):
         filter_list.append(filters.CallFilterMaxValue("HipSTRCallMaxDepth", "DP", args.hipstr_max_call_DP))
     if args.hipstr_min_call_Q is not None:
         filter_list.append(filters.CallFilterMinValue("HipSTRCallMinQ", "Q", args.hipstr_min_call_Q))
+    if args.hipstr_min_call_allele_bias is not None:
+        filter_list.append(filters.CallFilterMinValue("HipSTRCallMinAlleleBias", "AB", args.hipstr_min_call_allele_bias))
+    if args.hipstr_min_call_strand_bias is not None:
+        filter_list.append(filters.CallFilterMinValue("HipSTRCallMinStrandBias", "FS", args.hipstr_min_call_strand_bias))
 
     # GangSTR call-level filters
     if args.gangstr_min_call_DP is not None:
@@ -917,6 +923,8 @@ def getargs(): # pragma: no cover
     hipstr_call_group.add_argument("--hipstr-min-call-DP", help="Minimum call coverage", type=int)
     hipstr_call_group.add_argument("--hipstr-max-call-DP", help="Maximum call coverage", type=int)
     hipstr_call_group.add_argument("--hipstr-min-call-Q", help="Minimum call quality score", type=float)
+    hipstr_call_group.add_argument("--hipstr-min-call-allele-bias", help="Minimum call allele bias (from AB format field)", type=float)
+    hipstr_call_group.add_argument("--hipstr-min-call-strand-bias", help="Minimum call strand bias (from FS format field)", type=float)
 
     gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
     gangstr_call_group.add_argument("--gangstr-min-call-DP", help="Minimum call coverage", type=int)

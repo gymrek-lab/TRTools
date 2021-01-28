@@ -25,6 +25,8 @@ def base_argparse(tmpdir):
     args.hipstr_max_call_flank_indel = None
     args.hipstr_max_call_stutter = None
     args.hipstr_min_supp_reads = None
+    args.hipstr_min_call_allele_bias = None
+    args.hipstr_min_call_strand_bias = None
     args.gangstr_expansion_prob_het = None
     args.gangstr_expansion_prob_hom = None
     args.gangstr_expansion_prob_total = None
@@ -377,6 +379,38 @@ def test_HipstrMinCallQ(tmpdir):
     assert out[0] == pytest.approx(0.5)
     assert np.isnan(out[1])
     assert np.isnan(out[2]) # don't apply filter to nocalls
+
+def test_HipstrMinCallAlleleBias(tmpdir):
+    class TestRec(DummyRecBase):
+        def __init__(self):
+            super().__init__()
+            self.format['AB'] = np.array([.5, .9, np.nan]).reshape(-1, 1)
+
+    args = base_argparse(tmpdir)
+    args.hipstr_min_call_allele_bias = 0.6
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[0] == pytest.approx(0.5)
+    assert np.isnan(out[1])
+    assert np.isnan(out[2]) # don't apply filter to nocalls
+
+def test_HipstrMinCallStrandBias(tmpdir):
+    class TestRec(DummyRecBase):
+        def __init__(self):
+            super().__init__()
+            self.format['FS'] = np.array([.5, .9, np.nan]).reshape(-1, 1)
+
+    args = base_argparse(tmpdir)
+    args.hipstr_min_call_strand_bias  = 0.6
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[0] == pytest.approx(0.5)
+    assert np.isnan(out[1])
+    assert np.isnan(out[2]) # don't apply filter to nocalls
+
+
 
 '''
 Test needs to be updated from old pyvcf

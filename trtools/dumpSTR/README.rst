@@ -127,6 +127,8 @@ HipSTR call-level filters
 * :code:`--hipstr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
 * :code:`--hipstr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
 * :code:`--hipstr-min-call-Q <float>`: Minimum call quality score. Based on Q field.
+* :code:`--hipstr-min-call-allele-bias <float>`: Minimum call allele bias. Based on AB field.
+* :code:`--hipstr-min-call-strand-bias <float>`: Minimum call strand bias. Based on FS field.
 
 PopSTR call-level filters
 **************************
