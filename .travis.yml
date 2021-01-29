@@ -10,13 +10,6 @@ jobs:
       osx_image: xcode12
       language: generic
       env: PYTHON=36
-      # language: sh
-      # addons:
-      #   homebrew:
-      #     packages:
-      #     - python3
-      #     - openssl
-      #     update: true
       before_install:
         - pip3 install virtualenv
         - virtualenv -p python3 ~/venv
