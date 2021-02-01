@@ -41,13 +41,14 @@ def test_OutputDiffRefBias(tmpdir):
     OutputDiffRefBias(diffs_from_ref, reflens, fname, metric="invalid")
 
 # Just confirm that the method doesn't throw an error
-def test_OutPutSampleCallrate(tmpdir):
-    sample_calls = {'s1': 120, 's2': 10}
+def test_OutputSampleCallrate(tmpdir):
+    sample_calls = np.array([120, 10])
+    samples = ['s1', 's2']
     fname = str(tmpdir / "test_qc1.pdf")
-    OutputSampleCallrate(sample_calls, fname)
+    OutputSampleCallrate(sample_calls, samples, fname)
 
 # Just confirm that the method doesn't throw an error
-def test_OutPutChromCallrate(tmpdir):
+def test_OutputChromCallrate(tmpdir):
     chrom_calls = {'chr1': 100, 'chr2': 200}
     fname = str(tmpdir / "test_qc2.pdf")
     OutputChromCallrate(chrom_calls, fname)
@@ -120,7 +121,7 @@ def test_refbias_options(tmpdir, vcfdir, capsys):
 
 def test_asking_for_qual_plot_fails_when_no_qual_info(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter_reheadered.vcf")
     args.quality = ['per-locus']
     retcode = main(args)
     assert "doesn't have quality scores" in capsys.readouterr().err
@@ -130,7 +131,7 @@ def test_dont_make_qual_plot_when_no_qual_info(tmpdir, vcfdir, capsys):
     # check retcode is zero and appropriate files are/are not
     # created, don't do any checks for content
     args = base_argparse(tmpdir)
-    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter.vcf")
+    args.vcf = os.path.join(vcfdir, "test_ExpansionHunter_reheadered.vcf")
     retcode = main(args)
     assert len(glob.glob(args.out + "*quality*")) == 0
     assert retcode == 0
@@ -271,28 +272,23 @@ def test_main(tmpdir, vcfdir):
     # correct vcf
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(qcdir, "test_popstr.vcf")
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
     assert retcode == 0
 
     # vcf file with no contig
     args = base_argparse(tmpdir)
     args.vcf = os.path.join(qcdir, "test_popstr_nocontig.vcf")
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
     assert retcode == 0
-    
-    # Set sample list 
+    args.vcf = os.path.join(qcdir, "test_popstr.vcf")
+
+    # Set sample list
     args.samples = os.path.join(qcdir, "test_samplelist.txt")
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    retcode = main(args)
     assert retcode == 0
 
-    # Trying to test line 186 but seems to not work. TODO update with something else
-    # Set sample list with sample that doesn't exist in VCF (should skip it)
-    args.samples = os.path.join(qcdir, "test_samplelist.txt")
-    with pytest.warns(UserWarning, match="fabricated"):
-        retcode = main(args)
+    args.samples = os.path.join(qcdir, "test_fakesample.txt")
+    retcode = main(args)
     assert retcode == 0
 
     # Non existent vcf

@@ -1,4 +1,5 @@
 exclude trtools/testsupport/sample_vcfs
 exclude trtools/testsupport/sample_regions
+exclude trtools/testsupport/sample_stats
 include LICENSE.txt
 

@@ -116,7 +116,6 @@ Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
-* TRTools currently works on top of the `PyVCF <http://pyvcf.readthedocs.io/en/latest/>`_ library, which is prohibitively slow for biobank scale VCFs. We plan in a future release to move to `cyvcf2 <https://github.com/brentp/cyvcf2>`_ which is over ten times faster.
 * CompareSTR currently only compares STR loci between two callsets if they have the same start and end coordinates. In the future we will add the capacity to take in a user specificied mapping of loci between the two callsets and use that to compare loci even if they don't completely overlap one another.
 
 Contact Us
@@ -135,12 +134,15 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Make your changes. 
 #. Document your changes.
 
+   * Add bullet point(s) to the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` describing all the user facing changes you've made (if that section doesn't exist, create it at the top of the file). See prior releases in that file for examples.
    * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 
-   * If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
+    If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
 
-   * If you have added significant amounts of new documentation then build the documentation locally to ensure it looks good.
-     :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
+   * New doc pages for `the website <https://trtools.readthedocs.io/en/latest/>`_ can be created under :code:`<project-root>/doc` and linked to as appropriate.
+   * If you have added significant amounts of documentation in any of these ways, build the documentation locally to ensure it looks good.
+
+    :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
 
 #. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
@@ -153,6 +155,6 @@ Publishing
 ----------
 If you are a TRTools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
 please see PUBLISHING.rst in the root of the git repo.
-If you are a community member and would like that to happen, contact us (see below).
+If you are a community member and would like that to happen, contact us (see above).
 
 

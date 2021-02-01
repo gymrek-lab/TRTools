@@ -23,12 +23,13 @@ Required parameters:
 * :code:`--vcf <string>`: The input TR VCF file
 * :code:`--out <string>`: The prefix to name output files. Set to stdout to write to standard output.
 
-Optional file type and filtering parameters:
+Optional general parameters:
 
 * :code:`--vcftype <string>`: The type of VCF file being processed. Default = :code:`auto` Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: A file containing a list of samples to include in computing statistics. If not given, all samples are used. To compute statistics for multiple groups of samples, you can give a comma-separated list of samples files. Sample files should list one sample per line, no header line. Samples not found in the VCF are silently ignored.
-* :code:`--sample-prefixes <string>`: The prefixes to name output for each samples group. By default uses 1,2,3 etc. Must be sample length as :code:`--samples`.
-* :code:`--region <string>`: Restrict to specific regions (chrom:start-end).
+* :code:`--sample-prefixes <string>`: The prefixes to name output for each samples group. By default uses 1, 2, 3 etc. Must be sample length as :code:`--samples`.
+* :code:`--region <string>`: Restrict to specific regions (chrom:start-end). Requires the input VCF to be bgzipped and tabix indexed.
+* :code:`--precision <int>`: How much precision to use when writing stats (default = 3)
 
 For specific statistics available, see below.
 
@@ -68,8 +69,8 @@ For genotypers which output allele sequences, :code:`--use-length` will collapse
 Output file
 -----------
 
-StatSTR outputs a tab-delimited file with columns: chrom, start, end, plus an additional column for each statistic specified.
-If multiple sample groups are specified, instead there is one additional column for each sample gruop-by-statistic pair
+StatSTR outputs a tab-delimited file with columns ``chrom``, ``start`` and ``end`` plus an additional column for each statistic specified.
+If multiple sample groups are specified, instead there is one additional column for each group-by-statistic pair
 
 Example Commands
 ----------------

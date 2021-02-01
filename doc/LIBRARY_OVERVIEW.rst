@@ -57,10 +57,10 @@ Furthermore, consider the example at chr21:16402147
 Here we see that popSTR’s representation of alleles changes to specify impurities and partial 
 repeats.
 
-The key function of the TRHarmonizer module, HarmonizeRecord, takes as input a PyVCF [1]_ 
-record (a PyVCF.model._Record object) and a VCF type (one of:  “advntr”, “eh”, “gangstr”, 
+The key function of the TRHarmonizer module, HarmonizeRecord, takes as input a cyvcf2 [1]_ 
+record (a cyvcf2.Variant object) and a VCF type (one of:  “advntr”, “eh”, “gangstr”, 
 “hipstr” or “popstr”, corresponding to the supported genotypers) and outputs a TRRecord 
-object (analogous to PyVCF.model._Record) storing alleles and other metadata in a 
+object storing alleles and other metadata in a 
 standardized format. This allows downstream analyses to proceed agnostic of the genotyper 
 which created the record. The TRRecord stores allele length genotypes as the number of 
 copies of the motif corresponding to that length. This number is a float to allow for 
@@ -102,7 +102,7 @@ each TR as a distinct record in the VCF. Supporting additional tools simply requ
 short function to the TRHarmonizer module converting records to the standardized format described 
 above.
 
-.. [1] Casbon, J. (2012). PyVCF - A Variant Call Format Parser for Python.
+.. [1] Brent S Pedersen, Aaron R Quinlan, cyvcf2: fast, flexible variant analysis with Python, Bioinformatics, Volume 33, Issue 12, 15 June 2017, Pages 1867-1869, https://doi.org/10.1093/bioinformatics/btx057 
 .. [2] Cleary, John G., et al. "Comparing variant call files for performance benchmarking of next-generation sequencing variant calling pipelines." BioRxiv (2015): 023754.
 .. [3] https://github.com/Illumina/hap.py
 

@@ -16,7 +16,7 @@ We use the master branch as the default branch with the latest stable codebase.
 The builds from this branch are distributed to PyPI and conda.
 The develop branch contains new features that have yet to make their way into master.
 
-Once changes have been made to develop that are ready to be published, first set up the environment you're going to publish TRTools from:
+Once changes have been made to develop that are ready to be published, first choose the new version number. Then set up the environment you're going to publish TRTools from:
 
 #. Create a clean environment.
 #. Install setuptools with version >= 40.8.0
@@ -28,6 +28,8 @@ Then go through the steps of merging the changes into the master branch:
 #. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
 #. Check out the develop branch
 #. Run pytest and make sure all the tests pass
+#. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
+#. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
 #. Update the version number in setup.py
 #. Run ``python setup.py sdist bdist_wheel`` (this ensures that trtools/version.py contains the updated version number)
 #. Commit the changes to setup.py and trtools/version.py and push them.
@@ -35,7 +37,7 @@ Then go through the steps of merging the changes into the master branch:
 #. If the code review and travis checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
 
-Then go through the steps of publishing the changed code to PyPI
+Then go through the steps of publishing the changed code to PyPI:
 
 1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
 2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
@@ -49,7 +51,7 @@ Then go through the steps of publishing the changed code to PyPI
 
 4. Run :code:`twine upload dist/*` to upload the build to PyPI
 
-Lastly go through the following steps to publish the changed code to bioconda (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
+Lastly go through the following steps to publish the changed code to bioconda: (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
 
 1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
 2. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
