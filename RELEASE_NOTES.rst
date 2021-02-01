@@ -1,3 +1,12 @@
+4.0.0
+-----
+
+Features:
+
+* StatSTR now can calculate the entropy of the allele distribution at each locus with the
+  --entropy flag
+
+
 3.0.3
 -----
 
