@@ -15,7 +15,7 @@ LICENSE = 'MIT'
 curdir = os.path.abspath(os.path.dirname(__file__))
 MAJ = 3
 MIN = 0
-REV = 2
+REV = 3
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
