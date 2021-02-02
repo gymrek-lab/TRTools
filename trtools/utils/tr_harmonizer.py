@@ -14,9 +14,8 @@ import numpy as np
 import trtools.utils.utils as utils
 
 # List of supported VCF types
-# TODO: add Beagle
+# TODO: finish adding Beagle support
 # TODO: add support for tool version numbers
-
 class VcfTypes(enum.Enum):
     """The different tr callers that tr_harmonizer supports."""
 
@@ -27,14 +26,17 @@ class VcfTypes(enum.Enum):
     hipstr = "hipstr"
     eh = "eh"
     popstr = "popstr"
+    beagle_hipstr = "beagle-hipstr"
 
     # Don't include the redundant values
     # in how enums are printed out
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
+def _IsBeagleType(vcftype: VcfTypes):
+    return vcftype in (VcfTypes.beagle_hipstr,)
 
-def _ToVCFType(vcftype: Union[str, VcfTypes]):
+def _ToVCFType(vcftype: Union[str, VcfTypes]) -> VcfTypes:
     # Convert the input to a VcfTypes enum.
     #
     # If it is a string, look up the VcfTypes enum.
@@ -75,7 +77,7 @@ def MayHaveImpureRepeats(vcftype: Union[str, VcfTypes]):
     vcftype = _ToVCFType(vcftype)
     if vcftype == VcfTypes.gangstr:
         return False
-    if vcftype == VcfTypes.hipstr:
+    if vcftype in (VcfTypes.hipstr, VcfTypes.beagle_hipstr):
         return True
     if vcftype == VcfTypes.advntr:
         return True
@@ -108,7 +110,7 @@ def HasLengthRefGenotype(vcftype: Union[str, VcfTypes]):
     vcftype = _ToVCFType(vcftype)
     if vcftype == VcfTypes.gangstr:
         return False
-    if vcftype == VcfTypes.hipstr:
+    if vcftype in (VcfTypes.hipstr, VcfTypes.beagle_hipstr):
         return False
     if vcftype == VcfTypes.advntr:
         return False
@@ -139,7 +141,7 @@ def HasLengthAltGenotypes(vcftype: Union[str, VcfTypes]):
     vcftype = _ToVCFType(vcftype)
     if vcftype == VcfTypes.gangstr:
         return False
-    if vcftype == VcfTypes.hipstr:
+    if vcftype in (VcfTypes.hipstr, VcfTypes.beagle_hipstr):
         return False
     if vcftype == VcfTypes.advntr:
         return False
@@ -159,7 +161,17 @@ def _UnexpectedTypeError(vcftype: Union[str, VcfTypes]):
                      .format(vcftype))
 
 
-def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") -> VcfTypes:
+class _BeagleType:
+    """
+    Used to represent a VCF produced by Beagle imputation
+    where the original TR caller is unknown"""
+
+    def __eq__(self, obj):
+        return isinstance(obj, _BeagleType)
+
+
+def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") \
+        -> Union[VcfTypes]:
     """
     Infer the genotyping tool used to create the VCF.
 
@@ -178,8 +190,8 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
 
     Returns
     -------
-    vcftype : VcfTypes
-       Type of the VCF file
+    vcftype : Union[VcfTypes, BeagleType]
+       Type of the VCF file.
 
     Raises
     ------
@@ -199,6 +211,8 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
         possible_vcf_types.add(VcfTypes.advntr)
     if 'source=popstr' in header:
         possible_vcf_types.add(VcfTypes.popstr)
+    if 'source="beagle' in header:
+        possible_vcf_types.add(_BeagleType())
     if re.search(r'ALT=<ID=STR\d+'.lower(), header):
         possible_vcf_types.add(VcfTypes.eh)
 
@@ -207,6 +221,10 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
 
     if vcftype == 'auto':
         if len(possible_vcf_types) == 1:
+            if _BeagleType() in possible_vcf_types:
+                raise TypeError(
+                    'You must manually specify the type of Beagle VCFs '
+                    'with the --vcftype flag.')
             return next(iter(possible_vcf_types))
         else:
             raise TypeError(('Confused - this vcf looks like it could have '
@@ -215,6 +233,8 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
                              'them').format(possible_vcf_types))
 
     user_supplied_type = _ToVCFType(vcftype)
+    if _IsBeagleType(user_supplied_type) and _BeagleType() in possible_vcf_types:
+        return user_supplied_type
     if user_supplied_type in possible_vcf_types:
         return user_supplied_type
     else:
@@ -240,10 +260,24 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
         A TRRecord object built out of the input record
     """
     vcftype = _ToVCFType(vcftype)
+
+    if _IsBeagleType(vcftype):
+        if vcfrecord.INFO.get('AP1') is None:
+            quality_field = None
+            quality_score_transform = _GetBeagleAPQuality
+        else:
+            quality_field = None
+            quality_score_transform = None
+        # TODO support Beagle GP field
+
     if vcftype == VcfTypes.gangstr:
         return _HarmonizeGangSTRRecord(vcfrecord)
     if vcftype == VcfTypes.hipstr:
         return _HarmonizeHipSTRRecord(vcfrecord)
+    if vcftype == VcfTypes.beagle_hipstr:
+        return _HarmonizeHipSTRRecord(vcfrecord,
+                                      quality_field,
+                                      quality_score_transform)
     if vcftype == VcfTypes.advntr:
         return _HarmonizeAdVNTRRecord(vcfrecord)
     if vcftype == VcfTypes.eh:
@@ -287,7 +321,9 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'Q')
 
 
-def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
+def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant,
+                           quality_field: Optional[str] = 'Q',
+                           quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None):
     """
     Turn a cyvcf2.Variant with HipSTR content into a TRRecord.
 
@@ -295,6 +331,12 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     ----------
     vcfrecord :
         A cyvcf2.Variant Object
+    quality_field :
+        The FORMAT field with quality information. HipSTR uses 'Q'.
+        If this is an imputed record then this may be changed from the default.
+    quality_score_transform :
+        If this is an imputed record then this may be set. See the corresponding
+        field of TRRecord for more info.
 
     Returns
     -------
@@ -303,7 +345,13 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     if (vcfrecord.INFO.get('START') is None
             or vcfrecord.INFO.get('END') is None
             or vcfrecord.INFO.get('PERIOD') is None):
-        raise TypeError("This is not a HipSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(("Locus {}:{} is not a HipSTR record, "
+                         "it is missing one of the INFO fields "
+                         "START, END or PERIOD. (If this is a Beagle "
+                         "imputed HipSTR record, make sure to copy the "
+                         "INFO fields over. See: "
+                         "https://trtools.readthedocs.io/en/latest/BEAGLE.html )")
+                         .format(vcfrecord.CHROM, vcfrecord.POS))
 
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
@@ -360,17 +408,19 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                         alt_alleles,
                         motif,
                         record_id,
-                        'Q',
+                        quality_field,
                         full_alleles=full_alleles,
                         trimmed_pos=vcfrecord.INFO["START"],
-                        trimmed_end_pos=vcfrecord.INFO["END"])
+                        trimmed_end_pos=vcfrecord.INFO["END"],
+                        quality_score_transform = quality_score_transform)
     else:
         return TRRecord(vcfrecord,
                         ref_allele,
                         alt_alleles,
                         motif,
                         record_id,
-                        'Q')
+                        quality_field,
+                        quality_score_transform = quality_score_transform)
 
 
 def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
@@ -516,6 +566,20 @@ def _UpperCaseAlleles(alleles : List[str]):
     return upper_alleles
 
 
+def _GetBeagleAPQuality(vcfrecord: cyvcf2.Variant) -> np.ndarray:
+    # get Beagle genotype probability
+    # I assume Beagle currently only works with diploid genotypes
+    idx_gts = vcfrecord.genotype.array()[:, :2]
+    aps = []
+    for copy in 1, 2:
+        ap = vcfrecord.format(f'AP{copy}')
+        ref_prob = np.maximum(0, 1 - np.sum(ap, axis=1))
+        ref_prob = ref_prob.reshape(-1, 1)
+        ap = np.concatenate((ref_prob, ap), axis=1)
+        ap = ap[np.arange(ap.shape[0]), idx_gts[:, (copy - 1)]]
+        aps.append(ap)
+    return np.multiply(aps[0], aps[1])
+
 class _Cyvcf2FormatDict():
     """
     Provide an immutable dict-like interface for accessing
@@ -640,9 +704,10 @@ class TRRecord:
         like alt_allele_lengths, but for the reference allele.
         If this is passed, alt_allele_lengths must also be passed
     quality_score_transform :
-        A function which turns the quality_field value into a float
-        score. When None, the quality_field values are assumed
-        to already be floats
+        A function which takes the underlying cyvcf2.Variant object and
+        returns a 1D array of float scores of length n_samples.
+        When None, the quality_field values are assumed
+        to already be a float array of shape n_samples x 1 .
 
     Notes
     -----
@@ -659,14 +724,14 @@ class TRRecord:
                  alt_alleles: Optional[List[str]],
                  motif: str,
                  record_id: str,
-                 quality_field: str,
+                 quality_field: Optional[str],
                  *,
                  full_alleles: Optional[Tuple[str, List[str]]] = None,
                  trimmed_pos: Optional[int] = None,
                  trimmed_end_pos: Optional[int] = None,
                  ref_allele_length: Optional[float] = None,
                  alt_allele_lengths: Optional[List[float]] = None,
-                 quality_score_transform: Optional[Callable[..., float]] = None):
+                 quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None):
         self.vcfrecord = vcfrecord
         self.ref_allele = ref_allele
         self.alt_alleles = alt_alleles
@@ -735,6 +800,10 @@ class TRRecord:
         else:
             self.trimmed_pos = trimmed_pos
             self.trimmed_end_pos = trimmed_end_pos
+
+        if (self.quality_field is not None and
+                    self.quality_score_transform is not None):
+            raise ValueError("Cannot both have a quality_field and a quality_score_transform")
 
         try:
             self._CheckRecord()
@@ -1450,21 +1519,6 @@ class TRRecord:
             return np.nan
         return max(alleles)
 
-    def HasQualityScores(self) -> bool:
-        """
-        Does this TRRecord contain quality scores for each of its calls?
-        If present, the meaning and reliability of these scores is
-        genotyper dependent, see the doc section :ref:`Quality Scores`.
-
-        Return
-        ------
-        boolean:
-            Whether or not a FORMAT field that could be interpreted as a
-            quality score has been identified
-        """
-        return (self.quality_field is not None and
-                self.quality_field in self.format)
-
     def GetQualityScores(self) -> np.ndarray:
         """
         Get the quality scores of the calls for each sample.
@@ -1475,20 +1529,19 @@ class TRRecord:
         Returns
         -------
         np.ndarray :
-            An array of quality score floats, one row per sample
+            A 1D array of quality score floats, one entry per sample.
             Samples which were not called have the value np.nan
         """
-        if not self.HasQualityScores():
+        if self.quality_field is None and self.quality_score_transform is None:
             raise TypeError(
                 "This TRRecord does not have a corresponding quality score"
                 " field"
             )
-        quality_val = self.format[self.quality_field]
-        transform = self.quality_score_transform
-        if transform is None:
-            return quality_val
+        if self.quality_field:
+            return self.format[self.quality_field]
         else:
-            return np.apply_along_axis(transform, 0, quality_val)
+            transform = self.quality_score_transform
+            return transform(self.vcfrecord)
 
     def __str__(self):
         """Generate a summary of the variant described by this record."""
@@ -1542,7 +1595,7 @@ class TRRecordHarmonizer:
     Parameters
     ----------
     vcffile : cyvcf2.VCF instance
-    vcftype : {'auto', 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr'}, optional
+    vcftype : {'auto', 'gangstr', 'advntr', 'hipstr', 'eh', 'popstr', 'beagle-hipstr'}, optional
        Type of the VCF file. Default='auto'.
        If vcftype=='auto', attempts to infer the type.
 
@@ -1618,6 +1671,8 @@ class TRRecordHarmonizer:
             return False
         if self.vcftype == VcfTypes.eh:
             return False
+        if _IsBeagleType(self.vcftype):
+            return 'FORMAT=<ID=AP1,' in self.vcffile.raw_header
 
         # Can't cover this line because it is future proofing.
         # (It explicitly is not reachable now,

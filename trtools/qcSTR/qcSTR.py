@@ -454,7 +454,7 @@ def GatherData(harmonizer: trh.TRRecordHarmonizer,
         chrom_calls[chrom] += np.sum(calls)
 
         if len(quality_types) != 0:
-            quality_scores = trrecord.GetQualityScores()[sample_index, :]
+            quality_scores = trrecord.GetQualityScores()[sample_index]
             quality_scores[~calls] = np.nan
             if not quality_ignore_no_call:
                 quality_scores[np.isnan(quality_scores)] = 0
