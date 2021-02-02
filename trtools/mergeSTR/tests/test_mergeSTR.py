@@ -1,9 +1,10 @@
 import argparse
-import os, sys
+import os
 import numpy as np
 import pytest
 
-from ..mergeSTR import * 
+from ..mergeSTR import *
+from trtools.testsupport.utils import assert_same_vcf
 
 
 # Set up base argparser
@@ -47,20 +48,19 @@ def test_GangSTRRightFile(args, mrgvcfdir):
     args.verbose = True
     assert main(args)==0
 
-# TODO fails bc no contig line in VCFs
 # Test right files or directory - advntr
-#def test_AdVNTRRightFile(args, mrgvcfdir):
-#    fname1 = os.path.join(mrgvcfdir, "test_file_advntr1.vcf.gz")
-#    fname2 = os.path.join(mrgvcfdir, "test_file_advntr2.vcf.gz")
-#    args.vcftype = "advntr"
-#    args.vcfs = fname1 + "," + fname2
-#    assert main(args)==0
-#    args.vcftype = "auto"
-#    assert main(args)==0
-#    args.update_sample_from_file = True
-#    assert main(args)==0
-#    args.verbose = True
-#    assert main(args)==0
+def test_AdVNTRRightFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_advntr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_advntr2.vcf.gz")
+    args.vcftype = "advntr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
 
 # Test right files or directory - hipstr
 def test_hipSTRRightFile(args, mrgvcfdir):
@@ -77,19 +77,18 @@ def test_hipSTRRightFile(args, mrgvcfdir):
     assert main(args)==0
 
 # Test right files or directory - ExpansionHunter
-# TODO fails bc no contig line in VCFs
-#def test_ExpansionHunterRightFile(args, mrgvcfdir):
-#    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
-#    fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
-#    args.vcftype = "eh"
-#    args.vcfs = fname1 + "," + fname2
-#    assert main(args)==0
-#    args.vcftype = "auto"
-#    assert main(args)==0
-#    args.update_sample_from_file = True
-#    assert main(args)==0
-#    args.verbose = True
-#    assert main(args)==0
+def test_ExpansionHunterRightFile(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
 
 def test_GangSTRDuplicate(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
@@ -109,7 +108,22 @@ def test_PopSTRRightFile(args, mrgvcfdir):
     assert main(args)==0
     args.verbose = True
     assert main(args)==0
-    
+
+def test_multiple_vcf_types(args, mrgvcfdir, capsys):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_popstr2.vcf.gz")
+    args.vcftype = "auto"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 1
+    assert 'mixed types' in capsys.readouterr().err
+
+def test_duplicate_ids(args, mrgvcfdir, capsys):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr_dupID.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 1
+    assert 'same sample' in capsys.readouterr().err
+
 # test VCFs with different ref genome contigs return 1
 def test_RecordChromsNotInContigs(args, mrgvcfdir, capsys):
     #both files have records with chroms not listed in contigs
@@ -190,7 +204,7 @@ def test_ConflictingRefs():
 
 def test_GetInfoItem(capsys):
     # Set up dummy records
-    dummy_records = [] 
+    dummy_records = []
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
@@ -198,7 +212,8 @@ def test_GetInfoItem(capsys):
 
     GetInfoItem(dummy_records, [True, True, True, False], 'END')
     captured = capsys.readouterr()
-    assert "Incompatible info field value END" in captured.err
+    assert ("Incompatible values" in captured.err and
+            "info field END" in captured.err)
 
     with pytest.raises(ValueError) as info:
         GetInfoItem(dummy_records, [True, True, False, True], 'END')
@@ -207,38 +222,75 @@ def test_GetInfoItem(capsys):
     retval = GetInfoItem(dummy_records, [True, True, False, False], 'END')
     assert retval == "END=120"
 
-def test_GetSampleInfo(args, vcfdir):
-    # TODO add more in depth tests (Create a better dummy class or import from vcf files)
-    
-    gangstr_path = os.path.join(vcfdir, "test_gangstr.vcf")
-    gangstr_vcf = vcf.Reader(filename=gangstr_path)
-    record = next(gangstr_vcf)
-    
-    
-    # TODO final percent!!!
-    #for sample in record:
-    #    with pytest.raises(ValueError) as info:
-    #        GetSampleInfo(record, sample.gt_bases.split(sample.gt_phase_char()), ['UNKNOWNFORMAT'], args)
-    #    print(info.traceback)
-    #    assert "lolz" in str(info.value)
+# TODO write WriteSampleData tests
+
+"""
+These tests run mergeSTR and compare its output
+to output that has been generated by a pervious version of
+mergeSTR and saved in the repo. The results are expected
+to be identical.
+
+These tests are too strict and will often break because
+mergeSTR output has been intentionally changed
+However, the presence of these tests is important because
+it should prevent any unexpected changes in output.
+If you've reviewed the change in output and find it acceptable,
+use trtools/testsupport/sample_vcfs/mergeSTR_vcfs/create_test_files.sh
+to regenerate the test files with the new version of mergeSTR.
+"""
 
 
-# TODO confirm conflicting samples cause this to fail unless --update-sample-from-file is given
-# TODO why are required info fields a cause for failure when a record is
-# missing them but not when the entire VCF is missing them?
-# Why do we silently return if there are no info or header fields?
-# Why don't we fail if info fields are different? That's what required is
-# supposed to mean. Or at least, don't emit that record!!!
-# TODO we should intelligently merge info fields with reqd = false
-# TODO there is not a single test here that confirms that the output VCF
-# actually is a VCF, has the proper headers and each record has the proper
-# format fields and info fields and all that stuff. Write some meaningful tests.
-# TODO confirm we actually support the fields we say we support (like, they're
-# presenting in the output files when we run on the appropriate test files)
-# TODO why do we even bother saying which format fields we support? We just
-# append them all anyway. The only difference as far as I can tell is that if
-# we encounter a format field that we didn't expect, we ignore it. Why? Why
-# not just use the appropriate format fields for the appropriate samples
-# in each merged record?
-# TODO what if there are multiple records at the same location in the same VCF
-# we should fail right? Confirm this.
+def test_advntr_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_advntr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_advntr2.vcf.gz")
+    args.vcftype = "advntr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/advntr_merged.vcf")
+
+
+def test_eh_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_merged.vcf")
+
+
+def test_gangstr_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
+    args.vcftype = "gangstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/gangstr_merged.vcf")
+
+
+def test_hipstr_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_hipstr2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
+
+
+def test_popstr_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_popstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_popstr2.vcf.gz")
+    args.vcftype = "popstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/popstr_merged.vcf")
+
+
+# TODO questions and issues to confirm, test or  address:
+# confirm conflicting samples cause this to fail unless --update-sample-from-file is given
+# required info fields cause failure when a record is missing them but not when the entire VCF is missing them
+# we silently return if there are no info or header fields
+# we don't fail if info fields are different
+# how should we merge info fields with reqd = false
+# what if there are multiple records at the same location in the same VCF
+# if a genotype is no called but there is other format info,
+# we aren't emitting it. Is that intended?

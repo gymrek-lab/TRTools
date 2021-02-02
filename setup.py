@@ -13,9 +13,9 @@ LICENSE = 'MIT'
 
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
-MAJ = 3
+MAJ = 4
 MIN = 0
-REV = 3
+REV = 0
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
@@ -50,12 +50,12 @@ setup(name=NAME,
               'qcSTR=trtools.qcSTR:run'
           ],
       },
-      install_requires=['matplotlib',
+      install_requires=['cyvcf2',
+                        'matplotlib',
                         'numpy',
                         'pandas',
                         'pybedtools',
                         'pysam',
-                        'pyvcf',
                         'scikit-learn',
                         'scipy'],
       classifiers=['Development Status :: 4 - Beta',\

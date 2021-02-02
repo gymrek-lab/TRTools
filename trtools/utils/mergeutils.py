@@ -6,7 +6,6 @@ and keeping them in sync.
 import numpy as np
 import os
 import sys
-import vcf
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
@@ -39,12 +38,12 @@ def LoadReaders(vcffiles, region=None):
         return readers
     else: return [r.fetch(region) for r in readers]
 
-def GetSharedSamples(readers, usefilenames=False):
+def GetSharedSamples(readers):
     r"""Get list of samples used in all files being merged
 
     Parameters
     ----------
-    readers : list of vcf.Reader objects
+    readers : list of cyvcf.VCF objects
 
     Returns
     -------
@@ -56,17 +55,18 @@ def GetSharedSamples(readers, usefilenames=False):
     if len(readers) == 1: return samples
     for r in readers[1:]:
         samples = samples.intersection(set(r.samples))
-    return samples
+    return list(samples)
 
-def GetSamples(readers, usefilenames=False):
+def GetSamples(readers, filenames=None):
     r"""Get list of samples used in all files being merged
 
     Parameters
     ----------
-    readers : list of vcf.Reader objects
-    usefilenames : bool, optional
-       If True, add filename to sample names.
+    readers : list of cyvcf2.VCF
+    usefilenames : optional list of filenames
+       If present, add filename to sample names.
        Useful if sample names overlap across files
+       Must be the same length as readers
 
     Returns
     -------
@@ -74,40 +74,53 @@ def GetSamples(readers, usefilenames=False):
        List of samples in merged list
     """
     samples = []
-    for r in readers:
-        if usefilenames:
-            samples = samples + [r.filename.strip(".vcf.gz")+":"+ s for s in r.samples]
-        else: samples = samples + r.samples
-    if len(set(samples))!=len(samples):
-        common.WARNING("Duplicate samples found.")
-        return []
+    if filenames:
+        if len(readers) != len(filenames):
+            raise ValueError("Must have same number of VCFs and VCF filenames")
+        for r, filename in zip(readers, filenames):
+            filename = filename.strip(".vcf.gz")
+            samples += [filename + ":" + s for s in r.samples]
+    else:
+        for r in readers:
+            if set(samples).intersection(set(r.samples)):
+                raise ValueError("Found the same sample ID(s) in multiple input VCFs")
+            samples += r.samples
     return samples
 
-def GetAndCheckVCFType(vcfreaders, vcftype):
-    """Infer vcf type of readers
+def GetAndCheckVCFType(vcfs, vcftype):
+    """Infer type of multiple VCFs
 
-    Infer VCF type of each reader.
     If they are all the same, return that type
     If not, return error
 
     Parameters
     ----------
-    vcfreaders : list of vcf.Reader
-      Readers being merged
+    vcfs: list of cyvcf2.VCF
+      Multiple VCFs
     vcftype : str
-      Type of VCF
+      If it is unclear which of a few VCF callers produced the underlying
+      VCFs (because the output markings of those VCF callers are similar)
+      this string can be supplied by the user to choose from among
+      those callers.
 
     Returns
     -------
     vcftype : str
       Inferred VCF type
+
+    Raises
+    ------
+    TypeError
+      If one of the VCFs does not look like it was produced by any supported TR
+      caller, or if one of the VCFs looks like it could have been produced by
+	  more than one supported TR caller and vcftype == 'auto', or if, for one
+      of the VCFs, vcftype doesn't match any of the callers that could have
+	  produced that VCF, or if the types of the VCFs don't match
     """
     types = []
-    for reader in vcfreaders:
-        reader_type = trh.GetVCFType(reader, vcftype)
-        if reader_type == None:
-            raise ValueError("Error in detecting vcf type. Please make sure the vcf file is from a supported variant calling software.")
-        types.append(reader_type)
+    for vcf in vcfs:
+        vcf_type = trh.InferVCFType(vcf, vcftype)
+        types.append(vcf_type)
     if len(set(types)) == 1:
         return types[0]
     else: raise ValueError("VCF files are of mixed types.")

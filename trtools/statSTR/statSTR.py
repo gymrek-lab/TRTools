@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Tool for computing stats on a TR VCF file
 """
@@ -15,20 +14,24 @@ matplotlib.rcParams['ps.fonttype'] = 42
 
 # Imports
 import argparse
-import numpy as np
 import os
 import sys
-import vcf
+import time
+from typing import Any, List
 
-MAXPLOTS = 10 # don't plot more than this many allele freqs
+import numpy as np
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
+MAXPLOTS = 10 # don't plot more than this many allele freqs
 
-def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
+def PlotAlleleFreqs(trrecord,
+                    outprefix,
+                    sample_indexes: List[Any] = [None],
+                    sampleprefixes=None):
     r"""Plot allele frequencies for a locus
 
     Parameters
@@ -37,18 +40,23 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
           The record that we are computing the statistic for
     outprefix : str
           Prefix for output file
-    samplelists: list of list of str, optional
-          List of lists of the samples that we include when compute the statistic
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
     sampleprefixes : list of str, optional
           Prefixes for each sample list to use in legend
     """
-    if samplelists is None or samplelists == []:
-        samplelists = [None]
+    if sample_indexes == [None]:
         sampleprefixes = ["sample"]
     allele_freqs_list = []
     allele_set = set()
-    for sl in samplelists:
-        afreqs = trrecord.GetAlleleFreqs(uselength=True, samplelist=sl)
+    for si in sample_indexes:
+        afreqs = trrecord.GetAlleleFreqs(uselength=True, sample_index=si)
         allele_freqs_list.append(afreqs)
         allele_set = allele_set.union(afreqs.keys())
     min_allele = min(allele_set)-2
@@ -56,10 +64,10 @@ def PlotAlleleFreqs(trrecord, outprefix, samplelists=None, sampleprefixes=None):
     bins = np.arange(min_allele, max_allele, 1)
 
     fname = outprefix + "-%s-%s.pdf"%(trrecord.vcfrecord.CHROM, trrecord.vcfrecord.POS)
-    w = 1.0/(len(samplelists)+0.3)
+    w = 1.0/(len(sample_indexes)+0.3)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    for i in range(len(samplelists)):
+    for i in range(len(sample_indexes)):
         ax.bar([item+i*w for item in bins], [allele_freqs_list[i].get(item, 0) for item in bins],
                label=sampleprefixes[i], width=w*1.1)
     ax.legend()
@@ -93,65 +101,80 @@ def GetHeader(header, sample_prefixes):
             header_items.append(header+"-"+sp)
         return header_items
 
-def GetThresh(trrecord, samplelists=[]):
-    r"""Return the maximum TR allele length observed
+def GetThresh(trrecord: trh.TRRecord, sample_indexes: List[Any] = [None]) -> List[float]:
+    """Return the maximum TR allele length observed
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object
-          The record that we are computing the statistic for
-    samplelists: list of list of str
-          List of lists of the samples that we include when compute the statistic
+    trrecord:
+        The record that we are computing the statistic for
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
 
     Returns
     -------
-    thresh: list of float
-          List of Maximum allele length observed in each sample group
+    thresh: List[float]
+          List of Maximum allele length observed in each sample group,
+          or nan if no alleles called
     """
-    if len(samplelists) == 0:
-        return [trrecord.GetMaxAllele()]
-    else:
-        return [trrecord.GetMaxAllele(samplelist=sl) for sl in samplelists]
+    return [trrecord.GetMaxAllele(sample_index=si) for si in sample_indexes]
 
-def GetAFreq(trrecord, samplelists=[], count=False, uselength=True):
-    r"""Return allele frequency for a TR
+def GetAFreq(trrecord: trh.TRRecord,
+             sample_indexes: List[Any] = [None],
+             count: bool = False,
+             uselength: bool = True) -> List[str]:
+    """Return allele frequency for a TR
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object
+    trrecord:
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of lists of the samples that we include when compute the statistic
-    count: bool
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+    count:
           If True, return allele counts rather than allele frequencies
-    uselength: bool
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
     -------
     allele_freqs_strs: list of str
           Format: allele1:freq1,allele2:freq2,etc. for each sample group
+          Only alleles with more than one call in a group are reported for
+          that group. Groups with no called alleles are reported as '.'
     """
-    if len(samplelists) == 0:
-        samplelists.append(None)
     allele_freqs_strs = []
-    for sl in samplelists:
+    for si in sample_indexes:
         if count:
-            allele_counts = trrecord.GetAlleleCounts(uselength=uselength, samplelist=sl)
+            allele_counts = trrecord.GetAlleleCounts(uselength=uselength, sample_index=si)
             if len(allele_counts.keys()) == 0:
                 allele_freqs_strs.append(".")
             else:
                 allele_freqs_strs.append(",".join(["%s:%i"%(a, allele_counts.get(a, 0)) for a in sorted(allele_counts.keys())]))
         else:
-            allele_freqs = trrecord.GetAlleleFreqs(uselength=uselength, samplelist=sl)
+            allele_freqs = trrecord.GetAlleleFreqs(uselength=uselength, sample_index=si)
             if len(allele_freqs.keys()) == 0:
                 allele_freqs_strs.append(".")
             else:
                 allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
     return allele_freqs_strs
 
-def GetHWEP(trrecord, samplelists=[], uselength=True):
-    r"""Compute Hardy Weinberg p-value
+def GetHWEP(trrecord: trh.TRRecord,
+            sample_indexes: List[Any] = [None],
+            uselength: bool = True) -> List[float]:
+    """Compute Hardy Weinberg p-value
 
     Tests whether the number of observed heterozygous vs.
     homozygous individuals is different than expected
@@ -160,123 +183,203 @@ def GetHWEP(trrecord, samplelists=[], uselength=True):
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object
+    trrecord:
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of list of the samples that we include when compute the statistic
-    uselength: bool
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
     -------
     p-value: list of float
           The two-sided p-value returned by a binomial test (scipy.stats.binom_test)
-          If the allele frequencies dictionary is invalid, return np.nan
+          If there are no calls, return np.nan
           If the genotype alleles not included in frequencies dictionary, return np.nan
-          One value returned for each samplelist
+          One value returned for each sample_index
     """
-    if len(samplelists)==0: samplelists.append(None)
     pvals = []
-    for sl in samplelists:
-        allele_freqs = trrecord.GetAlleleFreqs(samplelist=sl, uselength=uselength)
-        genotype_counts = trrecord.GetGenotypeCounts(samplelist=sl, uselength=uselength)
+    for si in sample_indexes:
+        allele_freqs = trrecord.GetAlleleFreqs(sample_index=si, uselength=uselength)
+        genotype_counts = trrecord.GetGenotypeCounts(sample_index=si, uselength=uselength)
         pvals.append(utils.GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts))
     return pvals
 
-def GetHet(trrecord, samplelists=[], uselength=True):
-    r"""Compute heterozygosity of a locus
+def GetHet(trrecord: trh.TRRecord,
+            sample_indexes: List[Any] = [None],
+            uselength: bool = True) -> List[float]:
+    """Compute heterozygosity of a locus
 
     Heterozygosity is defined as the probability
     that two randomly drawn allele are different.
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object
+    trrecord:
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of list of the samples that we include when compute the statistic
-    uselength: bool
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+    uselength:
           Whether we should collapse alleles by length
 
     Returns
     -------
-    heterozygosity: list of float
-          The heterozygosity of the locus. One value for each sample list.
-          If the allele frequencies dictionary is invalid, return np.nan
+    heterozygosity: List[float]
+          For each sample list, the heterozypostiy of the calls for those
+          samples, or np.nan if no such calls
     """
-    if len(samplelists) == 0: samplelists.append(None)
     hetvals = []
-    for sl in samplelists:
-        allele_freqs = trrecord.GetAlleleFreqs(samplelist=sl, uselength=uselength)
+    for si in sample_indexes:
+        allele_freqs = trrecord.GetAlleleFreqs(sample_index=si, uselength=uselength)
         hetvals.append(utils.GetHeterozygosity(allele_freqs))
     return hetvals
 
-def GetMean(trrecord, samplelists=[], uselength=True):
-    r"""Compute the mean allele length
+def GetEntropy(trrecord: trh.TRRecord,
+               sample_indexes: List[Any] = [None],
+               uselength: bool = True) -> List[float]:
+    """Compute the entropy of a locus
+
+    This is the (bit) entropy of the distribution of alleles
+    called at that locus. See `wikipedia
+    <https://en.wikipedia.org/wiki/Entropy_(information_theory)>`_
+    for the definition of entropy.
+
+    Parameters
+    ----------
+    trrecord:
+          The record that we are computing the statistic for
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+    uselength:
+          Whether we should collapse alleles by length
+
+    Returns
+    -------
+    heterozygosity: List[float]
+          For each sample list, the entropy of the calls for those
+          samples, or np.nan if no such calls
+    """
+    entropy_vals = []
+    for si in sample_indexes:
+        allele_freqs = trrecord.GetAlleleFreqs(sample_index=si, uselength=uselength)
+        entropy_vals.append(utils.GetEntropy(allele_freqs))
+    return entropy_vals
+
+def GetMean(trrecord: trh.TRRecord,
+            sample_indexes: List[Any] = [None],
+            uselength: bool = True) -> List[float]:
+    """Compute the mean allele length
+
+    Parameters
+    ----------
+    trrecord:
+          The record that we are computing the statistic for
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+
+    Returns
+    -------
+    mean: List[float]
+          For each sample list, the mean allele length, or np.nan if no
+          calls for that sample
+    """
+
+    return [utils.GetMean(trrecord.GetAlleleFreqs(sample_index=si, uselength=True))
+            for si in sample_indexes]
+
+def GetMode(trrecord: trh.TRRecord,
+            sample_indexes: List[Any] = [None],
+            uselength: bool = True) -> List[float]:
+    """Compute the mode of the allele lengths
 
     Parameters
     ----------
     trrecord: trh.TRRecord object
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of list of the samples that we include when compute the statistic
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
 
     Returns
     -------
-    mean: list of float
-          The mean allele length. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan
+    mean: List[float]
+          For each sample list, the mode allele length, or np.nan if no
+          calls for that sample
     """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetMean(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
 
-def GetMode(trrecord, samplelists=[]):
-    r"""Compute the mode of the allele frequencies
+    return [utils.GetMode(trrecord.GetAlleleFreqs(sample_index=si, uselength=True)) for si in sample_indexes]
+
+def GetVariance(trrecord: trh.TRRecord,
+                sample_indexes: List[Any] = [None],
+                uselength: bool = True) -> List[float]:
+    """Compute the variance of the allele lengths
 
     Parameters
     ----------
-    trrecord: trh.TRRecord object
+    trrecord:
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of the samples that we include when compute the statistic
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
 
     Returns
     -------
-    mode: list of float
-	  The mode of the allele frequencies. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan
+    variance: List[float]
+          For each sample list, the variance of the allele lengths, or np.nan if
+          no calls for that sample
     """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetMode(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
 
-def GetVariance(trrecord, samplelists=[]):
-    r"""Compute the variance of the allele lengths
+    return [utils.GetVariance(trrecord.GetAlleleFreqs(sample_index=si, uselength=True)) for si in sample_indexes]
 
-    Parameters
-    ----------
-    trrecord: trh.TRRecord object
-          The record that we are computing the statistic for
-    samplelists: list of list of str
-          List of list of the samples that we include when compute the statistic
-
-    Returns
-    -------
-    variance: list of float
-          The variance of the allele lengths. One value for each sample list
-          If the allele frequencies dictionary is invalid, return np.nan
-    """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [utils.GetVariance(trrecord.GetAlleleFreqs(samplelist=sl, uselength=True)) for sl in samplelists]
-
-def GetNumSamples(trrecord, samplelists=[]):
+def GetNumSamples(trrecord, sample_indexes=[None]):
     r"""Compute the number of samples
 
     Parameters
     ----------
     trrecord: trh.TRRecord object
           The record that we are computing the statistic for
-    samplelist: list of list of str
-          List of list of the samples that we include when compute the statistic
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
 
     Returns
     -------
@@ -284,8 +387,7 @@ def GetNumSamples(trrecord, samplelists=[]):
           The number of samples. One value for each sample list
           If the allele frequencies dictionary is invalid, return np.nan
     """
-    if len(samplelists) == 0: samplelists.append(None)
-    return [sum(trrecord.GetGenotypeCounts(samplelist=sl).values()) for sl in samplelists]
+    return [sum(trrecord.GetGenotypeCounts(sample_index=si).values()) for si in sample_indexes]
 
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
@@ -294,24 +396,40 @@ def getargs(): # pragma: no cover
     )
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--vcf", help="Input STR VCF file", type=str, required=True)
-    inout_group.add_argument("--out", help="Output file prefix. Use stdout to print file to standard output.", type=str, required=True)
+    inout_group.add_argument(
+        "--out",
+        help=("Output file prefix. Use stdout to print file to standard "
+              "output. In addition, if not stdout then timing diagnostics are print to "
+              "stdout."),
+        type=str,
+        required=True
+    )
     inout_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    inout_group.add_argument(
+        "--precision",
+        help="How much precision to use when printing decimals",
+        type=int,
+        default=3
+     )
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--samples", help="File containing list of samples to include. Or a comma-separated list of files to compute stats separate for each group of samples", type=str)
     filter_group.add_argument("--sample-prefixes", help="Prefixes to name output for each samples group. By default uses 1,2,3 etc.", type=str)
-    filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
+    filter_group.add_argument("--region", help="Restrict to the region "
+                              "chrom:start-end. Requires file to bgzipped and"
+                              " tabix indexed.", type=str)
     stat_group_name = "Stats group"
     stat_group = parser.add_argument_group(stat_group_name)
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
-    stat_group.add_argument("--het", help="Output heterozygosity of each locus.", action="store_true")
-    stat_group.add_argument("--mean", help="Output mean of allele frequencies.", action="store_true")
-    stat_group.add_argument("--mode", help="Output mode of allele frequencies.", action="store_true")
-    stat_group.add_argument("--var", help="Output variance of allele frequencies.", action="store_true")
+    stat_group.add_argument("--het", help="Output the heterozygosity of each locus.", action="store_true")
+    stat_group.add_argument("--entropy", help="Output the entropy of each locus.", action="store_true")
+    stat_group.add_argument("--mean", help="Output mean of the allele frequencies.", action="store_true")
+    stat_group.add_argument("--mode", help="Output mode of the allele frequencies.", action="store_true")
+    stat_group.add_argument("--var", help="Output variance of the allele frequencies.", action="store_true")
     stat_group.add_argument("--numcalled", help="Output number of samples called.", action="store_true")
-    stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length", action="store_true")
+    stat_group.add_argument("--use-length", help="Calculate per-locus stats (het, HWE) collapsing alleles by length. This is implicitly true for genotypers which only emit length based genotypes.", action="store_true")
     plot_group = parser.add_argument_group("Plotting group")
     plot_group.add_argument("--plot-afreq", help="Output allele frequency plot. Will only do for a maximum of 10 TRs.", action="store_true")
     ver_group = parser.add_argument_group("Version")
@@ -328,6 +446,12 @@ def getargs(): # pragma: no cover
         return None
     return args
 
+def format_nan_precision(precision_format, val):
+    if np.isnan(val):
+        return "\tnan"
+    else:
+        return precision_format.format(val)
+
 def main(args):
     if not os.path.exists(args.vcf):
         common.WARNING("Error: %s does not exist"%args.vcf)
@@ -343,10 +467,20 @@ def main(args):
                        "directory".format(args.out))
         return 1
 
+    checkgz = args.region is not None
+    invcf = utils.LoadSingleReader(args.vcf, checkgz=checkgz)
+    if invcf is None:
+        return 1
+    if args.vcftype != 'auto':
+        vcftype = trh.VcfTypes[args.vcftype]
+    else:
+        vcftype = trh.InferVCFType(invcf)
+
     # Load samples
-    sample_lists = []
     sample_prefixes = []
+    sample_indexes = []
     if args.samples:
+        all_samples = np.array(invcf.samples)
         sfiles = args.samples.split(",")
         if args.sample_prefixes:
             sample_prefixes = args.sample_prefixes.split(",")
@@ -356,15 +490,12 @@ def main(args):
             common.MSG("--sample-prefixes must be same length as --samples")
             return 1
         for sf in sfiles:
-            sample_lists.append([item.strip() for item in open(sf, "r").readlines()])
-
-    invcf = utils.LoadSingleReader(args.vcf, checkgz = False)
-    if invcf is None:
-        return 1
-    if args.vcftype != 'auto':
-        vcftype = trh.VcfTypes[args.vcftype]
+            sample_list = np.array(
+                [item.strip() for item in open(sf, "r").readlines()]
+            )
+            sample_indexes.append(np.isin(all_samples, sample_list))
     else:
-        vcftype = trh.InferVCFType(invcf)
+        sample_indexes = [None] # None is used to mean all samples
 
     header = ["chrom","start","end"]
     if args.thresh: header.extend(GetHeader("thresh", sample_prefixes))
@@ -372,52 +503,93 @@ def main(args):
     if args.acount: header.extend(GetHeader("acount", sample_prefixes))
     if args.hwep: header.extend(GetHeader("hwep", sample_prefixes))
     if args.het: header.extend(GetHeader("het", sample_prefixes))
+    if args.entropy: header.extend(GetHeader("entropy", sample_prefixes))
     if args.mean: header.extend(GetHeader("mean", sample_prefixes))
     if args.mode: header.extend(GetHeader("mode", sample_prefixes))
     if args.var: header.extend(GetHeader("var", sample_prefixes))
     if args.numcalled: header.extend(GetHeader("numcalled", sample_prefixes))
-    if args.out == "stdout":
-        if args.plot_afreq:
-            common.MSG("Cannot use --out stdout when generating plots")
-            return 1
-        outf = sys.stdout
-    else:
-        outf = open(args.out + ".tab", "w")
-    outf.write("\t".join(header)+"\n")
 
-    if args.region:
-        if not os.path.isfile(args.vcf+".tbi"):
-            common.MSG("Make sure %s is bgzipped and indexed"%args.vcf)
-            return 1
-        regions = invcf.fetch(args.region)
-    else: regions = invcf
-    num_plotted = 0
-    for record in regions:
-        trrecord = trh.HarmonizeRecord(vcftype, record)
-        if args.plot_afreq and num_plotted <= MAXPLOTS:
-            PlotAlleleFreqs(trrecord, args.out, samplelists=sample_lists, sampleprefixes=sample_prefixes)
-            num_plotted += 1
-        items = [record.CHROM, record.POS, record.POS+len(trrecord.ref_allele)]
-        if args.thresh:
-            items.extend(GetThresh(trrecord, samplelists=sample_lists))
-        if args.afreq:
-            items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.acount:
-            items.extend(GetAFreq(trrecord, samplelists=sample_lists, uselength=args.use_length, count=True))
-        if args.hwep:
-            items.extend(GetHWEP(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.het:
-            items.extend(GetHet(trrecord, samplelists=sample_lists, uselength=args.use_length))
-        if args.mean:
-            items.extend(GetMean(trrecord, samplelists=sample_lists))
-        if args.mode:
-            items.extend(GetMode(trrecord, samplelists=sample_lists))
-        if args.var:
-            items.extend(GetVariance(trrecord, samplelists=sample_lists))
-        if args.numcalled:
-            items.extend(GetNumSamples(trrecord, samplelists=sample_lists))
-        outf.write("\t".join([str(item) for item in items])+"\n")
-    outf.close()
+    precision_format = "\t{:." + str(args.precision) + "}"
+    try:
+        if args.out == "stdout":
+            if args.plot_afreq:
+                common.MSG("Cannot use --out stdout when generating plots")
+                return 1
+            outf = sys.stdout
+        else:
+            outf = open(args.out + ".tab", "w")
+        outf.write("\t".join(header)+"\n")
+
+        if args.region:
+            region = invcf(args.region)
+        else: region = invcf
+        num_plotted = 0
+
+        start_time = time.time()
+        nrecords = 0
+        for record in region:
+            nrecords += 1
+
+            trrecord = trh.HarmonizeRecord(vcftype, record)
+            if args.plot_afreq and num_plotted <= MAXPLOTS:
+                PlotAlleleFreqs(trrecord, args.out, sample_indexes=sample_indexes, sampleprefixes=sample_prefixes)
+                num_plotted += 1
+            outf.write(str(record.CHROM) + "\t"
+                       + str(record.POS) + "\t"
+                       + str(record.POS+len(trrecord.ref_allele)))
+            if args.thresh:
+                for val in GetThresh(trrecord, sample_indexes=sample_indexes):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.afreq:
+                for val in GetAFreq(trrecord, sample_indexes=sample_indexes,
+                                    uselength=args.use_length):
+                    outf.write("\t" + str(val))
+            if args.acount:
+                for val in GetAFreq(trrecord, sample_indexes=sample_indexes,
+                                    uselength=args.use_length, count=True):
+                    outf.write("\t" + str(val))
+            if args.hwep:
+                for val in GetHWEP(trrecord, sample_indexes=sample_indexes,
+                                   uselength=args.use_length):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.het:
+                for val in GetHet(trrecord, sample_indexes=sample_indexes,
+                                  uselength=args.use_length):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.entropy:
+                for val in GetEntropy(trrecord, sample_indexes=sample_indexes,
+                                      uselength=args.use_length):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.mean:
+                for val in GetMean(trrecord, sample_indexes=sample_indexes):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.mode:
+                for val in GetMode(trrecord, sample_indexes=sample_indexes):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.var:
+                for val in GetVariance(trrecord, sample_indexes=sample_indexes):
+                    outf.write(format_nan_precision(precision_format, val))
+            if args.numcalled:
+                for val in GetNumSamples(trrecord, sample_indexes=sample_indexes):
+                    outf.write("\t" + str(val))
+            outf.write("\n")
+            if nrecords % 50 == 0:
+                outf.flush()
+            if args.out != "stdout" and nrecords % 50 == 0:
+                print(
+                    "Finished {} records, time/record={:.5}sec".format(
+                        nrecords, (time.time() - start_time)/nrecords
+                    ),
+                    flush=True,
+                    end="\r"
+                )
+    finally:
+        if outf is not None and args.out != "stdout":
+            outf.close()
+
+    if args.out != "stdout":
+        print("\nDone", flush=True)
+
     return 0
 
 def run(): # pragma: no cover

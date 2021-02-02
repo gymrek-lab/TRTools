@@ -99,7 +99,7 @@ per-sample`). Each plot will have the specified type appended to the output file
   Plot a separate line for each sample of the distribution of loci qualities
   for that sample.
   Note: If you specify this for a vcf with many samples,
-  the code may slow to a halt and/or the plot may be cluttered.
+  the code may slow to a halt, run out of memory and/or the plot may be cluttered.
 
 .. produced running qcSTR on test_popstr.vcf
 .. image:: images/quality-sample-stratified.png
@@ -115,13 +115,14 @@ per-sample`). Each plot will have the specified type appended to the output file
   Plot a separate line for each locus of the distribution of sample qualities
   at that locus.
   Note: If you specify this for a vcf with many loci,
-  the code may slow to a halt and/or the plot may be cluttered.
+  the code may slow to a halt, run out of memory and/or the plot may be cluttered.
 
 .. produced running qcSTR on few_loci.vcf
 .. image:: images/quality-locus-stratified.png
 
 * :code:`per-call`
   Plot the distribution of the quality of all calls.
+  Note: If you specify this for a large vcf the code may run out of memory.
 
 .. produced running qcSTR on test_popstr.vcf
 .. image:: images/quality-per-call.png
