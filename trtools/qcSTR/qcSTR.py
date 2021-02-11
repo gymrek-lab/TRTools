@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # pylint: disable=C0411,C0413
 """
 Tool for generating various QC plots for TR callsets

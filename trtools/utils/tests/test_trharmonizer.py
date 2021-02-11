@@ -625,7 +625,6 @@ def test_GetMaxAllele():
 
 
 def test_GetCalledSamples():
-    # Test working example
     dummy_record = get_dummy_record()
     ref_allele = dummy_record.REF
     alt_alleles = dummy_record.ALT
@@ -658,6 +657,23 @@ def test_GetSamplePloidies():
     # Test a no call, sample ploidy should not change
     rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
     assert np.all(rec.GetSamplePloidies() == 2)
+
+
+def test_GetCallRate():
+    dummy_record = get_dummy_record()
+    ref_allele = dummy_record.REF
+    alt_alleles = dummy_record.ALT
+    rec = trh.TRRecord(dummy_record, ref_allele, alt_alleles, "CAG", "", None)
+    assert rec.GetCallRate() == pytest.approx(5/6)
+    assert rec.GetCalledSamples(strict=False) == pytest.approx(1)
+
+    # Test differences in ploidy
+    rec = trh.TRRecord(get_triploid_record(), ref_allele, [], "CAG", "", None)
+    assert rec.GetCalledSamples(strict=True) == pytest.approx(1)
+
+    # Test a true no call
+    rec = trh.TRRecord(get_nocall_record(), ref_allele, [], "CAG", "", None)
+    assert rec.GetCalledSamples(strict=False) == pytest.approx(0)
 
 
 #### Test TRRecordHarmonizer on different files ####

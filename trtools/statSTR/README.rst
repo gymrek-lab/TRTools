@@ -69,8 +69,8 @@ For genotypers which output allele sequences, :code:`--use-length` will collapse
 Output file
 -----------
 
-StatSTR outputs a tab-delimited file with columns: chrom, start, end, plus an additional column for each statistic specified.
-If multiple sample groups are specified, instead there is one additional column for each sample gruop-by-statistic pair
+StatSTR outputs a tab-delimited file with columns ``chrom``, ``start`` and ``end`` plus an additional column for each statistic specified.
+If multiple sample groups are specified, instead there is one additional column for each group-by-statistic pair
 
 Example Commands
 ----------------

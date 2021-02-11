@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Tool for computing stats on a TR VCF file
 """
