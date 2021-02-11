@@ -781,6 +781,28 @@ def test_trh_init_and_type_infer(vcfdir):
             and trh.HasLengthAltGenotypes(trh.VcfTypes.eh))
 
 
+def test_with_harmonizer(vcfdir):
+    reset_vcfs(vcfdir)
+
+    with trh.TRRecordHarmonizer(gangstr_vcf) as gangstr_trh:
+        assert isinstance(next(gangstr_trh), trh.TRRecord) 
+
+    # harmonizer and underlying vcf should now be closed
+    try:
+        next(gangstr_trh)
+    except Exception as e:
+        assert 'closed' in str(e)
+    else:
+        raise Exception("Harmonizer wasn't closed!")
+
+    try:
+        next(gangstr_vcf)
+    except Exception as e:
+        assert 'closed' in str(e)
+    else:
+        raise Exception("cyvcf2.VCF wasn't closed!")
+ 
+
 def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")
             == trh.HasLengthAltGenotypes(trh.VcfTypes.gangstr))

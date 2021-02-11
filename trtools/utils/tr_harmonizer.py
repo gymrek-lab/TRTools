@@ -1638,7 +1638,7 @@ class TRRecordHarmonizer:
 
     def __enter__(self):
         """ No special functionality upon entering a with ... : block"""
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Close this object after leaving a with ... : block"""
