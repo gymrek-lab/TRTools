@@ -680,12 +680,16 @@ def test_GetCallRate():
 
 
 def reset_vcfs(vcfdir):
-    global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
+    global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf, \
+            beagle_hipstr_vcf, beagle_hipstr_unannotated_vcf, beagle_hipstr_quality_vcf
     gangstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_gangstr.vcf"))
     hipstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_hipstr.vcf"))
     popstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_popstr.vcf"))
     advntr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_advntr.vcf"))
     eh_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
+    beagle_hipstr_unannotated_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_beagle_hipstr_not_annotated.vcf"))
+    beagle_hipstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_beagle_hipstr_annotated.vcf"))
+    beagle_hipstr_quality_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_beagle_hipstr_annotated_quality.vcf"))
     snps_vcf = cyvcf2.VCF(os.path.join(vcfdir, "snps.vcf"))
 
 
@@ -780,6 +784,35 @@ def test_trh_init_and_type_infer(vcfdir):
     assert (eh_trh.HasLengthAltGenotypes()
             and trh.HasLengthAltGenotypes(trh.VcfTypes.eh))
 
+    # --- Beagle Hipstr
+    # can't work with unannotated VCFs
+    with pytest.raises(TypeError): 
+        trh.TRRecordHarmonizer(beagle_hipstr_unannotated_vcf, vcftype='beagle-hipstr')
+    unannotated_record = next(beagle_hipstr_unannotated_vcf)
+    with pytest.raises(TypeError):
+        trh.HarmonizeRecord(unannotated_record, vcftype='beagle-hipstr')
+
+    # Must specify vcf type
+    with pytest.raises(TypeError): 
+        trh.TRRecordHarmonizer(beagle_hipstr_vcf)
+    beagle_hipstr_record = next(beagle_hipstr_unannotated_vcf)
+    with pytest.raises(TypeError):
+        trh.HarmonizeRecord(beagle_hipstr_record)
+    with pytest.raises(TypeError):
+        trh.InferVCFType(beagle_hipstr_vcf)
+
+    bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype="beagle-hipstr")
+    assert bh_trh.vcftype == trh.VcfTypes.beagle_hipstr
+    bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype=trh.VcfTypes.beagle_hipstr)
+    assert bh_trh.vcftype == trh.VcfTypes.beagle_hipstr
+    assert trh.InferVCFType(beagle_hipstr_vcf, vcftype='beagle-hipstr') == trh.VcfTypes.beagle_hipstr
+    assert (bh_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.beagle_hipstr))
+    assert (not bh_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.beagle_hipstr))
+    assert (not bh_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.beagle_hipstr))
+
 
 def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")
@@ -813,6 +846,8 @@ def get_vcf(vcftype):
         return advntr_vcf
     if vcftype == trh.VcfTypes.eh:
         return eh_vcf
+    if vcftype == trh.VcfTypes.beagle_hipstr:
+        return beagle_hipstr_vcf
     if vcftype == "snps":
         return snps_vcf
     raise ValueError("Unexpected vcftype")
@@ -820,10 +855,11 @@ def get_vcf(vcftype):
 
 
 def test_wrong_vcftype(vcfdir):
-    # an iterator that includes both tr caller types
-    # and error file types
+    # don't do this with Beagle types
     for correct_type in trh.VcfTypes:
+
         reset_vcfs(vcfdir)
+        # make sure that we can't harmonize other VCFs as this type
         for incorrect_type in all_types():
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
@@ -834,7 +870,13 @@ def test_wrong_vcftype(vcfdir):
                 trh.TRRecordHarmonizer(invcf, vcftype=correct_type)
 
         reset_vcfs(vcfdir)
+        #make sure that we can't harmonize other individual records
+        #as this type.
         for incorrect_type in all_types():
+            #it may not be possible to distinguish between Beagle and the original
+            #caller at the record level, so don't test for that here
+            if trh._IsBeagleType(incorrect_type) or trh._IsBeagleType(correct_type):
+                continue
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
                 continue
@@ -842,6 +884,7 @@ def test_wrong_vcftype(vcfdir):
             invcf = get_vcf(incorrect_type)
             record = next(invcf)
             with pytest.raises(TypeError):
+                print(incorrect_type, correct_type)
                 trh.HarmonizeRecord(correct_type, record)
 
 
@@ -947,6 +990,36 @@ def test_HarmonizeRecord(vcfdir):
     assert tr_rec1.HasFabricatedRefAllele()
     assert tr_rec1.HasFabricatedAltAlleles()
 
+    # hipstr
+    bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype='beagle-hipstr')
+
+    str_iter = iter(bh_trh)
+    tr_rec1 = next(str_iter)
+    assert tr_rec1.ref_allele == 'AAAAAAAAAAAAAAA'
+    assert tr_rec1.alt_alleles == [
+        'AAAAAAAAAAAAAA',
+        'AAAAAAAAAAAAAA',
+        'AAAAAAAAAAACAA',
+        'AAAAAAAAAAAAAAAA'
+    ]
+    assert tr_rec1.full_alleles == (
+        'AAAAAAAAAAAAAAATC',
+        ['AAAAAAAAAAAAAATC',
+         'AAAAAAAAAAAAAATT',
+         'AAAAAAAAAAACAATC',
+         'AAAAAAAAAAAAAAAATC']
+    )
+    assert tr_rec1.motif == 'A'
+    assert tr_rec1.record_id == 'STR_259'
+    assert tr_rec1.HasFullStringGenotypes()
+    assert not tr_rec1.HasFabricatedRefAllele()
+    assert not tr_rec1.HasFabricatedAltAlleles()
+    tr_rec2 = next(str_iter)
+    assert tr_rec2.ref_allele == 'AAAAAAAAAAAAAA'
+    assert tr_rec2.alt_alleles == ['AAAAAAAA','AAAAAAAAAAAAA','AAAAAAAAAAAAAAA']
+    assert tr_rec2.motif == 'A'
+    assert tr_rec2.record_id == 'STR_260'
+    assert not tr_rec2.HasFullStringGenotypes()
 
 def assertFEquals(f1: float, f2: float):
     epsilon = 1e-6
@@ -980,44 +1053,60 @@ def test_TRRecord_Quality(vcfdir):
     reset_vcfs(vcfdir)
 
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
-    assert gangstr_trh.HasQualityScore()
+    assert gangstr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(gangstr_trh)
-    assert var.HasQualityScores()
-    assert var.GetQualityScores()[0] == 0.999912
+    assert pytest.approx(var.GetQualityScores()[0]) == 0.999912
+    assert len(var.GetQualityScores().shape) == 1
 
     gangstr_vcf_noqual = cyvcf2.VCF(
         os.path.join(vcfdir, "test_gangstr_noqual.vcf")
     )
     gangstr_trh_noqual = trh.TRRecordHarmonizer(gangstr_vcf_noqual)
-    assert not gangstr_trh_noqual.HasQualityScore()
+    assert not gangstr_trh_noqual.HasQualityScores()
     var = _getVariantFromHarominzer(gangstr_trh_noqual)
-    assert not var.HasQualityScores()
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         var.GetQualityScores()
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
-    assert hipstr_trh.HasQualityScore()
+    assert hipstr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(hipstr_trh, nvar=18)
-    assert var.HasQualityScores()
-    assert var.GetQualityScores()[0] == 0.93
+    assert pytest.approx(var.GetQualityScores()[0]) == 0.93
+    assert len(var.GetQualityScores().shape) == 1
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf)
-    assert not popstr_trh.HasQualityScore()
+    assert not popstr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(popstr_trh)
-    assert not var.HasQualityScores()
 
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
-    assert advntr_trh.HasQualityScore()
+    assert advntr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(advntr_trh)
-    assert var.HasQualityScores()
-    assert var.GetQualityScores()[0] == 0.863
+    assert pytest.approx(var.GetQualityScores()[0]) == 0.863
+    assert len(var.GetQualityScores().shape) == 1
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf)
-    assert not eh_trh.HasQualityScore()
+    assert not eh_trh.HasQualityScores()
     var = _getVariantFromHarominzer(eh_trh)
-    assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
+
+    bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype='beagle-hipstr')
+    assert not bh_trh.HasQualityScores()
+    var = next(bh_trh)
+    with pytest.raises(KeyError):
+        var.GetQualityScores()
+
+    bh_quality_trh = trh.TRRecordHarmonizer(
+        beagle_hipstr_quality_vcf, vcftype='beagle-hipstr')
+    assert bh_quality_trh.HasQualityScores()
+    var = next(bh_quality_trh)
+    assert len(var.GetQualityScores().shape) == 1
+    assert pytest.approx(var.GetQualityScores()[0]) == .62
+    var = next(bh_quality_trh)
+    assert pytest.approx(var.GetQualityScores()[0]) == .87
+    var = _getVariantFromHarominzer(bh_quality_trh, 2)
+    assert pytest.approx(var.GetQualityScores()[0]) == 1
+    var = _getVariantFromHarominzer(bh_quality_trh, 2)
+    assert pytest.approx(var.GetQualityScores()[0]) == .85*.7 + .15*.1
 
 
 def test_close(vcfdir):

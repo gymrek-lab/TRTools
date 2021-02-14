@@ -21,8 +21,8 @@ To properly format the Beagle generate VCF, keep reading.
     `here <https://gymreklab.com/2018/03/05/snpstr_imputation.html>`_
     and published in
     `this paper <https://www.nature.com/articles/s41467-018-06694-0>`_ by Saini et al.
-    contains HipSTR-called TR genotypes genome-wide. Beagle can impute those HipSTR 
-    calls into other samples with only SNP genotypes. 
+    contains HipSTR-called TR genotypes genome-wide. Beagle can impute those HipSTR
+    calls into other samples with only SNP genotypes.
 
 Invoking Beagle
 ---------------

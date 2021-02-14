@@ -35,6 +35,14 @@ Output changes:
 * When DumpSTR emits the samplog file, before each of the sample lines there is
   now a 'Total' line.
 
+Python interface changes:
+
+* The HasQualityScores method has been removed from the TRRecord class.
+  The HasQualityScore method on the TRRecordHarmonizer class has been renamed to
+  HasQualityScores.
+* The GetQualityScores() method on the TRRecord class now returns a 1D array
+  instead of a 2D array where the second dimension has length 1.
+
 Quality of life improvements:
 
 * qcSTR and dumpSTR now print out the progress they are making as they read

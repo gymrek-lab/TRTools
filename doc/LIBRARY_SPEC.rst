@@ -40,6 +40,12 @@ Here is how TRHarmonizer infers quality scores for each supported genotyper:
 * PopSTR does not output a genotype quality score. It does output a :code:`PL` field 
   with Phred-scaled genotype likelihoods, but this field is
   not currently used by TRTools.
-* Quality scores for TRs imputed by Beagle come from the ``AP1`` and ``AP2`` fields.
+* Quality scores for TRs imputed by Beagle correspond to the probability of the hard call
+  as determined by multiplying the probability from the AP field for each allele in that
+  call. Currently, these qualities always correspond to the quality of the hard
+  call treated as an *unphased* call even though Beagle outputs phased calls.
+  So ``P('Ref|Ref') == AP1[0]*AP2[0]`` and
+  ``P('Ref|Alt1') == AP1[0]*AP2[1] + AP1[1]*AP2[0]``
+
 
 More details about these fields can be found in the documentation for each genotyper.
