@@ -37,8 +37,7 @@ Output changes:
 
 Python interface changes:
 
-* The HasQualityScores method has been removed from the TRRecord class.
-  The HasQualityScore method on the TRRecordHarmonizer class has been renamed to
+* The HasQualityScore method on the TRRecordHarmonizer class has been renamed to
   HasQualityScores.
 * The GetQualityScores() method on the TRRecord class now returns a 1D array
   instead of a 2D array where the second dimension has length 1.

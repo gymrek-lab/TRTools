@@ -676,6 +676,15 @@ def test_GetCallRate():
     assert rec.GetCalledSamples(strict=False) == pytest.approx(0)
 
 
+def test_IsBeagleType():
+    for typ in (trh.VcfTypes.advntr,
+                trh.VcfTypes.eh,
+                trh.VcfTypes.gangstr,
+                trh.VcfTypes.hipstr,
+                trh.VcfTypes.popstr):
+        assert not trh._IsBeagleType(typ)
+    assert trh._IsBeagleType(trh.VcfTypes.beagle_hipstr)
+
 #### Test TRRecordHarmonizer on different files ####
 
 
@@ -1055,6 +1064,7 @@ def test_TRRecord_Quality(vcfdir):
     gangstr_trh = trh.TRRecordHarmonizer(gangstr_vcf)
     assert gangstr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(gangstr_trh)
+    assert var.HasQualityScores()
     assert pytest.approx(var.GetQualityScores()[0]) == 0.999912
     assert len(var.GetQualityScores().shape) == 1
 
@@ -1064,12 +1074,14 @@ def test_TRRecord_Quality(vcfdir):
     gangstr_trh_noqual = trh.TRRecordHarmonizer(gangstr_vcf_noqual)
     assert not gangstr_trh_noqual.HasQualityScores()
     var = _getVariantFromHarominzer(gangstr_trh_noqual)
+    assert not var.HasQualityScores()
     with pytest.raises(KeyError):
         var.GetQualityScores()
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf)
     assert hipstr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(hipstr_trh, nvar=18)
+    assert var.HasQualityScores()
     assert pytest.approx(var.GetQualityScores()[0]) == 0.93
     assert len(var.GetQualityScores().shape) == 1
 
@@ -1080,25 +1092,29 @@ def test_TRRecord_Quality(vcfdir):
     advntr_trh = trh.TRRecordHarmonizer(advntr_vcf)
     assert advntr_trh.HasQualityScores()
     var = _getVariantFromHarominzer(advntr_trh)
+    assert var.HasQualityScores()
     assert pytest.approx(var.GetQualityScores()[0]) == 0.863
     assert len(var.GetQualityScores().shape) == 1
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf)
     assert not eh_trh.HasQualityScores()
     var = _getVariantFromHarominzer(eh_trh)
+    assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
 
     bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype='beagle-hipstr')
     assert not bh_trh.HasQualityScores()
     var = next(bh_trh)
-    with pytest.raises(KeyError):
+    assert not var.HasQualityScores()
+    with pytest.raises(TypeError):
         var.GetQualityScores()
 
     bh_quality_trh = trh.TRRecordHarmonizer(
         beagle_hipstr_quality_vcf, vcftype='beagle-hipstr')
     assert bh_quality_trh.HasQualityScores()
     var = next(bh_quality_trh)
+    assert var.HasQualityScores()
     assert len(var.GetQualityScores().shape) == 1
     assert pytest.approx(var.GetQualityScores()[0]) == .62
     var = next(bh_quality_trh)
@@ -1107,6 +1123,40 @@ def test_TRRecord_Quality(vcfdir):
     assert pytest.approx(var.GetQualityScores()[0]) == 1
     var = _getVariantFromHarominzer(bh_quality_trh, 2)
     assert pytest.approx(var.GetQualityScores()[0]) == .85*.7 + .15*.1
+
+
+def test_TRRecord_dosage(vcfdir):
+    reset_vcfs(vcfdir)
+
+    for vcf in (gangstr_vcf, hipstr_vcf, eh_vcf, popstr_vcf, advntr_vcf):
+        harmonizer = trh.TRRecordHarmonizer(vcf)
+        assert not harmonizer.HasDosages()
+        var = _getVariantFromHarominzer(harmonizer)
+        assert not var.HasDosages()
+        with pytest.raises(TypeError):
+            var.GetDosages()
+
+    bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype='beagle-hipstr')
+    assert not bh_trh.HasDosages()
+    var = next(bh_trh)
+    assert not var.HasDosages()
+    with pytest.raises(TypeError):
+        var.GetDosages()
+
+    bh_quality_trh = trh.TRRecordHarmonizer(
+        beagle_hipstr_quality_vcf, vcftype='beagle-hipstr')
+    assert bh_quality_trh.HasDosages()
+    var = next(bh_quality_trh)
+    assert var.HasDosages()
+    assert pytest.approx(var.GetDosages()[0]) == -1.62
+    var = next(bh_quality_trh)
+    assert pytest.approx(var.GetDosages()[0]) == -.13
+    var = next(bh_quality_trh)
+    assert pytest.approx(var.GetDosages()[0]) == -3
+    var = next(bh_quality_trh)
+    assert pytest.approx(var.GetDosages()[0]) == 1
+    var = _getVariantFromHarominzer(bh_quality_trh, 2)
+    assert pytest.approx(var.GetDosages()[0]) == 1.15
 
 
 def test_close(vcfdir):

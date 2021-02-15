@@ -279,12 +279,14 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     vcftype = _ToVCFType(vcftype)
 
     if _IsBeagleType(vcftype):
-        if vcfrecord.INFO.get('AP1') is None:
+        if 'AP1' in vcfrecord.FORMAT:
             quality_field = None
             quality_score_transform = _GetBeagleAPQuality
+            dosage_transform = _GetBeagleDosages
         else:
             quality_field = None
             quality_score_transform = None
+            dosage_transform = None
         # TODO support Beagle GP field
     if vcftype == VcfTypes.gangstr:
         return _HarmonizeGangSTRRecord(vcfrecord)
@@ -293,7 +295,8 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     if vcftype == VcfTypes.beagle_hipstr:
         return _HarmonizeHipSTRRecord(vcfrecord,
                                       quality_field,
-                                      quality_score_transform)
+                                      quality_score_transform,
+                                      dosage_transform)
     if vcftype == VcfTypes.advntr:
         return _HarmonizeAdVNTRRecord(vcfrecord)
     if vcftype == VcfTypes.eh:
@@ -339,7 +342,8 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
 
 def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant,
                            quality_field: Optional[str] = 'Q',
-                           quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None):
+                           quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None,
+                           dosage_transform = None):
     """
     Turn a cyvcf2.Variant with HipSTR content into a TRRecord.
 
@@ -351,6 +355,9 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant,
         The FORMAT field with quality information. HipSTR uses 'Q'.
         If this is an imputed record then this may be changed from the default.
     quality_score_transform :
+        If this is an imputed record then this may be set. See the corresponding
+        field of TRRecord for more info.
+    dosage_transform: Optional[Callable[[TRRecord], numpy.ndarray]]
         If this is an imputed record then this may be set. See the corresponding
         field of TRRecord for more info.
 
@@ -428,7 +435,8 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant,
                         full_alleles=full_alleles,
                         trimmed_pos=vcfrecord.INFO["START"],
                         trimmed_end_pos=vcfrecord.INFO["END"],
-                        quality_score_transform = quality_score_transform)
+                        quality_score_transform = quality_score_transform,
+                        dosage_transform = dosage_transform)
     else:
         return TRRecord(vcfrecord,
                         ref_allele,
@@ -436,7 +444,8 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant,
                         motif,
                         record_id,
                         quality_field,
-                        quality_score_transform = quality_score_transform)
+                        quality_score_transform = quality_score_transform,
+                        dosage_transform = dosage_transform)
 
 
 def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
@@ -612,6 +621,8 @@ def _GetBeagleAPQuality(vcfrecord: cyvcf2.Variant) -> np.ndarray:
             aps[1][het_calls, idx_gts[het_calls, 0]]
     return probs
 
+
+
 class _Cyvcf2FormatDict():
     """
     Provide an immutable dict-like interface for accessing
@@ -740,6 +751,10 @@ class TRRecord:
         returns a 1D array of float scores of length n_samples.
         When None, the quality_field values are assumed
         to already be a float array of shape n_samples x 1 .
+    dosage_transform:
+        A function which takes the underlying cyvcf2.Variant object and
+        returns a 1D array of float dosage lengths of length n_samples.
+        When None, the underlying Variant cannot be interpreted as having dosages.
 
     Notes
     -----
@@ -763,7 +778,8 @@ class TRRecord:
                  trimmed_end_pos: Optional[int] = None,
                  ref_allele_length: Optional[float] = None,
                  alt_allele_lengths: Optional[List[float]] = None,
-                 quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None):
+                 quality_score_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None,
+                 dosage_transform: Optional[Callable[[cyvcf2.Variant], np.ndarray]] = None):
         self.vcfrecord = vcfrecord
         self.ref_allele = ref_allele
         self.alt_alleles = alt_alleles
@@ -778,6 +794,7 @@ class TRRecord:
         self.alt_allele_lengths = alt_allele_lengths
         self.quality_field = quality_field
         self.quality_score_transform = quality_score_transform
+        self.dosage_transform = dosage_transform
 
         if full_alleles is not None and (alt_alleles is None or ref_allele is
                                          None):
@@ -1300,6 +1317,30 @@ class TRRecord:
         """
         return self.has_fabricated_alt_alleles
 
+    def HasQualityScores(self) -> bool:
+        """
+        Determine if this record has quality scores.
+
+        Returns
+        -------
+        bool
+        """
+
+        return ((self.quality_field is not None and
+                 self.quality_field in self.format) or
+                self.quality_score_transform is not None)
+
+    def HasDosages(self) -> bool:
+        """
+        Determine if this record has information that can be interpreted
+        as (length) dosages
+
+        Returns
+        -------
+        bools
+        """
+        return self.dosage_transform is not None
+
     def GetGenotypeCounts(
             self,
             sample_index: Optional[Any] = None,
@@ -1577,6 +1618,28 @@ class TRRecord:
             transform = self.quality_score_transform
             return transform(self.vcfrecord)
 
+    def GetDosages(self) -> np.ndarray:
+        """
+        Get the (length) dosages for each sample.
+
+        Length dosages at a locus are defined as the sum, for each
+        haplotype, of the probability each allele occurs in that haplotype
+        times the difference in length between that allele and the reference allele (where
+        length is measured in repeat copies).
+        Symbolically, for a locus with ploidy P and n alternate alleles:
+
+        .. math::
+
+            \\sum_{p = 1}^P \\sum_{i = 1}^n
+            \\text{Pr}(\\text{hap}_p = \\text{allele}_i)*(\\text{len}(\\text{allele}_i) - \\text{len}(\\text{allele}_0))
+
+        Lengths are measured in repeat copies.
+
+        Dosages only make sense for records produced by some TR callers.
+        """
+
+        return self.dosage_transform(self)
+
     def __str__(self):
         """Generate a summary of the variant described by this record."""
         record_id = self.record_id
@@ -1713,6 +1776,19 @@ class TRRecordHarmonizer:
         # would only be reachable if VcfTypes is expanded in the future)
         _UnexpectedTypeError(self.vcftype)  # pragma: no cover
 
+    def HasDosages(self) -> bool:
+        """
+        Determine if the records in this VCF be interpreted as having dosages.
+
+        Returns
+        -------
+        bool
+        """
+        if _IsBeagleType(self.vcftype):
+            return 'FORMAT=<ID=AP1,' in self.vcffile.raw_header
+        else:
+            return False
+
     def close(self):
         """Close the underlying VCF file object"""
         self.vcffile.close()
@@ -1734,4 +1810,18 @@ class TRRecordHarmonizer:
         self.vcffile.close()
 
 
-#TODO check all users of this class for new options
+def _GetBeagleDosages(trrecord: TRRecord) -> np.ndarray:
+    idx_gts = trrecord.GetGenotypeIndicies()[:, :-1]
+
+    alt_allele_lengths = np.array(trrecord.alt_allele_lengths)
+    alt_allele_lengths -= trrecord.ref_allele_length
+
+    _range = np.arange(idx_gts.shape[0])
+    dosages = np.zeros(idx_gts.shape[0])
+    for ploid in range(1, idx_gts.shape[1] + 1):
+        ap = trrecord.format[f'AP{ploid}']
+
+        for idx, length in enumerate(alt_allele_lengths):
+            dosages += length*ap[:, idx]
+    return dosages
+
