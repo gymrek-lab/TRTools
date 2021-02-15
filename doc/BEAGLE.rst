@@ -26,8 +26,8 @@ To properly format the Beagle generate VCF, keep reading.
 
 Invoking Beagle
 ---------------
-By default, Beagle only outputs hardcalls and allele dosages for each imputed call
-which are insufficient for some types of call level filtering and quality control.
+By default, Beagle only outputs hardcalls and allele dosages for each imputed call.
+These are insufficient for some types of call level filtering and quality control.
 Add either of the flags ``ap=true`` or ``gp=true`` to your call to Beagle to
 have it emit allele-specific probability scores that can be filtered on. (
 Using ``ap`` will cause the resulting (uncompressed) VCF to increase in size
