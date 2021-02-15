@@ -500,7 +500,7 @@ def GatherData(harmonizer: trh.TRRecordHarmonizer,
     if (_QualityTypes.sample_stratified.value in quality_types or
             _QualityTypes.locus_stratified.value in quality_types or
             _QualityTypes.per_call.value in quality_types):
-        per_call_data = np.concatenate(per_call_data, axis=1).T
+        per_call_data = np.stack(per_call_data)
         if not quality_ignore_no_call:
             per_call_data[np.isnan(per_call_data)] = 0
 
@@ -631,7 +631,7 @@ def main(args):
     else:
         harmonizer = trh.TRRecordHarmonizer(invcf)
 
-    if len(args.quality) > 0 and not harmonizer.HasQualityScore():
+    if len(args.quality) > 0 and not harmonizer.HasQualityScores():
         common.WARNING("Requested a quality plot, but the input vcf doesn't have "
                        "quality scores!")
         return 1
@@ -661,7 +661,7 @@ def main(args):
 
     # Figure out which quality plot to produce by default
     default_quality = False
-    if len(args.quality) == 0 and harmonizer.HasQualityScore():
+    if len(args.quality) == 0 and harmonizer.HasQualityScores():
         default_quality = True
         if len(sample_list) <= 5:
             args.quality = [_QualityTypes.sample_stratified.value]

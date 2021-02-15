@@ -999,7 +999,7 @@ def test_HarmonizeRecord(vcfdir):
     assert tr_rec1.HasFabricatedRefAllele()
     assert tr_rec1.HasFabricatedAltAlleles()
 
-    # hipstr
+    # beagle hipstr
     bh_trh = trh.TRRecordHarmonizer(beagle_hipstr_vcf, vcftype='beagle-hipstr')
 
     str_iter = iter(bh_trh)
