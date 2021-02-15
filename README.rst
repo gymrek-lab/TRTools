@@ -108,6 +108,7 @@ Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
+* TRTools currently only supports genotypes imputed by Beagle from HipSTR calls. We intend to support Beagle calls imputed from all of the above callers.
 
 Contributing
 ------------
