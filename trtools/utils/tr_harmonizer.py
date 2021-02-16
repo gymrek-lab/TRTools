@@ -1709,8 +1709,14 @@ class TRRecordHarmonizer:
         See :py:meth:`InferVCFType` for more details.
     """
 
-    def __init__(self, vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto"):
+    def __init__(self, vcffile: cyvcf2.VCF,
+                 vcftype: Union[str, VcfTypes] = "auto",
+                 region: Optional[str] = None):
         self.vcffile = vcffile
+        if region:
+            self.vcfregion = vcffile(region)
+        else:
+            self.vcfregion = vcffile
         self.vcftype = InferVCFType(vcffile, vcftype)
 
     def MayHaveImpureRepeats(self) -> bool:
@@ -1799,7 +1805,7 @@ class TRRecordHarmonizer:
 
     def __next__(self) -> TRRecord:
         """Iterate over TRRecord produced from the underlying vcf."""
-        return HarmonizeRecord(self.vcftype, next(self.vcffile))
+        return HarmonizeRecord(self.vcftype, next(self.vcfregion))
 
     def __enter__(self):
         """ No special functionality upon entering a with ... : block"""
