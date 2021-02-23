@@ -487,7 +487,7 @@ def main(args):
         else:
             sample_prefixes = [str(item) for item in range(1, len(sfiles)+1)]
         if len(sfiles) != len(sample_prefixes):
-            common.MSG("--sample-prefixes must be same length as --samples")
+            common.WARNING("--sample-prefixes must be same length as --samples")
             return 1
         for sf in sfiles:
             sample_list = np.array(
@@ -516,7 +516,7 @@ def main(args):
     try:
         if args.out == "stdout":
             if args.plot_afreq:
-                common.MSG("Cannot use --out stdout when generating plots")
+                common.WARNING("Cannot use --out stdout when generating plots")
                 return 1
             outf = sys.stdout
         else:
