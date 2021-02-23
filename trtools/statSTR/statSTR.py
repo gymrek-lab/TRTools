@@ -493,6 +493,9 @@ def main(args):
             sample_list = np.array(
                 [item.strip() for item in open(sf, "r").readlines()]
             )
+            if not np.any(np.isin(all_samples, sample_list)):
+                common.WARNING("No samples from {} found in the VCF file".format(sf))
+                return 1
             sample_indexes.append(np.isin(all_samples, sample_list))
     else:
         sample_indexes = [None] # None is used to mean all samples
