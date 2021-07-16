@@ -35,9 +35,9 @@ With conda
 
         conda install -c bioconda trtools
 
-Note: Bioconda `only supports <https://bioconda.github.io/user/versions.html#python>`_ python versions 3.6 and 3.7 currently,
+Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
-If you are using a different version of python we support (3.5 or >= 3.8),
+If you are using a different version of python we support (3.5 or >= 3.9),
 install TRTools using pip.
 
 With pip
