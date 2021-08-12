@@ -1,0 +1,2469 @@
+{
+    "HOXD13": {
+        "HG00112": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC,GGCGGCGGCGGCGGCAGCGGCGGCTGCGGCGGCGGCAGCGGC",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        }
+    },
+    "CNBP": {},
+    "NOS1": {},
+    "FXN": {},
+    "CACNA1A": {
+        "HG00112": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "36,42",
+            "cn": "12.0,14.0",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,42",
+            "cn": "11.0,14.0",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,36",
+            "cn": "11.0,12.0",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,36",
+            "cn": "11.0,12.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,36",
+            "cn": "13.0,12.0",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,36",
+            "cn": "11.0,12.0",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,36",
+            "cn": "11.0,12.0",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,42",
+            "cn": "11.0,14.0",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "CTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "18,33",
+            "cn": "6.0,11.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "HG01113": {},
+        "HG03736": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "21,33",
+            "cn": "7.0,11.0",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,33",
+            "cn": "13.0,11.0",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "39,21",
+            "cn": "13.0,7.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,CTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "33,48",
+            "cn": "11.0,16.0",
+            "q": "1"
+        }
+    },
+    "PAPBN1": {
+        "HG00112": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12890": {},
+        "NA19239": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GGCGGCGGCGGCGGCGGCGGC,GGCGGCGGCGGCGGCGGCGGC",
+            "allele_lens": "21,21",
+            "cn": "3.5,3.5",
+            "q": "1"
+        }
+    },
+    "FOXL2": {},
+    "SCA7": {},
+    "SCA2": {},
+    "ATN1": {
+        "HG00112": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,57",
+            "cn": "19.0,19.0",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "60,66",
+            "cn": "20.0,22.0",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,66",
+            "cn": "14.0,22.0",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,36",
+            "cn": "19.0,12.0",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,63",
+            "cn": "19.0,21.0",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,60",
+            "cn": "14.0,20.0",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,48",
+            "cn": "19.0,16.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,42",
+            "cn": "19.0,14.0",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "60,63",
+            "cn": "20.0,21.0",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,63",
+            "cn": "12.0,21.0",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,60",
+            "cn": "19.0,20.0",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,39",
+            "cn": "12.0,13.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA",
+            "allele_lens": "61,64",
+            "cn": "20.333333333333332,21.333333333333332",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,42",
+            "cn": "19.0,14.0",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,57",
+            "cn": "19.0,19.0",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA",
+            "allele_lens": "49,76",
+            "cn": "16.333333333333332,25.333333333333332",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,51",
+            "cn": "19.0,17.0",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,57",
+            "cn": "19.0,19.0",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "48,54",
+            "cn": "16.0,18.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,63",
+            "cn": "12.0,21.0",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "48,57",
+            "cn": "16.0,19.0",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,63",
+            "cn": "19.0,21.0",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "60,63",
+            "cn": "20.0,21.0",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT",
+            "allele_lens": "47,68",
+            "cn": "15.666666666666666,22.666666666666668",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "57,36",
+            "cn": "19.0,12.0",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT",
+            "allele_lens": "62,71",
+            "cn": "20.666666666666668,23.666666666666668",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA",
+            "allele_lens": "61,85",
+            "cn": "20.333333333333332,28.333333333333332",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "48,60",
+            "cn": "16.0,20.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCA",
+            "allele_lens": "52,70",
+            "cn": "17.333333333333332,23.333333333333332",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "CAGCAACAGCAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "51,60",
+            "cn": "17.0,20.0",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "48,78",
+            "cn": "16.0,26.0",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT",
+            "allele_lens": "62,50",
+            "cn": "20.666666666666668,16.666666666666668",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "39,39",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT,ACCAGCAACAGCAACAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAT",
+            "allele_lens": "53,71",
+            "cn": "17.666666666666668,23.666666666666668",
+            "q": "1"
+        }
+    },
+    "SCA3": {},
+    "AFF2": {},
+    "SCA1": {},
+    "JPH3": {
+        "HG00112": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGATGCTG",
+            "allele_lens": "53,56",
+            "cn": "17.666666666666668,18.666666666666668",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "53,53",
+            "cn": "17.666666666666668,17.666666666666668",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT",
+            "allele_lens": "48,84",
+            "cn": "16.0,28.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,56",
+            "cn": "15.666666666666666,18.666666666666668",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT",
+            "allele_lens": "54,54",
+            "cn": "18.0,18.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "53,53",
+            "cn": "17.666666666666668,17.666666666666668",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "50,50",
+            "cn": "16.666666666666668,16.666666666666668",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "53,53",
+            "cn": "17.666666666666668,17.666666666666668",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT",
+            "allele_lens": "48,48",
+            "cn": "16.0,16.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "50,50",
+            "cn": "16.666666666666668,16.666666666666668",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "53,56",
+            "cn": "17.666666666666668,18.666666666666668",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,50",
+            "cn": "15.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,50",
+            "cn": "15.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "29,47",
+            "cn": "9.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "32,53",
+            "cn": "10.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,50",
+            "cn": "15.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGT",
+            "allele_lens": "48,51",
+            "cn": "16.0,17.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG,GCTGCCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTG",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        }
+    },
+    "PHOX2B": {
+        "HG00112": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT",
+            "allele_lens": "51,51",
+            "cn": "17.0,17.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT,GCCGCCGCTGCCGCGGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT",
+            "allele_lens": "51,51",
+            "cn": "17.0,17.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT,GCCGCCGCTGCCGCTGCCGCCGCCGCTGCTGCCGCGGCCGCCGCCGCTGCT",
+            "allele_lens": "51,51",
+            "cn": "17.0,17.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT",
+            "allele_lens": "51,51",
+            "cn": "17.0,17.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,26",
+            "cn": "15.666666666666666,8.666666666666666",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT,GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGCTGCT",
+            "allele_lens": "51,51",
+            "cn": "17.0,17.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GCCGCCGCTGCCGCTGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC,GCCGCCGCTGCCGCGGCCGCCGCCGCCGCTGCCGCGGCCGCCGCCGC",
+            "allele_lens": "47,47",
+            "cn": "15.666666666666666,15.666666666666666",
+            "q": "1"
+        }
+    },
+    "DMPK": {
+        "HG00112": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAG",
+            "allele_lens": "15,15",
+            "cn": "5.0,5.0",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "33,39",
+            "cn": "11.0,13.0",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,39",
+            "cn": "5.0,13.0",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,33",
+            "cn": "5.0,11.0",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,42",
+            "cn": "5.0,14.0",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,51",
+            "cn": "5.0,17.0",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "39,42",
+            "cn": "13.0,14.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "33,39",
+            "cn": "11.0,13.0",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,36",
+            "cn": "5.0,12.0",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,42",
+            "cn": "12.0,14.0",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,42",
+            "cn": "5.0,14.0",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAG,TTCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "21,39",
+            "cn": "7.0,13.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,66",
+            "cn": "5.0,22.0",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,42",
+            "cn": "5.0,14.0",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,42",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,48",
+            "cn": "14.0,16.0",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "21,60",
+            "cn": "7.0,20.0",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,39",
+            "cn": "5.0,13.0",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,42",
+            "cn": "12.0,14.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,45",
+            "cn": "14.0,15.0",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "33,33",
+            "cn": "11.0,11.0",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAG",
+            "allele_lens": "21,21",
+            "cn": "7.0,7.0",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "45,66",
+            "cn": "15.0,22.0",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "39,45",
+            "cn": "13.0,15.0",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,33",
+            "cn": "5.0,11.0",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,57",
+            "cn": "12.0,19.0",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,36",
+            "cn": "12.0,12.0",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "21,42",
+            "cn": "7.0,14.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "36,36",
+            "cn": "12.0,12.0",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,45",
+            "cn": "14.0,15.0",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,48",
+            "cn": "5.0,16.0",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "CAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "15,36",
+            "cn": "5.0,12.0",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,TCCCCCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "42,45",
+            "cn": "14.0,15.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG",
+            "allele_lens": "33,36",
+            "cn": "11.0,12.0",
+            "q": "1"
+        }
+    },
+    "ZIC2": {
+        "HG00112": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG,GCGGCGGCGGCAGCGGCGGCGGCGGCTGCGGCGGCGGCGGCCGCGG",
+            "allele_lens": "46,46",
+            "cn": "15.333333333333334,15.333333333333334",
+            "q": "1"
+        }
+    },
+    "HTT": {
+        "HG00112": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "98,98",
+            "cn": "32.666666666666664,32.666666666666664",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "92,104",
+            "cn": "30.666666666666668,34.666666666666664",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "92,95",
+            "cn": "30.666666666666668,31.666666666666668",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,95",
+            "cn": "28.666666666666668,31.666666666666668",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "95,98",
+            "cn": "31.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "95,98",
+            "cn": "31.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "83,86",
+            "cn": "27.666666666666668,28.666666666666668",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "98,98",
+            "cn": "32.666666666666664,32.666666666666664",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCTCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "89,104",
+            "cn": "29.666666666666668,34.666666666666664",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,86",
+            "cn": "28.666666666666668,28.666666666666668",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "83,98",
+            "cn": "27.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "80,89",
+            "cn": "26.666666666666668,29.666666666666668",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "95,95",
+            "cn": "31.666666666666668,31.666666666666668",
+            "q": "0.99"
+        },
+        "HG00766": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "95,98",
+            "cn": "31.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "80,95",
+            "cn": "26.666666666666668,31.666666666666668",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCTCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "89,101",
+            "cn": "29.666666666666668,33.666666666666664",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "80,98",
+            "cn": "26.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "83,98",
+            "cn": "27.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "92,101",
+            "cn": "30.666666666666668,33.666666666666664",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "95,98",
+            "cn": "31.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "98,104",
+            "cn": "32.666666666666664,34.666666666666664",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "89,98",
+            "cn": "29.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,98",
+            "cn": "28.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,95",
+            "cn": "28.666666666666668,31.666666666666668",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "89,101",
+            "cn": "29.666666666666668,33.666666666666664",
+            "q": "1"
+        },
+        "NA18940": {},
+        "NA20506": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "89,113",
+            "cn": "29.666666666666668,37.666666666666664",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCTCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,89",
+            "cn": "28.666666666666668,29.666666666666668",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "92,98",
+            "cn": "30.666666666666668,32.666666666666664",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "98,107",
+            "cn": "32.666666666666664,35.666666666666664",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,86",
+            "cn": "28.666666666666668,28.666666666666668",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,86",
+            "cn": "28.666666666666668,28.666666666666668",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCTCC",
+            "allele_lens": "83,104",
+            "cn": "27.666666666666668,34.666666666666664",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCC,CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCGCCACCGCCGCCGCCGCCGCCGCCGCCGCCGCCGCC",
+            "allele_lens": "86,95",
+            "cn": "28.666666666666668,31.666666666666668",
+            "q": "1"
+        }
+    },
+    "AR": {},
+    "ATXN10": {
+        "HG00112": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,65",
+            "cn": "12.0,13.0",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,65",
+            "cn": "14.0,13.0",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,60",
+            "cn": "14.0,12.0",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "72,77",
+            "cn": "14.4,15.4",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "55,75",
+            "cn": "11.0,15.0",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,65",
+            "cn": "12.0,13.0",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,70",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "75,80",
+            "cn": "15.0,16.0",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTGTTTTCTATTCT",
+            "allele_lens": "70,80",
+            "cn": "14.0,16.0",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "67,77",
+            "cn": "13.4,15.4",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,65",
+            "cn": "12.0,13.0",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,65",
+            "cn": "14.0,13.0",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,75",
+            "cn": "12.0,15.0",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "55,75",
+            "cn": "11.0,15.0",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTGTTTTCTATTCTTTTT",
+            "allele_lens": "74,84",
+            "cn": "14.8,16.8",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTCTATTCT",
+            "allele_lens": "70,85",
+            "cn": "14.0,17.0",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTT",
+            "allele_lens": "74,69",
+            "cn": "14.8,13.8",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "65,80",
+            "cn": "13.0,16.0",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,65",
+            "cn": "12.0,13.0",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,65",
+            "cn": "14.0,13.0",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "62,67",
+            "cn": "12.4,13.4",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "65,65",
+            "cn": "13.0,13.0",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,75",
+            "cn": "14.0,15.0",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "60,80",
+            "cn": "12.0,16.0",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,GGATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "67,82",
+            "cn": "13.4,16.4",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,80",
+            "cn": "14.0,16.0",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,70",
+            "cn": "14.0,14.0",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,60",
+            "cn": "14.0,12.0",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,75",
+            "cn": "14.0,15.0",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTTTTT",
+            "allele_lens": "74,64",
+            "cn": "14.8,12.8",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTGTTTTCTATTCT",
+            "allele_lens": "70,95",
+            "cn": "14.0,19.0",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,65",
+            "cn": "14.0,13.0",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "70,60",
+            "cn": "14.0,12.0",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT,ATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCTATTCT",
+            "allele_lens": "75,80",
+            "cn": "15.0,16.0",
+            "q": "1"
+        }
+    },
+    "PPP2R2B": {
+        "HG00112": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,44",
+            "cn": "13.666666666666666,14.666666666666666",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA20847": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "44,47",
+            "cn": "14.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "44,47",
+            "cn": "14.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,26",
+            "cn": "10.666666666666666,8.666666666666666",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "44,50",
+            "cn": "14.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,47",
+            "cn": "13.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,41",
+            "cn": "10.666666666666666,13.666666666666666",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,47",
+            "cn": "10.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "47,56",
+            "cn": "15.666666666666666,18.666666666666668",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,47",
+            "cn": "10.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,44",
+            "cn": "10.666666666666666,14.666666666666666",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,47",
+            "cn": "10.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,44",
+            "cn": "10.666666666666666,14.666666666666666",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,44",
+            "cn": "13.666666666666666,14.666666666666666",
+            "q": "1"
+        },
+        "HG00731": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,44",
+            "cn": "13.666666666666666,14.666666666666666",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,50",
+            "cn": "10.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,47",
+            "cn": "13.666666666666666,15.666666666666666",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,41",
+            "cn": "10.666666666666666,13.666666666666666",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "47,62",
+            "cn": "15.666666666666666,20.666666666666668",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "41,41",
+            "cn": "13.666666666666666,13.666666666666666",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,41",
+            "cn": "10.666666666666666,13.666666666666666",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,50",
+            "cn": "10.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "47,53",
+            "cn": "15.666666666666666,17.666666666666668",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "44,50",
+            "cn": "14.666666666666666,16.666666666666668",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "44,56",
+            "cn": "14.666666666666666,18.666666666666668",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC,GCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+            "allele_lens": "32,32",
+            "cn": "10.666666666666666,10.666666666666666",
+            "q": "1"
+        }
+    },
+    "C9orf72": {
+        "HG00112": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,104",
+            "cn": "9.333333333333334,17.333333333333332",
+            "q": "1"
+        },
+        "NA12889": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,110",
+            "cn": "9.333333333333334,18.333333333333332",
+            "q": "1"
+        },
+        "NA12877": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,110",
+            "cn": "9.333333333333334,18.333333333333332",
+            "q": "0.67"
+        },
+        "NA20847": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "HG00113": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,92",
+            "cn": "9.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA12890": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,110",
+            "cn": "9.333333333333334,18.333333333333332",
+            "q": "1"
+        },
+        "NA19239": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCT,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCT",
+            "allele_lens": "57,57",
+            "cn": "9.5,9.5",
+            "q": "1"
+        },
+        "NA12891": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,74",
+            "cn": "9.333333333333334,12.333333333333334",
+            "q": "1"
+        },
+        "HG00268": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCT,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCT",
+            "allele_lens": "93,69",
+            "cn": "15.5,11.5",
+            "q": "1"
+        },
+        "NA20846": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,98",
+            "cn": "9.333333333333334,16.333333333333332",
+            "q": "1"
+        },
+        "NA12892": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "74,74",
+            "cn": "12.333333333333334,12.333333333333334",
+            "q": "1"
+        },
+        "NA19238": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCT,GCCCCGCCCCGGGCCCGCCCCCGACCACGCCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCT",
+            "allele_lens": "81,71",
+            "cn": "13.5,11.833333333333334",
+            "q": "1"
+        },
+        "NA20503": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,92",
+            "cn": "9.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "HG00766": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,110",
+            "cn": "9.333333333333334,18.333333333333332",
+            "q": "1"
+        },
+        "HG01112": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "NA20505": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "HG01119": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,80",
+            "cn": "9.333333333333334,13.333333333333334",
+            "q": "1"
+        },
+        "NA12878": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,74",
+            "cn": "9.333333333333334,12.333333333333334",
+            "q": "1"
+        },
+        "NA18488": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCT,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCT",
+            "allele_lens": "57,111",
+            "cn": "9.5,18.5",
+            "q": "0.79"
+        },
+        "HG00731": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,104",
+            "cn": "9.333333333333334,17.333333333333332",
+            "q": "1"
+        },
+        "NA20849": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "HG00732": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,80",
+            "cn": "9.333333333333334,13.333333333333334",
+            "q": "1"
+        },
+        "HG00119": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,104",
+            "cn": "9.333333333333334,17.333333333333332",
+            "q": "1"
+        },
+        "NA18939": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "NA20862": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "68,68",
+            "cn": "11.333333333333334,11.333333333333334",
+            "q": "1"
+        },
+        "NA18940": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,80",
+            "cn": "9.333333333333334,13.333333333333334",
+            "q": "1"
+        },
+        "NA20506": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,92",
+            "cn": "9.333333333333334,15.333333333333334",
+            "q": "1"
+        },
+        "NA19434": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "104,68",
+            "cn": "17.333333333333332,11.333333333333334",
+            "q": "1"
+        },
+        "NA20504": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        },
+        "HG01113": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,80",
+            "cn": "9.333333333333334,13.333333333333334",
+            "q": "1"
+        },
+        "HG03736": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,80",
+            "cn": "9.333333333333334,13.333333333333334",
+            "q": "1"
+        },
+        "NA18941": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "80,86",
+            "cn": "13.333333333333334,14.333333333333334",
+            "q": "1"
+        },
+        "HG02970": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,104",
+            "cn": "9.333333333333334,17.333333333333332",
+            "q": "1"
+        },
+        "NA18942": {
+            "alleles": "GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC,GCCCCGCCCCGGGCCCGCCCCCGGGCCCGCCCCGACCACGCCCCGGCCCCGGCCCC",
+            "allele_lens": "56,56",
+            "cn": "9.333333333333334,9.333333333333334",
+            "q": "1"
+        }
+    }
+}
