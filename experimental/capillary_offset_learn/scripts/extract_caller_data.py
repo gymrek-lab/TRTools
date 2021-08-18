@@ -1,7 +1,7 @@
 import pandas as pd
 import shlex, json
 import subprocess
-methods = ['hipstr'] # ['gangstr' 'eh', 'hipstr', 'advntr']
+methods = ['gangstr'] # ['gangstr' 'eh', 'hipstr', 'advntr']
 suffix = {'gangstr': '_merged.vcf.gz',
         'hipstr': '.vcf.gz',
         'advntr': '_merged.vcf.gz',
@@ -38,10 +38,18 @@ def get_spop_pop(sid):
 
 def convert_data_to_dict(proc_line, meth, motif):
     if meth == 'gangstr':
-        return {'cn': proc_line[0], 
-            'ci': proc_line[1], 
-            'rc': proc_line[2],
-            'q': proc_line[3]}
+        ref = proc_line[0]
+        ref_len = len(ref)
+        m_len = len(motif)
+
+        gb = []
+        for c in proc_line[1].split(','):
+            gb.append(str(int(c) * m_len - ref_len))
+        return {'cn': proc_line[1], 
+            'ci': proc_line[2], 
+            'gb': ','.join(gb),
+            'q': proc_line[4]}
+
     elif meth == 'hipstr':
         if proc_line[2] == '.':
             return {}
@@ -49,11 +57,13 @@ def convert_data_to_dict(proc_line, meth, motif):
         alts = proc_line[1].split(',')
         if '|' in proc_line[2]:
             gt = proc_line[2].split('|')
+            gb = proc_line[3].split('|')
         elif '/' in proc_line[2]:
             gt = proc_line[2].split('/')
+            gb = proc_line[3].split('/')
         else:
             raise ValueError('Invalid GT: ', proc_line[2])
-        q = proc_line[3]
+        q = proc_line[4]
         alleles = []
         allele_lens = []
         cn = []
@@ -67,7 +77,8 @@ def convert_data_to_dict(proc_line, meth, motif):
                 allele_lens.append(str(len(alts[int(a) - 1])))
                 cn.append(str(len(alts[int(a) - 1]) / len(motif)))
         return {'alleles': ','.join(alleles), 
-            'allele_lens': ','.join(allele_lens), 
+            'allele_lens': ','.join(allele_lens),
+            'gb': ','.join(gb),
             'cn': ','.join(cn),
             'q': q}
     return {}
@@ -104,7 +115,7 @@ for meth in methods:
                 vcf_dir = meth_outs + '/'.join(['eh-polymorphic--1kg-all-hg38','merged', pop + '_merged.vcf.gz'])
             proc_line = -1
             if meth == 'gangstr':
-                p = subprocess.Popen(shlex.split("bcftools query {vcf} -r {ch}:{st} -s {samp} -f '[%REPCN@%REPCI@%RC@%Q]\n'"\
+                p = subprocess.Popen(shlex.split("bcftools query {vcf} -r {ch}:{st} -s {samp} -f '[%REF@%REPCN@%REPCI@%RC@%Q]\n'"\
                     .format(vcf=vcf_dir, ch=chrom, st=start, samp=sample)),
                     stdout=subprocess.PIPE)
                 p.wait()
@@ -115,7 +126,7 @@ for meth in methods:
                     continue
                 proc_line = out_lines.strip().decode("utf-8").split('@')
             elif meth == 'hipstr':
-                p = subprocess.Popen(shlex.split("bcftools query {vcf} -r {ch}:{st} -s {samp} -f '[%REF@%ALT@[%GT@%Q]]\n'"\
+                p = subprocess.Popen(shlex.split("bcftools query {vcf} -r {ch}:{st} -s {samp} -f '[%REF@%ALT@[%GT@%GB@%Q]]\n'"\
                     .format(vcf=vcf_dir, ch=chrom, st=start, samp=sample)),
                     stdout=subprocess.PIPE)
                 # print("bcftools query {vcf} -r {ch}:{st} -s {samp} -f '[%REF|%ALT|[%Q]]\n'"\
