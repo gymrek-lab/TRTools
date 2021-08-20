@@ -1,12 +1,13 @@
 import pandas as pd
 import shlex, json
 import subprocess
-methods = ['gangstr'] # ['gangstr' 'eh', 'hipstr', 'advntr']
+methods = ['gangstr', 'hipstr', 'advntr'] # eh
 suffix = {'gangstr': '_merged.vcf.gz',
         'hipstr': '.vcf.gz',
         'advntr': '_merged.vcf.gz',
         }
-outs_root = '/projects/ps-gymreklab/mousavi/results/1000genomes/'
+dir_root = "/gymreklab-tscc" # /projects/ps-gymreklab
+outs_root = '/%s/mousavi/results/1000genomes/'%dir_root
 
 
 # Load product sizes to get list of samples and primer/locus ids
@@ -29,7 +30,7 @@ def get_chrom_start_end_motif(lid):
     return list(q_df['Chrom'])[0], list(q_df['Start'])[0], list(q_df['End'])[0], list(q_df['Motif'])[0]
 
 # Load pop and spop for each sample
-sm_df = pd.read_csv('/projects/ps-gymreklab/mousavi/analysis/1000genomes/samples/all_samples.txt', sep='\t', names = ['SampleID', 'SubPop', 'SuperPop', 'Sex', 'CramPath'])
+sm_df = pd.read_csv('/%s/mousavi/analysis/1000genomes/samples/all_samples.txt'%dir_root, sep='\t', names = ['SampleID', 'SubPop', 'SuperPop', 'Sex', 'CramPath'])
 def get_spop_pop(sid):
     q_df = sm_df.query('SampleID == @sid')
     if len(q_df) == 0:
