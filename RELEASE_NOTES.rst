@@ -1,3 +1,11 @@
+4.0.1
+-----
+
+Bug fixes:
+
+* https://github.com/gymreklab/TRTools/issues/143 Fix HipstrMinSuppReads filter when
+  there are called samples but none have ALLREADS
+
 4.0.0
 -----
 

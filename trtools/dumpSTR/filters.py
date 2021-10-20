@@ -494,11 +494,17 @@ class HipSTRCallMinSuppReads(Reason):
             return np.full((record.GetNumSamples()), np.nan)
 
         if "ALLREADS" not in record.format:
-            sample_filter = np.zeros((record.GetNumSamples()), dtype=float)
-            return sample_filter
+            return np.zeros((record.GetNumSamples()), dtype=float)
         samples_to_check = (called_samples &
                           (record.format["ALLREADS"] != '') &
                           (record.format["ALLREADS"] != '.'))
+
+        if not np.any(samples_to_check):
+            # all samples were either not called or were missing ALLREADS
+            # say that we filtered all the samples which were missing ALLREADS
+            sample_filter = np.full((record.GetNumSamples()), np.nan)
+            sample_filter[called_samples] = 0
+            return sample_filter
 
         delim = "|"
         # Going to assume that either all samples are phased or none are
