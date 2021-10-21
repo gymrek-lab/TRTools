@@ -494,15 +494,27 @@ class HipSTRCallMinSuppReads(Reason):
             return np.full((record.GetNumSamples()), np.nan)
 
         if "ALLREADS" not in record.format:
-            sample_filter = np.zeros((record.GetNumSamples()), dtype=float)
-            return sample_filter
+            return np.zeros((record.GetNumSamples()), dtype=float)
         samples_to_check = (called_samples &
                           (record.format["ALLREADS"] != '') &
                           (record.format["ALLREADS"] != '.'))
 
-        delim = "|"
+        if not np.any(samples_to_check):
+            # all samples were either not called or were missing ALLREADS
+            # say that we filtered all the samples which were missing ALLREADS
+            sample_filter = np.full((record.GetNumSamples()), np.nan)
+            sample_filter[called_samples] = 0
+            return sample_filter
+
         # Going to assume that either all samples are phased or none are
-        if "/" in record.format["GB"][samples_to_check][0]: delim = "/"
+        first_gb = record.format["GB"][samples_to_check][0]
+        if "/" in first_gb:
+            delim = "/"
+        elif "|" in first_gb:
+            delim = '|'
+        else:
+            raise ValueError("Cant't identify phasing char ('|' or '/') in GB field")
+
         gb = np.char.split(record.format["GB"][samples_to_check], delim)
         gb = np.stack(gb).astype(int)
         # Format allreads like a python dict literal so we can interpret it

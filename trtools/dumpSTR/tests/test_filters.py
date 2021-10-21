@@ -311,12 +311,12 @@ def test_HipstrMinSuppReads(tmpdir):
         def __init__(self):
             super().__init__()
             self.format['ALLREADS'] = np.array([
-                '0|23;1|123;2|5', '0|165;1|23;2|7',
+                '0|23;1|123;2|5', '0|15;1|23;2|7',
                 '0|23;1|444;2|12', '0|23;1|32;2|66',
                 '0|867;1|23;2|13', '0|848;1|92;2|483',
                 '', '', '.'])
-            self.format['GB'] = np.array(['1|1', '1|1', '0|2', '0|2', '0|2',
-                                          '0|2', '', '', '.'])
+            self.format['GB'] = np.array(['1|1', '1|1', '1|2', '2|1', '2|0',
+                                          '0|2', '1|1', '0|0', '1|0'])
         def GetNumSamples(self):
             return 9
         def GetCalledSamples(self):
@@ -330,13 +330,37 @@ def test_HipstrMinSuppReads(tmpdir):
     assert np.isnan(out[0])
     assert out[1] == 23
     assert out[2] == 12
-    assert out[3] == 23
+    assert out[3] == 32
     assert out[4] == 13
     assert np.isnan(out[5])
     assert out[6] == 0 # If ALLREADS is missing, filter
     assert np.isnan(out[7]) # don't apply filter to nocalls
     assert np.isnan(out[8]) # don't apply filter to nocalls
 
+def test_HipstrMinSuppReads_no_called_samples_with_reads(tmpdir):
+    class TestRec(DummyRecBase):
+        def __init__(self):
+            super().__init__()
+            self.format['ALLREADS'] = np.array([
+                '0|23;1|123;2|5', '0|15;1|23;2|7',
+                '0|23;1|444;2|12', '0|23;1|32;2|66',
+                '0|867;1|23;2|13', '0|848;1|92;2|483',
+                '', '', '.'])
+            self.format['GB'] = np.array(['1|1', '1|1', '1|2', '2|1', '2|0',
+                                          '0|2', '1|1', '0|0', '1|0'])
+        def GetNumSamples(self):
+            return 9
+        def GetCalledSamples(self):
+            return np.array([False, False, False, False, False, False, True, False, True])
+
+    args = base_argparse(tmpdir)
+    args.hipstr_min_supp_reads = 50
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out.shape == (9,)
+    assert np.all(out[[6,8]] == 0)
+    assert np.all(np.isnan(out[[0,1,2,3,4,5,7]]))
 
 def test_HipstrDP(tmpdir):
     class TestRec(DummyRecBase):
