@@ -633,6 +633,7 @@ class TRRecord:
                  record_id: str,
                  quality_field: str,
                  *,
+                 harmonized_pos: Optional[int] = None,
                  full_alleles: Optional[Tuple[str, List[str]]] = None,
                  ref_allele_length: Optional[float] = None,
                  alt_allele_lengths: Optional[List[float]] = None,
@@ -643,10 +644,11 @@ class TRRecord:
         self.motif = motif
         self.record_id = record_id
         self.chrom = vcfrecord.CHROM
-        self.pos = vcfrecord.POS
+        self.pos = harmonized_pos if harmonized_pos is not None else vcfrecord.POS
         self.info = dict(vcfrecord.INFO)
         self.format = _Cyvcf2FormatDict(vcfrecord)
         self.full_alleles = full_alleles
+        self.full_alleles_pos = self.vcfrecord.POS
         self.ref_allele_length = ref_allele_length
         self.alt_allele_lengths = alt_allele_lengths
         self.quality_field = quality_field
