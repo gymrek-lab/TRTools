@@ -360,6 +360,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                     motif,
                     record_id,
                     'Q',
+                    harmonized_pos=int(vcfrecord.INFO['START']),
                     full_alleles=full_alleles)
 
 
