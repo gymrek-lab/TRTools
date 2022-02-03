@@ -1,3 +1,12 @@
+Unreleased changes
+-----
+
+Bug fixes:
+
+* https://github.com/gymreklab/TRTools/issues/146 fixed record positions being compared twice
+* HipSTR records are now compared by starting position of the repeat, not the whole called allele
+ (position of the start of allele with flanking bps is no longer used)
+
 4.0.1
 -----
 
