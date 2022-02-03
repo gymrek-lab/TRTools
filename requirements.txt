@@ -8,3 +8,4 @@ matplotlib==3.2.2
 pysam==0.16.0.1
 cython==0.29.20
 cyvcf2==0.30.1
+multipledispatch==0.6.0
