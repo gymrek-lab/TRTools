@@ -13,6 +13,7 @@ import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 
 from typing import List, Union, Tuple, Optional
+from multipledispatch import dispatch
 
 CYVCF_RECORD = cyvcf2.Variant
 CYVCF_READER = cyvcf2.VCF
@@ -59,9 +60,9 @@ def GetSharedSamples(readers: List[CYVCF_READER]) -> List[str]:
     samples : list of str
         Samples present in all readers
     """
-    if len(readers) == 0: return set()
+    if len(readers) == 0: return list()
     samples = set(readers[0].samples)
-    if len(readers) == 1: return samples
+    if len(readers) == 1: return list(samples)
     for r in readers[1:]:
         samples = samples.intersection(set(r.samples))
     return list(samples)
@@ -138,6 +139,7 @@ def GetAndCheckVCFType(vcfs: List[CYVCF_READER], vcftype: str) -> str:
         raise ValueError("VCF files are of mixed types.")
 
 
+@dispatch(CYVCF_RECORD, List[str])
 def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a record
 
@@ -158,8 +160,29 @@ def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     else:
         return chroms.index(r.CHROM)
 
+@dispatch(trh.TRRecord, List[str])
+def GetChromOrder(r: trh.TRRecord, chroms: List[str]) -> Union[int, float]:
+    r"""Get the chromosome order of a harmonized record
 
-def GetChromOrderEqual(chrom_order: int, min_chrom: int) -> bool:
+    Parameters
+    ----------
+    r : trh.TRRecord
+    chroms : list of str
+       Ordered list of chromosomes
+
+    Returns
+    -------
+    order : int or float
+       Index of r.CHROM in chroms, int
+       Return np.inf if can't find r.CHROM, float
+    """
+    if r is None:
+        return np.inf
+    else:
+        return chroms.index(r.chrom)
+
+
+def GetChromOrderEqual(chrom_order: Union[int, float], min_chrom: int) -> bool:
     r"""Check chrom order
 
     Parameters
@@ -178,6 +201,7 @@ def GetChromOrderEqual(chrom_order: int, min_chrom: int) -> bool:
     return chrom_order == min_chrom
 
 
+@dispatch(CYVCF_RECORD)
 def GetPos(r: CYVCF_RECORD) -> Union[int, float]:
     r"""Get the position of a record
 
@@ -194,6 +218,25 @@ def GetPos(r: CYVCF_RECORD) -> Union[int, float]:
         return np.inf
     else:
         return r.POS
+
+
+@dispatch(trh.TRRecord)
+def GetPos(r: trh.TRRecord) -> Union[int, float]:
+    r"""Get the position of a harmonized record
+
+    Parameters
+    ----------
+    r : trh.TRRecord
+
+    Returns
+    -------
+    pos : int
+       If r is None, returns np.inf, which is a float
+    """
+    if r is None:
+        return np.inf
+    else:
+        return r.pos
 
 
 def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
@@ -300,7 +343,7 @@ def CheckMin(is_min: List[bool]) -> bool:
     return False
 
 
-def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECORD], increment: List[bool])\
+def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECORD], increment: List[bool]) \
         -> List[CYVCF_RECORD]:
     r"""Increment readers of each file
 
