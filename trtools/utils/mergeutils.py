@@ -7,11 +7,18 @@ import numpy as np
 import os
 import sys
 
+from cyvcf2 import cyvcf2
+
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 
+from typing import List, Union, Tuple, Optional
 
-def LoadReaders(vcffiles, region=None):
+CYVCF_RECORD = cyvcf2.Variant
+CYVCF_READER = cyvcf2.VCF
+
+
+def LoadReaders(vcffiles: List[str], region: Optional[str] = None) -> List[CYVCF_READER]:
     r"""Return list of VCF readers
 
     Parameters
@@ -28,17 +35,19 @@ def LoadReaders(vcffiles, region=None):
     """
     for f in vcffiles:
         if not f.endswith(".vcf.gz") and not f.endswith(".vcf.bgz"):
-            raise ValueError("Make sure %s is bgzipped and indexed"%f)
+            raise ValueError("Make sure %s is bgzipped and indexed" % f)
         if not os.path.isfile(f):
-            raise ValueError("Could not find VCF file %s"%f)
-        if not os.path.isfile(f+".tbi"):
-            raise ValueError("Could not find VCF index %s.tbi"%f)
+            raise ValueError("Could not find VCF file %s" % f)
+        if not os.path.isfile(f + ".tbi"):
+            raise ValueError("Could not find VCF index %s.tbi" % f)
     readers = [vcf.Reader(open(f, "rb")) for f in vcffiles]
     if region is None:
         return readers
-    else: return [r.fetch(region) for r in readers]
+    else:
+        return [r.fetch(region) for r in readers]
 
-def GetSharedSamples(readers):
+
+def GetSharedSamples(readers: List[CYVCF_READER]) -> List[str]:
     r"""Get list of samples used in all files being merged
 
     Parameters
@@ -57,7 +66,8 @@ def GetSharedSamples(readers):
         samples = samples.intersection(set(r.samples))
     return list(samples)
 
-def GetSamples(readers, filenames=None):
+
+def GetSamples(readers: List[CYVCF_READER], filenames: Optional[str] = None) -> List[str]:
     r"""Get list of samples used in all files being merged
 
     Parameters
@@ -87,7 +97,8 @@ def GetSamples(readers, filenames=None):
             samples += r.samples
     return samples
 
-def GetAndCheckVCFType(vcfs, vcftype):
+
+def GetAndCheckVCFType(vcfs: List[CYVCF_READER], vcftype: str) -> str:
     """Infer type of multiple VCFs
 
     If they are all the same, return that type
@@ -123,9 +134,11 @@ def GetAndCheckVCFType(vcfs, vcftype):
         types.append(vcf_type)
     if len(set(types)) == 1:
         return types[0]
-    else: raise ValueError("VCF files are of mixed types.")
+    else:
+        raise ValueError("VCF files are of mixed types.")
 
-def GetChromOrder(r, chroms):
+
+def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a record
 
     Parameters
@@ -136,14 +149,17 @@ def GetChromOrder(r, chroms):
 
     Returns
     -------
-    order : int
-       Index of r.CHROM in chroms
-       Return np.inf if can't find r.CHROM
+    order : int or float
+       Index of r.CHROM in chroms, int
+       Return np.inf if can't find r.CHROM, float
     """
-    if r is None: return np.inf
-    else: return chroms.index(r.CHROM)
+    if r is None:
+        return np.inf
+    else:
+        return chroms.index(r.CHROM)
 
-def GetChromOrderEqual(chrom_order, min_chrom):
+
+def GetChromOrderEqual(chrom_order: int, min_chrom: int) -> bool:
     r"""Check chrom order
 
     Parameters
@@ -161,7 +177,8 @@ def GetChromOrderEqual(chrom_order, min_chrom):
     if chrom_order == np.inf: return False
     return chrom_order == min_chrom
 
-def GetPos(r):
+
+def GetPos(r: CYVCF_RECORD) -> Union[int, float]:
     r"""Get the position of a record
 
     Parameters
@@ -171,12 +188,15 @@ def GetPos(r):
     Returns
     -------
     pos : int
-       If r is None, returns np.inf
+       If r is None, returns np.inf, which is a float
     """
-    if r is None: return np.inf
-    else: return r.POS
+    if r is None:
+        return np.inf
+    else:
+        return r.POS
 
-def CheckPos(record, chrom, pos):
+
+def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
     r"""Check a record is at the specified position
 
     Parameters
@@ -194,9 +214,10 @@ def CheckPos(record, chrom, pos):
        Return True if the current record is at this position
     """
     if record is None: return False
-    return record.CHROM==chrom and record.POS==pos
+    return record.CHROM == chrom and record.POS == pos
 
-def GetMinRecords(record_list, chroms):
+
+def GetMinRecords(record_list: List[CYVCF_RECORD], chroms: List[str]) -> List[bool]:
     r"""Check if each record is next up in sort order
 
     Return a vector of boolean set to true if
@@ -222,10 +243,11 @@ def GetMinRecords(record_list, chroms):
     if len(allpos) > 0:
         min_pos = min(allpos)
     else:
-        return [False]*len(record_list)
+        return [False] * len(record_list)
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
-def DoneReading(records):
+
+def DoneReading(records: List[CYVCF_RECORD]) -> bool:
     r"""Check if all records are at the end of the file
 
     Parameters
@@ -241,7 +263,8 @@ def DoneReading(records):
     """
     return all([item is None for item in records])
 
-def DebugPrintRecordLocations(current_records, is_min):
+
+def DebugPrintRecordLocations(current_records: List[CYVCF_RECORD], is_min: List[bool]) -> None:
     r"""Debug function to print current records for each file
 
     Parameters
@@ -255,10 +278,11 @@ def DebugPrintRecordLocations(current_records, is_min):
     for i in range(len(is_min)):
         chrom = current_records[i].CHROM
         pos = current_records[i].POS
-        info.append("%s:%s:%s"%(chrom, pos, is_min[i]))
-    common.MSG("\t".join(info)+"\n", debug=True)
+        info.append("%s:%s:%s" % (chrom, pos, is_min[i]))
+    common.MSG("\t".join(info) + "\n", debug=True)
 
-def CheckMin(is_min):
+
+def CheckMin(is_min: List[bool]) -> bool:
     r"""Check if we're progressing through VCFs
 
     Parameters
@@ -271,11 +295,13 @@ def CheckMin(is_min):
     check : bool
         Set to True if something went wrong
     """
-    if sum(is_min)==0:
+    if sum(is_min) == 0:
         raise ValueError("Unexpected error. Stuck in infinite loop and exiting.")
     return False
 
-def GetNextRecords(readers, current_records, increment):
+
+def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECORD], increment: List[bool])\
+        -> List[CYVCF_RECORD]:
     r"""Increment readers of each file
 
     Increment readers[i] if increment[i] set to true
@@ -302,6 +328,6 @@ def GetNextRecords(readers, current_records, increment):
                 new_records.append(next(readers[i]))
             except StopIteration:
                 new_records.append(None)
-        else: new_records.append(current_records[i])
+        else:
+            new_records.append(current_records[i])
     return new_records
-
