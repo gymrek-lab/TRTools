@@ -139,7 +139,7 @@ def GetAndCheckVCFType(vcfs: List[CYVCF_READER], vcftype: str) -> str:
         raise ValueError("VCF files are of mixed types.")
 
 
-@dispatch(CYVCF_RECORD, List[str])
+@dispatch(CYVCF_RECORD, list)
 def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a record
 
@@ -160,7 +160,8 @@ def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     else:
         return chroms.index(r.CHROM)
 
-@dispatch(trh.TRRecord, List[str])
+
+@dispatch(trh.TRRecord, list)
 def GetChromOrder(r: trh.TRRecord, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a harmonized record
 
@@ -239,6 +240,7 @@ def GetPos(r: trh.TRRecord) -> Union[int, float]:
         return r.pos
 
 
+@dispatch(CYVCF_RECORD, str, int)
 def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
     r"""Check a record is at the specified position
 
@@ -260,7 +262,29 @@ def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
     return record.CHROM == chrom and record.POS == pos
 
 
-def GetMinRecords(record_list: List[CYVCF_RECORD], chroms: List[str]) -> List[bool]:
+@dispatch(trh.TRRecord, str, int)
+def CheckPos(record: trh.TRRecord, chrom: str, pos: int) -> bool:
+    r"""Check a record is at the specified position
+
+    Parameters
+    ----------
+    r : vcf.Record
+       VCF Record being checked
+    chrom : str
+       Chromosome name
+    pos : int
+       Chromosome position
+
+    Returns
+    -------
+    check : bool
+       Return True if the current record is at this position
+    """
+    if record is None: return False
+    return record.chrom == chrom and record.pos == pos
+
+
+def GetMinRecords(record_list: List[Union[CYVCF_RECORD, trh.TRRecord]], chroms: List[str]) -> List[bool]:
     r"""Check if each record is next up in sort order
 
     Return a vector of boolean set to true if
@@ -269,8 +293,9 @@ def GetMinRecords(record_list: List[CYVCF_RECORD], chroms: List[str]) -> List[bo
 
     Parameters
     ----------
-    record_list : list of vcf.Record
+    record_list : list of vcf.Record or trh.TRRecord
        list of current records from each file being merged
+       they can be already harmonized
     chroms : list of str
        Ordered list of all chromosomes
 
