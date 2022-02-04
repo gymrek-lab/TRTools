@@ -808,7 +808,7 @@ def main(args):
         vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
     
     ### Walk through sorted readers, merging records as we go ###
-    current_records = [next(reader) for reader in vcfreaders]
+    current_records = mergeutils.InitReaders(vcfreaders)
     done = mergeutils.DoneReading(current_records)
 
     num_records = 0

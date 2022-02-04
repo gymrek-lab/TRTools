@@ -315,7 +315,7 @@ def GetMinRecords(record_list: List[Union[CYVCF_RECORD, trh.TRRecord]], chroms: 
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 
-def DoneReading(records: List[CYVCF_RECORD]) -> bool:
+def DoneReading(records: List[Union[CYVCF_RECORD, trh.TRRecord]]) -> bool:
     r"""Check if all records are at the end of the file
 
     Parameters
@@ -399,3 +399,41 @@ def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECO
         else:
             new_records.append(current_records[i])
     return new_records
+
+
+def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECORD], increment: List[bool]) \
+        -> List[CYVCF_RECORD]:
+    r"""Increment readers of each file
+
+    Increment readers[i] if increment[i] set to true
+    Else keep current_records[i]
+
+    Parameters
+    ----------
+    readers : list of vcf.Reader
+       List of readers for all files being merged
+    current_records : list of vcf.Record
+       List of current records for all readers
+    increment : list of bool
+       List indicating if each file should be incremented
+
+    Returns
+    -------
+    new_records : list of vcf.Record
+       List of next records for each file
+    """
+    new_records = []
+    for i in range(len(readers)):
+        if increment[i]:
+            try:
+                new_records.append(next(readers[i]))
+            except StopIteration:
+                new_records.append(None)
+        else:
+            new_records.append(current_records[i])
+    return new_records
+
+
+def InitReaders(readers: List[CYVCF_READER]) -> List[CYVCF_RECORD]:
+    return [next(reader) for reader in readers]
+
