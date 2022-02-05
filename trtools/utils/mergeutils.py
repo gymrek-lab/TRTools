@@ -12,8 +12,7 @@ from cyvcf2 import cyvcf2
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 
-from typing import List, Union, Tuple, Optional
-from multipledispatch import dispatch
+from typing import List, Union, Any, Optional, Callable
 
 CYVCF_RECORD = cyvcf2.Variant
 CYVCF_READER = cyvcf2.VCF
@@ -139,7 +138,6 @@ def GetAndCheckVCFType(vcfs: List[CYVCF_READER], vcftype: str) -> str:
         raise ValueError("VCF files are of mixed types.")
 
 
-@dispatch(CYVCF_RECORD, list)
 def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a record
 
@@ -161,28 +159,6 @@ def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
         return chroms.index(r.CHROM)
 
 
-@dispatch(trh.TRRecord, list)
-def GetChromOrder(r: trh.TRRecord, chroms: List[str]) -> Union[int, float]:
-    r"""Get the chromosome order of a harmonized record
-
-    Parameters
-    ----------
-    r : trh.TRRecord
-    chroms : list of str
-       Ordered list of chromosomes
-
-    Returns
-    -------
-    order : int or float
-       Index of r.CHROM in chroms, int
-       Return np.inf if can't find r.CHROM, float
-    """
-    if r is None:
-        return np.inf
-    else:
-        return chroms.index(r.chrom)
-
-
 def GetChromOrderEqual(chrom_order: Union[int, float], min_chrom: int) -> bool:
     r"""Check chrom order
 
@@ -202,7 +178,6 @@ def GetChromOrderEqual(chrom_order: Union[int, float], min_chrom: int) -> bool:
     return chrom_order == min_chrom
 
 
-@dispatch(CYVCF_RECORD)
 def GetPos(r: CYVCF_RECORD) -> Union[int, float]:
     r"""Get the position of a record
 
@@ -221,26 +196,6 @@ def GetPos(r: CYVCF_RECORD) -> Union[int, float]:
         return r.POS
 
 
-@dispatch(trh.TRRecord)
-def GetPos(r: trh.TRRecord) -> Union[int, float]:
-    r"""Get the position of a harmonized record
-
-    Parameters
-    ----------
-    r : trh.TRRecord
-
-    Returns
-    -------
-    pos : int
-       If r is None, returns np.inf, which is a float
-    """
-    if r is None:
-        return np.inf
-    else:
-        return r.pos
-
-
-@dispatch(CYVCF_RECORD, str, int)
 def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
     r"""Check a record is at the specified position
 
@@ -262,29 +217,7 @@ def CheckPos(record: CYVCF_RECORD, chrom: str, pos: int) -> bool:
     return record.CHROM == chrom and record.POS == pos
 
 
-@dispatch(trh.TRRecord, str, int)
-def CheckPos(record: trh.TRRecord, chrom: str, pos: int) -> bool:
-    r"""Check a record is at the specified position
-
-    Parameters
-    ----------
-    r : vcf.Record
-       VCF Record being checked
-    chrom : str
-       Chromosome name
-    pos : int
-       Chromosome position
-
-    Returns
-    -------
-    check : bool
-       Return True if the current record is at this position
-    """
-    if record is None: return False
-    return record.chrom == chrom and record.pos == pos
-
-
-def GetMinRecords(record_list: List[Union[CYVCF_RECORD, trh.TRRecord]], chroms: List[str]) -> List[bool]:
+def GetMinRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) -> List[bool]:
     r"""Check if each record is next up in sort order
 
     Return a vector of boolean set to true if
@@ -293,9 +226,9 @@ def GetMinRecords(record_list: List[Union[CYVCF_RECORD, trh.TRRecord]], chroms: 
 
     Parameters
     ----------
-    record_list : list of vcf.Record or trh.TRRecord
+    record_list : list of CYVCF_RECORD
        list of current records from each file being merged
-       they can be already harmonized
+
     chroms : list of str
        Ordered list of all chromosomes
 
@@ -313,6 +246,39 @@ def GetMinRecords(record_list: List[Union[CYVCF_RECORD, trh.TRRecord]], chroms: 
     else:
         return [False] * len(record_list)
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
+
+
+
+def GetMinHarmonizedRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) -> List[bool]:
+    r"""Check if each record is next up in sort order
+
+    Return a vector of boolean set to true if
+    the record is in lowest sort order of all the records
+    Use order in chroms to determine sort order of chromosomes
+
+    Parameters
+    ----------
+    record_list : trh.TRRecord
+       list of current records from each file being merged
+
+    chroms : list of str
+       Ordered list of all chromosomes
+
+    Returns
+    -------
+    checks : list of bool
+       Set to True for records that are first in sort order
+    """
+    chrom_order = [np.inf if r is None else chroms.index(r.chrom) for r in record_list]
+    pos = [np.inf if r is None else r.pos for r in record_list]
+
+    min_chrom = min(chrom_order)
+    allpos = [pos[i] for i in range(len(pos)) if GetChromOrderEqual(chrom_order[i], min_chrom)]
+    if len(allpos) > 0:
+        min_pos = min(allpos)
+    else:
+        return [False] * len(record_list)
+    return [False if r is None else r.chrom == chroms[min_chrom] and r.pos == min_pos for r in record_list]
 
 
 def DoneReading(records: List[Union[CYVCF_RECORD, trh.TRRecord]]) -> bool:
@@ -436,4 +402,3 @@ def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECO
 
 def InitReaders(readers: List[CYVCF_READER]) -> List[CYVCF_RECORD]:
     return [next(reader) for reader in readers]
-

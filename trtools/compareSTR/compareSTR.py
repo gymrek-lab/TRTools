@@ -816,7 +816,7 @@ def main(args):
 
         harmonized_records = trh.HarmonizeRecords(current_records, [vcftype1, vcftype2])
         # contains information about which record should be skipped in next iteration and whether it is currently comparable
-        is_min = mergeutils.GetMinRecords(harmonized_records, chroms)
+        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
 
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
