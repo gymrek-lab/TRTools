@@ -572,7 +572,8 @@ def main(args: Any) -> int:
                     "(https://github.com/samtools/bcftools) to fix the contigs"
                     ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
                 return 1
-        is_min = mergeutils.GetMinRecords(current_records, chroms)
+        harmonized_records = trh.HarmonizeRecords(current_records, [vcftype] * len(current_records))
+        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         MergeRecords(vcfreaders, vcftype, num_samples, current_records, is_min, vcfw, useinfo,
