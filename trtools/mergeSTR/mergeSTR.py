@@ -81,7 +81,7 @@ def WriteMergedHeader(vcfw: TextIO, args: Any, readers: List[cyvcf2.VCF], cmd: s
        List of format field strings to use downstream
     """
 
-    def get_header_lines(field, reader):
+    def get_header_lines(field: str, reader: cyvcf2.VCF) -> List[str]:
         compare_len = 3 + len(field)
         compare_start = '##' + field.lower() + "="
         return [line for line in reader.raw_header.split('\n') if \
@@ -163,7 +163,7 @@ def WriteMergedHeader(vcfw: TextIO, args: Any, readers: List[cyvcf2.VCF], cmd: s
     return useinfo, useformat
 
 
-def GetRefAllele(current_records: List[cyvcf2.Variant], mergelist: List[bool]):
+def GetRefAllele(current_records: List[cyvcf2.Variant], mergelist: List[bool]) -> Optional[str]:
     r"""Get reference allele for a set of records
 
     Parameters
@@ -178,7 +178,7 @@ def GetRefAllele(current_records: List[cyvcf2.Variant], mergelist: List[bool]):
     ref : str
        Reference allele string. Set to None if conflicting references are found.
     """
-    refs = []
+    refs: List[str] = []
     chrom = ""
     pos = -1
     for i in range(len(mergelist)):
@@ -389,7 +389,7 @@ def WriteSampleData(vcfw: TextIO, record: cyvcf2.Variant, alleles: List[str], fo
 def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_samples: List[int],
                  current_records: List[cyvcf2.Variant],
                  mergelist: List[bool], vcfw: TextIO, useinfo: List[Tuple[str, bool]],
-                 useformat: List[str], format_type: List[str]):
+                 useformat: List[str], format_type: List[str]) -> None:
     r"""Merge records from different files
 
     Merge all records with indicator set to True in mergelist
@@ -478,7 +478,7 @@ def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_sam
     vcfw.write('\n')
 
 
-def getargs():  # pragma: no cover
+def getargs() -> Any:  # pragma: no cover
     parser = argparse.ArgumentParser(
         __doc__,
         formatter_class=utils.ArgumentDefaultsHelpFormatter
@@ -507,7 +507,7 @@ def getargs():  # pragma: no cover
     return args
 
 
-def main(args):
+def main(args: Any) -> int:
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Error: The directory which contains the output location {} does"
                        " not exist".format(args.out))
@@ -582,7 +582,7 @@ def main(args):
     return 0
 
 
-def run():  # pragma: no cover
+def run() -> None:  # pragma: no cover
     args = getargs()
     retcode = main(args)
     sys.exit(retcode)
