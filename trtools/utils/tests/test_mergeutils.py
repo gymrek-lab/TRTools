@@ -9,32 +9,42 @@ import trtools.utils.tr_harmonizer as trh
 
 @pytest.fixture
 def mrgvcfdir(vcfdir):
-	return os.path.join(vcfdir, "mergeSTR_vcfs")
+    return os.path.join(vcfdir, "mergeSTR_vcfs")
+
 
 # Set up dummy class
 class DummyRecord:
-    def __init__(self, chrom, pos, ref, alts=[], info = {}):
+    def __init__(self, chrom, pos, ref, alts=[], info={}):
         self.CHROM = chrom
         self.POS = pos
         self.REF = ref
         self.ALTS = alts
         self.INFO = info
 
+
+class DummyHarmonizedRecord:
+    def __init__(self, chrom, pos):
+        self.chrom = chrom
+        self.pos = pos
+
+
 def test_DebugPrintRecordLocations(capsys):
-    dummy_records = [] 
+    dummy_records = []
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
     dummy_records.append(DummyRecord('chr1', 150, 'CTTCTT', info={'END': 170}))
-    
+
     mergeutils.DebugPrintRecordLocations(dummy_records, [True, False])
     captured = capsys.readouterr()
     assert "chr1:100:True" in captured.err
     assert "chr1:150:False" in captured.err
+
 
 def test_CheckMin():
     assert mergeutils.CheckMin([True, False]) == False
     with pytest.raises(ValueError) as info:
         mergeutils.CheckMin([False, False])
     assert "Unexpected error. Stuck in infinite loop and exiting." in str(info.value)
+
 
 def test_CheckVCFType(vcfdir):
     snps_path = os.path.join(vcfdir, "snps.vcf")
@@ -49,10 +59,11 @@ def test_CheckVCFType(vcfdir):
     with pytest.raises(ValueError) as info:
         print(mergeutils.GetAndCheckVCFType([gangstr_vcf, hipstr_vcf], "auto"))
     assert "VCF files are of mixed types." in str(info.value)
-    
+
     with pytest.raises(TypeError) as info:
         print(mergeutils.GetAndCheckVCFType([gangstr_vcf, snps_vcf], "auto"))
     assert "Could not identify the type of this vcf" in str(info.value)
+
 
 # Test no such file or directory
 def test_WrongFile(mrgvcfdir):
@@ -63,10 +74,11 @@ def test_WrongFile(mrgvcfdir):
         os.remove(fname1)
     if os.path.exists(fname2):
         os.remove(fname2)
-    print (os.path.isfile(fname1))
+    print(os.path.isfile(fname1))
     with pytest.raises(ValueError) as info:
         mergeutils.LoadReaders([fname1, fname2])
     assert "Could not find VCF file" in str(info.value)
+
 
 # test unzipped, unindexed VCFs return 1
 def test_UnzippedUnindexedFile(mrgvcfdir):
@@ -81,3 +93,19 @@ def test_UnzippedUnindexedFile(mrgvcfdir):
     with pytest.raises(ValueError) as info:
         mergeutils.LoadReaders([fname1, fname2])
     assert "Could not find VCF index" in str(info.value)
+
+
+def test_GetMinHarmonizedRecords():
+    chromosomes = ["chr1", "chr2", "chr3"]
+
+    pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, True]
+
+    pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+
+    pair = [DummyHarmonizedRecord("chr2", 20), DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+
+    pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 21)]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
