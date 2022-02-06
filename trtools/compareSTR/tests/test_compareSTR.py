@@ -173,6 +173,25 @@ def test_main(tmpdir, vcfdir):
     retcode = main(args)
     assert retcode == 1
 
+def test_hipstr_position_harmonisation(tmpdir, vcfdir):
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+
+    hipstr_vcf_1 = os.path.join(vcfcomp, "test_hipstr_flanking_bp_flanking.vcf.gz")
+    hipstr_vcf_2 = os.path.join(vcfcomp, "test_hipstr_flanking_bp_non_flanking.vcf.gz")
+
+    args = base_argparse(tmpdir)
+    args.vcf1 = hipstr_vcf_1
+    args.region= ""
+    args.vcftype1 = 'hipstr'
+    args.vcf2 = hipstr_vcf_2
+    args.vcftype2 = 'hipstr'
+    retcode = main(args)
+    assert retcode == 0
+
+    with open(tmpdir + "/test_compare-overall.tab", "r") as out_overall:
+        _, line = out_overall.readlines()
+        assert line == "ALL	1.0	1.0	nan	1\n"
+
 def test_wrong_vcftype(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)
     vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
