@@ -521,8 +521,8 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         dictionary of counts to update
     """
     # Extract shared info
-    chrom = record1.vcfrecord.CHROM
-    pos = record1.vcfrecord.POS
+    chrom = record1.chrom
+    pos = record1.pos
     period = len(record1.motif)
     reflen = len(record1.ref_allele)/period
 
@@ -813,7 +813,6 @@ def main(args):
 
     num_records = 0
     while not done:
-
         harmonized_records = trh.HarmonizeRecords(current_records, [vcftype1, vcftype2])
         # contains information about which record should be skipped in next iteration and whether it is currently comparable
         is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
