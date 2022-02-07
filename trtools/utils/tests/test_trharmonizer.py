@@ -934,7 +934,3 @@ def test_TRRecord_Quality(vcfdir):
     assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
-
-
-def test_hipstr_flanking_pb_position_harmonization():
-    pass
