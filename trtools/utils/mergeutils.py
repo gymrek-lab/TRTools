@@ -368,4 +368,18 @@ def GetNextRecords(readers: List[CYVCF_READER], current_records: List[CYVCF_RECO
 
 
 def InitReaders(readers: List[CYVCF_READER]) -> List[CYVCF_RECORD]:
+    r"""Increment readers of each file
+
+        Returns list of first records from list of readers.
+
+        Parameters
+        ----------
+        readers : list of cyvcf2.VCF
+           List of readers for all files being merged
+
+        Returns
+        -------
+        list of vcf.Record
+           List of next records for each file
+        """
     return [next(reader) for reader in readers]
