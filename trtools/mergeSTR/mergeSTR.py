@@ -10,12 +10,14 @@ from typing import List
 
 import cyvcf2
 import numpy as np
+from collections import defaultdict
 
 import trtools.utils.common as common
 import trtools.utils.mergeutils as mergeutils
 import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
+
 
 
 NOCALLSTRING = "."
@@ -173,15 +175,11 @@ def GetRefAllele(current_records, mergelist):
        Reference allele string. Set to None if conflicting references are found.
     """
     refs = []
-    chrom = ""
-    pos = -1
     for i in range(len(mergelist)):
         if mergelist[i]:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
             refs.append(current_records[i].REF.upper())
     if len(set(refs)) != 1:
-        return None
+        return set(refs)
     return refs[0]
 
 def GetAltAlleles(current_records, mergelist, vcftype):
@@ -405,22 +403,84 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
     chrom = current_records[use_ind[0]].CHROM
     pos = str(current_records[use_ind[0]].POS)
 
+
     ref_allele = GetRefAllele(current_records, mergelist)
-    if ref_allele is None:
-        common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
+    if isinstance(ref_allele, set):
+        merge_lists = defaultdict(list)
+        for ref in ref_allele:
+            for i in use_ind:
+                if current_records[i].REF.upper() == ref:
+                    merge_lists[ref].append(i)
+        for ref in merge_lists:
+            ref_mergelist = mergelist.copy()
+            for i in range(len(ref_mergelist)):
+                if i in merge_lists[ref]:
+                    continue
+                else:
+                    ref_mergelist[i] = None
+            vcfw.write(chrom) #CHROM
+            vcfw.write('\t')
+            vcfw.write(pos) #POS
+            vcfw.write('\t')
+            vcfw.write(GetID(current_records[use_ind[0]].ID)) # ID
+            vcfw.write('\t')
+            vcfw.write(ref)
+            vcfw.write('\t')
+            alt_alleles, mappings = GetAltAlleles(current_records, ref_mergelist, vcftype)
+
+            if len(alt_alleles) > 0:
+                vcfw.write(",".join(alt_alleles))
+                vcfw.write('\t')
+            else:
+                vcfw.write('.\t')
+
+            # fields which are always set to empty
+            vcfw.write(".\t") # QUAL
+            vcfw.write(".\t") # FITLER
+
+            # INFO
+            first = True
+            for (field, reqd) in useinfo:
+                inf = GetInfoItem(current_records, ref_mergelist, field, fail=reqd)
+                if inf is not None:
+                    if not first:
+                        vcfw.write(';')
+                    first = False
+                    vcfw.write(inf)
+            vcfw.write('\t')
+
+            #FORMAT
+            vcfw.write(":".join(["GT"]+useformat))
+
+            # Samples
+            alleles = [ref] + alt_alleles
+            map_iter = iter(mappings)
+            print("ref ", ref)
+            print(ref_mergelist)
+            for i in range(len(ref_mergelist)):
+                if ref_mergelist[i]:
+                    WriteSampleData(vcfw, current_records[i], alleles, useformat,
+                                    format_type, next(map_iter))
+                else:  # NOCALL
+                    print(i)
+                    if num_samples[i] > 0:
+                        vcfw.write('\t')
+                        vcfw.write('\t'.join([NOCALLSTRING] * num_samples[i]))
+
+            vcfw.write('\n')
         return
 
     alt_alleles, mappings = GetAltAlleles(current_records, mergelist, vcftype)
 
     # Set common fields
-    vcfw.write(chrom) #CHROM
+    vcfw.write(chrom)  # CHROM
     vcfw.write('\t')
-    vcfw.write(pos) #POS
+    vcfw.write(pos)  # POS
     vcfw.write('\t')
     # TODO complain if records have different IDs
-    vcfw.write(GetID(current_records[use_ind[0]].ID)) # ID
+    vcfw.write(GetID(current_records[use_ind[0]].ID))  # ID
     vcfw.write('\t')
-    vcfw.write(ref_allele) # REF
+    vcfw.write(ref_allele)  # REF
     vcfw.write('\t')
     # ALT
     if len(alt_alleles) > 0:
@@ -429,8 +489,8 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
     else:
         vcfw.write('.\t')
     # fields which are always set to empty
-    vcfw.write(".\t") # QUAL
-    vcfw.write(".\t") # FITLER
+    vcfw.write(".\t")  # QUAL
+    vcfw.write(".\t")  # FITLER
 
     # INFO
     first = True
@@ -444,19 +504,19 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
     vcfw.write('\t')
 
     # FORMAT - add GT to front
-    vcfw.write(":".join(["GT"]+useformat))
+    vcfw.write(":".join(["GT"] + useformat))
 
     # Samples
-    alleles = [ref_allele]+alt_alleles
+    alleles = [ref_allele] + alt_alleles
     map_iter = iter(mappings)
     for i in range(len(mergelist)):
         if mergelist[i]:
             WriteSampleData(vcfw, current_records[i], alleles, useformat,
                             format_type, next(map_iter))
-        else: # NOCALL
+        else:  # NOCALL
             if num_samples[i] > 0:
                 vcfw.write('\t')
-                vcfw.write('\t'.join([NOCALLSTRING]*num_samples[i]))
+                vcfw.write('\t'.join([NOCALLSTRING] * num_samples[i]))
 
     vcfw.write('\n')
 
