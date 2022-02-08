@@ -606,7 +606,7 @@ class TRRecord:
     chrom : str
         The chromosome this locus is in
     pos : int
-        The bp along the chromosome that this locus is at
+        The bp along the chromosome that this locus is at (ignoring flanking base pairs/full alleles)
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
