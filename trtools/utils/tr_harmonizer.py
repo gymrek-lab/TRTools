@@ -619,6 +619,9 @@ class TRRecord:
 
     Other Parameters
     ----------------
+    harmonized_pos :
+        If this record has flanking base pairs before the repeat, set this
+        to note at which bp the repeat begins
     full_alleles :
         A tuple of string genotypes (ref_allele, [alt_alleles])
         where each allele may contain any number of flanking

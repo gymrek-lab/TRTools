@@ -11,11 +11,11 @@ Example use cases include:
 
 * Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data, to find call errors
 * Comparing calls for the same tool using different parameter settings to identify differences due to bioinformatic processing
-* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR uses matching chromosomes and positions to compare TRs. Therefore, our method is not able to compare TRs if the starting coordinates is changed by TR calling method (e.g., due to phasing with a nearby variant)
+* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR only compares TRs with matching chromosomes and allele-positions (ignoring flanking base pairs)
 
 CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
 
-Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), most such applications would be better performed by specialized tools.
+Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), use-case specific analyses may be better performed by more specialized tools.
 
 Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_ to visualize the distribution of quality scores in each VCF file seprately.
 
