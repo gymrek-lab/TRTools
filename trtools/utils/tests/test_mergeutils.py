@@ -109,3 +109,12 @@ def test_GetMinHarmonizedRecords():
 
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 21)]
     assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+
+    pair = [None, None]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, False]
+
+    pair = [DummyHarmonizedRecord("chr1", 20), None]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+
+    pair = [None, DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
