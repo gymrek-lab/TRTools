@@ -181,16 +181,23 @@ def test_hipstr_position_harmonisation(tmpdir, vcfdir):
 
     args = base_argparse(tmpdir)
     args.vcf1 = hipstr_vcf_1
-    args.region= ""
+    args.region = ""
     args.vcftype1 = 'hipstr'
     args.vcf2 = hipstr_vcf_2
     args.vcftype2 = 'hipstr'
     retcode = main(args)
     assert retcode == 0
 
-    with open(tmpdir + "/test_compare-overall.tab", "r") as out_overall:
-        _, line = out_overall.readlines()
-        assert line == "ALL	1.0	1.0	nan	1\n"
+    with open(tmpdir + "/test_compare-locuscompare.tab", "r") as out_overall:
+        lines = out_overall.readlines()
+        ## vcf1 : flank bp at start of record, vcf2: no flanking bp
+        assert lines[1] == "1	101675	1.0	1.0	1\n"
+        ## vcf1 : no flanking bp, vcf2: no flanking bp
+        assert lines[2] == "1	111675	1.0	1.0	1\n"
+        ## vcf1 : flanking bp at the end, vcf2: no flanking bp
+        assert lines[3] == "1	112655	1.0	1.0	1\n"
+        ## vcf1 : flanking bp at both sides, vcf2: no flanking bp
+        assert lines[4] == "1	125557	1.0	1.0	1\n"
 
 def test_wrong_vcftype(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)
