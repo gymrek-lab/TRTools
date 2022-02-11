@@ -521,8 +521,8 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         dictionary of counts to update
     """
     # Extract shared info
-    chrom = record1.vcfrecord.CHROM
-    pos = record1.vcfrecord.POS
+    chrom = record1.chrom
+    pos = record1.pos
     period = len(record1.motif)
     reflen = len(record1.ref_allele)/period
 
@@ -808,29 +808,32 @@ def main(args):
         vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
     
     ### Walk through sorted readers, merging records as we go ###
-    current_records = [next(reader) for reader in vcfreaders]
-    is_min = mergeutils.GetMinRecords(current_records, chroms)
-
+    current_records = mergeutils.InitReaders(vcfreaders)
     done = mergeutils.DoneReading(current_records)
+    vcf_types = [vcftype1, vcftype2]
     num_records = 0
     while not done:
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
+
+        harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in range(len(current_records))]
+        # contains information about which record should be
+        # skipped in next iteration and whether it is currently comparable
+        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
+
+
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
-        if all([is_min]):
-            if (current_records[0].CHROM == current_records[1].CHROM and \
-                current_records[0].POS == current_records[1].POS):
-                UpdateComparisonResults(trh.HarmonizeRecord(vcftype1, current_records[0]), \
-                                        trh.HarmonizeRecord(vcftype2, current_records[1]), \
-                                        sample_idxs,
-                                        args.ignore_phasing, args.period,
-                                        format_fields, format_bins,
-                                        args.stratify_file,
-                                        overall_results, locus_results,
-                                        sample_results, bubble_results)
+        if all(is_min):
+            UpdateComparisonResults(*harmonized_records,
+                                    sample_idxs,
+                                    args.ignore_phasing, args.period,
+                                    format_fields, format_bins,
+                                    args.stratify_file,
+                                    overall_results, locus_results,
+                                    sample_results, bubble_results)
+
         current_records = mergeutils.GetNextRecords(vcfregions, current_records, is_min)
-        is_min = mergeutils.GetMinRecords(current_records, chroms)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
 

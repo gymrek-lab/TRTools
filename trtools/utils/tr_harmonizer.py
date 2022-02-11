@@ -13,6 +13,7 @@ import numpy as np
 
 import trtools.utils.utils as utils
 
+
 # List of supported VCF types
 # TODO: add Beagle
 # TODO: add support for tool version numbers
@@ -45,13 +46,13 @@ def _ToVCFType(vcftype: Union[str, VcfTypes]):
         if vcftype not in VcfTypes.__members__:
             raise ValueError(("{} is not an excepted TR vcf type. "
                               "Expected one of {}").format(
-                                  vcftype, list(VcfTypes.__members__)))
+                vcftype, list(VcfTypes.__members__)))
         return VcfTypes[vcftype]
     elif isinstance(vcftype, VcfTypes):
         return vcftype
     else:
         raise TypeError(("{} (of type {}) is not a vcftype"
-                        .format(vcftype, type(vcftype))))
+                         .format(vcftype, type(vcftype))))
 
 
 def MayHaveImpureRepeats(vcftype: Union[str, VcfTypes]):
@@ -273,7 +274,8 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
     if vcfrecord.INFO.get('RU') is None:
         raise TypeError("This is not a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if vcfrecord.INFO.get('VID') is not None:
-        raise TypeError("Trying to read an AdVNTR record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(
+            "Trying to read an AdVNTR record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     if vcfrecord.INFO.get('VARID') is not None:
         raise TypeError("Trying to read an EH record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
     ref_allele = vcfrecord.REF.upper()
@@ -360,6 +362,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                     motif,
                     record_id,
                     'Q',
+                    harmonized_pos=int(vcfrecord.INFO['START']),
                     full_alleles=full_alleles)
 
 
@@ -389,7 +392,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'ML')
 
 
-#def _PHREDtoProb(phred: int) -> float:
+# def _PHREDtoProb(phred: int) -> float:
 #    """Convert PHRED score to probability
 #
 #    Notes
@@ -399,7 +402,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
 #    return 10**(-phred/10)
 
 
-#def _ConvertPLtoQualityProb(PL: List[int]) -> float:
+# def _ConvertPLtoQualityProb(PL: List[int]) -> float:
 #    """
 #    Convert a list of PHRED-scaled genotype probabilities to the
 #    unscaled probability of the single most likely genotype.#
@@ -498,8 +501,8 @@ def _HarmonizeEHRecord(vcfrecord: cyvcf2.Variant):
                     alt_allele_lengths=alt_allele_lengths)
 
 
-def _UpperCaseAlleles(alleles : List[str]):
-    #Convert the list of allele strings to upper case
+def _UpperCaseAlleles(alleles: List[str]):
+    # Convert the list of allele strings to upper case
     upper_alleles = []
     for allele in alleles:
         upper_alleles.append(allele.upper())
@@ -575,7 +578,7 @@ class TRRecord:
     chrom : str
         The chromosome this locus is in
     pos : int
-        The bp along the chromosome that this locus is at
+        The bp along the chromosome that this locus is at (ignoring flanking base pairs/full alleles)
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
@@ -588,6 +591,9 @@ class TRRecord:
 
     Other Parameters
     ----------------
+    harmonized_pos :
+        If this record has flanking base pairs before the repeat, set this
+        to note at which bp the repeat begins
     full_alleles :
         A tuple of string genotypes (ref_allele, [alt_alleles])
         where each allele may contain any number of flanking
@@ -633,6 +639,7 @@ class TRRecord:
                  record_id: str,
                  quality_field: str,
                  *,
+                 harmonized_pos: Optional[int] = None,
                  full_alleles: Optional[Tuple[str, List[str]]] = None,
                  ref_allele_length: Optional[float] = None,
                  alt_allele_lengths: Optional[List[float]] = None,
@@ -643,10 +650,11 @@ class TRRecord:
         self.motif = motif
         self.record_id = record_id
         self.chrom = vcfrecord.CHROM
-        self.pos = vcfrecord.POS
+        self.pos = harmonized_pos if harmonized_pos is not None else vcfrecord.POS
         self.info = dict(vcfrecord.INFO)
         self.format = _Cyvcf2FormatDict(vcfrecord)
         self.full_alleles = full_alleles
+        self.full_alleles_pos = self.vcfrecord.POS
         self.ref_allele_length = ref_allele_length
         self.alt_allele_lengths = alt_allele_lengths
         self.quality_field = quality_field
@@ -670,7 +678,7 @@ class TRRecord:
             self.ref_allele = utils.FabricateAllele(motif, ref_allele_length)
         else:
             self.has_fabricated_ref_allele = False
-            self.ref_allele_length = len(ref_allele)/len(motif)
+            self.ref_allele_length = len(ref_allele) / len(motif)
 
         if alt_allele_lengths is not None:
             self.has_fabricated_alt_alleles = True
@@ -681,7 +689,7 @@ class TRRecord:
         else:
             self.has_fabricated_alt_alleles = False
             self.alt_allele_lengths = [
-                len(allele)/len(motif) for allele in self.alt_alleles
+                len(allele) / len(motif) for allele in self.alt_alleles
             ]
 
         try:
@@ -705,7 +713,7 @@ class TRRecord:
                              "number of alt alleles as given to the TRRecord "
                              "constructor. Underlying alt alleles: {}, "
                              " constructor alt alleles: {}".format(
-                                self.vcfrecord.ALT, self.alt_alleles))
+                self.vcfrecord.ALT, self.alt_alleles))
 
         if self.full_alleles:
             if len(self.full_alleles) != 2:
@@ -833,7 +841,7 @@ class TRRecord:
             return None
 
         return (
-            gt_idxs.shape[1] - 1 - np.sum(gt_idxs[:, :-1] == -2, axis = 1)
+                gt_idxs.shape[1] - 1 - np.sum(gt_idxs[:, :-1] == -2, axis=1)
         )
 
     def GetCallRate(self, strict: bool = True) -> float:
@@ -861,7 +869,7 @@ class TRRecord:
         if called_samples is None:
             return None
         else:
-            return np.sum(called_samples)/called_samples.shape[0]
+            return np.sum(called_samples) / called_samples.shape[0]
 
     def _GetStringGenotypeArray(
             self,
@@ -877,7 +885,6 @@ class TRRecord:
         seq_array[:, :-1][idx_gts[:, :-1] == -1] = '.'
         seq_array[:, :-1][idx_gts[:, :-1] == -2] = ','
         return seq_array
-
 
     def GetStringGenotypes(self) -> Optional[np.ndarray]:
         """
@@ -1206,7 +1213,7 @@ class TRRecord:
         if gts is None:
             return {}
 
-        gts = gts[:, :-1] #remove phasing
+        gts = gts[:, :-1]  # remove phasing
         gts = np.sort(gts, axis=1)
 
         if sample_index is not None:
@@ -1295,11 +1302,11 @@ class TRRecord:
         if gts is None:
             return {}
 
-        gts = gts[:, :-1] #remove phasing
+        gts = gts[:, :-1]  # remove phasing
 
         if sample_index is not None:
             gts = gts[sample_index, :]
-       
+
         # remove no calls and missing haplotypes
         gts = gts[gts != nocall_entry]
         gts = gts[gts != lowploidy_entry]
@@ -1349,7 +1356,7 @@ class TRRecord:
                                              fullgenotypes=fullgenotypes,
                                              sample_index=sample_index)
         total = float(sum(allele_counts.values()))
-        return {key: value/total for key, value in allele_counts.items()}
+        return {key: value / total for key, value in allele_counts.items()}
 
     def GetMaxAllele(self,
                      sample_index: Optional[Any] = None) -> float:
@@ -1568,5 +1575,4 @@ class TRRecordHarmonizer:
         """Iterate over TRRecord produced from the underlying vcf."""
         return HarmonizeRecord(self.vcftype, next(self.vcffile))
 
-
-#TODO check all users of this class for new options
+# TODO check all users of this class for new options

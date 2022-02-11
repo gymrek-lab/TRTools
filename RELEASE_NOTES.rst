@@ -1,3 +1,13 @@
+Unreleased changes
+-----
+
+Bug fixes:
+
+* https://github.com/gymreklab/TRTools/issues/146 fixed record positions being compared twice
+* CompareSTR: Decision on which records are comparable is now based on data from harmonized TRRecords,
+  and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
+  but position of their repeat is at the same position are compared correctly (harmonization step removes this difference).
+
 4.0.1
 -----
 
