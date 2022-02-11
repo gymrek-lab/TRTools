@@ -810,15 +810,18 @@ def main(args):
     ### Walk through sorted readers, merging records as we go ###
     current_records = mergeutils.InitReaders(vcfreaders)
     done = mergeutils.DoneReading(current_records)
-
+    vcf_types = [vcftype1, vcftype2]
     num_records = 0
     while not done:
-        harmonized_records = trh.HarmonizeRecords(current_records, [vcftype1, vcftype2])
-        # contains information about which record should be skipped in next iteration and whether it is currently comparable
-        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
-
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
+
+        harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in range(len(current_records))]
+        # contains information about which record should be
+        # skipped in next iteration and whether it is currently comparable
+        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
+
+
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
         if all(is_min):

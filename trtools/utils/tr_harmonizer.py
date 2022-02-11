@@ -225,34 +225,6 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
                          .format(possible_vcf_types, vcftype)))
 
 
-def HarmonizeRecords(vcf_records: List[cyvcf2.Variant], vcf_types: List[Union[str, VcfTypes]]):
-    """
-        Create a list of standardized TRRecord objects out of a cyvcf2.Variant
-        objects of possibly unknown type.
-
-        Parameters
-        ----------
-        vcf_records :
-            A list of cyvcf2.Variant Object
-
-        vcf_types :
-            A list of strings or VCFTypes objects
-
-        Returns
-        -------
-        List of TRRecord objects
-
-        Raises
-        -------
-        ValueError when lengths of input lists are not equal
-        """
-
-
-    if len(vcf_types) != len(vcf_records):
-        raise ValueError("Length of type and record lists is not equal")
-
-    return [HarmonizeRecord(vcf_types[i], vcf_records[i]) for i in range(len(vcf_records))]
-
 def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     """
     Create a standardized TRRecord object out of a cyvcf2.Variant
