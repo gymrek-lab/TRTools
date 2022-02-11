@@ -1,3 +1,11 @@
+Unreleased
+----------
+
+Bug fixes:
+
+* MergeSTR failed on mixed ploidy samples (i.e. chrX). Fix one such bug. Note: none of the tools are 
+  fully tested for chrX even with this fix.
+
 4.0.2
 -----
 
