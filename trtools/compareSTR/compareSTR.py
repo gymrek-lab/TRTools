@@ -28,6 +28,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
+from typing import List, Any, Callable, Tuple, Optional
 
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
@@ -719,6 +720,39 @@ def check_region(contigs1, contigs2, region_str):
     return 0
 
 
+def handle_overlaps(args: Any = None)\
+        -> Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]:
+    if args is None:
+        left_overlap_limit = 0
+        right_overlap_limit = 0
+    else:
+        raise NotImplementedError("TODO, implement better configurability")
+
+    def handler(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int):
+        assert len(records) == 2
+
+        left, right = records[0], records[1]
+        if chrom_indices[0] != chrom_indices[1]:
+            return False
+
+        left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)
+        right_start, right_end = mergeutils.GetCoordinatesOfRecord(right)
+
+        any_overlap = (left_start <= right_start <= left_end <= right_end) or \
+                      (right_start <= left_start <= right_end <= left_end)
+
+        if any_overlap:
+            pass
+            # raise NotImplementedError("some message notifying user that overlapping records have been found")
+
+        left_flank = abs(left_start - right_start)
+        right_flank = abs(left_end - right_end)
+
+        return left_flank <= left_overlap_limit and right_flank <= right_overlap_limit
+
+    return handler
+
+
 def main(args):
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Error: The directory which contains the output location {} does"
@@ -819,12 +853,12 @@ def main(args):
         harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in range(len(current_records))]
         # contains information about which record should be
         # skipped in next iteration and whether it is currently comparable
-        is_min = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms)
+        increment, comparable = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms, handle_overlaps(None))
 
 
-        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
-        if mergeutils.CheckMin(is_min): return 1
-        if all(is_min):
+        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
+        if mergeutils.CheckMin(increment): return 1
+        if comparable:
             UpdateComparisonResults(*harmonized_records,
                                     sample_idxs,
                                     args.ignore_phasing, args.period,
@@ -833,7 +867,7 @@ def main(args):
                                     overall_results, locus_results,
                                     sample_results, bubble_results)
 
-        current_records = mergeutils.GetNextRecords(vcfregions, current_records, is_min)
+        current_records = mergeutils.GetNextRecords(vcfregions, current_records, increment)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
 
