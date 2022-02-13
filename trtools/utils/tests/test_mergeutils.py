@@ -99,22 +99,22 @@ def test_GetMinHarmonizedRecords():
     chromosomes = ["chr1", "chr2", "chr3"]
 
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, True]
 
     pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]
 
     pair = [DummyHarmonizedRecord("chr2", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]
 
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 21)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, False]
 
     pair = [None, None]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, False]
 
     pair = [DummyHarmonizedRecord("chr1", 20), None]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, False]
 
     pair = [None, DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]

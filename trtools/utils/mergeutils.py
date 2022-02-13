@@ -12,7 +12,7 @@ from cyvcf2 import cyvcf2
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 
-from typing import List, Union, Any, Optional, Callable
+from typing import List, Union, Any, Optional, Callable, Tuple
 
 CYVCF_RECORD = cyvcf2.Variant
 CYVCF_READER = cyvcf2.VCF
@@ -249,7 +249,10 @@ def GetMinRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) 
 
 
 
-def GetMinHarmonizedRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) -> List[bool]:
+def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]],
+                                       chroms: List[str],
+                                       overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]) \
+        -> Tuple[List[bool], bool]:
     r"""Check if each record is next up in sort order
 
     Return a vector of boolean set to true if
@@ -266,19 +269,22 @@ def GetMinHarmonizedRecords(record_list: List[Optional[trh.TRRecord]], chroms: L
 
     Returns
     -------
-    checks : list of bool
-       Set to True for records that are first in sort order
+    increment : list of bool
+       List or bools, where items are set to True when the record at the index of the item should be
+       skipped during VCF file comparison.
+    comparable: bool
+        Value, that determines whether current records are comparable / mergable, depending on the callback
     """
+    # TODO make this more efficient
     chrom_order = [np.inf if r is None else chroms.index(r.chrom) for r in record_list]
     pos = [np.inf if r is None else r.pos for r in record_list]
+    min_pos = min(pos)
+    min_chrom_index = min(chrom_order)
 
-    min_chrom = min(chrom_order)
-    allpos = [pos[i] for i in range(len(pos)) if GetChromOrderEqual(chrom_order[i], min_chrom)]
-    if len(allpos) > 0:
-        min_pos = min(allpos)
-    else:
-        return [False] * len(record_list)
-    return [False if r is None else r.chrom == chroms[min_chrom] and r.pos == min_pos for r in record_list]
+    increment = [chrom_order[i] == min_chrom_index and pos[i] == min_pos for i in range(len(chrom_order))]
+    comparable = overlap_callback(record_list, chrom_order, min_chrom_index)
+
+    return increment, comparable
 
 
 def DoneReading(records: List[Union[CYVCF_RECORD, trh.TRRecord]]) -> bool:

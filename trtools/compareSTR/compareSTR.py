@@ -819,7 +819,7 @@ def main(args):
         harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in range(len(current_records))]
         # contains information about which record should be
         # skipped in next iteration and whether it is currently comparable
-        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
+        is_min = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms)
 
 
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
