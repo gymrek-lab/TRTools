@@ -108,6 +108,8 @@ def test_GetRecordComparabilityAndIncrement():
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 20)]
     assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_true) == ([True, True], True)
 
+    # these two test cases show that second result of GetRecordComparabilityAndIncrement is
+    # entirely dependant on the callback
     pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
     assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([False, True], False)
 
