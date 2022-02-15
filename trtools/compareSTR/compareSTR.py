@@ -759,10 +759,7 @@ def handle_overlaps(args: Any = None) \
         left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)
         right_start, right_end = mergeutils.GetCoordinatesOfRecord(right)
 
-        if left_start <= right_start:
-            overlap = left_end - right_start + 1
-        else:
-            overlap = right_end - left_start + 1
+        overlap = min(left_end, right_end) - max(left_start, right_start)
 
         # TODO check whether float comparison problems don't break this condition
         comparable = \
@@ -770,9 +767,9 @@ def handle_overlaps(args: Any = None) \
             >= min_overlap
 
         if overlap >= 1 and not comparable:
-            common.MSG(f"Records {left.record_id} and {right.record_id} overlap:\n"
-                       f"{left.record_id}: ({left_start, left_end})\n"
-                       f"{right.record_id}: ({right_start, right_end}),\n"
+            common.WARNING(f"Records {left.record_id} and {right.record_id} overlap:\n"
+                       f"{left.record_id}: {left_start, left_end}\n"
+                       f"{right.record_id}: {right_start, right_end},\n"
                        f"but are NOT comparable!")
 
         return comparable
@@ -874,16 +871,19 @@ def main(args):
     done = mergeutils.DoneReading(current_records)
     vcf_types = [vcftype1, vcftype2]
     num_records = 0
+    compared_records = 0
+    overlap_handler = handle_overlaps()
+
     while not done:
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
 
         harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in
                               range(len(current_records))]
-        # contains information about which record should be
-        # skipped in next iteration and whether it is currently comparable
+        # increments contains information about which record should be
+        # skipped in next iteration
         increment, comparable = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms,
-                                                                              handle_overlaps(None))
+                                                                              overlap_handler)
 
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
         if mergeutils.CheckMin(increment): return 1
@@ -895,10 +895,15 @@ def main(args):
                                     args.stratify_file,
                                     overall_results, locus_results,
                                     sample_results, bubble_results)
+            compared_records += 1
 
         current_records = mergeutils.GetNextRecords(vcfregions, current_records, increment)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
+
+    if compared_records == 0:
+        common.WARNING("No comparable records were found, exiting!")
+        return 1
 
     ### Overall metrics ###
     OutputOverallMetrics(overall_results, format_fields, format_bins, args.out)
