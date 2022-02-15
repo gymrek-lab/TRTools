@@ -742,7 +742,6 @@ def check_region(contigs1, contigs2, region_str):
     return 0
 
 
-
 def handle_overlaps(args: Any = None) \
         -> Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]:
     """
@@ -772,7 +771,8 @@ def handle_overlaps(args: Any = None) \
             Parameters
             ----------
             records: List[Optional[trh.TRRecord]]
-                List of TRRecords whose comparability is to be determined
+                List of TRRecords whose comparability is to be determined. If any of them is None,
+                they are not comparable
             chrom_indices: List[int]
                 List of indices of chromosomes of current records
             min_chrom_index: int
@@ -786,9 +786,12 @@ def handle_overlaps(args: Any = None) \
             """
         assert len(records) == 2
 
+        if any(record is None for record in records):
+            return False
+
         left, right = records[0], records[1]
-        if chrom_indices[0] != chrom_indices[1] or\
-                chrom_indices[0] != min_chrom_index or\
+        if chrom_indices[0] != chrom_indices[1] or \
+                chrom_indices[0] != min_chrom_index or \
                 chrom_indices[1] != min_chrom_index:
             return False
 
@@ -804,9 +807,9 @@ def handle_overlaps(args: Any = None) \
 
         if overlap >= 1 and not comparable:
             common.WARNING(f"Records {left.record_id} and {right.record_id} overlap:\n"
-                       f"{left.record_id}: {left_start, left_end}\n"
-                       f"{right.record_id}: {right_start, right_end},\n"
-                       f"but are NOT comparable!")
+                           f"{left.record_id}: {left_start, left_end}\n"
+                           f"{right.record_id}: {right_start, right_end},\n"
+                           f"but are NOT comparable!")
 
         return comparable
 

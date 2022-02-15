@@ -95,26 +95,36 @@ def test_UnzippedUnindexedFile(mrgvcfdir):
     assert "Could not find VCF index" in str(info.value)
 
 
-def test_GetMinHarmonizedRecords():
+def test_GetRecordComparabilityAndIncrement():
     chromosomes = ["chr1", "chr2", "chr3"]
 
+    def comp_callback_true(x, y, z):
+        return True
+
+    def comp_callback_false(x, y, z):
+        return False
+
+
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_true) == ([True, True], True)
 
     pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([False, True], False)
+
+    pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_true) == ([False, True], True)
 
     pair = [DummyHarmonizedRecord("chr2", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([False, True], False)
 
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 21)]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_true) == ([True, False], True)
 
     pair = [None, None]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([False, False], False)
 
     pair = [DummyHarmonizedRecord("chr1", 20), None]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [True, False]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([True, False], False)
 
     pair = [None, DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes) == [False, True]
+    assert mergeutils.GetRecordComparabilityAndIncrement(pair, chromosomes, comp_callback_false) == ([False, True], False)

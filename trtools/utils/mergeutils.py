@@ -287,7 +287,9 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
     min_pos = min(pos)
     min_chrom_index = min(chrom_order)
 
-    increment = [chrom_order[i] == min_chrom_index and pos[i] == min_pos for i in range(len(chrom_order))]
+    increment = \
+        [chrom_order[i] == min_chrom_index and pos[i] == min_pos and record_list[i] is not None
+         for i in range(len(chrom_order))]
     comparable = overlap_callback(record_list, chrom_order, min_chrom_index)
 
     return increment, comparable
