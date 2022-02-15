@@ -742,18 +742,54 @@ def check_region(contigs1, contigs2, region_str):
     return 0
 
 
+
 def handle_overlaps(args: Any = None) \
         -> Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]:
+    """
+        Returns function that determines whether (two) records in list are comparable
+        This function uses constraints from args
+
+        Parameters
+        ----------
+        args :
+            Parsed arguments of the program
+
+        Returns
+        -------
+        handler: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]
+           A function that determines whether (two) records in list are comparable
+        """
     if args is None:
         min_overlap = 1.0
     else:
         raise NotImplementedError("TODO, implement better configurability")
 
-    def handler(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int):
+    def handler(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int) -> bool:
+        """
+            This function determines whether (two) records in list are comparable
+            Currently only works with record lists which are two records long
+
+            Parameters
+            ----------
+            records: List[Optional[trh.TRRecord]]
+                List of TRRecords whose comparability is to be determined
+            chrom_indices: List[int]
+                List of indices of chromosomes of current records
+            min_chrom_index: int
+                Smallest index in chrom_indices. All records should have the same chrom_index,
+                otherwise they are not comparable
+
+            Returns
+            -------
+            comparable: bool
+                Result, that says whether records are comparable
+            """
         assert len(records) == 2
 
         left, right = records[0], records[1]
-        if chrom_indices[0] != chrom_indices[1]:
+        if chrom_indices[0] != chrom_indices[1] or\
+                chrom_indices[0] != min_chrom_index or\
+                chrom_indices[1] != min_chrom_index:
             return False
 
         left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)

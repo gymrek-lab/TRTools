@@ -259,11 +259,9 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
                                        chroms: List[str],
                                        overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]) \
         -> Tuple[List[bool], bool]:
-    r"""Check if each record is next up in sort order
+    r"""Get list that says which records should be skipped in the next
+     iteration, and whether they are all comparable with each other
 
-    Return a vector of boolean set to true if
-    the record is in lowest sort order of all the records
-    Use order in chroms to determine sort order of chromosomes
 
     Parameters
     ----------
@@ -273,6 +271,9 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
     chroms : list of str
        Ordered list of all chromosomes
 
+    overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]
+        Function that calculates whether the records are comparable
+
     Returns
     -------
     increment : list of bool
@@ -281,7 +282,6 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
     comparable: bool
         Value, that determines whether current records are comparable / mergable, depending on the callback
     """
-    # TODO make this more efficient
     chrom_order = [np.inf if r is None else chroms.index(r.chrom) for r in record_list]
     pos = [np.inf if r is None else r.pos for r in record_list]
     min_pos = min(pos)
