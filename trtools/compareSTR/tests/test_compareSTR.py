@@ -1,9 +1,10 @@
 import argparse
 import os
+from typing import List
 
 import numpy as np
 import pytest
-
+from trtools.utils.tests.test_mergeutils import DummyHarmonizedRecord
 from ..compareSTR import *
 
 
@@ -184,11 +185,75 @@ def test_no_comparable_records(tmpdir, vcfdir, capfd):
     args.vcf2 = hipstr_vcf_2
 
     ret = main(args)
-    out, err = capfd.readouterr()
+    _, err = capfd.readouterr()
     assert ret == 1
     assert err == "No comparable records were found, exiting!\n"
 
 
+def test_better_comparability_calculation(tmpdir, vcfdir, capfd):
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+
+    test_vcf_1 = os.path.join(vcfcomp, "test_better_comparability_calculation_1.vcf.gz")
+    test_vcf_2 = os.path.join(vcfcomp, "test_better_comparability_calculation_2.vcf.gz")
+
+    args = base_argparse(tmpdir)
+    args.vcf1 = test_vcf_1
+    args.region = ""
+    args.vcftype1 = 'hipstr'
+    args.vcf2 = test_vcf_2
+    args.vcftype2 = 'hipstr'
+    retcode = main(args)
+    assert retcode == 0
+    with open(tmpdir + "/test_compare-locuscompare.tab", "r") as out_overall:
+        lines = out_overall.readlines()
+        # Two of the records wont be compared
+        assert len(lines) == 2
+        _, err = capfd.readouterr()
+                        ## first output is about records that have the same starting position but different end pos
+        assert err == ("Records STR_40 and STR_40 overlap:\n"
+                        "STR_40: (112695, 112701.0)\n"
+                        "STR_40: (112695, 112703.0),\n"
+                        "but are NOT comparable!\n"
+                       ## second is more general, they just sort of overlap each other
+                        "Records STR_41 and STR_41 overlap:\n"
+                        "STR_41: (113695, 113701.0)\n"
+                        "STR_41: (113695, 113703.0),\n"
+                        "but are NOT comparable!\n")
+def test_comparability_handler(tmpdir, vcfdir, capfd):
+    args = base_argparse(tmpdir)
+
+    ### Tests without arguments
+    handler = handle_overlaps()
+
+    records = [None, None]
+    chrom_idxs = [np.inf, np.inf]
+    min_idx = np.inf
+
+    assert not handler(records, chrom_idxs, min_idx)
+
+    records = [DummyHarmonizedRecord("chr1", 10), None]
+    min_idx = 0
+
+    assert not handler(records, chrom_idxs, min_idx)
+
+    records = [None, DummyHarmonizedRecord("chr1", 10, 4, "AC")]
+    chrom_idxs = [np.inf, 0]
+    assert not handler(records, chrom_idxs, min_idx)
+
+    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "AC")]
+    chrom_idxs = [np.inf, 0]
+    assert not handler(records, chrom_idxs, min_idx)
+
+    chrom_idxs = [0, 0]
+    assert handler(records, chrom_idxs, min_idx)
+
+    records = [DummyHarmonizedRecord("chr1", 10, 5, "AC", "rec1"), DummyHarmonizedRecord("chr1", 10, 4, "AC", "rec2")]
+    assert not handler(records, chrom_idxs, min_idx)
+    _, err = capfd.readouterr()
+    assert err != ""
+
+    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "TG")]
+    assert handler(records, chrom_idxs, min_idx)
 
 
 def test_hipstr_position_harmonisation(tmpdir, vcfdir):
@@ -205,6 +270,7 @@ def test_hipstr_position_harmonisation(tmpdir, vcfdir):
     args.vcftype2 = 'hipstr'
     retcode = main(args)
     assert retcode == 0
+
 
     with open(tmpdir + "/test_compare-locuscompare.tab", "r") as out_overall:
         lines = out_overall.readlines()

@@ -23,9 +23,12 @@ class DummyRecord:
 
 
 class DummyHarmonizedRecord:
-    def __init__(self, chrom, pos):
+    def __init__(self, chrom, pos, reflen=None, motif=None, record_id=None):
         self.chrom = chrom
         self.pos = pos
+        self.ref_allele_length = reflen
+        self.motif = motif
+        self.record_id = record_id
 
 
 def test_DebugPrintRecordLocations(capsys):
