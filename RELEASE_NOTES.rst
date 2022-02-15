@@ -1,11 +1,3 @@
-Unreleased
-----------
-
-Bug fixes:
-
-* MergeSTR failed on mixed ploidy samples (i.e. chrX). Fix one such bug. Note: none of the tools are 
-  fully tested for chrX even with this fix.
-
 4.0.2
 -----
 
@@ -15,6 +7,9 @@ Bug fixes:
 * CompareSTR: Decision on which records are comparable is now based on data from harmonized TRRecords,
   and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
   but position of their repeat is at the same position are compared correctly (harmonization step removes this difference).
+* MergeSTR failed on mixed ploidy samples (i.e. chrX). Fix one such bug. Note: none of the tools are 
+  fully tested for chrX even with this fix.
+
 
 4.0.1
 -----
