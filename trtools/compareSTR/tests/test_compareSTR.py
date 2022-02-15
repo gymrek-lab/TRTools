@@ -255,6 +255,8 @@ def test_comparability_handler(tmpdir, vcfdir, capfd):
     records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "TG")]
     assert handler(records, chrom_idxs, min_idx)
 
+    # TODO add tests that check handler which uses args
+
 
 def test_hipstr_position_harmonisation(tmpdir, vcfdir):
     vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
