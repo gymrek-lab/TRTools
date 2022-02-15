@@ -173,6 +173,24 @@ def test_main(tmpdir, vcfdir):
     retcode = main(args)
     assert retcode == 1
 
+def test_no_comparable_records(tmpdir, vcfdir, capfd):
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+    hipstr_vcf_1 = os.path.join(vcfcomp, "test_no_comparable_records_1.vcf.gz")
+    hipstr_vcf_2 = os.path.join(vcfcomp, "test_no_comparable_records_2.vcf.gz")
+
+    args = base_argparse(tmpdir)
+    args.vcf1 = hipstr_vcf_1
+    args.region = ""
+    args.vcf2 = hipstr_vcf_2
+
+    ret = main(args)
+    out, err = capfd.readouterr()
+    assert ret == 1
+    assert err == "No comparable records were found, exiting!\n"
+
+
+
+
 def test_hipstr_position_harmonisation(tmpdir, vcfdir):
     vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
 
