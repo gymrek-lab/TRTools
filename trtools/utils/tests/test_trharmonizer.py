@@ -797,6 +797,7 @@ def test_HarmonizeRecord(vcfdir):
     assert not tr_rec1.HasFullStringGenotypes()
     assert not tr_rec1.HasFabricatedRefAllele()
     assert not tr_rec1.HasFabricatedAltAlleles()
+    assert tr_rec1.pos == tr_rec1.full_alleles_pos
     tr_rec2 = next(str_iter)
     tr_rec3 = next(str_iter)
     assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTT'
@@ -807,6 +808,8 @@ def test_HarmonizeRecord(vcfdir):
     while record.record_id != "STR_125":
         record = next(str_iter)
     assert record.HasFullStringGenotypes()
+    # record in the test file has flanking bp at the start of the ref. allele
+    assert record.pos > record.full_alleles_pos
     # TODO this isn't really the correct behavior -
     # we're trimming off an extra repeat from the alt allele
     assert record.full_alleles == (
@@ -931,4 +934,3 @@ def test_TRRecord_Quality(vcfdir):
     assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
-

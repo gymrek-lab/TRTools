@@ -173,6 +173,32 @@ def test_main(tmpdir, vcfdir):
     retcode = main(args)
     assert retcode == 1
 
+def test_hipstr_position_harmonisation(tmpdir, vcfdir):
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+
+    hipstr_vcf_1 = os.path.join(vcfcomp, "test_hipstr_flanking_bp_flanking.vcf.gz")
+    hipstr_vcf_2 = os.path.join(vcfcomp, "test_hipstr_flanking_bp_non_flanking.vcf.gz")
+
+    args = base_argparse(tmpdir)
+    args.vcf1 = hipstr_vcf_1
+    args.region = ""
+    args.vcftype1 = 'hipstr'
+    args.vcf2 = hipstr_vcf_2
+    args.vcftype2 = 'hipstr'
+    retcode = main(args)
+    assert retcode == 0
+
+    with open(tmpdir + "/test_compare-locuscompare.tab", "r") as out_overall:
+        lines = out_overall.readlines()
+        ## vcf1 : flank bp at start of record, vcf2: no flanking bp
+        assert lines[1] == "1	101675	1.0	1.0	1\n"
+        ## vcf1 : no flanking bp, vcf2: no flanking bp
+        assert lines[2] == "1	111675	1.0	1.0	1\n"
+        ## vcf1 : flanking bp at the end, vcf2: no flanking bp
+        assert lines[3] == "1	112655	1.0	1.0	1\n"
+        ## vcf1 : flanking bp at both sides, vcf2: no flanking bp
+        assert lines[4] == "1	125557	1.0	1.0	1\n"
+
 def test_wrong_vcftype(tmpdir, vcfdir, capsys):
     args = base_argparse(tmpdir)
     vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")

@@ -225,42 +225,6 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
                          .format(possible_vcf_types, vcftype)))
 
 
-def HarmonizeRecords(vcf_records: List[cyvcf2.Variant], vcf_types: List[Union[str, VcfTypes]])\
-        -> List[Optional["TRRecord"]]:
-    """
-        Create a list of standardized TRRecord objects out of a cyvcf2.Variant
-        objects of possibly unknown type.
-
-        Parameters
-        ----------
-        vcf_records :
-            A list of cyvcf2.Variant Object
-
-        vcf_types :
-            A list of strings or VCFTypes objects
-
-        Returns
-        -------
-        List of TRRecord objects
-
-        Raises
-        -------
-        ValueError when lengths of input lists are not equal
-        """
-
-    if len(vcf_types) != len(vcf_records):
-        raise ValueError("Length of type and record lists is not equal")
-
-    result = []
-    for (record, vcf_type) in zip(vcf_records, vcf_types):
-        if record is None:
-            result.append(None)
-        else:
-            result.append(HarmonizeRecord(vcf_type, record))
-
-    return result
-
-
 def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     """
     Create a standardized TRRecord object out of a cyvcf2.Variant
@@ -614,7 +578,7 @@ class TRRecord:
     chrom : str
         The chromosome this locus is in
     pos : int
-        The bp along the chromosome that this locus is at
+        The bp along the chromosome that this locus is at (ignoring flanking base pairs/full alleles)
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
@@ -627,6 +591,9 @@ class TRRecord:
 
     Other Parameters
     ----------------
+    harmonized_pos :
+        If this record has flanking base pairs before the repeat, set this
+        to note at which bp the repeat begins
     full_alleles :
         A tuple of string genotypes (ref_allele, [alt_alleles])
         where each allele may contain any number of flanking

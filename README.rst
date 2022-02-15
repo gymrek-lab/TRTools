@@ -116,7 +116,6 @@ Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
-* CompareSTR currently only compares STR loci between two callsets if they have the same start and end coordinates. In the future we will add the capacity to take in a user specificied mapping of loci between the two callsets and use that to compare loci even if they don't completely overlap one another.
 
 Contact Us
 ----------
