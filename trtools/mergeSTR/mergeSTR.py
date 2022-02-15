@@ -506,7 +506,15 @@ def getargs() -> Any:  # pragma: no cover
     args = parser.parse_args()
     return args
 
+def Harmonize_if_not_none(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfTypes):
+    result = []
+    for record in records:
+        if record is not None:
+            result.append(trh.HarmonizeRecord(vcf_type, record))
+        else:
+            result.append(None)
 
+    return result
 def main(args: Any) -> int:
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Error: The directory which contains the output location {} does"
@@ -553,9 +561,11 @@ def main(args: Any) -> int:
         format_type.append(vcfreaders[0].get_header_type(fmt)['Type'])
 
     ### Walk through sorted readers, merging records as we go ###
-    current_records = [next(reader) for reader in vcfreaders]
+    current_records = mergeutils.InitReaders(vcfreaders)
     # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
+
+    vcf_types = [vcftype] * len(vcfreaders)
     while not done:
         for vcf_num, (r, reader) in enumerate(zip(current_records, vcfreaders)):
             if r is None: continue
@@ -572,7 +582,7 @@ def main(args: Any) -> int:
                     "(https://github.com/samtools/bcftools) to fix the contigs"
                     ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
                 return 1
-        harmonized_records = trh.HarmonizeRecords(current_records, [vcftype] * len(current_records))
+        harmonized_records = Harmonize_if_not_none(current_records, vcftype)
         is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
