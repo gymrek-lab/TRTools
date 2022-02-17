@@ -220,7 +220,6 @@ def test_better_comparability_calculation(tmpdir, vcfdir, capfd):
                         "STR_41: (113695, 113703.0),\n"
                         "but are NOT comparable!\n")
 def test_comparability_handler(tmpdir, vcfdir, capfd):
-    args = base_argparse(tmpdir)
 
     ### Tests without arguments
     handler = handle_overlaps()
@@ -255,7 +254,8 @@ def test_comparability_handler(tmpdir, vcfdir, capfd):
     records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "TG")]
     assert handler(records, chrom_idxs, min_idx)
 
-    # TODO add tests that check handler which uses args
+    records = [DummyHarmonizedRecord("chr1", 8, 5, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "AC")]
+    assert not handler(records, chrom_idxs, min_idx)
 
 
 def test_hipstr_position_harmonisation(tmpdir, vcfdir):
