@@ -506,7 +506,7 @@ def getargs() -> Any:  # pragma: no cover
     args = parser.parse_args()
     return args
 
-def Harmonize_if_not_none(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfTypes):
+def HarmonizeIfNotNone(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfTypes):
     result = []
     for record in records:
         if record is not None:
@@ -565,7 +565,6 @@ def main(args: Any) -> int:
     # Check if contig ID is set in VCF header for all records
     done = mergeutils.DoneReading(current_records)
 
-    vcf_types = [vcftype] * len(vcfreaders)
     while not done:
         for vcf_num, (r, reader) in enumerate(zip(current_records, vcfreaders)):
             if r is None: continue
@@ -582,11 +581,11 @@ def main(args: Any) -> int:
                     "(https://github.com/samtools/bcftools) to fix the contigs"
                     ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
                 return 1
-        harmonized_records = Harmonize_if_not_none(current_records, vcftype)
+        harmonized_records = HarmonizeIfNotNone(current_records, vcftype)
         is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
         if mergeutils.CheckMin(is_min): return 1
-        MergeRecords(vcfreaders, vcftype, num_samples, current_records, is_min, vcfw, useinfo,
+        MergeRecords(vcfreaders, vcftype, num_samples, harmonized_records, is_min, vcfw, useinfo,
                      useformat, format_type)
         current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
         done = mergeutils.DoneReading(current_records)
