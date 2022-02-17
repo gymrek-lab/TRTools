@@ -162,32 +162,9 @@ def WriteMergedHeader(vcfw: TextIO, args: Any, readers: List[cyvcf2.VCF], cmd: s
     vcfw.write("#" + "\t".join(header_fields + samples) + "\n")
     return useinfo, useformat
 
-def GetRefAlleleHipstr(current_records: List[trh.TRRecord], mergelist: List[bool]):
-    r"""Get reference allele for a set of HipSTR records
-
-        Parameters
-        ----------
-        current_records : list of trh.TRRecord
-           List of records being merged
-        mergelist : list of bool
-           Indicates whether each record is included in merge
-
-        Returns
-        -------
-        ref : str
-           Reference allele string. Set to None if conflicting references are found.
-        """
-    refs: List[str] = []
 
 
-    for i in range(len(mergelist)):
-        if mergelist[i]:
-            refs.append(current_records[i].ref_allele.upper())
-    if len(set(refs)) != 1:
-        return None
-    return refs[0]
-
-def GetRefAlleleDefault(current_records: List[trh.TRRecord], mergelist: List[bool]) -> Optional[str]:
+def GetRefAllele(current_records: List[trh.TRRecord], mergelist: List[bool], vcfType: trh.VcfTypes) -> Optional[str]:
     r"""Get reference allele for a set of records
 
     Parameters
@@ -202,17 +179,40 @@ def GetRefAlleleDefault(current_records: List[trh.TRRecord], mergelist: List[boo
     ref : str
        Reference allele string. Set to None if conflicting references are found.
     """
+
+    def DefaultKey(record: trh.TRRecord):
+        return record.vcfrecord.REF
+
+    def HipstrKey(record: trh.TRRecord):
+        return record.ref_allele
+
     refs: List[str] = []
+    ref_picker = DefaultKey
+    if vcfType == trh.VcfTypes.hipstr:
+        ref_picker = HipstrKey
+
     chrom = ""
     pos = -1
     for i in range(len(mergelist)):
         if mergelist[i]:
             chrom = current_records[i].chrom
             pos = current_records[i].pos
-            refs.append(current_records[i].vcfrecord.REF.upper())
+            refs.append(ref_picker(current_records[i]).upper())
     if len(set(refs)) != 1:
         return None
     return refs[0]
+
+
+
+
+def GetAltsByKey(current_records: List[trh.TRRecord], mergelist: List[bool], key: Any):
+    result = set()
+    for i in range(len(mergelist)):
+        if mergelist[i]:
+            ralts = key(current_records[i])
+            for item in ralts:
+                result.add(item.upper())
+    return result
 
 
 def GetAltAlleles(current_records: List[trh.TRRecord], mergelist: List[bool], vcftype: Union[str, trh.VcfTypes]) \
@@ -248,12 +248,19 @@ def GetAltAlleles(current_records: List[trh.TRRecord], mergelist: List[bool], vc
          rec_n.alleles[1] == out_rec.alleles[3] == 'AAAA'
          rec_n.alleles[2] == out_rec.alleles[2] == 'AAA'
     """
-    alts = set()
-    for i in range(len(mergelist)):
-        if mergelist[i]:
-            ralts = current_records[i].vcfrecord.ALT
-            for item in ralts:
-                alts.add(item.upper())
+
+    def DefaultKey(record: trh.TRRecord):
+        return record.vcfrecord.ALT
+
+    def HipstrKey(record: trh.TRRecord):
+        return record.alt_alleles
+
+    alt_picker = DefaultKey
+    if vcftype == trh.VcfTypes.hipstr:
+        alt_picker = HipstrKey
+
+    alts = GetAltsByKey(current_records, mergelist, alt_picker)
+
     if vcftype == trh.VcfTypes.eh:
         # EH alleles look like <STR42> where 42 is the
         # number of repeat units so sort accordingly
@@ -262,14 +269,13 @@ def GetAltAlleles(current_records: List[trh.TRRecord], mergelist: List[bool], vc
         # popsr alleles look like <4.2> where 4.2 is the
         # number of repeat units so sort accordingly
         out_alts = sorted(alts, key=lambda x: float(x[1:-1]))
-
     else:
         out_alts = sorted(alts, key=lambda x: (len(x), x))
 
     mappings = []
     for i in range(len(mergelist)):
         if mergelist[i]:
-            ralts = current_records[i].vcfrecord.ALT
+            ralts = alt_picker(current_records[i])
             mappings.append(
                 np.array([0] + [out_alts.index(ralt.upper()) + 1 for ralt in ralts]).astype(str)
             )
@@ -297,7 +303,7 @@ def GetID(idval: str) -> str:
         return idval
 
 
-def GetInfoItem(current_records: List[cyvcf2.Variant], mergelist: List[bool], info_field: str, fail: bool = True) \
+def GetInfoItem(current_records: List[trh.TRRecord], mergelist: List[bool], info_field: str, fail: bool = True) \
         -> Optional[str]:
     """Get INFO item for a group of records
 
@@ -327,16 +333,16 @@ def GetInfoItem(current_records: List[cyvcf2.Variant], mergelist: List[bool], in
     for i in range(len(mergelist)):
         if mergelist[i]:
             a_merged_rec = current_records[i]
-            if info_field in dict(current_records[i].INFO):
-                vals.add(current_records[i].INFO[info_field])
+            if info_field in dict(current_records[i].info):
+                vals.add(current_records[i].info[info_field])
             else:
                 raise ValueError("Missing info field %s" % info_field)
     if len(vals) == 1:
         return "%s=%s" % (info_field, vals.pop())
     else:
         common.WARNING("Incompatible values %s for info field %s at position "
-                       "%s:%i" % (vals, info_field, a_merged_rec.CHROM,
-                                  a_merged_rec.POS))
+                       "%s:%i" % (vals, info_field, a_merged_rec.chrom,
+                                  a_merged_rec.pos))
         return None
 
 
@@ -411,6 +417,7 @@ def WriteSampleData(vcfw: TextIO, record: cyvcf2.Variant, alleles: List[str], fo
                 ))
 
 
+
 def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_samples: List[int],
                  current_records: List[trh.TRRecord],
                  mergelist: List[bool], vcfw: TextIO, useinfo: List[Tuple[str, bool]],
@@ -447,7 +454,7 @@ def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_sam
     chrom = current_records[use_ind[0]].chrom
     pos = str(current_records[use_ind[0]].pos)
 
-    ref_allele = GetRefAlleleDefault(current_records, mergelist)
+    ref_allele = GetRefAllele(current_records, mergelist, vcftype)
     if ref_allele is None:
         common.WARNING("Conflicting refs found at {}:{}. Skipping.".format(chrom, pos))
         return
@@ -460,7 +467,7 @@ def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_sam
     vcfw.write(pos)  # POS
     vcfw.write('\t')
     # TODO complain if records have different IDs
-    vcfw.write(GetID(current_records[use_ind[0]].ID))  # ID
+    vcfw.write(GetID(current_records[use_ind[0]].vcfrecord.ID))  # ID
     vcfw.write('\t')
     vcfw.write(ref_allele)  # REF
     vcfw.write('\t')
@@ -493,7 +500,7 @@ def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_sam
     map_iter = iter(mappings)
     for i in range(len(mergelist)):
         if mergelist[i]:
-            WriteSampleData(vcfw, current_records[i], alleles, useformat,
+            WriteSampleData(vcfw, current_records[i].vcfrecord, alleles, useformat,
                             format_type, next(map_iter))
         else:  # NOCALL
             if num_samples[i] > 0:
@@ -531,6 +538,7 @@ def getargs() -> Any:  # pragma: no cover
     args = parser.parse_args()
     return args
 
+
 def HarmonizeIfNotNone(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfTypes):
     result = []
     for record in records:
@@ -540,6 +548,8 @@ def HarmonizeIfNotNone(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfT
             result.append(None)
 
     return result
+
+
 def main(args: Any) -> int:
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
         common.WARNING("Error: The directory which contains the output location {} does"
