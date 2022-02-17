@@ -222,7 +222,7 @@ def test_better_comparability_calculation(tmpdir, vcfdir, capfd):
 def test_comparability_handler(tmpdir, vcfdir, capfd):
 
     ### Tests without arguments
-    handler = handle_overlaps()
+    handler = handle_overlaps
 
     records = [None, None]
     chrom_idxs = [np.inf, np.inf]

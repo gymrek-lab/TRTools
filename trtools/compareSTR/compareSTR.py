@@ -742,78 +742,56 @@ def check_region(contigs1, contigs2, region_str):
     return 0
 
 
-def handle_overlaps(args: Any = None) \
-        -> Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]:
+def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int) -> bool:
     """
-        Returns function that determines whether (two) records in list are comparable
-        This function uses constraints from args
+        This function determines whether (two) records in list are comparable
+        Currently only works with record lists which are two records long
 
         Parameters
         ----------
-        args :
-            Parsed arguments of the program
+        records: List[Optional[trh.TRRecord]]
+            List of TRRecords whose comparability is to be determined. If any of them is None,
+            they are not comparable
+        chrom_indices: List[int]
+            List of indices of chromosomes of current records
+        min_chrom_index: int
+            Smallest index in chrom_indices. All records should have the same chrom_index,
+            otherwise they are not comparable
 
         Returns
         -------
-        handler: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]
-           A function that determines whether (two) records in list are comparable
+        comparable: bool
+            Result, that says whether records are comparable
         """
-    if args is None:
-        min_overlap = 1.0
-    else:
-        raise NotImplementedError("TODO, implement better configurability")
+    assert len(records) == 2
+    min_overlap = 1.0
 
-    def handler(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int) -> bool:
-        """
-            This function determines whether (two) records in list are comparable
-            Currently only works with record lists which are two records long
+    if any(record is None for record in records):
+        return False
 
-            Parameters
-            ----------
-            records: List[Optional[trh.TRRecord]]
-                List of TRRecords whose comparability is to be determined. If any of them is None,
-                they are not comparable
-            chrom_indices: List[int]
-                List of indices of chromosomes of current records
-            min_chrom_index: int
-                Smallest index in chrom_indices. All records should have the same chrom_index,
-                otherwise they are not comparable
+    left, right = records[0], records[1]
+    if chrom_indices[0] != chrom_indices[1] or \
+            chrom_indices[0] != min_chrom_index or \
+            chrom_indices[1] != min_chrom_index:
+        return False
 
-            Returns
-            -------
-            comparable: bool
-                Result, that says whether records are comparable
-            """
-        assert len(records) == 2
+    left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)
+    right_start, right_end = mergeutils.GetCoordinatesOfRecord(right)
 
-        if any(record is None for record in records):
-            return False
+    overlap = min(left_end, right_end) - max(left_start, right_start)
 
-        left, right = records[0], records[1]
-        if chrom_indices[0] != chrom_indices[1] or \
-                chrom_indices[0] != min_chrom_index or \
-                chrom_indices[1] != min_chrom_index:
-            return False
+    # TODO check whether float comparison problems don't break this condition
+    comparable = \
+        overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \
+        >= min_overlap
 
-        left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)
-        right_start, right_end = mergeutils.GetCoordinatesOfRecord(right)
+    if overlap >= 1 and not comparable:
+        common.WARNING(f"Records {left.record_id} and {right.record_id} overlap:\n"
+                       f"{left.record_id}: {left_start, left_end}\n"
+                       f"{right.record_id}: {right_start, right_end},\n"
+                       f"but are NOT comparable!")
 
-        overlap = min(left_end, right_end) - max(left_start, right_start)
-
-        # TODO check whether float comparison problems don't break this condition
-        comparable = \
-            overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \
-            >= min_overlap
-
-        if overlap >= 1 and not comparable:
-            common.WARNING(f"Records {left.record_id} and {right.record_id} overlap:\n"
-                           f"{left.record_id}: {left_start, left_end}\n"
-                           f"{right.record_id}: {right_start, right_end},\n"
-                           f"but are NOT comparable!")
-
-        return comparable
-
-    return handler
+    return comparable
 
 
 def main(args):
@@ -911,7 +889,6 @@ def main(args):
     vcf_types = [vcftype1, vcftype2]
     num_records = 0
     compared_records = 0
-    overlap_handler = handle_overlaps()
 
     while not done:
         if any([item is None for item in current_records]): break
@@ -922,7 +899,7 @@ def main(args):
         # increments contains information about which record should be
         # skipped in next iteration
         increment, comparable = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms,
-                                                                              overlap_handler)
+                                                                              handle_overlaps)
 
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
         if mergeutils.CheckMin(increment): return 1
