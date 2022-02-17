@@ -196,10 +196,10 @@ def test_ConflictingRefs():
     dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
     dummy_records.append(DummyRecord('chr1', 100, 'CAG'))
 
-    retval = GetRefAllele(dummy_records, [True, True, True])
+    retval = GetRefAlleleDefault(dummy_records, [True, True, True])
     assert retval is None
 
-    retval = GetRefAllele(dummy_records, [True, True, False])
+    retval = GetRefAlleleDefault(dummy_records, [True, True, False])
     assert retval == "CAGCAG"
 
 def test_GetInfoItem(capsys):
