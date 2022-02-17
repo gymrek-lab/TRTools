@@ -22,7 +22,7 @@ def args(tmpdir):
 
 @pytest.fixture
 def mrgvcfdir(vcfdir):
-	return os.path.join(vcfdir, "mergeSTR_vcfs")
+   return os.path.join(vcfdir, "mergeSTR_vcfs")
 
 
 # Set up dummy class
@@ -33,6 +33,16 @@ class DummyRecord:
         self.REF = ref
         self.ALTS = alts
         self.INFO = info
+
+
+class DummyHarmonizedRecord:
+    def __init__(self, chrom, pos, ref, alts=None, info=None):
+        self.chrom = chrom
+        self.pos = pos
+        self.ref_allele = ref
+        self.alt_alleles = alts if alts is not None else []
+        self.info = info if info is not None else {}
+        self.vcfrecord = DummyRecord(chrom, pos, ref, self.alt_alleles, self.info)
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile(args, mrgvcfdir):
@@ -192,23 +202,23 @@ def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
 def test_ConflictingRefs():
     # Set up dummy records
     dummy_records = [] 
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAG'))
 
-    retval = GetRefAlleleDefault(dummy_records, [True, True, True])
+    retval = GetRefAllele(dummy_records, [True, True, True], None)
     assert retval is None
 
-    retval = GetRefAlleleDefault(dummy_records, [True, True, False])
+    retval = GetRefAllele(dummy_records, [True, True, False], None)
     assert retval == "CAGCAG"
 
 def test_GetInfoItem(capsys):
     # Set up dummy records
     dummy_records = []
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={}))
 
     GetInfoItem(dummy_records, [True, True, True, False], 'END')
     captured = capsys.readouterr()
