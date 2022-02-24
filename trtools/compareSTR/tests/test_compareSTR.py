@@ -211,13 +211,13 @@ def test_better_comparability_calculation(tmpdir, vcfdir, capfd):
         _, err = capfd.readouterr()
                         ## first output is about records that have the same starting position but different end pos
         assert err == ("Records STR_40 and STR_40 overlap:\n"
-                        "STR_40: (112695, 112701.0)\n"
-                        "STR_40: (112695, 112703.0),\n"
+                        "STR_40: (112695, 112700.0)\n"
+                        "STR_40: (112695, 112702.0),\n"
                         "but are NOT comparable!\n"
                        ## second is more general, they just sort of overlap each other
                         "Records STR_41 and STR_41 overlap:\n"
-                        "STR_41: (113695, 113701.0)\n"
-                        "STR_41: (113695, 113703.0),\n"
+                        "STR_41: (113695, 113700.0)\n"
+                        "STR_41: (113695, 113702.0),\n"
                         "but are NOT comparable!\n")
 def test_comparability_handler(tmpdir, vcfdir, capfd):
 
@@ -239,22 +239,22 @@ def test_comparability_handler(tmpdir, vcfdir, capfd):
     chrom_idxs = [np.inf, 0]
     assert not handler(records, chrom_idxs, min_idx)
 
-    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "AC")]
+    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17), DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17)]
     chrom_idxs = [np.inf, 0]
     assert not handler(records, chrom_idxs, min_idx)
 
     chrom_idxs = [0, 0]
     assert handler(records, chrom_idxs, min_idx)
 
-    records = [DummyHarmonizedRecord("chr1", 10, 5, "AC", "rec1"), DummyHarmonizedRecord("chr1", 10, 4, "AC", "rec2")]
+    records = [DummyHarmonizedRecord("chr1", 10, 5, "AC", "rec1", end_pos=19), DummyHarmonizedRecord("chr1", 10, 4, "AC", "rec2", end_pos=17)]
     assert not handler(records, chrom_idxs, min_idx)
     _, err = capfd.readouterr()
     assert err != ""
 
-    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "TG")]
+    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17), DummyHarmonizedRecord("chr1", 10, 4, "TG", end_pos=17)]
     assert handler(records, chrom_idxs, min_idx)
 
-    records = [DummyHarmonizedRecord("chr1", 8, 5, "AC"), DummyHarmonizedRecord("chr1", 10, 4, "AC")]
+    records = [DummyHarmonizedRecord("chr1", 8, 5, "AC", end_pos=17), DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17)]
     assert not handler(records, chrom_idxs, min_idx)
 
 
