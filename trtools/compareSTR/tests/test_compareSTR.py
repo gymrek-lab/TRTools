@@ -211,14 +211,20 @@ def test_better_comparability_calculation(tmpdir, vcfdir, capfd):
         _, err = capfd.readouterr()
                         ## first output is about records that have the same starting position but different end pos
         assert err == ("Records STR_40 and STR_40 overlap:\n"
-                        "STR_40: (112695, 112700.0)\n"
-                        "STR_40: (112695, 112702.0),\n"
+                        "STR_40: (112695, 112700)\n"
+                        "STR_40: (112695, 112702),\n"
                         "but are NOT comparable!\n"
                        ## second is more general, they just sort of overlap each other
                         "Records STR_41 and STR_41 overlap:\n"
-                        "STR_41: (113695, 113700.0)\n"
-                        "STR_41: (113695, 113702.0),\n"
-                        "but are NOT comparable!\n")
+                        "STR_41: (113695, 113700)\n"
+                        "STR_41: (113693, 113702),\n"
+                        "but are NOT comparable!\n"
+                       ## ends are the same but start positions are different 
+                       "Records STR_42 and STR_42 overlap:\n"
+                       "STR_42: (114695, 114700)\n"
+                       "STR_42: (114693, 114700),\n"
+                       "but are NOT comparable!\n"
+                       )
 def test_comparability_handler(tmpdir, vcfdir, capfd):
 
     ### Tests without arguments
@@ -239,8 +245,9 @@ def test_comparability_handler(tmpdir, vcfdir, capfd):
     chrom_idxs = [np.inf, 0]
     assert not handler(records, chrom_idxs, min_idx)
 
-    records = [DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17), DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17)]
-    chrom_idxs = [np.inf, 0]
+    records = [DummyHarmonizedRecord("chr2", 10, 4, "AC", end_pos=17), DummyHarmonizedRecord("chr1", 10, 4, "AC", end_pos=17)]
+    chrom_idxs = [1, 0]
+    # records from different chromosomes aren't comparable
     assert not handler(records, chrom_idxs, min_idx)
 
     chrom_idxs = [0, 0]
