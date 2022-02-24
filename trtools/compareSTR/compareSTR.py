@@ -775,14 +775,14 @@ def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[i
             chrom_indices[1] != min_chrom_index:
         return False
 
-    left_start, left_end = mergeutils.GetCoordinatesOfRecord(left)
-    right_start, right_end = mergeutils.GetCoordinatesOfRecord(right)
+    left_start, left_end = left.pos, left.end_pos
+    right_start, right_end = right.pos, right.end_pos
 
     overlap = min(left_end, right_end) - max(left_start, right_start)
-
-    # TODO check whether float comparison problems don't break this condition
+    # This calculation contains max() - 1 to compensate
+    # that both start and end coordinates that are used in previous calculation are inclusive
     comparable = \
-        overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \
+        overlap / (max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) - 1) \
         >= min_overlap
 
     if overlap >= 1 and not comparable:
