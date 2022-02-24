@@ -248,12 +248,6 @@ def GetMinRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) 
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 
-def GetCoordinatesOfRecord(record: Optional[trh.TRRecord]) -> Tuple[int, int]:
-    if record is None:
-        return np.inf, np.inf
-
-    return record.pos, record.pos + record.ref_allele_length * len(record.motif)
-
 
 def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]],
                                        chroms: List[str],
