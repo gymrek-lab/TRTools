@@ -683,11 +683,11 @@ class TRRecord:
             self.ref_allele_length = len(ref_allele) / len(motif)
 
         # declaration of end_pos variables
-        self.end_pos = self.pos + self.ref_allele_length * len(motif) - 1
+        self.end_pos = int(self.pos + self.ref_allele_length * len(motif) - 1)
         self.full_alleles_end_pos = self.end_pos
 
         if full_alleles is not None:
-            self.full_alleles_end_pos = self.full_alleles_pos + len(self.full_alleles[0]) - 1
+            self.full_alleles_end_pos = int(self.full_alleles_pos + len(self.full_alleles[0]) - 1)
 
 
 
