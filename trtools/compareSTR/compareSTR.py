@@ -778,11 +778,11 @@ def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[i
     left_start, left_end = left.pos, left.end_pos
     right_start, right_end = right.pos, right.end_pos
 
-    overlap = min(left_end, right_end) - max(left_start, right_start)
+    overlap = min(left_end, right_end) - max(left_start, right_start) + 1
     # This calculation contains max() - 1 to compensate
     # that both start and end coordinates that are used in previous calculation are inclusive
     comparable = \
-        overlap / (max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) - 1) \
+        overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \
         >= min_overlap
 
     if overlap >= 1 and not comparable:
