@@ -259,6 +259,7 @@ def test_advntr_output(args, mrgvcfdir):
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/advntr_merged.vcf")
 
 
+
 def test_eh_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
@@ -285,6 +286,13 @@ def test_hipstr_output(args, mrgvcfdir):
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
 
+def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-no-flanking.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_flanking_harmonization_test_output.vcf")
 
 def test_popstr_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_popstr1.vcf.gz")
