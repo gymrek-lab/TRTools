@@ -197,7 +197,7 @@ def GetRefAllele(current_records: List[trh.TRRecord], mergelist: List[bool], vcf
         if mergelist[i]:
             chrom = current_records[i].chrom
             pos = current_records[i].pos
-            refs.append(ref_picker(current_records[i]).upper())
+            refs.append(ref_picker(current_records[i]))
     if len(set(refs)) != 1:
         return None
     return refs[0]
