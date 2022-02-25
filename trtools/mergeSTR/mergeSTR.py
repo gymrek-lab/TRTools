@@ -181,7 +181,7 @@ def GetRefAllele(current_records: List[trh.TRRecord], mergelist: List[bool], vcf
     """
 
     def DefaultKey(record: trh.TRRecord):
-        return record.vcfrecord.REF
+        return record.vcfrecord.REF.upper()
 
     def HipstrKey(record: trh.TRRecord):
         return record.ref_allele
@@ -197,7 +197,7 @@ def GetRefAllele(current_records: List[trh.TRRecord], mergelist: List[bool], vcf
         if mergelist[i]:
             chrom = current_records[i].chrom
             pos = current_records[i].pos
-            refs.append(ref_picker(current_records[i]))
+            refs.append(ref_picker(current_records[i]).upper())
     if len(set(refs)) != 1:
         return None
     return refs[0]
