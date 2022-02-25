@@ -682,14 +682,12 @@ class TRRecord:
             self.has_fabricated_ref_allele = False
             self.ref_allele_length = len(ref_allele) / len(motif)
 
-        # declaration of end_pos variables
-        self.end_pos = int(self.pos + self.ref_allele_length * len(motif) - 1)
-        self.full_alleles_end_pos = self.end_pos
-
-        if full_alleles is not None:
-            self.full_alleles_end_pos = int(self.full_alleles_pos + len(self.full_alleles[0]) - 1)
-
-
+        # declaration of end_pos variables. Values are rounded because self.ref_allele_length can
+        # sometimes be a float because of partial repeats. This can cause weird float problems, and simple cast
+        # is not enought to ensure that the proper position is calculated
+        self.end_pos = round(self.pos + self.ref_allele_length * len(motif) - 1)
+        self.full_alleles_end_pos = self.end_pos if full_alleles is None else \
+            round(self.full_alleles_pos + len(self.full_alleles[0]) - 1)
 
         if alt_allele_lengths is not None:
             self.has_fabricated_alt_alleles = True
