@@ -581,6 +581,10 @@ class TRRecord:
         The bp along the chromosome that this locus is at (ignoring flanking base pairs/full alleles)
     end_pos:
         Position of the last bp of ref allele (ignoring flanking base pairs/full alleles)
+    full_alleles_pos:
+        Position of the first bp of the full ref allele (including the flanking base pairs)
+    full_alleles_end_pos:
+        Position of the last bp of the full ref allele (including the flanking base pairs)
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
