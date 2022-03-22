@@ -764,6 +764,7 @@ def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[i
             Result, that says whether records are comparable
         """
     assert len(records) == 2
+    # for now, this is just a constant, but this value might become configurable in future releases
     min_overlap = 1.0
 
     if any(record is None for record in records):
@@ -779,7 +780,7 @@ def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[i
     right_start, right_end = right.pos, right.end_pos
 
     overlap = min(left_end, right_end) - max(left_start, right_start) + 1
-    # This calculation contains max() - 1 to compensate
+    # This calculation contains max() + 1 to compensate
     # that both start and end coordinates that are used in previous calculation are inclusive
     comparable = \
         overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \

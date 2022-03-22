@@ -1,3 +1,14 @@
+Unreleased changes
+-----
+
+CompareSTR and mergeutils changes:
+
+* CompareSTR: the tool now only compares records that start and end at the same position. If overlap in records is detected,
+  the program will output a warning to the user. This warning contains IDs of the records and their positions.
+
+* mergeutils: function GetMinHarmonizedRecords was transformed into GetRecordComparabilityAndIncrement, which allows the caller
+  to define custom predicate that decides whether records are comparable.
+
 4.0.2
 -----
 
