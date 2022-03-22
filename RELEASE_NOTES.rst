@@ -1,3 +1,13 @@
+Unreleased changes
+-----
+
+Bug fixes:
+
+* MergeSTR: Decision on which records are able to be merged is now based on data from harmonized TRRecords,
+  and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
+  but position of their repeat is at the same position are merged correctly. This difference is caused by flanking BP that are
+  included in the record. These flanking BPs are also removed during the merge, and merged HipSTR records no longer contain them
+
 4.0.2
 -----
 

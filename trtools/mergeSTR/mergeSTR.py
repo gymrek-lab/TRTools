@@ -426,6 +426,8 @@ def MergeRecords(readers: cyvcf2.VCF, vcftype: Union[str, trh.VcfTypes], num_sam
 
     Merge all records with indicator set to True in mergelist
     Output merged record to vcfw
+    If the merged records were created by HipSTR and contain flanking BPs, these
+    BPs are removed
 
     Parameters
     ----------
