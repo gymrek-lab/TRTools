@@ -401,8 +401,13 @@ def WriteSampleData(vcfw: TextIO, record: cyvcf2.Variant, alleles: List[str], fo
             continue
 
         # Add GT
+        gts = genotypes[sample_idx, :-1]
+        first_missing_haplo = np.argmax(gts == -2)
+        if not (first_missing_haplo == 0 and gts[0] != -2):
+            assert np.all(gts[first_missing_haplo:] == -2)
+            gts = gts[:first_missing_haplo]
         vcfw.write(phase_chars[sample_idx].join(
-            mapping[genotypes[sample_idx, :-1]]
+            mapping[gts]
         ))
 
         # Add rest of formats

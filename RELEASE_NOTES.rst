@@ -1,12 +1,20 @@
 Unreleased changes
 -----
 
-Bug fixes:
+Functionality Changes:
 
 * MergeSTR: Decision on which records are able to be merged is now based on data from harmonized TRRecords,
   and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
   but position of their repeat is at the same position are merged correctly. This difference is caused by flanking BP that are
   included in the record. These flanking BPs are also removed during the merge, and merged HipSTR records no longer contain them
+
+* CompareSTR: the tool now only compares records that start and end at the same position. If overlap in records is detected,
+  the program will output a warning to the user. This warning contains IDs of the records and their positions.
+
+Misc:
+
+* mergeutils: function GetMinHarmonizedRecords was transformed into GetRecordComparabilityAndIncrement, which allows the caller
+  to define custom predicate that decides whether records are comparable.
 
 4.0.2
 -----
@@ -17,6 +25,9 @@ Bug fixes:
 * CompareSTR: Decision on which records are comparable is now based on data from harmonized TRRecords,
   and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
   but position of their repeat is at the same position are compared correctly (harmonization step removes this difference).
+* MergeSTR failed on mixed ploidy samples (i.e. chrX). Fix one such bug. Note: none of the tools are 
+  fully tested for chrX even with this fix.
+
 
 4.0.1
 -----

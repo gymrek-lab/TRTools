@@ -268,6 +268,31 @@ def test_eh_output(args, mrgvcfdir):
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_merged.vcf")
 
+def test_eh_no_alt(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_no_alt.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_no_alt_merged.vcf")
+
+def test_eh_mixed_ploidy_no_alt(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh_X1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_X_no_alt.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_X_no_alt_merged.vcf")
+
+    # reverse order
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh_X_no_alt.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_X1.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_X_no_alt_merged_swap.vcf")
+
+
 
 def test_gangstr_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
