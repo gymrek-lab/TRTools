@@ -11,7 +11,7 @@ Example use cases include:
 
 * Comparing calls to a "ground truth" set, e.g. from capillary electrophoresis data, to find call errors
 * Comparing calls for the same tool using different parameter settings to identify differences due to bioinformatic processing
-* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR only compares TRs with matching chromosomes and allele-positions (ignoring flanking base pairs)
+* Comparing calls for different tools. This only works if they used the same set of reference TRs. Please note that compareSTR only compares TRs with matching chromosomes and allele-positions (after ignoring flanking base pairs)
 
 CompareSTR optionally will stratify results based on a user-specified FORMAT field (e.g. depth, or quality score) and/or by repeat motif length.
 
