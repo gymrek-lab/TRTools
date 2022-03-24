@@ -16,6 +16,7 @@ from typing import List, Union, Any, Optional, Callable, Tuple
 
 CYVCF_RECORD = cyvcf2.Variant
 CYVCF_READER = cyvcf2.VCF
+COMPARABILITY_CALLBACK = Callable[[List[Optional[trh.TRRecord]], List[int], int], Union[bool, List[bool]]]
 
 
 def LoadReaders(vcffiles: List[str], region: Optional[str] = None) -> List[CYVCF_READER]:
@@ -248,13 +249,18 @@ def GetMinRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) 
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 
+def default_callback(records: List[trh.TRRecord], chrom_order: List[int], min_chrom_index: int) -> bool:
+    return True
 
-def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]],
-                                       chroms: List[str],
-                                       overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]) \
-        -> Tuple[List[bool], bool]:
+
+def GetIncrementAndComparability(record_list: List[Optional[trh.TRRecord]],
+                                 chroms: List[str],
+                                 overlap_callback: COMPARABILITY_CALLBACK = default_callback) \
+        -> Tuple[List[bool], Union[bool, List[bool]]]:
+
     r"""Get list that says which records should be skipped in the next
-     iteration, and whether they are all comparable with each other
+     iteration (increment), and whether they are all comparable / mergable
+     The value of increment elements is determined by the (harmonized) position of corresponding records
 
 
     Parameters
@@ -265,7 +271,7 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
     chroms : list of str
        Ordered list of all chromosomes
 
-    overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]
+    overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], Union[bool, List[bool]]
         Function that calculates whether the records are comparable
 
     Returns
@@ -273,7 +279,7 @@ def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]]
     increment : list of bool
        List or bools, where items are set to True when the record at the index of the item should be
        skipped during VCF file comparison.
-    comparable: bool
+    comparable: bool or list of bool
         Value, that determines whether current records are comparable / mergable, depending on the callback
     """
     chrom_order = [np.inf if r is None else chroms.index(r.chrom) for r in record_list]

@@ -12,7 +12,7 @@ Functionality Changes:
 
 Misc:
 
-* mergeutils: function GetMinHarmonizedRecords was transformed into GetRecordComparabilityAndIncrement, which allows the caller
+* mergeutils: function GetMinHarmonizedRecords was transformed into GetIncrementAndComparability, which allows the caller
   to define custom predicate that decides whether records are comparable.
 
 4.0.2

@@ -624,12 +624,17 @@ def main(args: Any) -> int:
                     ", e.g.: bcftools reheader -f hg19.fa.fai -o myvcf-readher.vcf.gz myvcf.vcf.gz")
                 return 1
         harmonized_records = HarmonizeIfNotNone(current_records, vcftype)
-        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
-        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
-        if mergeutils.CheckMin(is_min): return 1
-        MergeRecords(vcfreaders, vcftype, num_samples, harmonized_records, is_min, vcfw, useinfo,
+
+        # mergeSTR doesnt provide custom comparability handler. By default, only the increment is necessary to decide
+        # which records should be merged during single iteration. This is because the merge is based on the position
+        # of the records. If this behaviour changes in the future, custom mergability handler will have to be created.
+        increment, _ = mergeutils.GetIncrementAndComparability(harmonized_records, chroms)
+
+        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
+        if mergeutils.CheckMin(increment): return 1
+        MergeRecords(vcfreaders, vcftype, num_samples, harmonized_records, increment, vcfw, useinfo,
                      useformat, format_type)
-        current_records = mergeutils.GetNextRecords(vcfreaders, current_records, is_min)
+        current_records = mergeutils.GetNextRecords(vcfreaders, current_records, increment)
         done = mergeutils.DoneReading(current_records)
     return 0
 

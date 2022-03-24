@@ -899,8 +899,8 @@ def main(args):
                               range(len(current_records))]
         # increments contains information about which record should be
         # skipped in next iteration
-        increment, comparable = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms,
-                                                                              handle_overlaps)
+        increment, comparable = mergeutils.GetIncrementAndComparability(harmonized_records, chroms,
+                                                                        handle_overlaps)
 
         if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
         if mergeutils.CheckMin(increment): return 1
