@@ -256,7 +256,7 @@ def default_callback(records: List[trh.TRRecord], chrom_order: List[int], min_ch
 def GetIncrementAndComparability(record_list: List[Optional[trh.TRRecord]],
                                  chroms: List[str],
                                  overlap_callback: COMPARABILITY_CALLBACK = default_callback) \
-        -> Tuple[List[bool], bool]:
+        -> Tuple[List[bool], Union[bool, List[bool]]]:
 
     r"""Get list that says which records should be skipped in the next
      iteration (increment), and whether they are all comparable / mergable
@@ -271,7 +271,7 @@ def GetIncrementAndComparability(record_list: List[Optional[trh.TRRecord]],
     chroms : list of str
        Ordered list of all chromosomes
 
-    overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]
+    overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], Union[bool, List[bool]]
         Function that calculates whether the records are comparable
 
     Returns
@@ -279,7 +279,7 @@ def GetIncrementAndComparability(record_list: List[Optional[trh.TRRecord]],
     increment : list of bool
        List or bools, where items are set to True when the record at the index of the item should be
        skipped during VCF file comparison.
-    comparable: bool
+    comparable: bool or list of bool
         Value, that determines whether current records are comparable / mergable, depending on the callback
     """
     chrom_order = [np.inf if r is None else chroms.index(r.chrom) for r in record_list]
