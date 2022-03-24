@@ -3,13 +3,12 @@ Unreleased changes
 
 Functionality Changes:
 
-* MergeSTR: Decision on which records are able to be merged is now based on data from harmonized TRRecords,
-  and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
-  but position of their repeat is at the same position are merged correctly. This difference is caused by flanking BP that are
-  included in the record. These flanking BPs are also removed during the merge, and merged HipSTR records no longer contain them
+* MergeSTR: Flanking basepairs are now removed from HipSTR records before merging.
+  In particular, records with different flank lengths but the same repeat section will now merge instead of being
+  marked as incompatible.
 
-* CompareSTR: the tool now only compares records that start and end at the same position. If overlap in records is detected,
-  the program will output a warning to the user. This warning contains IDs of the records and their positions.
+* CompareSTR: the tool now only compares records that start and end at the same position. If a partial overlap in records
+  is detected, the program will output a warning to the user. This warning contains IDs of the records and their positions.
 
 Misc:
 
