@@ -5,6 +5,7 @@ Tool for comparing genotypes from two TR VCFs
 
 # Allow making plots even with no x-forward
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -28,6 +29,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
+from typing import List, Any, Callable, Tuple, Optional
 
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
@@ -82,13 +84,14 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
         check1 = fmt in formats1
         check2 = fmt in formats2
         if format_fileoption == 0 and not (check1 and check2):
-            raise ValueError("FORMAT field %s must be present in both VCFs if --stratify-file=0"%fmt)
+            raise ValueError("FORMAT field %s must be present in both VCFs if --stratify-file=0" % fmt)
         if format_fileoption == 1 and not check1:
-            raise ValueError("FORMAT field %s must be present in --vcf1 if --stratify-file=1"%fmt)
+            raise ValueError("FORMAT field %s must be present in --vcf1 if --stratify-file=1" % fmt)
         if format_fileoption == 2 and not check2:
-            raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2"%fmt)
-        
+            raise ValueError("FORMAT field %s must be present in --vcf2 if --stratify-file=2" % fmt)
+
     return formats, bins
+
 
 def OutputLocusMetrics(locus_results, outprefix, noplot):
     r"""Output per-locus metrics
@@ -109,11 +112,11 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
     with open(outprefix + '-locuscompare.tab', 'w') as tabfile:
         tabfile.write('chrom\tstart\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
         for chrom, start, metric_conc_seq, metric_conc_len, numcalls in zip(
-            locus_results['chrom'],
-            locus_results['start'],
-            locus_results['metric-conc-seq'],
-            locus_results['metric-conc-len'],
-            locus_results['numcalls']
+                locus_results['chrom'],
+                locus_results['start'],
+                locus_results['metric-conc-seq'],
+                locus_results['metric-conc-len'],
+                locus_results['numcalls']
         ):
             tabfile.write('{}\t{}\t{}\t{}\t{}\n'.format(
                 chrom, start, metric_conc_seq, metric_conc_len, numcalls
@@ -143,8 +146,9 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
         ax.set_xlabel("Successive TR Loci", size=15)
     ax.set_ylabel("Length Concordance", size=15)
     plt.tight_layout()
-    fig.savefig(outprefix+"-locuscompare.pdf")
+    fig.savefig(outprefix + "-locuscompare.pdf")
     plt.close()
+
 
 def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     r"""Output per-sample metrics
@@ -164,9 +168,9 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
         If True, don't output plots
     """
     sample_results['conc-seq-count'] = \
-            sample_results['conc-seq-count'] / sample_results['numcalls']
+        sample_results['conc-seq-count'] / sample_results['numcalls']
     sample_results['conc-len-count'] = \
-            sample_results['conc-len-count'] / sample_results['numcalls']
+        sample_results['conc-len-count'] / sample_results['numcalls']
     with open(outprefix + '-samplecompare.tab', 'w') as tabfile:
         tabfile.write('sample\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
         for idx, sample in enumerate(sample_names):
@@ -195,8 +199,9 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
         ax.set_xlabel("Successive samples", size=15)
     ax.set_ylabel("Length Concordance", size=15)
     plt.tight_layout()
-    fig.savefig(outprefix+"-samplecompare.pdf")
+    fig.savefig(outprefix + "-samplecompare.pdf")
     plt.close()
+
 
 def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix):
     r"""Output overall accuracy metrics
@@ -237,13 +242,13 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
             else:
                 tabfile.write('NA\t')
         tabfile.write('{}\t{}\t{}\t{}\n'.format(
-            format_bin_results['conc_seq_count']/numcalls,
-            format_bin_results['conc_len_count']/numcalls,
+            format_bin_results['conc_seq_count'] / numcalls,
+            format_bin_results['conc_len_count'] / numcalls,
             CalcR2(format_bin_results),
             numcalls
         ))
 
-    with open(outprefix+"-overall.tab", "w") as tabfile:
+    with open(outprefix + "-overall.tab", "w") as tabfile:
         tabfile.write('period\t')
         for fmt in format_fields:
             tabfile.write(fmt)
@@ -255,10 +260,10 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
             write_format_bin(tabfile, overall_results[per]['ALL'],
                              per, None, None)
             # stratify across formats
-            for fmt_idx, (fmt, bins) in enumerate(zip(format_fields,format_bins)):
+            for fmt_idx, (fmt, bins) in enumerate(zip(format_fields, format_bins)):
                 for bin_idx in range(len(bins) - 2):
                     bin_string = "[{}, {})".format(bins[bin_idx],
-                                                   bins[bin_idx+1])
+                                                   bins[bin_idx + 1])
                     write_format_bin(tabfile,
                                      overall_results[per][fmt][bins[bin_idx]],
                                      per,
@@ -288,23 +293,24 @@ def GetBubbleLegend(coordinate_counts):
     legend_values : list of int
         List of three or fewer representative sample sizes to use for bubble legend
     """
-    if len(coordinate_counts) <= 3: return list(coordinate_counts) # if only three values, return three of them
+    if len(coordinate_counts) <= 3: return list(coordinate_counts)  # if only three values, return three of them
     # Determine if we do log10 or linear scale
     minval = min(coordinate_counts)
     maxval = max(coordinate_counts)
-    if maxval/minval > 10:
+    if maxval / minval > 10:
         # Do log10 scale
         # Find max power of 10
         max10 = int(np.log10(maxval))
         # Find min power of 10
         min10 = int(np.log10(minval))
         # Find power of 10 in between
-        mid10 = int((max10+min10)/2)
-        return sorted(list(set([10**min10, 10**mid10, 10**max10])))
+        mid10 = int((max10 + min10) / 2)
+        return sorted(list(set([10 ** min10, 10 ** mid10, 10 ** max10])))
     else:
         # Do linear scale
-        mid = int((minval+maxval)/2)
+        mid = int((minval + maxval) / 2)
         return sorted(list(set([minval, mid, maxval])))
+
 
 def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
     r"""Output bubble plot of gtsum1 vs. gtsum2
@@ -327,7 +333,7 @@ def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
         per_results = bubble_results[per]
         x_vals = [x for x, y in per_results.keys()]
         y_vals = [y for x, y in per_results.keys()]
-        scale = 10000/np.mean(list(per_results.values()))
+        scale = 10000 / np.mean(list(per_results.values()))
         if minval is None:
             minval = min(min(x_vals), min(y_vals))
         if maxval is None:
@@ -337,14 +343,14 @@ def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
         # Plot (0,0) separately so everything else is in front of it
         if (0, 0) in per_results:
             ax.scatter(0, 0,
-                    s=np.sqrt(per_results[(0,0)]*scale),
-                    color="darkblue",
-                    alpha=0.5)
+                       s=np.sqrt(per_results[(0, 0)] * scale),
+                       color="darkblue",
+                       alpha=0.5)
         for coord, count in per_results.items():
             if coord == (0, 0):
                 continue
             ax.scatter(coord[0], coord[1],
-                       s=np.sqrt(count*scale),
+                       s=np.sqrt(count * scale),
                        color="darkblue",
                        alpha=0.5)
         ax.set_xlabel("sum # repeats - file 1\n(diff from ref)", size=15)
@@ -357,15 +363,16 @@ def OutputBubblePlot(bubble_results, outprefix, minval=None, maxval=None):
         ax.axvline(x=0, linestyle="dashed", color="gray", alpha=0.75)
         # plot dummy points for legend
         legend_values = GetBubbleLegend(set(per_results.values()))
-        xval = (maxval-minval)/10+minval
+        xval = (maxval - minval) / 10 + minval
         for i, val in enumerate(legend_values):
-            step=(maxval-minval)/15
-            yval = step*(i+3)
-            ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val*scale))
-            ax.annotate(val, xy=(xval+step,yval))
-        fig.savefig(outprefix + "-bubble-period%s.pdf"%per,
+            step = (maxval - minval) / 15
+            yval = step * (i + 3)
+            ax.scatter([xval], [yval], color="darkblue", s=np.sqrt(val * scale))
+            ax.annotate(val, xy=(xval + step, yval))
+        fig.savefig(outprefix + "-bubble-period%s.pdf" % per,
                     bbox_inches='tight')
         plt.close()
+
 
 def getargs():  # pragma: no cover
     parser = argparse.ArgumentParser(
@@ -374,8 +381,10 @@ def getargs():  # pragma: no cover
     )
     ### Required arguments ###
     req_group = parser.add_argument_group("Required arguments")
-    req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
-    req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)", type=str, required=True)
+    req_group.add_argument("--vcf1", help="First VCF file to compare (must be sorted, bgzipped, and indexed)", type=str,
+                           required=True)
+    req_group.add_argument("--vcf2", help="Second VCF file to compare (must be sorted, bgzipped, and indexed)",
+                           type=str, required=True)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
     ### Options for filtering input ###
     filter_group = parser.add_argument_group("Filtering options")
@@ -384,9 +393,15 @@ def getargs():  # pragma: no cover
     ### Stratify results ###
     stats_group = parser.add_argument_group("Metrics to stratify results")
     stats_group.add_argument("--stratify-fields", help="Comma-separated list of FORMAT fields to stratify by", type=str)
-    stats_group.add_argument("--stratify-binsizes", help="Comma-separated list of min:max:binsize to stratify each field on. Must be same length as --stratify-fields.", type=str)
-    stats_group.add_argument("--stratify-file", help="Set to 1 to stratify based on --vcf1. Set to 2 to stratify based on --vcf2. Set to 0 to apply stratification to both --vcf1 and --vcf2", default=0, type=int)
-    stats_group.add_argument("--period", help="Report results overall and also stratified by repeat unit length (period)", action="store_true")
+    stats_group.add_argument("--stratify-binsizes",
+                             help="Comma-separated list of min:max:binsize to stratify each field on. Must be same length as --stratify-fields.",
+                             type=str)
+    stats_group.add_argument("--stratify-file",
+                             help="Set to 1 to stratify based on --vcf1. Set to 2 to stratify based on --vcf2. Set to 0 to apply stratification to both --vcf1 and --vcf2",
+                             default=0, type=int)
+    stats_group.add_argument("--period",
+                             help="Report results overall and also stratified by repeat unit length (period)",
+                             action="store_true")
     ### Plotting args ###
     plot_group = parser.add_argument_group("Plotting options")
     plot_group.add_argument("--bubble-min", help="Minimum x/y axis value to display on bubble plots", type=int)
@@ -396,13 +411,18 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--verbose", help="Print helpful debugging info", action="store_true")
     option_group.add_argument("--numrecords", help="For debugging, only process this many records", type=int)
     option_group.add_argument("--noplot", help="Don't output any plots. Only produce text output", action="store_true")
-    option_group.add_argument("--vcftype1", help="Type of --vcf1. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-    option_group.add_argument("--vcftype2", help="Type of --vcf2. Options=%s"%[str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    option_group.add_argument("--vcftype1",
+                              help="Type of --vcf1. Options=%s" % [str(item) for item in trh.VcfTypes.__members__],
+                              type=str, default="auto")
+    option_group.add_argument("--vcftype2",
+                              help="Type of --vcf2. Options=%s" % [str(item) for item in trh.VcfTypes.__members__],
+                              type=str, default="auto")
     option_group.add_argument("--ignore-phasing", help="Treat all calls as if they are unphased", action="store_true")
     ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
+    ver_group.add_argument("--version", action="version", version='{version}'.format(version=__version__))
     args = parser.parse_args()
     return args
+
 
 def NewOverallFormatBin():
     """
@@ -432,6 +452,7 @@ def NewOverallFormatBin():
         'total_len_22': 0
     }
 
+
 def CalcR2(format_bin_results):
     """
     Calculate the squared (pearson) correlation coefficient
@@ -456,12 +477,12 @@ def CalcR2(format_bin_results):
     """
     f = format_bin_results
     n = f['numcalls']
-    var1 = f['total_len_11']/n - (f['total_len_1']/n)**2
-    var2 = f['total_len_22']/n - (f['total_len_2']/n)**2
+    var1 = f['total_len_11'] / n - (f['total_len_1'] / n) ** 2
+    var2 = f['total_len_22'] / n - (f['total_len_2'] / n) ** 2
     if var1 == 0 or var2 == 0:
         return np.nan
-    covar = f['total_len_12']/n - f['total_len_1']*f['total_len_2']/n**2
-    return covar**2/(var1*var2)
+    covar = f['total_len_12'] / n - f['total_len_1'] * f['total_len_2'] / n ** 2
+    return covar ** 2 / (var1 * var2)
 
 
 def NewOverallPeriod(format_fields, format_bins):
@@ -524,7 +545,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     chrom = record1.chrom
     pos = record1.pos
     period = len(record1.motif)
-    reflen = len(record1.ref_allele)/period
+    reflen = len(record1.ref_allele) / period
 
     both_called = np.logical_and(
         record1.GetCalledSamples()[sample_idxs[0]],
@@ -548,7 +569,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     ploidies2 = record2.GetSamplePloidies()[called_sample_idxs[1]]
     # Make sure gts are same ploidy. If not give up
     if not np.all(ploidies1 == ploidies2):
-        raise ValueError("Found sample(s) of different ploidy at %s:%s"%(chrom, pos))
+        raise ValueError("Found sample(s) of different ploidy at %s:%s" % (chrom, pos))
 
     gts_string_1 = record1.GetStringGenotypes()[called_sample_idxs[0], :]
     gts_string_2 = record2.GetStringGenotypes()[called_sample_idxs[1], :]
@@ -560,7 +581,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         unphased = (gts_string_1[:, -1] == '0') & (gts_string_2[:, -1] == '0')
         all_unphased = np.all(unphased)
         if not (all_unphased or np.all(~unphased)):
-            raise ValueError("Found sample(s) with different phasedness at %s:%s"%(chrom, pos))
+            raise ValueError("Found sample(s) with different phasedness at %s:%s" % (chrom, pos))
 
     gts_string_1 = gts_string_1[:, :-1]
     gts_string_2 = gts_string_2[:, :-1]
@@ -569,7 +590,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         gts_string_2 = np.sort(gts_string_2, axis=1)
     conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
 
-    locus_results["metric-conc-seq"].append(np.sum(conc_seq)/numcalls)
+    locus_results["metric-conc-seq"].append(np.sum(conc_seq) / numcalls)
     sample_results['conc-seq-count'][both_called] += conc_seq
 
     gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
@@ -579,7 +600,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         gts_length_2 = np.sort(gts_length_2, axis=1)
     conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
 
-    locus_results["metric-conc-len"].append(np.sum(conc_len)/numcalls)
+    locus_results["metric-conc-len"].append(np.sum(conc_len) / numcalls)
     sample_results['conc-len-count'][both_called] += conc_len
 
     sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
@@ -614,9 +635,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         overall_results[key]['ALL']['conc_len_count'] += np.sum(conc_len)
         overall_results[key]['ALL']['total_len_1'] += np.sum(sum_length_1)
         overall_results[key]['ALL']['total_len_2'] += np.sum(sum_length_2)
-        overall_results[key]['ALL']['total_len_11'] += np.sum(sum_length_1**2)
+        overall_results[key]['ALL']['total_len_11'] += np.sum(sum_length_1 ** 2)
         overall_results[key]['ALL']['total_len_12'] += np.sum(sum_length_1 * sum_length_2)
-        overall_results[key]['ALL']['total_len_22'] += np.sum(sum_length_2**2)
+        overall_results[key]['ALL']['total_len_22'] += np.sum(sum_length_2 ** 2)
 
     for fmt, bins in zip(format_fields, format_bins):
         fmt1 = record1.format[fmt][sample_idxs[0], 0]
@@ -650,26 +671,27 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
             conc_len_count = np.sum(conc_len[mask])
             total_len_1 = np.sum(sum_length_1[mask])
             total_len_2 = np.sum(sum_length_2[mask])
-            total_len_11 = np.sum(sum_length_1[mask]**2)
+            total_len_11 = np.sum(sum_length_1[mask] ** 2)
             total_len_12 = np.sum(sum_length_1[mask] * sum_length_2[mask])
-            total_len_22 = np.sum(sum_length_2[mask]**2)
+            total_len_22 = np.sum(sum_length_2[mask] ** 2)
             for key in outer_keys:
                 overall_results[key][fmt][_bin]['numcalls'] += \
-                        ncalls
+                    ncalls
                 overall_results[key][fmt][_bin]['conc_seq_count'] += \
-                        conc_seq_count
+                    conc_seq_count
                 overall_results[key][fmt][_bin]['conc_len_count'] += \
-                        conc_len_count
+                    conc_len_count
                 overall_results[key][fmt][_bin]['total_len_1'] += \
-                        total_len_1
+                    total_len_1
                 overall_results[key][fmt][_bin]['total_len_2'] += \
-                        total_len_2
+                    total_len_2
                 overall_results[key][fmt][_bin]['total_len_11'] += \
-                        total_len_11
+                    total_len_11
                 overall_results[key][fmt][_bin]['total_len_12'] += \
-                        total_len_12
+                    total_len_12
                 overall_results[key][fmt][_bin]['total_len_22'] += \
-                        total_len_22
+                    total_len_22
+
 
 def check_region(contigs1, contigs2, region_str):
     def check_contig(contig):
@@ -689,11 +711,12 @@ def check_region(contigs1, contigs2, region_str):
     contig, _range = parts
     if check_contig(contig) == 1:
         return 1
-    
+
     def bad_range():
         common.WARNING("The range portion of --region should have one of "
                        "the forms: 42, -42, 42- or 13-42")
         return 1
+
     try:
         if '-' not in _range:
             int(_range)
@@ -713,10 +736,63 @@ def check_region(contigs1, contigs2, region_str):
             common.WARNING("Cannot have range portion of --region "
                            "start-end where end <= start")
             return 1
-    except ValueError: # an int() cast failed
+    except ValueError:  # an int() cast failed
         return bad_range()
 
     return 0
+
+
+def handle_overlaps(records: List[Optional[trh.TRRecord]], chrom_indices: List[int], min_chrom_index: int) -> bool:
+    """
+        This function determines whether (two) records in list are comparable
+        Currently only works with record lists which are two records long
+
+        Parameters
+        ----------
+        records: List[Optional[trh.TRRecord]]
+            List of TRRecords whose comparability is to be determined. If any of them is None,
+            they are not comparable
+        chrom_indices: List[int]
+            List of indices of chromosomes of current records
+        min_chrom_index: int
+            Smallest index in chrom_indices. All records should have the same chrom_index,
+            otherwise they are not comparable
+
+        Returns
+        -------
+        comparable: bool
+            Result, that says whether records are comparable
+        """
+    assert len(records) == 2
+    # for now, this is just a constant, but this value might become configurable in future releases
+    min_overlap = 1.0
+
+    if any(record is None for record in records):
+        return False
+
+    left, right = records[0], records[1]
+    if chrom_indices[0] != chrom_indices[1] or \
+            chrom_indices[0] != min_chrom_index or \
+            chrom_indices[1] != min_chrom_index:
+        return False
+
+    left_start, left_end = left.pos, left.end_pos
+    right_start, right_end = right.pos, right.end_pos
+
+    overlap = min(left_end, right_end) - max(left_start, right_start) + 1
+    # This calculation contains max() + 1 to compensate
+    # that both start and end coordinates that are used in previous calculation are inclusive
+    comparable = \
+        overlap / max(left.ref_allele_length * len(left.motif), right.ref_allele_length * len(right.motif)) \
+        >= min_overlap
+
+    if overlap >= 1 and not comparable:
+        common.WARNING(f"Records {left.record_id} and {right.record_id} overlap:\n"
+                       f"{left.record_id}: {left_start, left_end}\n"
+                       f"{right.record_id}: {right_start, right_end},\n"
+                       f"but are NOT comparable!")
+
+    return comparable
 
 
 def main(args):
@@ -757,10 +833,11 @@ def main(args):
     # now we have vcfreaders[i].samples[sample_idxs[i]] == samples
 
     ### Determine FORMAT fields we should look for ###
-    if args.stratify_file is not None and args.stratify_file not in [0,1,2]:
+    if args.stratify_file is not None and args.stratify_file not in [0, 1, 2]:
         common.MSG("--stratify-file must be 0,1, or 2")
         return 1
-    format_fields, format_bins = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file, vcfreaders)
+    format_fields, format_bins = GetFormatFields(args.stratify_fields, args.stratify_binsizes, args.stratify_file,
+                                                 vcfreaders)
 
     ### Keep track of data to summarize at the end ###
     locus_results = {
@@ -806,25 +883,28 @@ def main(args):
         if check_region(contigs1, contigs2, args.region) == 1:
             return 1
         vcfregions = [vcfreaders[0](args.region), vcfreaders[1](args.region)]
-    
+
     ### Walk through sorted readers, merging records as we go ###
     current_records = mergeutils.InitReaders(vcfreaders)
     done = mergeutils.DoneReading(current_records)
     vcf_types = [vcftype1, vcftype2]
     num_records = 0
+    compared_records = 0
+
     while not done:
         if any([item is None for item in current_records]): break
         if args.numrecords is not None and num_records >= args.numrecords: break
 
-        harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in range(len(current_records))]
-        # contains information about which record should be
-        # skipped in next iteration and whether it is currently comparable
-        is_min = mergeutils.GetMinHarmonizedRecords(harmonized_records, chroms)
+        harmonized_records = [trh.HarmonizeRecord(vcf_types[i], current_records[i]) for i in
+                              range(len(current_records))]
+        # increments contains information about which record should be
+        # skipped in next iteration
+        increment, comparable = mergeutils.GetRecordComparabilityAndIncrement(harmonized_records, chroms,
+                                                                              handle_overlaps)
 
-
-        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, is_min)
-        if mergeutils.CheckMin(is_min): return 1
-        if all(is_min):
+        if args.verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
+        if mergeutils.CheckMin(increment): return 1
+        if comparable:
             UpdateComparisonResults(*harmonized_records,
                                     sample_idxs,
                                     args.ignore_phasing, args.period,
@@ -832,10 +912,15 @@ def main(args):
                                     args.stratify_file,
                                     overall_results, locus_results,
                                     sample_results, bubble_results)
+            compared_records += 1
 
-        current_records = mergeutils.GetNextRecords(vcfregions, current_records, is_min)
+        current_records = mergeutils.GetNextRecords(vcfregions, current_records, increment)
         done = mergeutils.DoneReading(current_records)
         num_records += 1
+
+    if compared_records == 0:
+        common.WARNING("No comparable records were found, exiting!")
+        return 1
 
     ### Overall metrics ###
     OutputOverallMetrics(overall_results, format_fields, format_bins, args.out)
@@ -849,11 +934,12 @@ def main(args):
 
     return 0
 
-def run(): # pragma: no cover
+
+def run():  # pragma: no cover
     args = getargs()
     retcode = main(args)
     sys.exit(retcode)
 
-if __name__ == "__main__": # pragma: no cover
-    run()
 
+if __name__ == "__main__":  # pragma: no cover
+    run()

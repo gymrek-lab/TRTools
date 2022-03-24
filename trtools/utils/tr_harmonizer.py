@@ -579,6 +579,12 @@ class TRRecord:
         The chromosome this locus is in
     pos : int
         The bp along the chromosome that this locus is at (ignoring flanking base pairs/full alleles)
+    end_pos:
+        Position of the last bp of ref allele (ignoring flanking base pairs/full alleles)
+    full_alleles_pos:
+        Position of the first bp of the full ref allele (including the flanking base pairs)
+    full_alleles_end_pos:
+        Position of the last bp of the full ref allele (including the flanking base pairs)
     info : Dict[str, Any]
         The dictionary of INFO fields at this locus
     format : Dict[str, np.ndarray]
@@ -680,6 +686,13 @@ class TRRecord:
             self.has_fabricated_ref_allele = False
             self.ref_allele_length = len(ref_allele) / len(motif)
 
+        # declaration of end_pos variables. Values are rounded because self.ref_allele_length can
+        # sometimes be a float because of partial repeats. This can cause weird float problems, and simple cast
+        # is not enought to ensure that the proper position is calculated
+        self.end_pos = round(self.pos + self.ref_allele_length * len(motif) - 1)
+        self.full_alleles_end_pos = self.end_pos if full_alleles is None else \
+            round(self.full_alleles_pos + len(self.full_alleles[0]) - 1)
+
         if alt_allele_lengths is not None:
             self.has_fabricated_alt_alleles = True
             self.alt_alleles = [
@@ -691,6 +704,8 @@ class TRRecord:
             self.alt_allele_lengths = [
                 len(allele) / len(motif) for allele in self.alt_alleles
             ]
+
+
 
         try:
             self._CheckRecord()
