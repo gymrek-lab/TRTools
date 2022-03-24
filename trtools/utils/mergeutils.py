@@ -16,6 +16,7 @@ from typing import List, Union, Any, Optional, Callable, Tuple
 
 CYVCF_RECORD = cyvcf2.Variant
 CYVCF_READER = cyvcf2.VCF
+COMPARABILITY_CALLBACK = Callable[[List[Optional[trh.TRRecord]], List[int], int], Union[bool, List[bool]]]
 
 
 def LoadReaders(vcffiles: List[str], region: Optional[str] = None) -> List[CYVCF_READER]:
@@ -248,13 +249,18 @@ def GetMinRecords(record_list: List[Optional[trh.TRRecord]], chroms: List[str]) 
     return [CheckPos(r, chroms[min_chrom], min_pos) for r in record_list]
 
 
+def default_callback(records: List[trh.TRRecord], chrom_order: List[int], min_chrom_index: int) -> bool:
+    return True
 
-def GetRecordComparabilityAndIncrement(record_list: List[Optional[trh.TRRecord]],
-                                       chroms: List[str],
-                                       overlap_callback: Callable[[List[Optional[trh.TRRecord]], List[int], int], bool]) \
+
+def GetIncrementAndComparability(record_list: List[Optional[trh.TRRecord]],
+                                 chroms: List[str],
+                                 overlap_callback: COMPARABILITY_CALLBACK = default_callback) \
         -> Tuple[List[bool], bool]:
+
     r"""Get list that says which records should be skipped in the next
-     iteration, and whether they are all comparable with each other
+     iteration (increment), and whether they are all comparable / mergable
+     The value of increment elements is determined by the (harmonized) position of corresponding records
 
 
     Parameters
