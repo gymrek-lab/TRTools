@@ -1,3 +1,20 @@
+4.1.0
+-----
+
+Functionality Changes:
+
+* MergeSTR: Flanking basepairs are now removed from HipSTR records before merging.
+  In particular, records with different flank lengths but the same repeat section will now merge instead of being
+  marked as incompatible.
+
+* CompareSTR: the tool now only compares records that start and end at the same position. If a partial overlap in records
+  is detected, the program will output a warning to the user. This warning contains IDs of the records and their positions.
+
+Misc:
+
+* mergeutils: function GetMinHarmonizedRecords was transformed into GetIncrementAndComparability, which allows the caller
+  to define custom predicate that decides whether records are comparable.
+
 4.0.2
 -----
 

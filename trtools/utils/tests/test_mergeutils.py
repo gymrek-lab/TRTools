@@ -23,9 +23,13 @@ class DummyRecord:
 
 
 class DummyHarmonizedRecord:
-    def __init__(self, chrom, pos):
+    def __init__(self, chrom, pos, reflen=None, motif=None, record_id=None, end_pos=None):
         self.chrom = chrom
         self.pos = pos
+        self.end_pos = end_pos
+        self.ref_allele_length = reflen
+        self.motif = motif
+        self.record_id = record_id
 
 
 def test_DebugPrintRecordLocations(capsys):
@@ -95,26 +99,38 @@ def test_UnzippedUnindexedFile(mrgvcfdir):
     assert "Could not find VCF index" in str(info.value)
 
 
-def test_GetMinHarmonizedRecords():
+def test_GetRecordComparabilityAndIncrement():
     chromosomes = ["chr1", "chr2", "chr3"]
 
+    def comp_callback_true(x, y, z):
+        return True
+
+    def comp_callback_false(x, y, z):
+        return False
+
+
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, True]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_true) == ([True, True], True)
+
+    # these two test cases show that second result of GetRecordComparabilityAndIncrement is
+    # entirely dependant on the callback
+    pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_false) == ([False, True], False)
 
     pair = [DummyHarmonizedRecord("chr1", 21), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_true) == ([False, True], True)
 
     pair = [DummyHarmonizedRecord("chr2", 20), DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_false) == ([False, True], False)
 
     pair = [DummyHarmonizedRecord("chr1", 20), DummyHarmonizedRecord("chr1", 21)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_true) == ([True, False], True)
 
     pair = [None, None]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, False]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_false) == ([False, False], False)
 
     pair = [DummyHarmonizedRecord("chr1", 20), None]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [True, False]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_false) == ([True, False], False)
 
     pair = [None, DummyHarmonizedRecord("chr1", 20)]
-    assert mergeutils.GetMinHarmonizedRecords(pair, chromosomes) == [False, True]
+    assert mergeutils.GetIncrementAndComparability(pair, chromosomes, comp_callback_false) == ([False, True], False)
