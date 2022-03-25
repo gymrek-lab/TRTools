@@ -14,8 +14,8 @@ LICENSE = 'MIT'
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
 MAJ = 4
-MIN = 0
-REV = 3
+MIN = 1
+REV = 0
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
