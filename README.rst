@@ -35,9 +35,9 @@ With conda
 
         conda install -c bioconda trtools
 
-Note: Bioconda `only supports <https://bioconda.github.io/user/versions.html#python>`_ python versions 3.6 and 3.7 currently,
+Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
-If you are using a different version of python we support (3.5 or >= 3.8),
+If you are using a different version of python we support (3.5 or >= 3.9),
 install TRTools using pip.
 
 With pip
@@ -116,7 +116,6 @@ Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
-* CompareSTR currently only compares STR loci between two callsets if they have the same start and end coordinates. In the future we will add the capacity to take in a user specificied mapping of loci between the two callsets and use that to compare loci even if they don't completely overlap one another.
 
 Contact Us
 ----------
