@@ -1,5 +1,5 @@
 ##fileformat=VCFv4.1
-##command=/home/jmargoliash/trtools/repo/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_advntr1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_advntr2.vcf.gz --vcftype advntr --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/advntr_merged
+##command=/Users/yang/Desktop/TRTools/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_advntr1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_advntr2.vcf.gz --vcftype advntr --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/advntr_merged
 ##source=adVNTR ver. 1.3.3
 ##contig=<ID=chr21,length=48129895>
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of variant">
