@@ -1,3 +1,7 @@
+#Randome files
+.DS_Store
+
+
 # Editor files
 *.swp
 .mypy_cache/
@@ -60,7 +64,7 @@ hipstr_vs_gangstr-locuscompare.pdf
 hipstr_vs_gangstr-locuscompare.tab
 hipstr_vs_gangstr-overall.tab
 hipstr_vs_gangstr-samplecompare.pdf
-hipstr_vs_gangstr-samplecompare.tab
+Ghipstr_vs_gangstr-samplecompare.tab
 popstr_vs_popstr-bubble-periodALL.pdf
 popstr_vs_popstr-callcompare.tab
 popstr_vs_popstr-locuscompare.pdf
