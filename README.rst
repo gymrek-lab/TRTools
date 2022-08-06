@@ -110,8 +110,6 @@ See our description of the `features and example use-cases <https://trtools.read
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
-.. _Contributing:
-
 Development Notes
 -----------------
 
@@ -120,6 +118,8 @@ Development Notes
 Contact Us
 ----------
 Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
+
+.. _Contributing:
 
 Contributing
 ------------

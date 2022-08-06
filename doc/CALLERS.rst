@@ -1,7 +1,7 @@
 Supported TR Genotypers
 =======================
 
-TRTools currently supports 5 tandem repeat genotypers.
+TRTools currently supports 5 tandem repeat genotypers. It also supports the Beagle imputation software (see :ref:`below <Beagle_section>`).
 We summarize them in the first table and provide some basic parameters of their functionality in the second.
 For more information on a genotyper, please see its website linked below.
 
@@ -73,3 +73,32 @@ see :ref:`Contributing` for more information.
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
+.. _Beagle_section:
+
+Beagle
+------
+
+The Beagle_ software can take genotypes called by a TR genotyper in a set of reference samples and impute them into other samples that do not have directly genotyped TRs.
+The other samples must have directly genotype loci that are also genotyped in the reference samples so they can be 'matched' with samples in the reference.
+The genotypes of both the reference samples and samples of interest must be phased. That can be done by statistical phasing the genotypes prior to running Beagle imputation.
+The referece samples must also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute
+the missing genotypes prior to imputing the TRs.
+
+We support TR genotypes produced by any of the above genotypers and then imputed into other samples with Beagle except for PopSTR genotypes. 
+The output of a Beagle imputation is a VCF file containing both TR loci and the shared loci (commonly SNPs) used for 'matching'.
+For our tools to work with Beagle VCFs, they must first
+be filtered to only contain TR loci. This can be done with the bcftools_ filter command, commonly by filtering on :code:`-e ID=@file`.
+
+Beagle provides phased best-guess genotypes for each imputed sample at each TR locus. When run with the :code:`ap` or :code:`gp` flags Beagle will also output
+probabilities for each possible haplotype/genotype, respectively. These probabilities are also called dosages. While dosages are often more informative for downstream
+analyses than the best-guess genotypes located in the :code:`GT` format field (for instance, for association testing), TRTools currently does *not* support dosage
+based analyses. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
+
+Note: at each locus Beagle returns the most probable phased genotype. This will often but not always correspond to the most probable unphased genotype. For instance,
+it is possible that :code:`P(A|A) > P(A|B)` and :code:`P(A|A) > P(B|A)`, but :code:`P(A/A) = P(A|A) < P(A|B) + P(B|A) = P(A/B)`. Similarly, it is possible that
+:code:`P(A|B) > P(C|D)` and :code:`P(A|B) > P(D|C)`, but :code:`P(A/B) = P(A|B) + P(B|A) < P(C|D) + P(D|C) = P(C/D)`. TRTools currently does not take this into
+account and just uses the phased genotypes returned by Beagle. If you deem this to be an issue, feel free to submit PRs to help TRTools take this into account 
+(see the :ref:`Contributing` docs).
+
+.. _Beagle: http://faculty.washington.edu/browning/beagle/beagle.html
+.. _bcftools: https://samtools.github.io/bcftools/bcftools.html
