@@ -641,7 +641,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.gangstr))
     assert (not gangstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.gangstr))
-    assert not gangstr_trh.IsBeagleVCF() 
+    assert not gangstr_trh.IsBeagleVCF()
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
     assert hipstr_trh.vcftype == trh.VcfTypes.hipstr
@@ -655,7 +655,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.hipstr))
     assert (not hipstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
-    assert not hipstr_trh.IsBeagleVCF() 
+    assert not hipstr_trh.IsBeagleVCF()
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VcfTypes.popstr
@@ -682,7 +682,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.advntr))
     assert (not advntr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.advntr))
-    assert not advntr_trh.IsBeagleVCF() 
+    assert not advntr_trh.IsBeagleVCF()
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
     assert eh_trh.vcftype == trh.VcfTypes.eh
@@ -713,6 +713,23 @@ def test_imputed_vcf_types(vcfdir):
     imputed_eh_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/eh_imputed.vcf.gz")), vcftype='eh')
     assert imputed_eh_trh.vcftype == trh.VcfTypes.eh
     assert imputed_eh_trh.IsBeagleVCF()
+
+def test_missing_infos_imputed_vcfs_fail(vcfdir):
+    missing_infos_imputed_gangstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/gangstr_imputed_missing_infos.vcf.gz")), vcftype='gangstr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_gangstr_trh)
+
+    missing_infos_imputed_advntr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/advntr_imputed_missing_infos.vcf.gz")), vcftype='advntr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_advntr_trh)
+
+    missing_infos_imputed_hipstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/hipstr_imputed_missing_infos.vcf.gz")), vcftype='hipstr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_hipstr_trh)
+
+    missing_infos_imputed_eh_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/eh_imputed_missing_infos.vcf.gz")), vcftype='eh')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_eh_trh)
 
 def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")

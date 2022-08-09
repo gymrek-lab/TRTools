@@ -18,6 +18,8 @@ import trtools.utils.utils as utils
 # TODO: add Beagle
 # TODO: add support for tool version numbers
 
+_beagle_error = "If this file was imputed by Beagle, did you remember to copy the info fields over?"
+
 class VcfTypes(enum.Enum):
     """The different tr callers that tr_harmonizer supports."""
 
@@ -289,7 +291,9 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
     TRRecord
     """
     if vcfrecord.INFO.get('RU') is None:
-        raise TypeError("This is not a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(
+            "Record at {}:{} is missing mandatory GangSTR info field RU. ".format(vcfrecord.CHROM, vcfrecord.POS) + _beagle_error
+        )
     if vcfrecord.INFO.get('VID') is not None:
         raise TypeError(
             "Trying to read an AdVNTR record as a GangSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
@@ -322,8 +326,9 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     if (vcfrecord.INFO.get('START') is None
             or vcfrecord.INFO.get('END') is None
             or vcfrecord.INFO.get('PERIOD') is None):
-        raise TypeError("This is not a HipSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
-
+        raise TypeError(
+            "Record at {}:{} is missing one of the mandatory HipSTR info fields START, END, PERIOD".format(vcfrecord.CHROM, vcfrecord.POS) +  _beagle_error
+        )
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
     start_offset = int(vcfrecord.INFO['START']) - pos
@@ -397,7 +402,9 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
     TRRecord
     """
     if vcfrecord.INFO.get('RU') is None or vcfrecord.INFO.get('VID') is None:
-        raise TypeError("This is not an AdVNTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(
+            "Record at {}:{} is missing one of the mandatory ADVNTR info fields RU, VID".format(vcfrecord.CHROM, vcfrecord.POS) + _beagle_error
+        )
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT:
         alt_alleles = _UpperCaseAlleles(vcfrecord.ALT)
@@ -497,7 +504,10 @@ def _HarmonizeEHRecord(vcfrecord: cyvcf2.Variant):
     TRRecord
     """
     if vcfrecord.INFO.get('VARID') is None or vcfrecord.INFO.get('RU') is None:
-        raise TypeError("This is not an ExpansionHunter record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(
+            "Record at {}:{} is missing one of the mandatory ExpansionHunter info fields VARID, RU".format(vcfrecord.CHROM, vcfrecord.POS)
+            + _beagle_error
+        )
     record_id = vcfrecord.INFO["VARID"]
     motif = vcfrecord.INFO["RU"].upper()
     ref_allele_length = int(vcfrecord.INFO["RL"]) / len(motif)
