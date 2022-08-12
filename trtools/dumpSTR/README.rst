@@ -83,8 +83,7 @@ For example, if running with :code:`--hipstr-min-call-DP 100`, a call with DP
 Calls which were already nocalls before the dumpSTR run are left unchanged and
 their FILTER format field is set to NOCALL.
 
-Caveat: None of these filters are currently applicable to VCFs imputed by Beagle. 
-Beagle call-level filters can be :ref:`contributed <Contributing>`.
+Caveat: No call level filters have yet been written for VCFs imputed by Beagle. 
 
 AdVNTR call-level filters
 **************************
