@@ -1,3 +1,16 @@
+Unreleased Changes
+------------------
+
+New features:
+
+* TRTools can now read VCFs produced by Beagle imputation.
+
+Bug fixes:
+
+* DumpSTR now reads call depth from the LC format field when the DP format field is not present.
+  This was intended previously but was not happening.
+
+
 4.1.0
 -----
 

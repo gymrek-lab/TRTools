@@ -701,18 +701,22 @@ def test_imputed_vcf_types(vcfdir):
     imputed_gangstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/gangstr_imputed.vcf.gz")), vcftype='gangstr')
     assert imputed_gangstr_trh.vcftype == trh.VcfTypes.gangstr
     assert imputed_gangstr_trh.IsBeagleVCF()
+    assert not next(imputed_gangstr_trh).HasQualityScores()
 
     imputed_advntr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/advntr_imputed.vcf.gz")), vcftype='advntr')
     assert imputed_advntr_trh.vcftype == trh.VcfTypes.advntr
     assert imputed_advntr_trh.IsBeagleVCF()
+    assert not next(imputed_advntr_trh).HasQualityScores()
 
     imputed_hipstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/hipstr_imputed.vcf.gz")), vcftype='hipstr')
     assert imputed_hipstr_trh.vcftype == trh.VcfTypes.hipstr
     assert imputed_hipstr_trh.IsBeagleVCF()
+    assert not next(imputed_hipstr_trh).HasQualityScores()
 
     imputed_eh_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/eh_imputed.vcf.gz")), vcftype='eh')
     assert imputed_eh_trh.vcftype == trh.VcfTypes.eh
     assert imputed_eh_trh.IsBeagleVCF()
+    assert not next(imputed_eh_trh).HasQualityScores()
 
 def test_missing_infos_imputed_vcfs_fail(vcfdir):
     missing_infos_imputed_gangstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/gangstr_imputed_missing_infos.vcf.gz")), vcftype='gangstr')

@@ -179,6 +179,39 @@ runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
 
+echo "--- Running trtools_prep_beagle_vcf.sh tests --- "
+BEAGLEDIR=trtools/testsupport/sample_vcfs/beagle
+prep_beagle_out="$TMPDIR"/test_prep_beagle_vcf.vcf.gz
+trtools_prep_beagle_vcf.sh \
+    hipstr \
+    "$BEAGLEDIR"/1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz \
+    "$BEAGLEDIR"/1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz \
+    "$prep_beagle_out"
+
+if ! [[ -f "$prep_beagle_out" ]] ; then
+    echo "prep_beagle_vcf test didn't produce output file" >&2
+    exit 1
+fi
+
+if ! [[ -f "$prep_beagle_out".tbi ]] ; then
+    echo "prep_beagle_vcf test didn't produce index file" >&2
+    exit 1
+fi
+
+if (( 1172 != $(zcat "$prep_beagle_out" | grep -vc '#') )) ; then
+    echo "prep_beagle_vcf outputted a file that didn't have the expected number of lines (1172)"
+    exit 1
+fi
+
+if (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
+    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
+    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
+then
+    echo "prep_beagle_vcf outputted a file that didn't have the expected number of INFO annotations"
+    exit 1
+fi
+echo '------'
+
 echo "tests completed successfully!"
 exit 0
 
