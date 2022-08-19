@@ -324,14 +324,9 @@ def DebugPrintRecordLocations(current_records: List[CYVCF_RECORD], is_min: List[
     """
     info = []
     for i in range(len(is_min)):
-        if is_min[i]:
-            chrom = current_records[i].CHROM
-            pos = current_records[i].POS
-            info.append("%s:%s:%s" % (chrom, pos, is_min[i]))
-        else:
-            chrom = None 
-            pos = None
-            info.append("%s:%s:%s" % (chrom, pos, is_min[i]))
+        chrom = current_records[i].CHROM if current_records[i] else None
+        pos = current_records[i].POS if current_records[i] else None
+        info.append("%s:%s:%s" % (chrom, pos, is_min[i]))
     common.MSG("\t".join(info) + "\n", debug=True)
 
 
