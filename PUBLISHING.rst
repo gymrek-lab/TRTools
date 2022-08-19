@@ -100,3 +100,4 @@ You can tag a commit in two different ways.
   git push --tags
 
 2. Web interface: you can go to the releases page of the repository and create a new release.
+
