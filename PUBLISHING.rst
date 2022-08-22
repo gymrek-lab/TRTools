@@ -21,7 +21,7 @@ New Dependencies
 If you've added dependencies to trtools or its tests, those dependencies should be listed in
 
   * setup.py
-  * the .readthedocs_conda_env.yml file in the root of the repositiory that's used for building
+  * the .readthedocs_conda_env.yml file in the root of the repository that's used for building
     TRTool's Read The Docs webpage.
   * the appropriate section of the bioconda recipe (see below)
 
@@ -67,7 +67,7 @@ Then go through the steps of publishing the changed code to PyPI:
 Lastly, the change needs to be published to bioconda.
 
 A bioconda bot will automatically open a pull request (within a day?) updating the version number
-and the PyPI reference. If there are no new dependencies, no changes the to the build,
+and the PyPI reference. If there are no new dependencies, no changes to the build,
 and no new tests that need to be integrated into the build, and all we need to do is mark that PR as okay.
 (Jonathan Margoliash is currently the bioconda recipe maintainer and will get pinged by this. Please notify him to look out for that ping.
 If you'd like to be a bioconda recipe maintainer, let's set that up.)
