@@ -6,27 +6,40 @@ If you are a community member and want to contribute new code, see the contribut
 If you are a community member and have already contributed new code and want us to publish it
 now, please contact us (our contact info is in the README)
 
-This document explains how trtools maintainers should publish new changes. 
+This document explains how trtools maintainers should publish new changes.
 Maintainers should reach consensus before going ahead with publishing changes.
 
-We use a simplified version of 
+We use a simplified version of
 `git flow <http://web.archive.org/web/20200520162709/https://nvie.com/posts/a-successful-git-branching-model/>`_
 to maintain and publish trtools.
 We use the master branch as the default branch with the latest stable codebase.
 The builds from this branch are distributed to PyPI and conda.
 The develop branch contains new features that have yet to make their way into master.
 
+New Dependencies
+----------------
+If you've added dependencies to trtools or its tests, those dependencies should be listed in
+
+  * setup.py
+  * the .readthedocs_conda_env.yml file in the root of the repositiory that's used for building
+    TRTool's Read The Docs webpage.
+  * the appropriate section of the bioconda recipe (see below)
+
+
+Publishing Steps
+----------------
+
 Once changes have been made to develop that are ready to be published, first choose the new version number. Then set up the environment you're going to publish TRTools from:
 
 #. Create a clean environment.
 #. Install setuptools with version >= 40.8.0
-#. Install all the requirements in requirements.txt
 #. Additionally, install ``pytest``, ``wheel`` and ``twine``
+#. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
+#. Check out the develop branch
+#. Run :code:`pip install --upgrade pip && pip install -e .`
 
 Then go through the steps of merging the changes into the master branch:
 
-#. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
-#. Check out the develop branch
 #. Run pytest and make sure all the tests pass
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
@@ -51,15 +64,25 @@ Then go through the steps of publishing the changed code to PyPI:
 
 4. Run :code:`twine upload dist/*` to upload the build to PyPI
 
-Lastly go through the following steps to publish the changed code to bioconda: (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
+Lastly, the change needs to be published to bioconda.
+
+A bioconda bot will automatically open a pull request (within a day?) updating the version number
+and the PyPI reference. If there are no new dependencies, no changes the to the build,
+and no new tests that need to be integrated into the build, and all we need to do is mark that PR as okay.
+(Jonathan Margoliash is currently the bioconda recipe maintainer and will get pinged by this. Please notify him to look out for that ping.
+If you'd like to be a bioconda recipe maintainer, let's set that up.)
+
+If there are new dependencies or build changes, then we'll need to close the automatic PR without accepting it and make our own.
+To do that, go through the following steps to publish the changed code to bioconda: (see `here <http://bioconda.github.io/contributor/workflow.html>`_ for official documentation)
 
 1. Run :code:`cd <project-root> && openssl sha256 dist/trtools-<version>.tar.gz` and save the generated hash code for later
 2. Create a fork of the `bioconda recipes <https://github.com/bioconda/bioconda-recipes>`_ repo and clone it.
 3. Run ``git remote add upstream https://github.com/bioconda/bioconda-recipes`` so that you can pull from not only your fork but also upstream.
 4. Create a new branch from master with your package's name
 5. In `the recipe for trtools <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/trtools/meta.yaml#L1-L2>`_, update the version number to the latest version, and change the sha256 hashcode to the code you recorded in step 1 above
-6. Run :code:`git pull upstream master` to make sure you're up to date with the central repo's master branch
-7. Check the recipe by cd'ing to the bioconda-recipes project root and running:
+6. Also update any other part of the yaml file as needed to account for the new dependencies/builds steps/etc.
+7. Run :code:`git pull upstream master` to make sure you're up to date with the central repo's master branch
+8. Check the recipe by cd'ing to the bioconda-recipes project root and running:
 
 .. code-block:: bash
 
@@ -80,18 +103,15 @@ Lastly go through the following steps to publish the changed code to bioconda: (
 
 Possible Issues:
 
-* bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them, fix the test_trtools.sh script to download them manually and point pytest to them, confirm the tests run in a :code:`conda build` and then restart the publishing process. (This should not happen if new test files are just put in :code:`trtools/testsupport/sample_vcfs` or :code:`trtools/testsupport/sample_regions`)
-* If you've added dependencies to trtools or its tests, those dependencies should be listed in
-
-  * setup.py
-  * requirements.txt (list a specific version of the dependency that is up to date and that we know will work)
-  * the appropriate section of the bioconda recipe
+* bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them,
+  fix the test_trtools.sh script to download them manually and point pytest to them, confirm the tests run in a :code:`conda build` and then restart the publishing process.
+  (This should not happen if new test files are just put in :code:`trtools/testsupport/sample_vcfs` or :code:`trtools/testsupport/sample_regions`)
 
 Git Tagging
 -----------
 
-Git tags are used to mark specific commits with certain names (i.e. v1.2.0). 
-Please note that tags are assigned to commits, not branches. 
+Git tags are used to mark specific commits with certain names (i.e. v1.2.0).
+Please note that tags are assigned to commits, not branches.
 You can tag a commit in two different ways.
 
 #. Command line::

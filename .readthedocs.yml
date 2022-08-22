@@ -14,5 +14,5 @@ formats:
   - pdf
 
 conda:
-  environment: .trtools_conda_env.yml
+  environment: .readthedocs_conda_env.yml
 

@@ -7,6 +7,13 @@ Bug fixes:
   a 'stuck in infinite loop' message and crashing
 * MergeSTR no longer crashes if run with the --verbose flag and the last position in each of the
   VCFs being merged isn't identical.
+* StatSTR now errors out if any of the files listed in --samples contain no samples that are present
+  in the input VCF.
+
+Doc changes:
+
+* Clarified in PUBLISHING.rst how to handle dependencies and how to publish to bioconda.
+* requirements.txt was unneeded, so delete it and remove the reference to it from PUBLISHING.rst
 
 4.1.0
 -----
