@@ -1,3 +1,13 @@
+Unreleased Changes
+------------------
+
+Bug fixes:
+
+* MergeSTR now successfully merges files containing multiple chromosomes instead of emitting
+  a 'stuck in infinite loop' message and crashing
+* MergeSTR no longer crashes if run with the --verbose flag and the last position in each of the
+  VCFs being merged isn't identical.
+
 4.1.0
 -----
 
