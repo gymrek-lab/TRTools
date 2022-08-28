@@ -35,6 +35,12 @@ With conda
 
         conda install -c bioconda trtools
 
+Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
+
+::
+
+        conda install -c bioconda bcftools
+
 Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
 If you are using a different version of python we support (3.5 or >= 3.9),
@@ -43,8 +49,8 @@ install TRTools using pip.
 With pip
 ^^^^^^^^
 
-First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`) and :code:`bcftools`.
-They can be used to prepare input files for TRTools and aren't install by pip.
+First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`). Optionally install :code:`bcftools`.
+These are used to prepare input files for TRTools and aren't install by pip.
 
 Then run:
 
