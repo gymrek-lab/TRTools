@@ -43,6 +43,11 @@ install TRTools using pip.
 With pip
 ^^^^^^^^
 
+First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`) and :code:`bcftools`.
+They can be used to prepare input files for TRTools and aren't install by pip.
+
+Then run:
+
 ::
 
         pip install --upgrade pip
