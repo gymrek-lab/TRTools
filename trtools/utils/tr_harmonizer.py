@@ -464,7 +464,9 @@ def _HarmonizePopSTRRecord(vcfrecord: cyvcf2.Variant):
     TRRecord
     """
     if vcfrecord.INFO.get('Motif') is None:
-        raise TypeError("This is not a PopSTR record {}:{}".format(vcfrecord.CHROM, vcfrecord.POS))
+        raise TypeError(
+            "Record at {}:{} is missing mandatory PopSTR info field MOTIF".format(vcfrecord.CHROM, vcfrecord.POS)
+        )
     ref_allele = vcfrecord.REF.upper()
     motif = vcfrecord.INFO["Motif"].upper()
     record_id = vcfrecord.ID

@@ -1196,7 +1196,7 @@ def main(args):
         except StopIteration: break
         except TypeError as te:
             message = te.args[0]
-            if 'is not a ' in message and 'record' in message:
+            if 'missing' in message and 'mandatory' in message:
                 common.WARNING("Could not parse VCF.\n" + message)
                 return 1
             else:
