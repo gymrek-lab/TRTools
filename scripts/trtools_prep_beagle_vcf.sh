@@ -72,7 +72,7 @@ elif [[ "$genotyper" == hipstr ]] ; then
 	INFO_fields="START END PERIOD"
 else 
 	echo 'Unexpected genotyper!' 1>&2
-	"$temp_file"
+	rm "$temp_file"
 	exit 5
 fi
 
