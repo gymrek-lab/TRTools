@@ -59,9 +59,7 @@ while read -r line ; do
 done < <(zcat "$imputed")
 
 echo "bgzipping and tabix indexing"
-bgzip "$temp_file"
-temp_file="$temp_file".gz
-tabix "$temp_file"
+bgzip "$temp_file" && temp_file="$temp_file".gz && tabix "$temp_file" || rm "$temp_file"
 
 # Remove loci that don't have the necessary info fields
 if [[ "$genotyper" == advntr ]] ; then
@@ -74,6 +72,7 @@ elif [[ "$genotyper" == hipstr ]] ; then
 	INFO_fields="START END PERIOD"
 else 
 	echo 'Unexpected genotyper!' 1>&2
+	"$temp_file"
 	exit 5
 fi
 
