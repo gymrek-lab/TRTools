@@ -95,8 +95,8 @@ account and just uses the phased genotypes returned by Beagle. If you deem this 
 
 An overview of steps to perform before Beagle imputation:
 
-* The samples being imputed into must have directly genotype loci that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
-* The genotypes of both the reference samples and samples of interest must be phased. That can be done by statistical phasing the genotypes prior to running Beagle imputation.
+* The samples being imputed into must have directly genotyped loci that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
+* The genotypes of both the reference samples and samples of interest must be phased. That can be done by statistically phasing the genotypes prior to running Beagle imputation.
 * The referece samples must also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute
 the missing genotypes prior to imputing the TRs.
 
@@ -107,7 +107,7 @@ In case of error, it may be useful to know what steps the script attempts to per
 
 * It copies over source and command meta header lines from the reference panel to the imputed VCF so
   that it is clear which genotyper's syntax is being used to represent the STRs in the VCF.
-* It copies over contig and ALT lines so the imputed VCF is sufficiently documented to work with.
+* It copies over contig and ALT lines which is required for downstream tools including mergeSTR and is good practice to include in the VCF header.
 * It annotates each STR with the necessary INFO fields from the reference panel that Beagle dropped from the imputed VCF.
 * The imputed VCF contains both TR loci and the shared loci (commonly SNPs) that were used for the imputation.
   This script removes the non-STR loci (identified as those loci not having STR-specific INFO fields).

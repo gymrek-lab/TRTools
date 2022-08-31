@@ -1558,7 +1558,6 @@ class TRRecordHarmonizer:
         --------
         tr_harmonizer.MayHaveImpureRepeats
         """
-        global MayHaveImpureRepeats
         return MayHaveImpureRepeats(self.vcftype)
 
     def HasLengthRefGenotype(self) -> bool:
@@ -1569,7 +1568,6 @@ class TRRecordHarmonizer:
         --------
         tr_harmonizer.HasLengthRefGenotype
         """
-        global HasLengthRefGenotype
         return HasLengthRefGenotype(self.vcftype)
 
     def HasLengthAltGenotypes(self) -> bool:
@@ -1580,7 +1578,6 @@ class TRRecordHarmonizer:
         --------
         tr_harmonizer.HasLengthAltGenotypes
         """
-        global HasLengthAltGenotypes
         return HasLengthAltGenotypes(self.vcftype)
 
     def HasQualityScore(self) -> bool:
@@ -1619,7 +1616,6 @@ class TRRecordHarmonizer:
         --------
         tr_harmonizer.IsBeagleVCF
         """
-        global IsBeagleVCF
         return IsBeagleVCF(self.vcffile)
 
     def __iter__(self) -> Iterator[TRRecord]:

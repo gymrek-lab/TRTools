@@ -2,6 +2,7 @@
 set -e
 
 if (( $# != 4 )) ; then
+	echo "Usage: trtools_prep_beagle_vcf.sh  <vcftype> <ref VCF> <imputed VCF> <output VCF>" 1>&2
 	echo "Expects exactly four arguments:" 1>&2
 	echo "* original genotyping tool - one of 'advntr' 'eh' 'gangstr' or 'hipstr'" 1>&2
 	echo "* Imputation reference panel VCF" 1>&2
@@ -25,14 +26,34 @@ if ! [[ "$ref_panel" =~ .*\.vcf.gz ]] ; then
 	exit 3
 fi
 
+if ! [[ -f "$ref_panel" ]]  ; then
+	echo "Reference panel file not found: ${ref_panel}" 1>&2
+	exit 4
+fi
+
 if ! [[ "$imputed" =~ .*\.vcf\.gz ]] ; then
 	echo "Imputed file (third arg) should be a .vcf.gz file" 1>&2
-	exit 4
+	exit 5
+fi
+
+if ! [[ -f "$imputed" ]]  ; then
+	echo "Imputed file not found: ${imputed}" 1>&2
+	exit 6
 fi
 
 if ! [[ "$output" =~ .*\.vcf\.gz ]] ; then
 	echo "Output VCF (fourth arg) should be a .vcf.gz file" 1>&2
-	exit 4
+	exit 7
+fi
+
+if ! tabix --help > /dev/null ; then
+	echo "Could not find the tabix command. Exiting"
+	exit  8
+fi
+
+if ! bcftools --help > /dev/null ; then
+	echo "Could not find the bcftools command. Exiting"
+	exit  8
 fi
 
 echo -n "Creating temporary file ... "
@@ -58,8 +79,11 @@ while read -r line ; do
 	line_num=$(( line_num+1 ))
 done < <(zcat "$imputed")
 
+
 echo "bgzipping and tabix indexing"
-bgzip "$temp_file" && temp_file="$temp_file".gz && tabix "$temp_file" || rm "$temp_file"
+bgzip "$temp_file"
+temp_file="$temp_file".gz
+tabix "$temp_file"
 
 # Remove loci that don't have the necessary info fields
 if [[ "$genotyper" == advntr ]] ; then
@@ -73,7 +97,8 @@ elif [[ "$genotyper" == hipstr ]] ; then
 else 
 	echo 'Unexpected genotyper!' 1>&2
 	rm "$temp_file"
-	exit 5
+	rm "$temp_file".tbi
+	exit 9
 fi
 
 echo "Adding INFO fields and values from the ref_panel, then removing loci which are missing required INFO fields"
@@ -92,5 +117,6 @@ tabix "$output"
 
 echo "Removing temp file"
 rm "$temp_file"
+rm "$temp_file".tbi
 
 echo "Done"

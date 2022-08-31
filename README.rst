@@ -50,7 +50,7 @@ With pip
 ^^^^^^^^
 
 First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`). Optionally install :code:`bcftools`.
-These are used to prepare input files for TRTools and aren't install by pip.
+These are used to prepare input files for TRTools and aren't installed by pip.
 
 Then run:
 

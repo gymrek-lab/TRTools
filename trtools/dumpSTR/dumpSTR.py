@@ -442,7 +442,7 @@ def CheckFilters(format_fields: Set[str],
             common.WARNING("ExpansionHunter options can only be applied to ExpansionHunter VCFs")
             return False
         elif is_beagle:
-            common.WARNING("ExpansionHunger call level filters cannot be applied to Beagle VCFs")
+            common.WARNING("ExpansionHunter call level filters cannot be applied to Beagle VCFs")
             return False
         else:  # pragma: no cover
             if not CheckEHFilters(format_fields, args):  # pragma: no cover
