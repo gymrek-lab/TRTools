@@ -1,3 +1,7 @@
+#Randome files
+.DS_Store
+
+
 # Editor files
 *.swp
 .mypy_cache/
