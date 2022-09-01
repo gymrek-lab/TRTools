@@ -26,11 +26,12 @@ Required parameters:
 DumpSTR will output a filtered VCF file named :code:`$out.vcf`, a sample log file :code:`$out.samplog.tab`, and a locus log file :code:`$out.loclog.tab`.
 See a description of output files below.
 
-Other common parameters:
+Other general parameters:
 
 * :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`.
   Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--zip` to output a bgzipped filtered VCF (:code:`$out.vcf.gz`) and tabix index (:code:`$out.vcf.gz.tbi`) instead of :code:`$out.vcf`.
+* :code:`--num-records <int>`: only process this many records from the input VCF file
 
 The available filters are described below.
 
@@ -82,6 +83,7 @@ For example, if running with :code:`--hipstr-min-call-DP 100`, a call with DP
 Calls which were already nocalls before the dumpSTR run are left unchanged and
 their FILTER format field is set to NOCALL.
 
+Caveat: No call level filters have yet been written for VCFs imputed by Beagle. 
 
 AdVNTR call-level filters
 **************************

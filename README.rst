@@ -35,6 +35,12 @@ With conda
 
         conda install -c bioconda trtools
 
+Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
+
+::
+
+        conda install -c bioconda bcftools
+
 Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
 If you are using a different version of python we support (3.5 or >= 3.9),
@@ -42,6 +48,11 @@ install TRTools using pip.
 
 With pip
 ^^^^^^^^
+
+First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`). Optionally install :code:`bcftools`.
+These are used to prepare input files for TRTools and aren't installed by pip.
+
+Then run:
 
 ::
 
@@ -110,8 +121,6 @@ See our description of the `features and example use-cases <https://trtools.read
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
-.. _Contributing:
-
 Development Notes
 -----------------
 
@@ -120,6 +129,8 @@ Development Notes
 Contact Us
 ----------
 Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
+
+.. _Contributing:
 
 Contributing
 ------------

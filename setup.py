@@ -14,7 +14,7 @@ LICENSE = 'MIT'
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
 MAJ = 4
-MIN = 1
+MIN = 2
 REV = 0
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
@@ -40,7 +40,10 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       license_file="LICENSE.txt",
-      scripts=["trtools/testsupport/test_trtools.sh"],
+      scripts=[
+          "trtools/testsupport/test_trtools.sh",
+          'scripts/trtools_prep_beagle_vcf.sh'
+      ],
       entry_points={
           'console_scripts': [
               'dumpSTR=trtools.dumpSTR:run',

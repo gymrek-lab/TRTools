@@ -48,7 +48,7 @@ def test_RightFile(args, vcfdir):
     assert retcode==0
 
 # Test all the statSTR options
-def test_Stats(args, vcfdir):
+def test_Stats(args, vcfdir, capsys):
     fname = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
     args.vcf = fname
     args.thresh = True
@@ -68,6 +68,10 @@ def test_Stats(args, vcfdir):
     assert main(args) == 0
     args.samples = os.path.join(vcfdir, "fewer_samples.txt")
     assert main(args) == 0
+    # test that using only nonexistant samples errors out
+    args.samples = os.path.join(vcfdir, "missing_samples.txt")
+    assert main(args) == 1
+    assert 'no samples' in capsys.readouterr().err.lower()
 
 def test_require_tabix_for_regions(args, vcfdir, capsys):
     # args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt")
