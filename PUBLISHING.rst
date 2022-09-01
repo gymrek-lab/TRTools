@@ -8,6 +8,7 @@ now, please contact us (our contact info is in the README)
 
 This document explains how trtools maintainers should publish new changes.
 Maintainers should reach consensus before going ahead with publishing changes.
+Note that the publishing to PyPI step below will require Melissa's PyPI login.
 
 We use a simplified version of
 `git flow <http://web.archive.org/web/20200520162709/https://nvie.com/posts/a-successful-git-branching-model/>`_
@@ -40,7 +41,7 @@ Once changes have been made to develop that are ready to be published, first cho
 
 Then go through the steps of merging the changes into the master branch:
 
-#. Run pytest and make sure all the tests pass
+#. Run pytest and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
 #. Update the version number in setup.py
@@ -62,7 +63,7 @@ Then go through the steps of publishing the changed code to PyPI:
 
  You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
 
-4. Run :code:`twine upload dist/*` to upload the build to PyPI
+4. Run :code:`twine upload dist/*` to upload the build to PyPI, using the mgymrek account and its password (ask Melissa)
 
 Lastly, the change needs to be published to bioconda.
 
@@ -114,9 +115,11 @@ Git tags are used to mark specific commits with certain names (i.e. v1.2.0).
 Please note that tags are assigned to commits, not branches.
 You can tag a commit in two different ways.
 
-#. Command line::
+#. Command line:
 
-  git tag -a <tag-name> -m <tag-description>
+.. code-block: bash
+
+  git tag -a vX.Y.Z -m vX.Y.Z
   git push --tags
 
 2. Web interface: you can go to the releases page of the repository and create a new release.
