@@ -40,7 +40,10 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       license_file="LICENSE.txt",
-      scripts=["trtools/testsupport/test_trtools.sh"],
+      scripts=[
+          "trtools/testsupport/test_trtools.sh",
+          'scripts/trtools_prep_beagle_vcf.sh'
+      ],
       entry_points={
           'console_scripts': [
               'dumpSTR=trtools.dumpSTR:run',

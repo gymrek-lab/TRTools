@@ -1,6 +1,10 @@
 Unreleased Changes
 ------------------
 
+New features:
+
+* TRTools can now read VCFs produced by Beagle imputation.
+
 Bug fixes:
 
 * MergeSTR now successfully merges files containing multiple chromosomes instead of emitting
@@ -9,6 +13,8 @@ Bug fixes:
   VCFs being merged isn't identical.
 * StatSTR now errors out if any of the files listed in --samples contain no samples that are present
   in the input VCF.
+* DumpSTR now reads call depth from the LC format field when the DP format field is not present.
+  This was intended previously but was not happening.
 
 Doc changes:
 
