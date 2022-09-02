@@ -1,3 +1,10 @@
+4.2.1
+-----
+
+Bug fixes:
+
+* Fix bioconda build
+
 4.2.0
 -----
 
