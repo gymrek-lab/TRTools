@@ -24,8 +24,14 @@ runcmd_fail()
 if [ $# -eq 0 ]; then
     # use default example location
     EXDATADIR="example-files"
+    BEAGLEDIR="trtools/testsupport/sample_vcfs/beagle"
+elif (( $# != 2 )) ; then
+    echo "usage: cmdline_tests.sh {example_dir} {beagle_dir}" 2>&1
+    echo "Expected 2 arguments but recieved $#" 2>&1
+    exit 1
 else
     EXDATADIR=$1
+    BEAGLEDIR=$2
 fi
 
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
@@ -180,7 +186,6 @@ runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
 
 echo "--- Running trtools_prep_beagle_vcf.sh tests --- "
-BEAGLEDIR=trtools/testsupport/sample_vcfs/beagle
 prep_beagle_out="$TMPDIR"/test_prep_beagle_vcf.vcf.gz
 ref_panel="$BEAGLEDIR"/1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz
 imputed_vcf="$BEAGLEDIR"/1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz
