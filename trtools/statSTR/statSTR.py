@@ -459,7 +459,7 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
     stat_group.add_argument("--nalleles", help="Output number of alleles with frequency exceeding a specified threshold", action="store_true")
-    stat_group.add_argument("--nalleles_thresh", help="The threshold for nalleles", type=float, default=0.01)
+    stat_group.add_argument("--nalleles-thresh", help="The threshold for nalleles", type=float, default=0.01)
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
     stat_group.add_argument("--het", help="Output the heterozygosity of each locus.", action="store_true")
     stat_group.add_argument("--entropy", help="Output the entropy of each locus.", action="store_true")
