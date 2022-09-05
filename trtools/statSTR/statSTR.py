@@ -171,6 +171,42 @@ def GetAFreq(trrecord: trh.TRRecord,
                 allele_freqs_strs.append(",".join(["%s:%.3f"%(a, allele_freqs.get(a, 0)) for a in sorted(allele_freqs.keys())]))
     return allele_freqs_strs
 
+def GetNAlleles(
+    trrecord: trh.TRRecord,
+    sample_indexes: List[Any] = [None],
+    nalleles_thresh: float = 0.01,
+    uselength: bool = True,
+) -> List[int]:
+    """Return allele frequency for a TR
+
+    Parameters
+    ----------
+    trrecord:
+          The record that we are computing the statistic for
+    sample_indexes:
+          A list of indexes into the numpy rows array to extract subsets of
+          genotypes to stratify over.
+          (e.g. [[True, False, False], [False, True, True]] or
+          [[0], [1,2]]
+          to split three samples into two strata - the first sample
+          and the last two)
+          Can contain None for all samples.
+    nalleles_thresh:
+        The threshold which an allele's frequency must exceed to be counted
+    uselength:
+          Whether we should collapse alleles by length
+
+    Returns
+    -------
+    List[int]:
+        Number of called alleles at this locus per sample index. Zero if no alleles were called.
+    """
+    nalleles = []
+    for si in sample_indexes:
+        allele_freqs = trrecord.GetAlleleFreqs(uselength=uselength, sample_index=si)
+        nalleles.append(len([None for _, freq in allele_freqs.items() if freq >= nalleles_thresh]))
+    return nalleles
+
 def GetHWEP(trrecord: trh.TRRecord,
             sample_indexes: List[Any] = [None],
             uselength: bool = True) -> List[float]:
@@ -422,6 +458,8 @@ def getargs(): # pragma: no cover
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
     stat_group.add_argument("--afreq", help="Output allele frequencies", action="store_true")
     stat_group.add_argument("--acount", help="Output allele counts", action="store_true")
+    stat_group.add_argument("--nalleles", help="Output number of alleles with frequency exceeding a specified threshold", action="store_true")
+    stat_group.add_argument("--nalleles_thresh", help="The threshold for nalleles", type=float, default=0.01)
     stat_group.add_argument("--hwep", help="Output HWE p-values per loci.", action="store_true")
     stat_group.add_argument("--het", help="Output the heterozygosity of each locus.", action="store_true")
     stat_group.add_argument("--entropy", help="Output the entropy of each locus.", action="store_true")
@@ -444,6 +482,7 @@ def getargs(): # pragma: no cover
     if not any(stat_dict.values()):
         common.WARNING("Error: Please use at least one of the flags in the Stats group. See statSTR --help for options.")
         return None
+
     return args
 
 def format_nan_precision(precision_format, val):
@@ -504,6 +543,7 @@ def main(args):
     if args.thresh: header.extend(GetHeader("thresh", sample_prefixes))
     if args.afreq: header.extend(GetHeader("afreq", sample_prefixes))
     if args.acount: header.extend(GetHeader("acount", sample_prefixes))
+    if args.nalleles: header.extend(GetHeader("nalleles", sample_prefixes))
     if args.hwep: header.extend(GetHeader("hwep", sample_prefixes))
     if args.het: header.extend(GetHeader("het", sample_prefixes))
     if args.entropy: header.extend(GetHeader("entropy", sample_prefixes))
@@ -550,6 +590,11 @@ def main(args):
             if args.acount:
                 for val in GetAFreq(trrecord, sample_indexes=sample_indexes,
                                     uselength=args.use_length, count=True):
+                    outf.write("\t" + str(val))
+            if args.nalleles:
+                for val in GetNAlleles(
+                    trrecord, nalleles_thresh = args.nalleles_thresh, sample_indexes=sample_indexes, uselength=args.use_length
+                ):
                     outf.write("\t" + str(val))
             if args.hwep:
                 for val in GetHWEP(trrecord, sample_indexes=sample_indexes,
