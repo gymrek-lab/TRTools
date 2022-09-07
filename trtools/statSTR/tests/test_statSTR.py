@@ -20,6 +20,8 @@ def args(tmpdir):
     args.thresh = False
     args.afreq = False
     args.acount = False
+    args.nalleles = False
+    args.nalleles_thresh = 0.01
     args.hwep = False
     args.het = False
     args.use_length = False
@@ -61,6 +63,7 @@ def test_Stats(args, vcfdir, capsys):
     args.var = True
     args.acount = True
     args.afreq = True
+    args.nalleles = True
     assert main(args) == 0
     args.uselength = True
     assert main(args) == 0
@@ -247,6 +250,8 @@ def test_output(args, vcfdir, statsdir):
     args.thresh = True
     args.afreq = True
     args.acount = True
+    args.nalleles = True
+    args.nalleles_thresh = 0.1
     args.hwep = True
     args.het = True
     args.entropy = True
@@ -279,6 +284,8 @@ def test_output_samplestrat(args, vcfdir, statsdir):
     args.thresh = True
     args.afreq = True
     args.acount = True
+    args.nalleles = True
+    args.nalleles_thresh = 0.1
     args.hwep = True
     args.het = True
     args.entropy = True

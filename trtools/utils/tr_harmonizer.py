@@ -327,7 +327,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
             or vcfrecord.INFO.get('END') is None
             or vcfrecord.INFO.get('PERIOD') is None):
         raise TypeError(
-            "Record at {}:{} is missing one of the mandatory HipSTR info fields START, END, PERIOD".format(vcfrecord.CHROM, vcfrecord.POS) +  _beagle_error
+            "Record at {}:{} is missing one of the mandatory HipSTR info fields START, END, PERIOD. ".format(vcfrecord.CHROM, vcfrecord.POS) +  _beagle_error
         )
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
@@ -403,7 +403,7 @@ def _HarmonizeAdVNTRRecord(vcfrecord: cyvcf2.Variant):
     """
     if vcfrecord.INFO.get('RU') is None or vcfrecord.INFO.get('VID') is None:
         raise TypeError(
-            "Record at {}:{} is missing one of the mandatory ADVNTR info fields RU, VID".format(vcfrecord.CHROM, vcfrecord.POS) + _beagle_error
+            "Record at {}:{} is missing one of the mandatory ADVNTR info fields RU, VID. ".format(vcfrecord.CHROM, vcfrecord.POS) + _beagle_error
         )
     ref_allele = vcfrecord.REF.upper()
     if vcfrecord.ALT:
@@ -507,7 +507,7 @@ def _HarmonizeEHRecord(vcfrecord: cyvcf2.Variant):
     """
     if vcfrecord.INFO.get('VARID') is None or vcfrecord.INFO.get('RU') is None:
         raise TypeError(
-            "Record at {}:{} is missing one of the mandatory ExpansionHunter info fields VARID, RU".format(vcfrecord.CHROM, vcfrecord.POS)
+            "Record at {}:{} is missing one of the mandatory ExpansionHunter info fields VARID, RU. ".format(vcfrecord.CHROM, vcfrecord.POS)
             + _beagle_error
         )
     record_id = vcfrecord.INFO["VARID"]
