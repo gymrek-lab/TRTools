@@ -84,21 +84,21 @@ TRTools supports TR genotypes produced by any of the above genotypers and then i
 Caveats:
 
 * Beagle provides phased best-guess genotypes for each imputed sample at each TR locus. When run with the :code:`ap` or :code:`gp` flags Beagle will also output
-probabilities for each possible haplotype/genotype, respectively. These probabilities are also called dosages. While dosages are often more informative for downstream
-analyses than the best-guess genotypes located in the :code:`GT` format field (for instance, for association testing), TRTools currently does *not* support dosage
-based analyses. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
+  probabilities for each possible haplotype/genotype, respectively. These probabilities are also called dosages. While dosages are often more informative for downstream
+  analyses than the best-guess genotypes located in the :code:`GT` format field (for instance, for association testing), TRTools currently does *not* support dosage
+  based analyses. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
 * At each locus Beagle returns the most probable phased genotype. This will often but not always correspond to the most probable unphased genotype. For instance,
-it is possible that :code:`P(A|A) > P(A|B)` and :code:`P(A|A) > P(B|A)`, but :code:`P(A/A) = P(A|A) < P(A|B) + P(B|A) = P(A/B)`. Similarly, it is possible that
-:code:`P(A|B) > P(C|D)` and :code:`P(A|B) > P(D|C)`, but :code:`P(A/B) = P(A|B) + P(B|A) < P(C|D) + P(D|C) = P(C/D)`. TRTools currently does not take this into
-account and just uses the phased genotypes returned by Beagle. If you deem this to be an issue, feel free to submit PRs to help TRTools take this into account
-(see the :ref:`Contributing` docs).
+  it is possible that :code:`P(A|A) > P(A|B)` and :code:`P(A|A) > P(B|A)`, but :code:`P(A/A) = P(A|A) < P(A|B) + P(B|A) = P(A/B)`. Similarly, it is possible that
+  :code:`P(A|B) > P(C|D)` and :code:`P(A|B) > P(D|C)`, but :code:`P(A/B) = P(A|B) + P(B|A) < P(C|D) + P(D|C) = P(C/D)`. TRTools currently does not take this into
+  account and just uses the phased genotypes returned by Beagle. If you deem this to be an issue, feel free to submit PRs to help TRTools take this into account
+  (see the :ref:`Contributing` docs).
 
 An overview of steps to perform before Beagle imputation:
 
 * The samples being imputed into must have directly genotyped loci that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
 * The genotypes of both the reference samples and samples of interest must be phased. That can be done by statistically phasing the genotypes prior to running Beagle imputation.
 * The referece samples must also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute
-the missing genotypes prior to imputing the TRs.
+  the missing genotypes prior to imputing the TRs.
 
 The VCFs that Beagle outputs need to be preprocessed before use by TRTools. We have provided a tool :code:`trtools_prep_beagle_vcf.sh` to run on those VCFs.
 After running this script, the files should be usable by any of the tools in TRTools.

@@ -48,6 +48,8 @@ produced in the output file has the same name as the specified option:
   Only called alleles are included in the list. If there are no called alleles, '.' is emitted.
 * :code:`--acount`: Output allele counts. Comma-separated list of allele:count
   Only called alleles are included in the list. If there are no called alleles, '.' is emitted.
+* :code:`--nalleles`: Output the number of alleles per locus with at least a given frequency.
+* :code:`--nalleles-thresh`: Threshold for the frequency cutoff for :code:`--nalleles`. Defaults to :code:`1%` if not specified.
 * :code:`--hwep`: Output Hardy Weinberg p-values per locus.
 * :code:`--het`: Output heterozygosity of each locus.
 * :code:`--entropy`: Output the bit-entropy of the distribution of alleles at each locus.
@@ -62,6 +64,7 @@ produced in the output file has the same name as the specified option:
 
 The statistics :code:`thresh, hewp, het, entropy, mean, mode, var` will output :code:`nan` if there are no called alleles.
 The statistics :code:`afreq, acount` will output :code:`.` if there are no called alleles.
+The statistic :code:`nalleles` will output :code:`0` if there are no called alleles.
 
 For genotypers which output allele sequences, :code:`--use-length` will collapse alleles by length.
 (This is implicit for genotypers which only output allele lengths.)
