@@ -8,7 +8,8 @@ now, please contact us (our contact info is in the README)
 
 This document explains how trtools maintainers should publish new changes.
 Maintainers should reach consensus before going ahead with publishing changes.
-Note that the publishing to PyPI step below will require Melissa's PyPI login.
+Note that the publishing to PyPI step below will require credentials
+that are only made available to core maintainers of TRTools.
 
 We use a simplified version of
 `git flow <http://web.archive.org/web/20200520162709/https://nvie.com/posts/a-successful-git-branching-model/>`_
@@ -63,7 +64,7 @@ Then go through the steps of publishing the changed code to PyPI:
 
  You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
 
-4. Run :code:`twine upload dist/*` to upload the build to PyPI, using the mgymrek account and its password (ask Melissa)
+4. Run :code:`twine upload dist/*` to upload the build to PyPI
 
 Lastly, the change needs to be published to bioconda.
 
