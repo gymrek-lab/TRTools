@@ -405,14 +405,16 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
 
 
     ref_allele = GetRefAllele(current_records, mergelist)
-    if isinstance(ref_allele, set):
+
+    if isinstance(ref_allele, set): # If we have multiple ref alleles for a locus
         merge_lists = defaultdict(list)
         for ref in ref_allele:
             for i in use_ind:
                 if current_records[i].REF.upper() == ref:
                     merge_lists[ref].append(i)
         for ref in merge_lists:
-            ref_mergelist = mergelist.copy()
+            assert(len(merge_lists[ref]) > 0)
+            ref_mergelist = mergelist.copy() #update mergelist for each ref allele
             for i in range(len(ref_mergelist)):
                 if i in merge_lists[ref]:
                     continue
@@ -455,14 +457,11 @@ def MergeRecords(readers, vcftype, num_samples, current_records,
             # Samples
             alleles = [ref] + alt_alleles
             map_iter = iter(mappings)
-            print("ref ", ref)
-            print(ref_mergelist)
             for i in range(len(ref_mergelist)):
                 if ref_mergelist[i]:
                     WriteSampleData(vcfw, current_records[i], alleles, useformat,
                                     format_type, next(map_iter))
                 else:  # NOCALL
-                    print(i)
                     if num_samples[i] > 0:
                         vcfw.write('\t')
                         vcfw.write('\t'.join([NOCALLSTRING] * num_samples[i]))
