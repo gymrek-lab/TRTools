@@ -24,6 +24,11 @@ def getargs():  # pragma: no cover
     input_group.add_argument("--gts-snps", help="SNP genotypes", type=str)
     input_group.add_argument("--gts-strs", help="STR genotypes (VCF format)", type=str)
     ### Clumping arguments ###
+    clump_group = parser.add_argument_group("Clumping Parameters")
+    clump_group.add_argument("--clump-p1", help="index variant p-value threshold", type=float, default=0.0001)
+    clump_group.add_argument("--clump-p2", help="SP2 column p-value threshold", type=float, default=0.01)
+    clump_group.add_argument("--clump-r2", help="r2 treshold", type=float, default=0.5)
+    clump_group.add_argument("--clump-kb", help="clump kb radius", type=float, default=250)
     ### Optional args ###
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version='{version}'.format(version=__version__))
