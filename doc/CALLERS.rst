@@ -79,8 +79,9 @@ Beagle
 ------
 
 The Beagle_ software can take genotypes called by a TR genotyper in a set of reference samples and impute them into other samples that do not have directly genotyped TRs.
-TRTools supports TR genotypes produced by any of the above genotypers and then imputed into other samples with Beagle except for PopSTR genotypes. The tools provided by TRTools
-can be used on Beagle VCFs as if those VCFs were produced directly by the TR genotyper, with no additional flags or arguments needed, as long as the steps below were followed.
+TRTools supports TR genotypes produced by any of the above genotypers and then imputed into other samples with Beagle except for PopSTR genotypes. For each tool
+in this tool suite, unless it's docs specifically say otherwise, that tool can be used on Beagle VCFs as if those VCFs were produced directly by the underlying TR genotyper,
+with no additional flags or arguments needed, as long as the steps below were followed to make sure the Beagle VCF is properly formatted.
 
 Caveats:
 
