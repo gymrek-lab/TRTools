@@ -79,14 +79,16 @@ Beagle
 ------
 
 The Beagle_ software can take genotypes called by a TR genotyper in a set of reference samples and impute them into other samples that do not have directly genotyped TRs.
-TRTools supports TR genotypes produced by any of the above genotypers and then imputed into other samples with Beagle except for PopSTR genotypes.
+TRTools supports TR genotypes produced by any of the above genotypers and then imputed into other samples with Beagle except for PopSTR genotypes. For each tool
+in this tool suite, unless it's docs specifically say otherwise, that tool can be used on Beagle VCFs as if those VCFs were produced directly by the underlying TR genotyper,
+with no additional flags or arguments needed, as long as the steps below were followed to make sure the Beagle VCF is properly formatted.
 
 Caveats:
 
 * Beagle provides phased best-guess genotypes for each imputed sample at each TR locus. When run with the :code:`ap` or :code:`gp` flags Beagle will also output
   probabilities for each possible haplotype/genotype, respectively. These probabilities are also called dosages. While dosages are often more informative for downstream
   analyses than the best-guess genotypes located in the :code:`GT` format field (for instance, for association testing), TRTools currently does *not* support dosage
-  based analyses. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
+  based analyses and instead will only look at the :code:`GT` field. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
 * At each locus Beagle returns the most probable phased genotype. This will often but not always correspond to the most probable unphased genotype. For instance,
   it is possible that :code:`P(A|A) > P(A|B)` and :code:`P(A|A) > P(B|A)`, but :code:`P(A/A) = P(A|A) < P(A|B) + P(B|A) = P(A/B)`. Similarly, it is possible that
   :code:`P(A|B) > P(C|D)` and :code:`P(A|B) > P(D|C)`, but :code:`P(A/B) = P(A|B) + P(B|A) < P(C|D) + P(D|C) = P(C/D)`. TRTools currently does not take this into
