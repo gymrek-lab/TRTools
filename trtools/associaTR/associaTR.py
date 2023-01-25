@@ -168,7 +168,9 @@ def perform_gwas_helper(
     print(
         f'Removing {prev_n_samples - current_n_samples} samples which had missing '
         'phenotypes or covariates.\n'
-        f'Using {current_n_samples} for the regression (not accounting for missing genotypes).\n'
+        f'Using {current_n_samples} for the regression.\n'
+        'The number of samples used in each variant\'s regression will only be lower '
+        'if that variant has missing calls.\n'
     )
 
     covars = covars[sample_filter, :]
@@ -412,9 +414,11 @@ def perform_gwas(
         paired_genotype_plot,
         plot_phenotype_residuals,
         plotting_ci_alphas,
+        imputed_ukb_strs_paper_period_check
 ):
     get_genotype_iter = lambda samples: load_and_filter_genotypes.load_strs(
         str_vcf, samples, region, non_major_cutoff, beagle_dosages
+        imputed_ukb_strs_paper_period_check
     )
 
     print(f"Writing output to {outfile}.temp", flush=True)
@@ -474,6 +478,8 @@ def main():
         help='If not --beagle-dosages, then this is just the non-major-allele-count cutoff. '
              'If working with dosages, this cutoff is applied to the dosage sums. '
              'As with the regression itself, for this purpose alleles are coallesced by length.'
+             'Default of 20 per plink\'s best practices: '
+             'https://www.cog-genomics.org/plink/2.0/assoc#glm'
     )
     parser.add_argument(
         '--beagle-dosages', action='store_true', default=False,
@@ -505,7 +511,6 @@ def main():
              "two alleles' lengths. If using dosages, then each sample contributes to each unordered-pair-bin "
              'proportionally to the estimated probability of their having that unoredered-pair genotype.'
     )
-    )
     parser.add_argument(
         '--plot-phenotype-residuals',
         action='store_true',
@@ -525,6 +530,13 @@ def main():
         help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
              'of size 1-alpha for each alpha in this list for each of the statistics generated for '
              'plotting.'
+    )
+    parser.add_argument(
+        #This is only for one specific use case, don't use this
+        '--imputed-ukb-strs-paper-period-check',
+        default=False,
+        action='store_true',
+        help=argparse.SUPPRESS
     )
 
 
@@ -557,7 +569,8 @@ def main():
         args.plotting_phenotype,
         args.paired_genotype_plot,
         args.plot_phenotype_residuals,
-        args.plotting_ci_alphas
+        args.plotting_ci_alphas,
+        args.imputed_ukb_strs_paper_period_check
     )
 
 

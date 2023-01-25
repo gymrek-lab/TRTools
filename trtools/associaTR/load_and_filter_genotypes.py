@@ -6,7 +6,8 @@ apply filters to them for quality control
 and then return yield them
 """
 
-from typing import Optional, Set, Union
+import sys
+from typing import Dict, Optional, Set, Union
 
 import cyvcf2
 import numpy as np
@@ -15,6 +16,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 
 allele_len_precision = 2
+allele_frequency_precision = 2
 dosage_precision = 2
 r2_precision = 2
 
@@ -56,16 +58,17 @@ def round_vals(d, precision):
     return {key: round(val, precision) for key, val in d.items()}
 
 def load_strs(vcf_fname: str,
-              region: Optional[str] = None,
               samples: Union[np.ndarray, slice],
-              details: bool = True,
-              hardcalls = False,
+              region: Optional[str] = None,
+              non_major_cutoff: float,
+              beagle_dosages: bool = False ,
               _imputed_ukb_strs_paper_period_check: bool = False
              ):
     """
     Iterate over a region returning genotypes at STR loci.
 
     First yield is a tuple of names of the fields in details.
+
     Every subsequent yield is described in the yields section below.
 
     Parameters
@@ -73,43 +76,37 @@ def load_strs(vcf_fname: str,
     vcf_fname:
     samples:
         A boolean array of length nsamples determining which samples are included
-        (True) and which are not
+        (True) and which are not. Or a slice(None) object as a convenience for specifying
+        all samples
     region:
         chr:start-end if not None
+    non_major_cutoff : the cutoff value for the non-major allele count/dosage filter
+    beagle_dosages: work with dosages from the AP format fields instead of the GT field
 
     Yields
     ------
-    dosages: Dict[float, np.ndarray]
-        A dictionary from unique length alleles to 2D arrays of size (n_samples, 2)
-        which contain the dosages of those alleles for each haplotype
+    gts: Union[Dict[float, np.ndarray], np.ndarray]
+        If not beagle_dosages, then a float array n_samplesx2 of allele lengths
+        
+        If beagle_dosages, then a dictionary from unique length alleles to 2D arrays of size
+        (n_samples, 2) which contain the dosages of those alleles for each haplotype
         Length dosage are measured in number of repeats.
 
         None if locus_filtered is not None
-
-        If hardcalls, then instead of that just an array nx2 of length alleles
     unique_alleles: np.ndarray
-        Array of unique length alleles (measured in number of repeats),
-        same length as the dosages dict
+        1D array of unique length alleles (measured in number of repeats),
+        If beagle_dosages, this is the same length as the dosages dict
     chrom: str
         e.g. '13'
     pos: int
     locus_filtered:
         None if the locus is not filtered, otherwise
         a string explaining why.
-        'MAC<20' if the minor allele dosage is less than 20
-        after sample subsetting, per plink's standard.
-
-        None if hardcalls.
+        Currently the only filter is for non major allele count/dosage,
+        filtered loci will look like 'non-major allele dosage/count<VAL'
     locus_details:
         tuple of strings with the same length as the first yield
         with the corresponding order.
-
-        None if hardcalls.
-
-    Notes
-    -----
-    Hardcalls mentioned in the locus details are phased hardcalls, and in some
-    corner cases will not correspond to the maximum likelihood unphased allele.
     """
 
     # TODO make hardcalls work
@@ -122,24 +119,30 @@ def load_strs(vcf_fname: str,
         vcf = cyvcf2(region)
 
     if details:
-        yield (
+        deets = [
             'motif',
             'period',
             'ref_len',
-            #'total_per_allele_dosages',
-            #'total_hardcall_alleles',
-            #'total_hardcall_genotypes',
-            'subset_total_per_allele_dosages', # TODO rename these
-            'subset_total_hardcall_alleles', # TODO only one of these
-            #'subset_total_hardcall_genotypes',
-            #'subset_het',
-            #'subset_entropy',
-            #'subset_HWEP',
-            'subset_allele_dosage_r2'
-            # TODO more imputation metrics
-        )
+            'allele_frequency'
+        ]
+        if beagle_dosages :
+            deets.extend([
+                'dosage_estimated_r2_per_length_allele',
+                'r2_length_dosages_vs_best_guess_lengths'
+                # TODO more imputation metrics
+            ])
+        yield deets
 
+    first = True
     for record in vcf:
+        if first and beagle_dosages and "AP1" not in record.FORMAT:
+            print("--beagle-dosages specified, missing required field AP1 for the STR")
+            if "GP" in record.FORMAT:
+                print("We could support the GP field, but currently only support the AP fields")
+            print("Erroring out")
+            sys.exit(1)
+
+        first = False
         if region is not None and record.POS < region_start:
             # records that overlap this region but started before this region
             # should be considered part of the pervious region and not returned here
@@ -152,100 +155,90 @@ def load_strs(vcf_fname: str,
 
         trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype='hipstr')
 
-        len_alleles = [trrecord.ref_allele_length] + trrecord.alt_allele_lengths
-        len_alleles = [round(allele_len, allele_len_precision) for allele_len in len_alleles]
-
-        #if hardcalls:
-        #    yield (trrecord.GetLengthGenotypes()[samples, :-1], np.unique(len_alleles), trrecord.chrom, trrecord.pos, None, None)
 
         if isinstance(samples, slice):
             assert samples == slice(None)
-            n_subset_samples = trrecord.GetNumSamples()
+            samples = trrecord.GetCalledSamples()
         else:
-            n_subset_samples = int(np.sum(samples))
+            samples = samples & trrecord.GetCalledSamples()
+        
+        n_samples = int(np.sum(samples))
 
-        subset_dosage_gts = {
-            _len: np.zeros((n_subset_samples, 2)) for _len in np.unique(len_alleles)
-        }
+        len_alleles = [trrecord.ref_allele_length] + trrecord.alt_allele_lengths
+        len_alleles = [round(allele_len, allele_len_precision) for allele_len in len_alleles]
 
-        for p in (1, 2):
-            # TODO this isn't right - these best guess calls are only best guess if there's only one
-            # allele per length, doesn't take into account prob splitting over imperfections
-            # todo genotype dosages
-            ap = trrecord.format[f'AP{p}']
-            subset_dosage_gts[len_alleles[0]][:, (p-1)] += \
-                    np.maximum(0, 1 - np.sum(ap[samples, :], axis=1))
-            for i in range(ap.shape[1]):
-                subset_dosage_gts[len_alleles[i+1]][:, (p-1)] += ap[samples, i]
+        if not beagle_dosages:
+            gts = trrecord.GetLengthGenotypes()[samples, :-1]
+            allele_frequency = clean_len_alleles(trrecord.GetAlleleFreqs(samples))
+        else:
+            gts = {
+                _len: np.zeros((n_samples, 2)) for _len in np.unique(len_alleles)
+            }
 
-        subset_total_dosages = {
-            _len: np.sum(subset_dosage_gts[_len]) for _len in subset_dosage_gts
-        }
+            for p in (1, 2):
+                ap = trrecord.format[f'AP{p}']
+                gts[len_alleles[0]][:, (p-1)] += \
+                        np.maximum(0, 1 - np.sum(ap[samples, :], axis=1))
+                for i in range(ap.shape[1]):
+                    gts[len_alleles[i+1]][:, (p-1)] += ap[samples, i]
 
-        if details:
-            # Is there an issue here? See TODO above
-            #subset_total_hardcall_alleles = clean_len_alleles(trrecord.GetAlleleCounts(samples))
-            #subset_total_hardcall_genotypes = clean_len_allele_pairs(trrecord.GetGenotypeCounts(samples))
-            subset_hardcall_allele_freqs = clean_len_alleles(trrecord.GetAlleleFreqs(samples))
-
-#            subset_het = utils.GetHeterozygosity(subset_hardcall_allele_freqs)
-#            subset_entropy = utils.GetEntropy(subset_hardcall_allele_freqs)
-#            subset_hwep = utils.GetHardyWeinbergBinomialTest(
-#                subset_hardcall_allele_freqs,
-#                subset_total_hardcall_genotypes
-#            )
+            allele_frequencies = {
+                _len: np.sum(gts[_len])/(2*n_samples) for _len in gts
+            }
 
             # https://www.cell.com/ajhg/fulltext/S0002-9297(09)00012-3#app1
             # Browning, Brian L., and Sharon R. Browning. "A unified approach to genotype imputation and haplotype-phase inference for large data sets of trios and unrelated individuals." The American Journal of Human Genetics 84.2 (2009): 210-223.
             # appendix 1
-            subset_allele_dosage_r2 = {}
+            allele_dosage_r2 = {}
 
-            subset_hardcalls = np.around(trrecord.GetLengthGenotypes()[samples, :-1], allele_len_precision)
+            best_guesses = trrecord.GetLengthGenotypes()[samples, :-1]
+            rounded_best_guesses = np.around(best_guesses, allele_len_precision)
             for length in len_alleles:
                 # calculate allele dosage r**2 for this length
-                if length in subset_allele_dosage_r2:
+                if length in allele_dosage_r2:
                     continue
 
-                calls = subset_hardcalls == length
+                calls = rounded_best_guesses == length
 
-                subset_allele_dosage_r2[length] = np.corrcoef(
-                    calls.reshape(-1), subset_dosage_gts[length].reshape(-1)
+                allele_dosage_r2[length] = np.corrcoef(
+                    calls.reshape(-1), dosage_gts[length].reshape(-1)
                 )[0,1]**2
 
-            locus_details = (
-                trrecord.motif,
-                str(len(trrecord.motif)),
-                str(round(trrecord.ref_allele_length, allele_len_precision)),
-                #dict_str(round_vals(total_dosages, dosage_precision)),
-                #dict_str(total_hardcall_alleles),
-                #dict_str(total_hardcall_genotypes),
-                dict_str(round_vals(subset_total_dosages, dosage_precision)),
-                dict_str(subset_total_hardcall_freqs), #dict_str(subset_total_hardcall_alleles),
-                #dict_str(subset_total_hardcall_genotypes),
-                #str(subset_het),
-                #str(subset_entropy),
-                #str(subset_hwep),
-                dict_str(round_vals(subset_allele_dosage_r2, r2_precision))
-            )
-        else:
-            locus_details = None
+            length_r2  = np.corrcoef(
+                best_guesses.flatten(),
+                summed_gts = np.add.reduce([
+                    len_*dosages for len_, dosages in gts.items()
+                ]).flatten()
+            )[0,1]**2
 
-        mac = list(subset_total_dosages.values())
-        mac.pop(np.argmax(mac))
+        locus_details = [
+            trrecord.motif,
+            str(len(trrecord.motif)),
+            str(round(trrecord.ref_allele_length, allele_len_precision)),
+            dict_str({key: f'{val:.2g}' for key, val in allele_frequency.items()})
+        ]
+        if beagle_dosages:
+            locus_details.extend([
+                dict_str(round_vals(allele_dosage_r2, r2_precision)),
+                round(length_r2, r2_precision)
+            ])
 
-        if np.sum(mac) < 20:
+        af = list(allele_frequency.values())
+        af.pop(np.argmax(af))
+
+        if np.sum(af)*n_samples < non_major_cutoff:
             yield (
                 None,
                 np.unique(len_alleles),
                 trrecord.chrom,
                 trrecord.pos,
-                'MAC<20',
+                f'non-major allele {"dosage" if beagle_dosages else "count"}<{non_major_cutoff}',
                 locus_details
             )
             continue
 
         yield (
-            subset_dosage_gts,
+            gts,
             np.unique(len_alleles),
             trrecord.chrom,
             trrecord.pos,
