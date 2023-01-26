@@ -118,7 +118,7 @@ def load_strs(vcf_fname: str,
 
     if region is not None:
         region_start = int(region.split(':')[1].split('-')[0])
-        vcf = cyvcf2(region)
+        vcf = vcf(region)
 
     deets = [
         'motif',
@@ -143,6 +143,7 @@ def load_strs(vcf_fname: str,
             sys.exit(1)
 
         first = False
+
         if region is not None and record.POS < region_start:
             # records that overlap this region but started before this region
             # should be considered part of the pervious region and not returned here
@@ -231,7 +232,7 @@ def load_strs(vcf_fname: str,
         else:
             af = list(allele_frequency.values())
             af.pop(np.argmax(af))
-            if np.sum(af)*n_samples < non_major_cutoff:
+            if np.sum(af)*n_samples*2 < non_major_cutoff:
                 filter_reason = 'non-major allele {}<{}'.format("dosage" if beagle_dosages else "count", non_major_cutoff)
             else:
                 filter_reason = None

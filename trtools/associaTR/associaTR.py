@@ -138,7 +138,8 @@ def perform_gwas_helper(
 
     if not same_samples:
         covars = np.load(trait_fnames[0])
-        if np.sum(np.isin(all_samples, covars[0, :])) < 3:
+        if np.sum(np.isin(np.array(all_samples, dtype=float), covars[:, 0])) < 3:
+            print(all_samples, covars[:, 0])
             print(
                 'Less than 3 samples matched between the covars array and the VCF. '
                 'Prehaps you meant to run with --same-samples? '
@@ -148,7 +149,7 @@ def perform_gwas_helper(
         for trait_fname in trait_fnames[1:]:
             new_covars = np.load(trait_fname)
             covars = _merge_arrays(covars, new_covars)
-        covars = _merge_arrays(np.array(all_samples).reshape(-1, 1), covars)
+        covars = _merge_arrays(np.array(all_samples, dtype=float).reshape(-1, 1), covars)
     else:
         covars_array_list = []
         for trait_fname in trait_fnames:
@@ -196,7 +197,7 @@ def perform_gwas_helper(
         plotting_phenotype = np.load(plotting_phenotype_fname)
         if not same_samples:
             plotting_phenotype = _merge_arrays(
-                np.array(all_samples).reshape(-1, 1), plotting_phenotype
+                np.array(all_samples, dtype=float).reshape(-1, 1), plotting_phenotype
             )[sample_filter, 1]
         else:
             plotting_phenotype = plotting_phenotype[sample_filter, 0]
