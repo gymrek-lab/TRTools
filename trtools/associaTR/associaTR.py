@@ -14,8 +14,11 @@ import statsmodels.api as sm
 from statsmodels.regression.linear_model import OLS
 import statsmodels.stats.weightstats
 
-import load_and_filter_genotypes
+from . import load_and_filter_genotypes
 import trtools
+import trtools.utils.utils as utils
+2
+pval_precision = 2
 
 def _merge_arrays(a, b):
     '''
@@ -29,9 +32,10 @@ def _merge_arrays(a, b):
     a, b: np.ndarray
         2D arrays
     '''
-
+    
+    # TODO these assertions should be moved elsewhere and made into understandable error messages
     assert len(a.shape) == 2 and len(b.shape) == 2
-    assert len(set(a[:, 0]).intersection(b[:,0])) >= 700
+    assert len(set(a[:, 0]).intersection(b[:,0])) > 0
     assert len(set(a[:, 0])) == a.shape[0]
     assert len(set(b[:, 0])) == b.shape[0]
 
@@ -111,7 +115,8 @@ def _weighted_binom_conf(weights, successes, confidence):
 #):
 def perform_gwas_helper(
     outfile,
-    str_vcf,
+    all_samples,
+    get_genotype_iter,
     phenotype_name,
     trait_fnames,
     same_samples,
@@ -123,17 +128,23 @@ def perform_gwas_helper(
     plotting_ci_alphas
 ):
     outfile.write(
-        f"chrom\tpos\talleles\tn_samples_tested\tlocus_filtered\tp_{phenotype_name}\tcoeff_{phenotype_name}"
+        "chrom\tpos\talleles\tn_samples_samples_tested\tlocus_filtered\tp_{}\tcoeff_{}\t".format(phenotype_name, phenotype_name)
     )
     #if binary != 'logistic':
-    #    outfile.write(f'se_{phenotype}\tR^2\t')
+    outfile.write('se_{}\tregression_R^2\t'.format(phenotype_name))
     outfile.flush()
    
-    all_samples = cyvcf2.vcf(str_vcf).samples
-    print(f'{len(all_samples)} samples in the VCF', flush=True)
+    print('{} samples in the VCF'.format(len(all_samples)), flush=True)
 
     if not same_samples:
         covars = np.load(trait_fnames[0])
+        if np.sum(np.isin(all_samples, covars[0, :])) < 3:
+            print(
+                'Less than 3 samples matched between the covars array and the VCF. '
+                'Prehaps you meant to run with --same-samples? '
+                'Erroring out.'
+            )
+            exit(1)
         for trait_fname in trait_fnames[1:]:
             new_covars = np.load(trait_fname)
             covars = _merge_arrays(covars, new_covars)
@@ -147,35 +158,38 @@ def perform_gwas_helper(
                       "and --same-samples was specified. Erroring out."
                 )
                 sys.exit(1)
-        covars = np.hstack([np.array(all_samples).reshape(-1, 1), *covars_array_list])
+        # need an empty first column that will be used for the genotypes
+        covars = np.hstack([np.full((covars_array_list[0].shape[0], 1), -1), *covars_array_list])
 
     if sample_fname:
         with open(sample_fname) as sample_file:
             sample_subset = [line.strip() for line in sample_file.readlines()]
-            sample_filter = np.isin(covars[:, 0], sample_subset)
-            print(
-                f'{np.sum(sample_filter)} samples remain after subsetting to samples '
-                'from the file {sample_fname}.\n'
-                f'{len(sample_subset) - np.sum(sample_filter)} samples from the sample file '
+            sample_filter = np.isin(all_samples, sample_subset)
+            print((
+                '{} samples remain after subsetting to samples '
+                'from the file {}.\n'
+                '{} samples from the sample file '
                 'were not present in the VCF and were discarded.'
-            )
+            ).format(np.sum(sample_filter), sample_fname, len(sample_subset) - np.sum(sample_filter)))
     else:
         sample_filter = np.array([True]*len(all_samples))
 
     prev_n_samples = sum(sample_filter)
     sample_filter = sample_filter & ~np.any(np.isnan(covars), axis=1)
     current_n_samples = sum(sample_filter)
-    print(
-        f'Removing {prev_n_samples - current_n_samples} samples which had missing '
+    print((
+        'Removing {} samples which had missing '
         'phenotypes or covariates.\n'
-        f'Using {current_n_samples} for the regression.\n'
+        'Using {} for the regression.\n'
         'The number of samples used in each variant\'s regression will only be lower '
         'if that variant has missing calls.\n'
-    )
+    ).format(prev_n_samples - current_n_samples, current_n_samples))
 
     covars = covars[sample_filter, :]
+    pheno_std = np.std(covars[:, 1])
     covars = (covars - np.mean(covars, axis=0))/np.std(covars, axis=0)
-    outcome = covars[sample_filter, 1].copy()
+    #covars[:, 1] = (covars[:, 1] - np.mean(covars[:, 1]))/np.std(covars[:, 1])
+    outcome = covars[:, 1].copy()
     covars[:, 1] = 1 # reuse the column that was the outcome as the intercept
    
     if plotting_phenotype_fname:
@@ -187,11 +201,11 @@ def perform_gwas_helper(
         else:
             plotting_phenotype = plotting_phenotype[sample_filter, 0]
 
-    genotype_iter = get_genotype_iter(sample_filter)
+    genotype_iter = get_genotype_iter(sample_filter.copy())
 
     # first yield is special
     extra_detail_fields = next(genotype_iter)
-    outfile.write('\t' + '\t'.join(extra_detail_fields))
+    outfile.write('\t'.join(extra_detail_fields) + '\n')
 
     #if not binary:
     #    stat = 'mean'
@@ -206,18 +220,18 @@ def perform_gwas_helper(
             outfile.write('\tsample_count_per_summed_length')
         else:
             outfile.write('\ttotal_dosage_per_summed_length')
-        outfile.write(f'\t{stat}_{residual}{phenotype_name}_per_summed_length')
+        outfile.write('\t{}_{}{}_per_summed_length'.format(stat, residual, phenotype_name))
         for alpha in plotting_ci_alphas:
-            outfile.write(f'\tsummed_length_{alpha:.2g}_alpha_CI')
+            outfile.write('\tsummed_length_{:.2g}_alpha_CI'.format(alpha))
 
         if paired_genotype_plot:
             if not beagle_dosages:
                 outfile.write('\tsample_count_per_length_pair')
             else:
                 outfile.write('\ttotal_dosage_per_length_pair')
-            outfile.write(f'\t{stat}_{residual}{phenotype_name}_per_length_pair')
+            outfile.write('\t{}_{}{}_per_length_pair'.format(stat, residual, phenotype_name))
             for alpha in plotting_ci_alphas:
-                outfile.write(f'\tlength_pair_{alpha:.2g}_alpha_CI')
+                outfile.write('\tlength_pair_{:.2g}_alpha_CI'.format(alpha))
 
         outfile.write('\n')
         outfile.flush()
@@ -228,18 +242,23 @@ def perform_gwas_helper(
     total_time = 0
  
     start_time = time.time()
-    for gts, unique_alleles, chrom, pos, n_samples, locus_filtered, locus_details in genotype_iter:
+    for gts, unique_alleles, chrom, pos, called_samples_filter, locus_filtered, locus_details in genotype_iter:
         assert len(locus_details) == len(extra_detail_fields)
 
         covars[:, 0] = np.nan # reuse the column that was the ids as the genotypes
 
         n_loci += 1
         allele_names = ','.join(list(unique_alleles.astype(str)))
-        outfile.write(f"{chrom}\t{pos}\t{allele_names}\t{n_samples}\t")
+        outfile.write(
+            "{}\t{}\t{}\t{}\t".format(
+            chrom, pos, allele_names, np.sum(called_samples_filter)
+        ))
+        if not locus_filtered and covars.shape[1] >= np.sum(called_samples_filter):
+            locus_filtered = 'n covars >= n samples'
         if locus_filtered:
-            outfile.write(f'{locus_filtered}\t1\tnan')
+            outfile.write('{}\t1\tnan\tnan\tnan\t'.format(locus_filtered))
             outfile.write('\t'.join(locus_details))
-            n_nans = (2 + len(plotting_ci_alphas)) * (int(plotting_phenotype_fname) + int(paired_genotype_plot))
+            n_nans = (2 + len(plotting_ci_alphas)) * (int(bool(plotting_phenotype_fname)) + int(bool(paired_genotype_plot)))
             outfile.write('\tnan'*n_nans + '\n')
             outfile.flush()
             continue
@@ -254,13 +273,13 @@ def perform_gwas_helper(
             ], axis=0)
         std = np.std(summed_gts)
         summed_gts = (summed_gts - np.mean(summed_gts))/np.std(summed_gts)
-        covars[:, 0] = summed_gts
+        covars[called_samples_filter, 0] = summed_gts
 
         #if not binary or binary == 'linear':
         #do da regression
         model = OLS(
-            outcome,
-            covars,
+            outcome[called_samples_filter],
+            covars[called_samples_filter, :],
             missing='drop',
         )
         reg_result = model.fit()
@@ -268,7 +287,9 @@ def perform_gwas_helper(
         coef = reg_result.params[0]
         se = reg_result.bse[0]
         rsquared = reg_result.rsquared
-        outfile.write(f"{pval:.2e}\t{coef/std}\t{se/std}\t{rsquared}\t")
+        #outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef, se, rsquared))
+        #outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef/std, se/std, rsquared))
+        outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef/std*pheno_std, se/std*pheno_std, rsquared))
 #        else:
 #            model = sm.GLM(
 #                outcome,
@@ -285,96 +306,97 @@ def perform_gwas_helper(
 
         # ----- plot phenotype statistics -----
 
-        if not plot_phenotype_residuals:
-            phenotypes = plotting_phenotype
-        else:
-            #if not binary or binary == 'linear':
-            #do da regression
-            untrans_model = OLS(
-                plotting_phenotype,
-                covars[:, 1:],
-                missing='drop',
-            )
-    #        else:
-    #            untrans_model = sm.GLM(
-    #                ori_phenotypes,
-    #                covars[:, 1:],
-    #                missing='drop',
-    #                family=sm.families.Binomial()
-    #            )
-            untrans_reg_result = untrans_model.fit()
-            phenotypes = plotting_phenotype - untrans_reg_result.fittedvalues
-
-        #if not binary:
-        summed_lengths = {}
-        genod_dicts = [summed_lengths]
-        if paired_genotype_plot:
-            paired_gts = {}
-            geno_dicts.append(paired_gts)
-        if not beagle_dosages:
-            for summed_len in np.unique(summed_gts):
-                summed_lengths[summed_len] = summed_gts == summed_len
-            if paired_genotype_plot:
-                sorted_gts = np.sort(gts, axis=1)
-                for pair in np.unique(sorted_gts, axis=0):
-                    paired_gts[tuple(pair)] = \
-                        (sorted_gts[:, 0] == pair[0]) & (sorted_gts[:, 1] == pair[1])
-        else:
-            for len1 in unique_alleles:
-                for len2 in unique_alleles:
-                    if len1 > len2:
-                        continue
-                    if len1 != len2:
-                        dosages = (dosage_gts[len1][:, 0]*dosage_gts[len2][:, 1] +
-                                   dosage_gts[len1][:, 1]*dosage_gts[len2][:, 0])
-                    else:
-                        dosages = dosage_gts[len1][:, 0]*dosage_gts[len1][:, 1]
-                    if np.sum(dosages) <= 0:
-                        continue
-                    summedlen_ = len1 + len2
-                    if summedlen_ not in summed_lengths:
-                        summed_lengths[summedlen_] = dosages
-                    else:
-                        summed_lengths[summedlen_] += dosages
-
-                    minlen = min(len1, len2)
-                    maxlen = max(len1, len2)
-                    dosages_per_length_pair[(minlen, maxlen)] = dosages
-
-        for geno_dict in geno_dicts:
-            outfile.write('\t' + load_and_filter_genotypes.dict_str({key: np.sum(arr) for key, arr in geno_dict.items()}))
-            stats = {}
-            CIs = {alpha: {} for _ in plotting_ci_alphas}
-            for len_, weights in geno_dict.items():
-                if len(np.unique(phenotypes[weights != 0])) <= 1:
-                    stats[len_] = phenotype
-                    for alpha in plotting_ci_alphas:
-                        CIs[alpha][len_] = (np.nan, np.nan)
-                    continue
-                mean_stats = statsmodels.stats.weightstats.DescrStatsW(
-                    phenotypes,
-                    weights = weights
+        if plotting_phenotype_fname:
+            if not plot_phenotype_residuals:
+                phenotypes = plotting_phenotype
+            else:
+                #if not binary or binary == 'linear':
+                #do da regression
+                untrans_model = OLS(
+                    plotting_phenotype,
+                    covars[:, 1:],
+                    missing='drop',
                 )
-                stats[len_] = mean_stats.mean
-                for alpha in plotting_ci_alphas:
-                    CIs[alpha][len_] = mean_stats.tconfint_mean(alpha)
-                # binary
-    #            else:
-    #                for len_, dosages in dosages_per_summed_length.items():
-    #                    if not np.any(dosages != 0):
-    #                        continue
-    #                    p, lower, upper = _weighted_binom_conf.weighted_binom_conf(
-    #                        dosages, phenotypes, 0.05
-    #                    )
-    #                    summed_length_stat[len_] = p
-    #                    summed_length_95_CI[len_] = (lower, upper)
-    #                    _,  lower_gwas, upper_gwas = weighted_binom_conf.weighted_binom_conf(
-    #                        dosages, phenotypes, 5e-8
-    #                    )
-    #                    summed_length_GWAS_CI[len_] = (lower_gwas, upper_gwas)
-            outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_stat))
-            for CI in CIs:
-                outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_GWAS_CI))
+        #        else:
+        #            untrans_model = sm.GLM(
+        #                ori_phenotypes,
+        #                covars[:, 1:],
+        #                missing='drop',
+        #                family=sm.families.Binomial()
+        #            )
+                untrans_reg_result = untrans_model.fit()
+                phenotypes = plotting_phenotype - untrans_reg_result.fittedvalues
+
+            #if not binary:
+            summed_lengths = {}
+            genod_dicts = [summed_lengths]
+            if paired_genotype_plot:
+                paired_gts = {}
+                geno_dicts.append(paired_gts)
+            if not beagle_dosages:
+                for summed_len in np.unique(summed_gts):
+                    summed_lengths[summed_len] = summed_gts == summed_len
+                if paired_genotype_plot:
+                    sorted_gts = np.sort(gts, axis=1)
+                    for pair in np.unique(sorted_gts, axis=0):
+                        paired_gts[tuple(pair)] = \
+                            (sorted_gts[:, 0] == pair[0]) & (sorted_gts[:, 1] == pair[1])
+            else:
+                for len1 in unique_alleles:
+                    for len2 in unique_alleles:
+                        if len1 > len2:
+                            continue
+                        if len1 != len2:
+                            dosages = (dosage_gts[len1][:, 0]*dosage_gts[len2][:, 1] +
+                                       dosage_gts[len1][:, 1]*dosage_gts[len2][:, 0])
+                        else:
+                            dosages = dosage_gts[len1][:, 0]*dosage_gts[len1][:, 1]
+                        if np.sum(dosages) <= 0:
+                            continue
+                        summedlen_ = len1 + len2
+                        if summedlen_ not in summed_lengths:
+                            summed_lengths[summedlen_] = dosages
+                        else:
+                            summed_lengths[summedlen_] += dosages
+
+                        minlen = min(len1, len2)
+                        maxlen = max(len1, len2)
+                        dosages_per_length_pair[(minlen, maxlen)] = dosages
+
+            for geno_dict in geno_dicts:
+                outfile.write('\t' + load_and_filter_genotypes.dict_str({key: np.sum(arr) for key, arr in geno_dict.items()}))
+                stats = {}
+                CIs = {alpha: {} for _ in plotting_ci_alphas}
+                for len_, weights in geno_dict.items():
+                    if len(np.unique(phenotypes[weights != 0])) <= 1:
+                        stats[len_] = phenotype
+                        for alpha in plotting_ci_alphas:
+                            CIs[alpha][len_] = (np.nan, np.nan)
+                        continue
+                    mean_stats = statsmodels.stats.weightstats.DescrStatsW(
+                        phenotypes,
+                        weights = weights
+                    )
+                    stats[len_] = mean_stats.mean
+                    for alpha in plotting_ci_alphas:
+                        CIs[alpha][len_] = mean_stats.tconfint_mean(alpha)
+                    # binary
+        #            else:
+        #                for len_, dosages in dosages_per_summed_length.items():
+        #                    if not np.any(dosages != 0):
+        #                        continue
+        #                    p, lower, upper = _weighted_binom_conf.weighted_binom_conf(
+        #                        dosages, phenotypes, 0.05
+        #                    )
+        #                    summed_length_stat[len_] = p
+        #                    summed_length_95_CI[len_] = (lower, upper)
+        #                    _,  lower_gwas, upper_gwas = weighted_binom_conf.weighted_binom_conf(
+        #                        dosages, phenotypes, 5e-8
+        #                    )
+        #                    summed_length_GWAS_CI[len_] = (lower_gwas, upper_gwas)
+                outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_stat))
+                for CI in CIs:
+                    outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_GWAS_CI))
 
         outfile.write('\n')
         outfile.flush()
@@ -383,28 +405,29 @@ def perform_gwas_helper(
         total_time += duration
         batch_time += duration
         if n_loci % batch_size == 0:
-            print(
-                f"time/locus (last {batch_size}): "
-                f"{batch_time/batch_size}s\n"
-                f"time/locus ({n_loci} total loci): {total_time/n_loci}s\n",
+            print((
+                "time/locus (last {}): {}s\ntime/locus ({} total loci): {}s\n"
+            ).format(batch_size, batch_time/batch_size, n_loci, total_time/n_loci),
                 flush = True
             )
             batch_time = 0
         start_time = time.time()
     if n_loci > 0:
         print(
-            f"Done.\nTotal loci: {n_loci}\nTotal time: {total_time}s\ntime/locus: {total_time/n_loci}s\n",
+            "Done.\nTotal loci: {}\nTotal time: {}s\ntime/locus: {}s\n".format(
+                n_loci, total_time, total_time/n_loci
+            ),
             flush=True
         )
     else:
-        print(f"No variants found in the region being looked at\n", flush=True)
+        print("No variants found in the region being looked at\n", flush=True)
 
-#perform_gwas(outfile, traits_fnames, untransformed_phenotypes_fname, phenotype, binary, region, runtype, str_vcf):
 def perform_gwas(
-        outfile,
+        outfname,
         str_vcf,
         phenotype_name,
         traits_fnames,
+        vcftype,
         same_samples,
         sample_fname,
         region,
@@ -416,36 +439,42 @@ def perform_gwas(
         plotting_ci_alphas,
         imputed_ukb_strs_paper_period_check
 ):
+
+    all_samples = cyvcf2.VCF(str_vcf).samples
     get_genotype_iter = lambda samples: load_and_filter_genotypes.load_strs(
-        str_vcf, samples, region, non_major_cutoff, beagle_dosages
+        str_vcf, samples, region, non_major_cutoff, beagle_dosages, vcftype,
         imputed_ukb_strs_paper_period_check
     )
 
-    print(f"Writing output to {outfile}.temp", flush=True)
-    perform_gwas_helper(
-        f'{outfile}.temp',
-        str_vcf,
-        phenotype_name,
-        traits_fnames,
-        same_samples,
-        sample_fname,
-        beagle_dosages,
-        plotting_phenotype_fname,
-        paired_genotype_plot,
-        plot_phenotype_residuals,
-        plotting_ci_alphas
-        #f'{outfile}.temp', traits_fnames, untransformed_phenotypes_fname, get_genotype_iter, phenotype, samples, binary, region, runtype,
-    )
+    print("Writing output to {}.temp".format(outfname), flush=True)
+    with open(outfname + '.temp', 'w') as outfile:
+        perform_gwas_helper(
+            outfile,
+            all_samples,
+            get_genotype_iter,
+            phenotype_name,
+            traits_fnames,
+            same_samples,
+            sample_fname,
+            beagle_dosages,
+            plotting_phenotype_fname,
+            paired_genotype_plot,
+            plot_phenotype_residuals,
+            plotting_ci_alphas
+        )
 
-    print(f"Copying {outfile}.temp to {outfile}", flush=True)
-    shutil.copy(
-        f'{outfile}.temp',
-        outfile
+    print("Moving {}.temp to {}".format(outfname, outfname), flush=True)
+    shutil.move(
+        outfname + '.temp',
+        outfname
     )
     print("Done.", flush=True)
 
-def main():
-    parser = argparse.ArgumentParser()
+def run():
+    parser = argparse.ArgumentParser(
+        __doc__,
+        formatter_class=utils.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument('outfile')
     parser.add_argument('str_vcf')
     parser.add_argument('phenotype_name', help='name of the phenotype being regressed against')
@@ -456,14 +485,18 @@ def main():
         'from that file are used as covariates. Additional files can be listed to add additional covariates. '
         'If --same-samples is not specified, the first column of each file must be the numeric sample ID. '
         'So the phenotype will correspond to the second column from the first file. If there are multiple '
-        'files, they will be joined on sample ID.'
+        'files, they will be joined on sample ID. '
         'If --same-samples is specified, there must be the same number of rows in each array as the number '
         'of samples in the vcf. In that case, the first column of the first array is the phenotype. If there '
         'are multiple files, then they will be concatenated horizontally. Since IDs do not need to be stored '
         'in the npy arrays, --same-samples allows for non-numeric sample IDs. '
-        'Traits and the phenotype will be standardized to mean 0 and std 1 prior to regression.'
+        'Traits and the phenotype will be standardized to mean 0 and std 1 prior to regression, but '
+        'coefficients/standard errors are transformed back to the original scale before being written out.'
     )
-    parser.add_argument('--same-samples', default=False, type=bool, action='store_true',
+    parser.add_argument('--vcftype', choices=['eh', 'hipstr', 'gangstr', 'popstr', 'advntr'],
+                       help="Specify which caller produced the STR VCF, useful when the VCF is ambiguous "
+                            "and the caller cannot be automatically inferred.")
+    parser.add_argument('--same-samples', default=False, action='store_true',
                         help='see the traits help string')
     #parser.add_argument('--binary', default=None, choices={'linear', 'logistic'}, type=Optional[str])
     parser.add_argument(
@@ -476,10 +509,12 @@ def main():
     parser.add_argument(
         '--non-major-cutoff', type=float, default=20,
         help='If not --beagle-dosages, then this is just the non-major-allele-count cutoff. '
+             'I.e. filter all loci with non-major-allele-count < cutoff.'
              'If working with dosages, this cutoff is applied to the dosage sums. '
-             'As with the regression itself, for this purpose alleles are coallesced by length.'
+             'As with the regression itself, for this purpose alleles are coallesced by length. '
              'Default of 20 per plink\'s best practices: '
-             'https://www.cog-genomics.org/plink/2.0/assoc#glm'
+             'https://www.cog-genomics.org/plink/2.0/assoc#glm '
+             'Set to 0 to disable this filter. '
     )
     parser.add_argument(
         '--beagle-dosages', action='store_true', default=False,
@@ -527,6 +562,7 @@ def main():
         '--plotting-ci-alphas',
         type=float,
         nargs='*',
+        default=[],
         help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
              'of size 1-alpha for each alpha in this list for each of the statistics generated for '
              'plotting.'
@@ -541,10 +577,12 @@ def main():
 
 
     args = parser.parse_args()
+    main(args)
 
+def main(args):
     today = datetime.datetime.now().strftime("%Y_%m_%d")
-    print(f'-------Running AssociaTR (trtools v{trtools.__version__} ----------')
-    print(f"Run date: {today}")
+    print('-------Running AssociaTR (trtools v{}) ----------'.format(trtools.__version__))
+    print("Run date: {}".format(today))
     print(args, flush=True)
 
     """
@@ -561,6 +599,7 @@ def main():
         args.str_vcf,
         args.phenotype_name,
         args.traits,
+        args.vcftype,
         args.same_samples,
         args.sample_list,
         args.region,
@@ -575,5 +614,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    run()
 
