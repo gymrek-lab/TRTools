@@ -189,7 +189,6 @@ def perform_gwas_helper(
     covars = covars[sample_filter, :]
     pheno_std = np.std(covars[:, 1])
     covars = (covars - np.mean(covars, axis=0))/np.std(covars, axis=0)
-    #covars[:, 1] = (covars[:, 1] - np.mean(covars[:, 1]))/np.std(covars[:, 1])
     outcome = covars[:, 1].copy()
     covars[:, 1] = 1 # reuse the column that was the outcome as the intercept
    
@@ -288,8 +287,6 @@ def perform_gwas_helper(
         coef = reg_result.params[0]
         se = reg_result.bse[0]
         rsquared = reg_result.rsquared
-        #outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef, se, rsquared))
-        #outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef/std, se/std, rsquared))
         outfile.write(("{:." + str(pval_precision) + "e}\t{}\t{}\t{}\t").format(pval, coef/std*pheno_std, se/std*pheno_std, rsquared))
 #        else:
 #            model = sm.GLM(
@@ -520,7 +517,7 @@ def run():
     parser.add_argument(
         '--beagle-dosages', action='store_true', default=False,
         help="regress against Beagle dosages from the AP{1,2} fields instead of from the GT field. "
-             "(The GP field can easily be supported, but this has yet to be implemented.) "
+             "(The GP field is not supported)"
     )
     parser.add_argument(
         '--plotting-phenotype',

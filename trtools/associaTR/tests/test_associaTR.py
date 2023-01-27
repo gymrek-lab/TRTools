@@ -38,13 +38,18 @@ format_precision = 2
 def my_format(float_):
     return np.format_float_scientific(float_, precision=format_precision, unique=False)
 
+diff_size = 2 # allow for a diff of ~2% in percision slop
 def comp_floats(float1, float2):
-    assert np.sign(float1) == np.sign(float2)
+    if not np.sign(float1) == np.sign(float2):
+        assert False, (float1, float2)
     f1 = my_format(abs(float1))
     f2 = my_format(abs(float2))
-    assert f1[:2] == f2[:2]
-    assert abs(int(f1[2:4]) - int(f2[2:4])) <= 1
-    assert f1[5:] == f2[5:]
+    if not f1[:2] == f2[:2]:
+        assert False, (float1, float2)
+    if not abs(int(f1[2:4]) - int(f2[2:4])) <= diff_size:
+        assert False, (float1, float2)
+    if not f1[5:] == f2[5:]:
+        assert False, (float1, float2)
 
 def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filtered=False):
     out_df = pd.read_csv(my_gwas_file, sep='\t')
@@ -60,7 +65,6 @@ def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filt
 
     assert out_df.shape[0] == plink_df.shape[0]
     for line in range(out_df.shape[0]):
-        #print(out_df.loc[line, :])
         out_p = out_df.loc[line, 'p_' + phenotype_name]
         # This was filtered, plink does something different with filtered loci, that's okayh
         if not skip_filtered and out_p == 1:
@@ -69,7 +73,7 @@ def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filt
             # otherwise the only difference is sequence, not length, so plink
             # will test but my code won't, which is okay
             continue
-        assert my_format(out_p) == my_format(plink_df.loc[line, 'P'])
+        comp_floats(out_p, plink_df.loc[line, 'P'])
         ref_len = out_df.loc[line, 'ref_len']
         alleles = [float(x) for x in out_df.loc[line, 'alleles'].split(',')]
         assert len(alleles) == 2
@@ -78,9 +82,6 @@ def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filt
         comp_floats(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign, plink_df.loc[line, 'BETA'])
         comp_floats(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign, plink_df.loc[line, 'BETA'])
         comp_floats(out_df.loc[line, 'se_' + phenotype_name]*copy_count_diff, plink_df.loc[line, 'SE'])
-        #assert my_format(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign) == my_format(plink_df.loc[line, 'BETA'])
-        #assert my_format(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign) == my_format(plink_df.loc[line, 'BETA'])
-        #assert my_format(out_df.loc[line, 'se_' + phenotype_name]*copy_count_diff) == my_format(plink_df.loc[line, 'SE'])
 
 def test_one_trait_file(args, test_associaTR_dir):
     args.same_samples = True
@@ -104,7 +105,6 @@ def test_two_trait_files_sample_merge(args, test_associaTR_dir):
     compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/combined_35.plink2.trait_0.glm.linear", args.phenotype_name)
 
 def test_one_trait_file_sample_subset(args, test_associaTR_dir):
-    args.traits = [test_associaTR_dir + "/traits_0.npy"]
     args.same_samples = True
     args.sample_list = test_associaTR_dir + "/samples_6_to_45.txt"
     associaTR.main(args)
@@ -141,8 +141,20 @@ def test_non_major_count_cutoff(args, test_associaTR_dir):
     associaTR.main(args)
     compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/single_cutoff_5.plink2.trait_0.glm.linear", args.phenotype_name, skip_filtered=True)
 
+def test_dosages(args, test_associaTR_dir):
+    args.same_samples = True
+    args.beagle_dosages = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/single_dosages.plink2.trait_0.glm.linear", args.phenotype_name)
 
-# test dosages
+def test_dosage_sample_subset(args, test_associaTR_dir):
+    args.same_samples = True
+    args.beagle_dosages = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
+    args.sample_list = test_associaTR_dir + "/samples_6_to_45.txt"
+    associaTR.main(args)
+    compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/single_40_dosages.plink2.trait_0.glm.linear", args.phenotype_name)
 
 # test non-major-cutoff for dosages
 

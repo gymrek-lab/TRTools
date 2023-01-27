@@ -1,0 +1,2 @@
+To generate the test data in this folder, run 
+./generate_traits.py  && ./make_dosages.py && ./generate_plink_output.sh

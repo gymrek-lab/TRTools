@@ -206,9 +206,9 @@ def load_strs(vcf_fname: str,
                     calls.reshape(-1), gts[length].reshape(-1)
                 )[0,1]**2
 
-            length_r2  = np.corrcoef(
+            length_r2 = np.corrcoef(
                 best_guesses.flatten(),
-                summed_gts = np.add.reduce([
+                np.add.reduce([
                     len_*dosages for len_, dosages in gts.items()
                 ]).flatten()
             )[0,1]**2
@@ -222,7 +222,7 @@ def load_strs(vcf_fname: str,
         if beagle_dosages:
             locus_details.extend([
                 dict_str(round_vals(allele_dosage_r2, r2_precision)),
-                round(length_r2, r2_precision)
+                str(round(length_r2, r2_precision))
             ])
 
         if len(allele_frequency) == 0:
