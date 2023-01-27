@@ -1,16 +1,6 @@
-"""
-Tool for performing LD-clumping on SNPs, STRs, or both
-"""
-
-import argparse
+import click
 import sys
-
-import trtools.utils.tr_harmonizer as trh
-import trtools.utils.utils as utils
-
-from haptools import data
-
-from trtools import __version__
+import pandas as pd
 
 class SummaryStats:
     """
@@ -20,7 +10,8 @@ class SummaryStats:
     """
 
     def __init__(self):
-        pass # TODO
+        self.snp_summstats = None
+        self.str_summstats = None
 
     def Load(self, statsfile, vartype="SNP", pthresh=1.0):
         """
@@ -28,7 +19,16 @@ class SummaryStats:
         Ignore variants with pval < pthresh
         Not yet implemented
         """
-        pass # TODO
+        df = pd.read_csv(statsfile, delimiter='\t') ##optimize this function to work better
+        df = df[df['p-value'] < pthresh]
+        if vartype =="SNP":
+            self.snp_summstats = df
+        elif vartype == "STR":
+            self.str_summstats = df
+        else:
+            print("Invalid vartype")
+            sys.exit(1) ##Cleaning exit the program function
+        click.echo(df)
 
     def GetNextIndexVariant(self, index_pval_thresh):
         """
@@ -71,66 +71,13 @@ def WriteClump(indexvar, clumped_vars):
     """
     pass # TODO
 
-def getargs():  # pragma: no cover
-    parser = argparse.ArgumentParser(
-        __doc__,
-        formatter_class=utils.ArgumentDefaultsHelpFormatter
-    )
-    ### Input genotypes and summ stats ###
-    input_group = parser.add_argument_group("Inputs")
-    input_group.add_argument("--summstats-snps", help="SNP summary statistics", type=str)
-    input_group.add_argument("--summstats-strs", help="STR summary statistics", type=str)
-    input_group.add_argument("--gts-snps", help="SNP genotypes", type=str)
-    input_group.add_argument("--gts-strs", help="STR genotypes (VCF format)", type=str)
-    ### Output arguments ###
-    # TODO: add --out for output prefix
-    ### Summary statistics parsing arguments ###
-    # TODO: add --clump-snp-field, --clump-field (see plink)
-    # TODO: probably also want to add --clump-chr-field --clump-pos-field
-    ### Clumping arguments ###
-    clump_group = parser.add_argument_group("Clumping Parameters")
-    clump_group.add_argument("--clump-p1", help="index variant p-value threshold", type=float, default=0.0001)
-    clump_group.add_argument("--clump-p2", help="SP2 column p-value threshold", type=float, default=0.01)
-    clump_group.add_argument("--clump-r2", help="r2 threshold", type=float, default=0.5)
-    clump_group.add_argument("--clump-kb", help="clump kb radius", type=float, default=250)
-    ### Optional args ###
-    ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version='{version}'.format(version=__version__))
-    args = parser.parse_args()
-    return args
-
-def main(args):
-    #### Check all input arguments ####
-    # TODO make sure sum stats and genotype files exist if specified
-    # TODO need one of summstats-snps, summstats-strs
-    # TODO if summstats-snps, need gts-snps
-    # TODO if summstats-strs, need gts-strs
-
-    #### Set up summary statistics object ####
+@click.command()
+#@click.option('--summstats_snps', type=click.File('r'), help='File to load snps summary statistics')
+#@click.option('--summstats_strs', type=click.File('r'), help='File to load strs summary statistics')
+#@click.option('--clump_p2', type=float, default=0.01, help='Filter for pvalue less than')
+if __name__ == '__main__':
     summstats = SummaryStats()
-    if args.summstats_snps is not None:
-        summstats.Load(args.summstats_snps, vartype="SNP", pthresh=args.clump_p2)
-    if args.summstats_strs is not None:
-        summstats.Load(args.summstats_strs, vartype="STR", pthresh=args.clump_p2)
-
-    #### Perform clumping ####
-    indexvar = summstats.GetNextIndexVariant(args.clump_p1)
-    while indexvar is not None:
-        candidates = summstats.QueryWindow(indexvar, args.clump_kb)
-        clumpvars = []
-        for c in candidates:
-            r2 = ComputeLD(c, indexvar)
-            if r2 > args.clump_r2:
-                clumpvars.append(c)
-        WriteClump(indexvar, clumpvars)
-        summstats.RemoveClump(indexvar, clumpvars)
-        indexvar = summstats.GetNextIndexVariant(args.clump_p1)
-
-def run():  # pragma: no cover
-    args = getargs()
-    retcode = main(args)
-    sys.exit(retcode)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    run()
+    if summstats_snps is not None:
+    	summstats.Load(summstats_snps, vartype="SNP", pthresh=clump_p2)
+    if summstats_strs is not None:
+    	summstats.Load(summstats_strs, vartype="STR", pthresh=clump_p2)
