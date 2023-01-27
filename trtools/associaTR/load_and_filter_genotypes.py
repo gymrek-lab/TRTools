@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 """
-Read VCFs of STRs or SNPs,
+Read VCFs of TRs
 apply filters to them for quality control
 and then return yield them
 """
@@ -57,7 +57,7 @@ def clean_len_allele_pairs(d):
 def round_vals(d, precision):
     return {key: round(val, precision) for key, val in d.items()}
 
-def load_strs(vcf_fname: str,
+def load_trs(vcf_fname: str,
               samples: Union[np.ndarray, slice],
               region: Optional[str] = None,
               non_major_cutoff: float = 20,
@@ -66,7 +66,7 @@ def load_strs(vcf_fname: str,
               _imputed_ukb_strs_paper_period_check: bool = False
              ):
     """
-    Iterate over a region returning genotypes at STR loci.
+    Iterate over a region returning genotypes at TR loci.
 
     First yield is a tuple of names of the fields in details.
 
@@ -136,7 +136,7 @@ def load_strs(vcf_fname: str,
     first = True
     for record in vcf:
         if first and beagle_dosages and "AP1" not in record.FORMAT:
-            print("--beagle-dosages specified, missing required field AP1 for the STR")
+            print("--beagle-dosages specified, missing required field AP1 for the TR")
             if "GP" in record.FORMAT:
                 print("We could support the GP field, but currently only support the AP fields")
             print("Erroring out")

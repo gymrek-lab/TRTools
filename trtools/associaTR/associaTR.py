@@ -128,7 +128,7 @@ def perform_gwas_helper(
     plotting_ci_alphas
 ):
     outfile.write(
-        "chrom\tpos\talleles\tn_samples_samples_tested\tlocus_filtered\tp_{}\tcoeff_{}\t".format(phenotype_name, phenotype_name)
+        "chrom\tpos\talleles\tn_samples_tested\tlocus_filtered\tp_{}\tcoeff_{}\t".format(phenotype_name, phenotype_name)
     )
     #if binary != 'logistic':
     outfile.write('se_{}\tregression_R^2\t'.format(phenotype_name))
@@ -256,7 +256,7 @@ def perform_gwas_helper(
         if not locus_filtered and covars.shape[1] >= np.sum(called_samples_filter):
             locus_filtered = 'n covars >= n samples'
         if locus_filtered:
-            outfile.write('{}\t1\tnan\tnan\tnan\t'.format(locus_filtered))
+            outfile.write('{}\tnan\tnan\tnan\tnan\t'.format(locus_filtered))
             outfile.write('\t'.join(locus_details))
             n_nans = (2 + len(plotting_ci_alphas)) * (int(bool(plotting_phenotype_fname)) + int(bool(paired_genotype_plot)))
             outfile.write('\tnan'*n_nans + '\n')
@@ -422,7 +422,7 @@ def perform_gwas_helper(
 
 def perform_gwas(
         outfname,
-        str_vcf,
+        tr_vcf,
         phenotype_name,
         traits_fnames,
         vcftype,
@@ -438,9 +438,9 @@ def perform_gwas(
         imputed_ukb_strs_paper_period_check
 ):
 
-    all_samples = cyvcf2.VCF(str_vcf).samples
-    get_genotype_iter = lambda samples: load_and_filter_genotypes.load_strs(
-        str_vcf, samples, region, non_major_cutoff, beagle_dosages, vcftype,
+    all_samples = cyvcf2.VCF(tr_vcf).samples
+    get_genotype_iter = lambda samples: load_and_filter_genotypes.load_trs(
+        tr_vcf, samples, region, non_major_cutoff, beagle_dosages, vcftype,
         imputed_ukb_strs_paper_period_check
     )
 
@@ -474,7 +474,7 @@ def run():
         formatter_class=utils.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('outfile')
-    parser.add_argument('str_vcf')
+    parser.add_argument('tr_vcf')
     parser.add_argument('phenotype_name', help='name of the phenotype being regressed against')
     parser.add_argument(
         'traits', nargs='+',
@@ -492,7 +492,7 @@ def run():
         'coefficients/standard errors are transformed back to the original scale before being written out.'
     )
     parser.add_argument('--vcftype', choices=['eh', 'hipstr', 'gangstr', 'popstr', 'advntr'],
-                       help="Specify which caller produced the STR VCF, useful when the VCF is ambiguous "
+                       help="Specify which caller produced the TR VCF, useful when the VCF is ambiguous "
                             "and the caller cannot be automatically inferred.")
     parser.add_argument('--same-samples', default=False, action='store_true',
                         help='see the traits help string')
@@ -500,7 +500,7 @@ def run():
     parser.add_argument(
         '--sample-list',
         help="File containing list of samples to use, one sample ID per line. "
-             "If not, all samples are used."
+             "If not specified, all samples are used."
     )
     # TODO add variants list
     parser.add_argument('--region', help="Restrict to \"chr:start-end\"")
@@ -519,52 +519,56 @@ def run():
         help="regress against Beagle dosages from the AP{1,2} fields instead of from the GT field. "
              "(The GP field is not supported)"
     )
-#    parser.add_argument(
-#        '--plotting-phenotype',
-#        help="An npy array with the same format as traits. If specified, statistics "
-#             "will be output to allow for plotting STR loci against the first trait in this file "
-#             "(the plotting phenotype). All other triats in the file will be ignored. "
-#             "This is useful because often you will wish to regress against rank-inverse-normalized "
-#             "phenotypes, but the axis when plotting those is mostly meaningless, so this allows "
-#             "for plotting against the untransformed phenotypes. If unspecified then "
-#             "plotting phenotype statistics will not be computed or written out. "
-#             "If not using dosages, then samples are binned according to the summed value of their "
-#             "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
-#             'proportionally to the estimated probability of their having that summed allele length.'
-#    )
-#    parser.add_argument(
-#        '--paired-genotype-plot',
-#        action='store_true',
-#        default=False,
-#        help='Only used for the --plotting-phenotype option. If True, then in addition to '
-#             'generating statistics for summed genotype values, also generate statistics for '
-#             'paired genotype values. This could be important if you wish to look for examples of '
-#             'nonadditive/nonlinear effects. '
-#             "If not using dosages, then samples are binned according to the unordered pair of their "
-#             "two alleles' lengths. If using dosages, then each sample contributes to each unordered-pair-bin "
-#             'proportionally to the estimated probability of their having that unoredered-pair genotype.'
-#    )
-#    parser.add_argument(
-#        '--plot-phenotype-residuals',
-#        action='store_true',
-#        default=False,
-#        help='Only used for the --plotting-phenotype option. If True, then linearlly regress out '
-#             'all covariates from the plotting phenotype before calculating the statistics. '
-#             'I would recommend against using this feature, as (a) in my small experience it has not '
-#             'affected the end results and (b) it is confusing, as this linear regression is '
-#             'performed on the plotting phenotype (not the phenotype used for regression) '
-#             'and if the plotting phenotype is untransformed (as is the intent) then an linear '
-#             'regression may not be appropriate, thus rendering this moot anyway. '
-#    )
-#    parser.add_argument(
-#        '--plotting-ci-alphas',
-#        type=float,
-#        nargs='*',
-#        default=[],
-#        help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
-#             'of size 1-alpha for each alpha in this list for each of the statistics generated for '
-#             'plotting.'
-#    )
+    parser.add_argument(
+        '--plotting-phenotype',
+        help=argparse.SUPPRESS
+        #help="An npy array with the same format as traits. If specified, statistics "
+        #     "will be output to allow for plotting TR loci against the first trait in this file "
+        #     "(the plotting phenotype). All other triats in the file will be ignored. "
+        #     "This is useful because often you will wish to regress against rank-inverse-normalized "
+        #     "phenotypes, but the axis when plotting those is mostly meaningless, so this allows "
+        #     "for plotting against the untransformed phenotypes. If unspecified then "
+        #     "plotting phenotype statistics will not be computed or written out. "
+        #     "If not using dosages, then samples are binned according to the summed value of their "
+        #     "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
+        #     'proportionally to the estimated probability of their having that summed allele length.'
+    )
+    parser.add_argument(
+        '--paired-genotype-plot',
+        action='store_true',
+        default=False,
+        help=argparse.SUPPRESS
+        #help='Only used for the --plotting-phenotype option. If True, then in addition to '
+        #     'generating statistics for summed genotype values, also generate statistics for '
+        #     'paired genotype values. This could be important if you wish to look for examples of '
+        #     'nonadditive/nonlinear effects. '
+        #     "If not using dosages, then samples are binned according to the unordered pair of their "
+        #     "two alleles' lengths. If using dosages, then each sample contributes to each unordered-pair-bin "
+        #     'proportionally to the estimated probability of their having that unoredered-pair genotype.'
+    )
+    parser.add_argument(
+        '--plot-phenotype-residuals',
+        action='store_true',
+        default=False,
+        help=argparse.SUPPRESS
+        #help='Only used for the --plotting-phenotype option. If True, then linearlly regress out '
+        #     'all covariates from the plotting phenotype before calculating the statistics. '
+        #     'I would recommend against using this feature, as (a) in my small experience it has not '
+        #     'affected the end results and (b) it is confusing, as this linear regression is '
+        #     'performed on the plotting phenotype (not the phenotype used for regression) '
+        #     'and if the plotting phenotype is untransformed (as is the intent) then an linear '
+        #     'regression may not be appropriate, thus rendering this moot anyway. '
+    )
+    parser.add_argument(
+        '--plotting-ci-alphas',
+        type=float,
+        nargs='*',
+        default=[],
+        help=argparse.SUPPRESS
+        #help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
+        #     'of size 1-alpha for each alpha in this list for each of the statistics generated for '
+        #     'plotting.'
+    )
     parser.add_argument(
         #This is only for one specific use case, don't use this
         '--imputed-ukb-strs-paper-period-check',
@@ -588,13 +592,13 @@ def main(args):
     else:
         readme.write('Doing logistic regressions against the binary phenotype. No longer '
                      'using firth penalized logistic regression when MAC <= 400, should but '
-                     "this doesn't apply to any strs in this dataset. Instead, always using "
+                     "this doesn't apply to any trs in this dataset. Instead, always using "
                      'standard logistic regression.\n')
     """
 
     perform_gwas(
         args.outfile,
-        args.str_vcf,
+        args.tr_vcf,
         args.phenotype_name,
         args.traits,
         args.vcftype,

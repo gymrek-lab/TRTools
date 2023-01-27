@@ -13,6 +13,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    source/qcSTR.rst
    source/compareSTR.rst
    source/mergeSTR.rst
+   source/associaTR.rst
 
 .. Include directives from tool READMEs
 
@@ -36,6 +37,10 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    :start-after: overview_directive
    :end-before: overview_directive_done   
 
+.. include:: ../trtools/associaTR/README.rst
+   :start-after: overview_directive
+   :end-before: overview_directive_done   
+
 :doc:`source/dumpSTR`
 
 * |dumpSTR overview|
@@ -56,4 +61,6 @@ TRTools offers a variety of command-line tools for performing manipulations to T
 
 * |mergeSTR overview|
 
+:doc:`source/associaTR`
 
+* |associaTR overview|

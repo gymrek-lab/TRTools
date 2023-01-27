@@ -21,7 +21,7 @@ def args(test_associaTR_dir):
     args = argparse.Namespace()
     args.outfile = 'test_association_results.tsv'
     # this has dosages in it, but will be ignored unless dosages are specified
-    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
+    args.tr_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
     args.phenotype_name = 'test_pheno'
     args.traits = [test_associaTR_dir + "/traits_0.npy"]
     args.vcftype = 'auto'
@@ -70,7 +70,7 @@ def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filt
     for line in range(out_df.shape[0]):
         out_p = out_df.loc[line, 'p_' + phenotype_name]
         # This was filtered, plink does something different with filtered loci, that's okayh
-        if not skip_filtered and out_p == 1:
+        if not skip_filtered and np.isnan(out_p):
             if ',' in out_df.loc[line, 'alleles']:
                 assert plink_df.loc[line, 'ERRCODE'] != '.'
             # otherwise the only difference is sequence, not length, so plink
@@ -171,13 +171,13 @@ def test_dosage_sample_subset(args, test_associaTR_dir):
 # specifically tests if recoding and coalescing alleles is working properly
 def test_multiallelic(args, test_associaTR_dir):
     args.same_samples = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
     associaTR.main(args)
     out_df = pd.read_csv(args.outfile, sep='\t')
     covars = np.load(args.traits[0])
     covars = np.hstack((covars, np.ones((covars.shape[0], 1))))
     outcome = covars[:, 0].copy()
-    vcf = cyvcf2.VCF(args.str_vcf)
+    vcf = cyvcf2.VCF(args.tr_vcf)
 
     # test var 1
     var = next(vcf)
@@ -216,13 +216,13 @@ def test_multiallelic(args, test_associaTR_dir):
 def test_multiallelic_dosages(args, test_associaTR_dir):
     args.same_samples = True
     args.beagle_dosages = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
     associaTR.main(args)
     out_df = pd.read_csv(args.outfile, sep='\t')
     covars = np.load(args.traits[0])
     covars = np.hstack((covars, np.ones((covars.shape[0], 1))))
     outcome = covars[:, 0].copy()
-    vcf = cyvcf2.VCF(args.str_vcf)
+    vcf = cyvcf2.VCF(args.tr_vcf)
 
     # test var 1
     var = next(vcf)
@@ -251,7 +251,7 @@ def test_multiallelic_dosages(args, test_associaTR_dir):
 
 def test_multiallelic_cutoff(args, test_associaTR_dir):
     args.same_samples = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
     args.non_major_cutoff = 3
     associaTR.main(args)
     out_df = pd.read_csv(args.outfile, sep='\t')
@@ -269,7 +269,7 @@ def test_multiallelic_cutoff(args, test_associaTR_dir):
 def test_dosage_multiallelic_cutoff(args, test_associaTR_dir):
     args.same_samples = True
     args.beagle_dosages = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
     args.non_major_cutoff = 10
     associaTR.main(args)
     out_df = pd.read_csv(args.outfile, sep='\t')
