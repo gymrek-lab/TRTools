@@ -1,8 +1,10 @@
 import argparse
 
+import cyvcf2
 import numpy as np
 import pandas as pd
 import pytest
+import statsmodels.api as sm
 
 from .. import associaTR
 
@@ -18,7 +20,8 @@ def test_associaTR_dir(vcfdir):
 def args(test_associaTR_dir):
     args = argparse.Namespace()
     args.outfile = 'test_association_results.tsv'
-    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic.vcf.gz"
+    # this has dosages in it, but will be ignored unless dosages are specified
+    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
     args.phenotype_name = 'test_pheno'
     args.traits = [test_associaTR_dir + "/traits_0.npy"]
     args.vcftype = 'auto'
@@ -79,7 +82,6 @@ def compare_my_gwas_to_plink(my_gwas_file, plink_file, phenotype_name, skip_filt
         assert len(alleles) == 2
         copy_count_diff = abs(alleles[0] - alleles[1])
         sign = 1 if ref_len == min(alleles) else -1
-        comp_floats(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign, plink_df.loc[line, 'BETA'])
         comp_floats(out_df.loc[line, 'coeff_' + phenotype_name]*copy_count_diff * sign, plink_df.loc[line, 'BETA'])
         comp_floats(out_df.loc[line, 'se_' + phenotype_name]*copy_count_diff, plink_df.loc[line, 'SE'])
 
@@ -144,18 +146,146 @@ def test_non_major_count_cutoff(args, test_associaTR_dir):
 def test_dosages(args, test_associaTR_dir):
     args.same_samples = True
     args.beagle_dosages = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
     associaTR.main(args)
     compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/single_dosages.plink2.trait_0.glm.linear", args.phenotype_name)
 
 def test_dosage_sample_subset(args, test_associaTR_dir):
     args.same_samples = True
     args.beagle_dosages = True
-    args.str_vcf = test_associaTR_dir + "/many_samples_biallelic_dosages.vcf.gz"
     args.sample_list = test_associaTR_dir + "/samples_6_to_45.txt"
     associaTR.main(args)
     compare_my_gwas_to_plink(args.outfile, test_associaTR_dir + "/single_40_dosages.plink2.trait_0.glm.linear", args.phenotype_name)
 
-# test non-major-cutoff for dosages
+# test multiallelic
+# first multiallelic allele has 3 separate alleles
+# second has 3 alleles, but lens of 0 and 2 are the same
+# first multiallelic allele has allelec counts
+#  95, 3, 2
+# and dosage allele totals
+# [62.58339285850525, 19.654988, 17.76162], non major = 37.416608
+# second has allele counts (only 49 called samples)
+#  89, 9
+# and dosage allele totals
+# [80.34407, 17.65593]
 
-# test plotting phenotype, in addition to paired genotype plot and residuals and cis
+# specifically tests if recoding and coalescing alleles is working properly
+def test_multiallelic(args, test_associaTR_dir):
+    args.same_samples = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    covars = np.load(args.traits[0])
+    covars = np.hstack((covars, np.ones((covars.shape[0], 1))))
+    outcome = covars[:, 0].copy()
+    vcf = cyvcf2.VCF(args.str_vcf)
+
+    # test var 1
+    var = next(vcf)
+    gts = var.genotype.array()[:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -1
+    new_gts[gts == 2] = 1
+    summed_gts = np.sum(new_gts, axis=1)
+    covars[:, 0] = summed_gts
+    result = sm.OLS(outcome, covars).fit()
+    comp_floats(out_df.loc[0, 'p_' + args.phenotype_name], result.pvalues[0])
+    comp_floats(out_df.loc[0, 'coeff_' + args.phenotype_name], result.params[0])
+    comp_floats(out_df.loc[0, 'se_' + args.phenotype_name], result.bse[0])
+   
+    # test var 2
+    # remove the missing sample
+    covars = covars[1:, :]
+    outcome = outcome[1:]
+    var = next(vcf)
+    gts = var.genotype.array()[1:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -2
+    new_gts[gts == 2] = 0
+    summed_gts = np.sum(new_gts, axis=1)
+    covars[:, 0] = summed_gts
+    result = sm.OLS(outcome, covars).fit()
+    comp_floats(out_df.loc[1, 'p_' + args.phenotype_name], result.pvalues[0])
+    comp_floats(out_df.loc[1, 'coeff_' + args.phenotype_name], result.params[0])
+    comp_floats(out_df.loc[1, 'se_' + args.phenotype_name], result.bse[0])
+
+# specifically tests if recoding and coalescing alleles is working properly
+def test_multiallelic_dosages(args, test_associaTR_dir):
+    args.same_samples = True
+    args.beagle_dosages = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    covars = np.load(args.traits[0])
+    covars = np.hstack((covars, np.ones((covars.shape[0], 1))))
+    outcome = covars[:, 0].copy()
+    vcf = cyvcf2.VCF(args.str_vcf)
+
+    # test var 1
+    var = next(vcf)
+    summed_dosages = np.zeros(len(vcf.samples))
+    # recode based on lengths compared to ref
+    summed_dosages -= (var.format('AP1') + var.format('AP2'))[:, 0]
+    summed_dosages += (var.format('AP1') + var.format('AP2'))[:, 1]
+    covars[:, 0] = summed_dosages
+    result = sm.OLS(outcome, covars).fit()
+    comp_floats(out_df.loc[0, 'p_' + args.phenotype_name], result.pvalues[0])
+    comp_floats(out_df.loc[0, 'coeff_' + args.phenotype_name], result.params[0])
+    comp_floats(out_df.loc[0, 'se_' + args.phenotype_name], result.bse[0])
+   
+    # test var 2
+    # remove the missing sample
+    covars = covars[1:, :]
+    outcome = outcome[1:]
+    var = next(vcf)
+    # both other alleles are length zero relative to ref
+    summed_dosages = -2*(var.format('AP1') + var.format('AP2'))[1:, 0]
+    covars[:, 0] = summed_dosages
+    result = sm.OLS(outcome, covars).fit()
+    comp_floats(out_df.loc[1, 'p_' + args.phenotype_name], result.pvalues[0])
+    comp_floats(out_df.loc[1, 'coeff_' + args.phenotype_name], result.params[0])
+    comp_floats(out_df.loc[1, 'se_' + args.phenotype_name], result.bse[0])
+
+def test_multiallelic_cutoff(args, test_associaTR_dir):
+    args.same_samples = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.non_major_cutoff = 3
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert np.all(~out_df.loc[:, 'coeff_' + args.phenotype_name].isna())
+    args.non_major_cutoff = 8
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert np.isnan(out_df.loc[0, 'coeff_' + args.phenotype_name])
+    assert ~np.isnan(out_df.loc[1, 'coeff_' + args.phenotype_name])
+    args.non_major_cutoff = 10
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert np.all(out_df.loc[:, 'coeff_' + args.phenotype_name].isna())
+
+def test_dosage_multiallelic_cutoff(args, test_associaTR_dir):
+    args.same_samples = True
+    args.beagle_dosages = True
+    args.str_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.non_major_cutoff = 10
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert np.all(~out_df.loc[:, 'coeff_' + args.phenotype_name].isna())
+    args.non_major_cutoff = 20
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert ~np.isnan(out_df.loc[0, 'coeff_' + args.phenotype_name])
+    assert np.isnan(out_df.loc[1, 'coeff_' + args.phenotype_name])
+    args.non_major_cutoff = 38
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    assert np.all(out_df.loc[:, 'coeff_' + args.phenotype_name].isna())
+
+# TODO test fields other than p coeff and se
+
+# TODO test binary
+
+# TODO test plotting phenotype, in addition to paired genotype plot and residuals and cis

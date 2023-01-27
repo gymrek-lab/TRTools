@@ -519,52 +519,52 @@ def run():
         help="regress against Beagle dosages from the AP{1,2} fields instead of from the GT field. "
              "(The GP field is not supported)"
     )
-    parser.add_argument(
-        '--plotting-phenotype',
-        help="An npy array with the same format as traits. If specified, statistics "
-             "will be output to allow for plotting STR loci against the first trait in this file "
-             "(the plotting phenotype). All other triats in the file will be ignored. "
-             "This is useful because often you will wish to regress against rank-inverse-normalized "
-             "phenotypes, but the axis when plotting those is mostly meaningless, so this allows "
-             "for plotting against the untransformed phenotypes. If unspecified then "
-             "plotting phenotype statistics will not be computed or written out. "
-             "If not using dosages, then samples are binned according to the summed value of their "
-             "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
-             'proportionally to the estimated probability of their having that summed allele length.'
-    )
-    parser.add_argument(
-        '--paired-genotype-plot',
-        action='store_true',
-        default=False,
-        help='Only used for the --plotting-phenotype option. If True, then in addition to '
-             'generating statistics for summed genotype values, also generate statistics for '
-             'paired genotype values. This could be important if you wish to look for examples of '
-             'nonadditive/nonlinear effects. '
-             "If not using dosages, then samples are binned according to the unordered pair of their "
-             "two alleles' lengths. If using dosages, then each sample contributes to each unordered-pair-bin "
-             'proportionally to the estimated probability of their having that unoredered-pair genotype.'
-    )
-    parser.add_argument(
-        '--plot-phenotype-residuals',
-        action='store_true',
-        default=False,
-        help='Only used for the --plotting-phenotype option. If True, then linearlly regress out '
-             'all covariates from the plotting phenotype before calculating the statistics. '
-             'I would recommend against using this feature, as (a) in my small experience it has not '
-             'affected the end results and (b) it is confusing, as this linear regression is '
-             'performed on the plotting phenotype (not the phenotype used for regression) '
-             'and if the plotting phenotype is untransformed (as is the intent) then an linear '
-             'regression may not be appropriate, thus rendering this moot anyway. '
-    )
-    parser.add_argument(
-        '--plotting-ci-alphas',
-        type=float,
-        nargs='*',
-        default=[],
-        help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
-             'of size 1-alpha for each alpha in this list for each of the statistics generated for '
-             'plotting.'
-    )
+#    parser.add_argument(
+#        '--plotting-phenotype',
+#        help="An npy array with the same format as traits. If specified, statistics "
+#             "will be output to allow for plotting STR loci against the first trait in this file "
+#             "(the plotting phenotype). All other triats in the file will be ignored. "
+#             "This is useful because often you will wish to regress against rank-inverse-normalized "
+#             "phenotypes, but the axis when plotting those is mostly meaningless, so this allows "
+#             "for plotting against the untransformed phenotypes. If unspecified then "
+#             "plotting phenotype statistics will not be computed or written out. "
+#             "If not using dosages, then samples are binned according to the summed value of their "
+#             "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
+#             'proportionally to the estimated probability of their having that summed allele length.'
+#    )
+#    parser.add_argument(
+#        '--paired-genotype-plot',
+#        action='store_true',
+#        default=False,
+#        help='Only used for the --plotting-phenotype option. If True, then in addition to '
+#             'generating statistics for summed genotype values, also generate statistics for '
+#             'paired genotype values. This could be important if you wish to look for examples of '
+#             'nonadditive/nonlinear effects. '
+#             "If not using dosages, then samples are binned according to the unordered pair of their "
+#             "two alleles' lengths. If using dosages, then each sample contributes to each unordered-pair-bin "
+#             'proportionally to the estimated probability of their having that unoredered-pair genotype.'
+#    )
+#    parser.add_argument(
+#        '--plot-phenotype-residuals',
+#        action='store_true',
+#        default=False,
+#        help='Only used for the --plotting-phenotype option. If True, then linearlly regress out '
+#             'all covariates from the plotting phenotype before calculating the statistics. '
+#             'I would recommend against using this feature, as (a) in my small experience it has not '
+#             'affected the end results and (b) it is confusing, as this linear regression is '
+#             'performed on the plotting phenotype (not the phenotype used for regression) '
+#             'and if the plotting phenotype is untransformed (as is the intent) then an linear '
+#             'regression may not be appropriate, thus rendering this moot anyway. '
+#    )
+#    parser.add_argument(
+#        '--plotting-ci-alphas',
+#        type=float,
+#        nargs='*',
+#        default=[],
+#        help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
+#             'of size 1-alpha for each alpha in this list for each of the statistics generated for '
+#             'plotting.'
+#    )
     parser.add_argument(
         #This is only for one specific use case, don't use this
         '--imputed-ukb-strs-paper-period-check',

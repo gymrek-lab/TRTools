@@ -9,6 +9,8 @@ import subprocess as sp
 
 random.seed(11)
 
+# biallelic
+
 vcf = cyvcf2.VCF('many_samples_biallelic.vcf.gz')
 samples = vcf.samples
 
@@ -86,4 +88,56 @@ cmd = (
     'tabix -f many_samples_biallelic_dosages.vcf.gz '
     '"'
 )
-sp.run(cmd, shell = True)
+sp.run(cmd, shell = True, check=True)
+
+# multiallelic
+
+vcf = cyvcf2.VCF('many_samples_multiallelic.vcf.gz')
+samples = vcf.samples
+
+with open('ap1_multi_dosages.tsv', 'w') as ap1_out, open('ap2_multi_dosages.tsv', 'w') as ap2_out:
+    for var in vcf:
+        ap1_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
+        ap2_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
+        gts = var.genotype.array()
+        for i in range(gts.shape[0]):
+            if -1 in gts[i, :]:
+                ap1_out.write('\t.')
+                ap2_out.write('\t.')
+                continue
+            for idx, out in enumerate([ap1_out, ap2_out]):
+                max_ap = random.uniform(1/3, 1)
+                small_ap_1 = random.uniform(max(0, 1 - 2*max_ap), min(1-max_ap, max_ap))
+                small_ap_2 = 1 - max_ap - small_ap_1
+                assert 0 <= small_ap_2
+                if gts[i, idx] == 0:
+                    aps = [small_ap_1, small_ap_2]
+                else:
+                    aps = [small_ap_1]
+                    aps.insert(gts[i, idx]-1, max_ap)
+                out.write('\t{:.2},{:.2}'.format(aps[0], aps[1]))
+        ap1_out.write('\n')
+        ap2_out.write('\n')
+
+cmd = (
+    'bash -c "'
+    'bgzip -f ap1_multi_dosages.tsv && '
+    'bgzip -f ap2_multi_dosages.tsv && '
+    'bcftools annotate '
+        '-a ap1_multi_dosages.tsv.gz '
+        '-h ap1_dosage_header.hdr '
+        '-S <(tail -n +2 samples.txt) '
+        '-c CHROM,FROM,TO,FMT/AP1 '
+        'many_samples_multiallelic.vcf.gz | '
+    'bcftools annotate '
+        '-a ap2_multi_dosages.tsv.gz '
+        '-h ap2_dosage_header.hdr '
+        '-S <(tail -n +2 samples.txt) '
+        '-c CHROM,FROM,TO,FMT/AP2 '
+        '- > many_samples_multiallelic_dosages.vcf && '
+    'bgzip -f many_samples_multiallelic_dosages.vcf && '
+    'tabix -f many_samples_multiallelic_dosages.vcf.gz '
+    '"'
+)
+sp.run(cmd, shell = True, check=True)
+
