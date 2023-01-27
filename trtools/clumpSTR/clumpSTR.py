@@ -72,12 +72,15 @@ def WriteClump(indexvar, clumped_vars):
     pass # TODO
 
 @click.command()
-#@click.option('--summstats_snps', type=click.File('r'), help='File to load snps summary statistics')
-#@click.option('--summstats_strs', type=click.File('r'), help='File to load strs summary statistics')
-#@click.option('--clump_p2', type=float, default=0.01, help='Filter for pvalue less than')
-if __name__ == '__main__':
+@click.option('--summstats_snps', type=click.File('r'), help='File to load snps summary statistics')
+@click.option('--summstats_strs', type=click.File('r'), help='File to load strs summary statistics')
+@click.option('--clump_p2', type=float, default=0.01, help='Filter for pvalue less than')
+def clumpstr(summstats_snps, summstats_strs, clump_p2):
     summstats = SummaryStats()
     if summstats_snps is not None:
-    	summstats.Load(summstats_snps, vartype="SNP", pthresh=clump_p2)
+        summstats.Load(summstats_snps, vartype="SNP", pthresh=clump_p2)
     if summstats_strs is not None:
-    	summstats.Load(summstats_strs, vartype="STR", pthresh=clump_p2)
+        summstats.Load(summstats_strs, vartype="STR", pthresh=clump_p2)
+
+if __name__ == '__main__':
+    clumpstr()
