@@ -118,7 +118,7 @@ You can tag a commit in two different ways.
 
 #. Command line:
 
-.. code-block: bash
+.. code-block:: bash
 
   git tag -a vX.Y.Z -m vX.Y.Z
   git push --tags
