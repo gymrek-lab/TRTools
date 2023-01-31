@@ -85,6 +85,7 @@ TRTools includes the following tools.
 * `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
 * `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
 * `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
+* `associaTR <https://trtools.readthedocs.io/en/latest/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
 
 Type :code:`<command> --help` to see a full set of options.
 

@@ -1,3 +1,17 @@
+5.0.0
+-----
+
+New features:
+
+* associaTR has been released!
+
+Current limitations:
+
+* Does not support binary phenotypes yet
+* Does not support producing data for plotting individual loci yet
+* Values in the output file aside from the p-values, coefficients and 
+  standard errors have not been fully tested
+
 4.2.1
 -----
 

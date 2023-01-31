@@ -13,9 +13,9 @@ LICENSE = 'MIT'
 
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
-MAJ = 4
-MIN = 2
-REV = 1
+MAJ = 5
+MIN = 0
+REV = 0
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
 with open(os.path.join(curdir, 'trtools/version.py'), 'w') as fout:
         fout.write(
@@ -50,7 +50,8 @@ setup(name=NAME,
               'mergeSTR=trtools.mergeSTR:run',
               'statSTR=trtools.statSTR:run',
               'compareSTR=trtools.compareSTR:run',
-              'qcSTR=trtools.qcSTR:run'
+              'qcSTR=trtools.qcSTR:run',
+              'associaTR=trtools.associaTR:run'
           ],
       },
       install_requires=['cyvcf2',
@@ -60,7 +61,8 @@ setup(name=NAME,
                         'pybedtools',
                         'pysam',
                         'scikit-learn',
-                        'scipy'],
+                        'scipy',
+                        'statsmodels'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.5',\
                        'License :: OSI Approved :: MIT License',\
