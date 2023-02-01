@@ -137,3 +137,6 @@ stats_gangstr.tab
 stats_popstr.tab
 test.tab
 test_association_results.tsv
+test_association_results.tsv.temp
+association_results.tsv
+association_results.tsv.temp

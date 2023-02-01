@@ -1,3 +1,10 @@
+5.0.1
+-----
+
+Bug fixes:
+
+* Remove outdated call in qcSTR to np.float()
+
 5.0.0
 -----
 
