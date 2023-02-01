@@ -17,7 +17,7 @@ import statsmodels.stats.weightstats
 from . import load_and_filter_genotypes
 import trtools
 import trtools.utils.utils as utils
-2
+
 pval_precision = 2
 
 def _merge_arrays(a, b):
@@ -576,7 +576,7 @@ def run():
         action='store_true',
         help=argparse.SUPPRESS
     )
-
+    parser.add_argument("--version", action="version", version = '{}'.format(trtools.__version__))
 
     args = parser.parse_args()
     main(args)

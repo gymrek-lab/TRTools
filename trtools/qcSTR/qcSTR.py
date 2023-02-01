@@ -197,8 +197,8 @@ def _BetterCDF(data: np.ndarray,
         ))
         ys = np.hstack((
             [1],
-            np.arange(n_points - 1, n_ones - 1, -1) / np.float(n_points),
-            [n_ones / np.float(n_points)]
+            np.arange(n_points - 1, n_ones - 1, -1) / n_points,
+            [n_ones / n_points]
         ))
     else:
         data = np.hstack((
@@ -208,7 +208,7 @@ def _BetterCDF(data: np.ndarray,
         ))
         ys = np.hstack((
             [1],
-            np.arange(n_points - 1, -1, -1) / np.float(n_points),
+            np.arange(n_points - 1, -1, -1) / n_points,
             [0]
         ))
     #ax.step(data, ys)#, where='post')

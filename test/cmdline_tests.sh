@@ -39,7 +39,7 @@ TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 echo "Saving tmp files in ${TMPDIR}"
 
 # Check version
-for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR
+for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR
 do
     runcmd_pass "${tool} --version"
 done
@@ -72,6 +72,12 @@ runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz 
 runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx"
 runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
 runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
+
+runcmd_pass "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy --same-samples"
+runcmd_pass "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy ${EXDATADIR}/simulated_traits_1.npy --same-samples"
+runcmd_fail "associaTR association_results.tsv nonexistant simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy ${EXDATADIR}/simulated_traits_1.npy --same-samples"
+runcmd_fail "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype nonexistant --same-samples"
+runcmd_fail "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy nonexistant --same-samples"
 
 # check for invalid vcftypes
 
