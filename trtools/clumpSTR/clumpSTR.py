@@ -2,6 +2,7 @@
 
 # To test: ./clumpSTR.py --summstats-snps tests/eur_gwas_pvalue_chr19.LDL.glm.linear --clump-snp-field ID --clump-field p-value --clump-chrom-field CHROM --clump-pos-field position --clump-p1 0.2 --out test.clump
 import click
+import scipy.stats
 import sys
 
 class Variant:
@@ -120,11 +121,28 @@ class SummaryStats:
                 keepvars.append(variant)
         self.summstats = keepvars
 
-def ComputeLD(var1, var2):
+def GetOverlappingSamples(snpgts, strgts):
+    """
+    Get overlapping set of samples
+    """
+    return [] # TODO
+
+def LoadVariant(var, snpgts, strgts, samples):
+    """
+    Extract vector of genotypes for this variant
+    """
+    return [] # TODO
+
+def ComputeLD(var1, var2, snpgts, strgts, samples):
     """
     Compute the LD between two variants
     """
-    return 0 # TODO
+    # Load genotypes
+    gts1 = LoadVariant(var1, snpgts, strgts, samples)
+    gts2 = LoadVariant(var2, snpgts, strgts, samples)
+    # TODO - possibly check for NAs and remove them
+    # Compute and return Pearson r2
+    return scipy.stats.pearsonr(gts1, gts2)[0]**2
 
 def WriteClump(indexvar, clumped_vars, outf):
     """
@@ -138,6 +156,8 @@ def WriteClump(indexvar, clumped_vars, outf):
 @click.command()
 @click.option('--summstats-snps', type=str, help='File to load snps summary statistics')
 @click.option('--summstats-strs', type=str, help='File to load strs summary statistics')
+@click.option('--gts-snps', type=str, help='SNP genotypes (VCF or PGEN)')
+@click.option('--gts-strs', type=str, help='STR genotypes (VCF)')
 @click.option('--clump-p1', type=float, default=0.0001, help='Max pval to start a new clump')
 @click.option('--clump-p2', type=float, default=0.01, help='Filter for pvalue less than')
 @click.option('--clump-snp-field', type=str, default='SNP', help='Column header of the variant ID')
@@ -147,9 +167,14 @@ def WriteClump(indexvar, clumped_vars, outf):
 @click.option('--clump-kb', type=float, default=250, help='clump kb radius')
 @click.option('--clump-r2', type=float, default=0.5, help='r^2 threshold')
 @click.option('--out', type=str, required=True, help='Output filename')
-def clumpstr(summstats_snps, summstats_strs, clump_p1, clump_p2,
+def clumpstr(summstats_snps, summstats_strs, gts_snps, gts_strs, clump_p1, clump_p2,
     clump_snp_field, clump_field, clump_chrom_field, clump_pos_field,
     clump_kb, clump_r2, out):
+    ###### User checks ##########
+    # TODO - need one of summstats_snps or summstats_strs
+    # TODO - if summstats_snps, also need gts_snps
+    # TODO - if summstats_strs, also need gts_strs
+
     ###### Load summary stats ##########
     summstats = SummaryStats()
     if summstats_snps is not None:
@@ -161,6 +186,15 @@ def clumpstr(summstats_snps, summstats_strs, clump_p1, clump_p2,
             snp_field=clump_snp_field, p_field=clump_field,
             chrom_field=clump_chrom_field, pos_field=clump_pos_field)
 
+    ###### Set up genotypes ##########
+    snpgts = None
+    strgts = None
+    if gts_snps is not None:
+        pass # TODO - load with haptools data
+    if gts_strs is not None:
+        pass # TODO - load with haptools? TRTools?
+    samples = GetOverlappingSamples(snpgts, strgts)
+
     ###### Setup output file ##########
     outf = open(out, "w")
     outf.write("\t".join(["ID","CHROM","POS","P","VARTYPE","CLUMPVARS"])+"\n")
@@ -171,7 +205,7 @@ def clumpstr(summstats_snps, summstats_strs, clump_p1, clump_p2,
         candidates = summstats.QueryWindow(indexvar, clump_kb)
         clumpvars = []
         for c in candidates:
-            r2 = ComputeLD(c, indexvar)
+            r2 = ComputeLD(c, indexvar, snpgts, strgts, samples)
             if r2 > clump_r2:
                 clumpvars.append(c)
         WriteClump(indexvar, clumpvars, outf)
