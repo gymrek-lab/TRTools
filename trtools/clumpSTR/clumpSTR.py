@@ -6,6 +6,24 @@ import scipy.stats
 import sys
 
 class Variant:
+
+    """
+    Initialize a clumpSTR object
+
+    Parameters
+    ----------
+    varid: Variants ID
+        Variant's identification (Ej. rs1234)
+    chrom: Chromosome
+        Variant's chrosmosome identification (Ej. 1:22)
+    pos: Position
+        Variant's Position (Ej. 12345634)
+    pval: P value from the variant
+        Variant's P-value (Ej. 0.05)
+    vartype: Variant Type
+        Type of Variant (SNP or STR)
+    """
+
     def __init__(self, varid, chrom, pos, pval, vartype):
         self.varid = varid
         self.chrom = chrom
@@ -18,9 +36,14 @@ class Variant:
 
 class SummaryStats:
     """
-    Keep track of summary statistics
+    Initialize summary statistics 
 
-    TODO: add detailed class and methods documentation
+    Parameters
+    ----------
+
+    summstats: Initialize Summary Statistics with constructor 
+        keep track of summary statistics
+
     """
 
     def __init__(self):
@@ -32,8 +55,27 @@ class SummaryStats:
         """
         Load summary statistics
         Ignore variants with pval < pthresh
-        Not yet implemented
+
+        Parameters
+        ----------
+        self: constructor
+            load function construtor
+        statsfile: summary statistical file
+            Summary statistic file to be input by the user 
+        vartype: variant Type
+            Type of Variant (SNP or STR)
+        pthresh: p-value treshold
+            P value input as treshold for loading data (Ej. 0.05)
+        snp_field: SNP column
+            Location of the SNP in the summary statistics
+        p_field: P-value column
+            Location of the P-value of the snps in the summary statistics
+        chrom_field: chromosome column
+            Location of the chromosome of the snps in the summary statistics
+        pos_field: position column
+            Location of the position of the snps in the summary statistics
         """
+        
         summstats = [] # List of Variants
 
         # First, parse header line to get col. numbers
