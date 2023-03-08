@@ -641,6 +641,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.gangstr))
     assert (not gangstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.gangstr))
+    assert not gangstr_trh.IsBeagleVCF()
 
     hipstr_trh = trh.TRRecordHarmonizer(hipstr_vcf, vcftype='hipstr')
     assert hipstr_trh.vcftype == trh.VcfTypes.hipstr
@@ -654,6 +655,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.hipstr))
     assert (not hipstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
+    assert not hipstr_trh.IsBeagleVCF()
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VcfTypes.popstr
@@ -680,6 +682,7 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthRefGenotype(trh.VcfTypes.advntr))
     assert (not advntr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.advntr))
+    assert not advntr_trh.IsBeagleVCF()
 
     eh_trh = trh.TRRecordHarmonizer(eh_vcf, vcftype='eh')
     assert eh_trh.vcftype == trh.VcfTypes.eh
@@ -692,7 +695,45 @@ def test_trh_init_and_type_infer(vcfdir):
             and trh.HasLengthRefGenotype(trh.VcfTypes.eh))
     assert (eh_trh.HasLengthAltGenotypes()
             and trh.HasLengthAltGenotypes(trh.VcfTypes.eh))
+    assert not eh_trh.IsBeagleVCF()
 
+def test_imputed_vcf_types(vcfdir):
+    imputed_gangstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/gangstr_imputed.vcf.gz")), vcftype='gangstr')
+    assert imputed_gangstr_trh.vcftype == trh.VcfTypes.gangstr
+    assert imputed_gangstr_trh.IsBeagleVCF()
+    assert not next(imputed_gangstr_trh).HasQualityScores()
+
+    imputed_advntr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/advntr_imputed.vcf.gz")), vcftype='advntr')
+    assert imputed_advntr_trh.vcftype == trh.VcfTypes.advntr
+    assert imputed_advntr_trh.IsBeagleVCF()
+    assert not next(imputed_advntr_trh).HasQualityScores()
+
+    imputed_hipstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/hipstr_imputed.vcf.gz")), vcftype='hipstr')
+    assert imputed_hipstr_trh.vcftype == trh.VcfTypes.hipstr
+    assert imputed_hipstr_trh.IsBeagleVCF()
+    assert not next(imputed_hipstr_trh).HasQualityScores()
+
+    imputed_eh_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/eh_imputed.vcf.gz")), vcftype='eh')
+    assert imputed_eh_trh.vcftype == trh.VcfTypes.eh
+    assert imputed_eh_trh.IsBeagleVCF()
+    assert not next(imputed_eh_trh).HasQualityScores()
+
+def test_missing_infos_imputed_vcfs_fail(vcfdir):
+    missing_infos_imputed_gangstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/gangstr_imputed_missing_infos.vcf.gz")), vcftype='gangstr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_gangstr_trh)
+
+    missing_infos_imputed_advntr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/advntr_imputed_missing_infos.vcf.gz")), vcftype='advntr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_advntr_trh)
+
+    missing_infos_imputed_hipstr_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/hipstr_imputed_missing_infos.vcf.gz")), vcftype='hipstr')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_hipstr_trh)
+
+    missing_infos_imputed_eh_trh = trh.TRRecordHarmonizer(cyvcf2.VCF(os.path.join(vcfdir, "beagle/eh_imputed_missing_infos.vcf.gz")), vcftype='eh')
+    with pytest.raises(TypeError):
+        next(missing_infos_imputed_eh_trh)
 
 def test_string_or_vcftype(vcfdir):
     assert (trh.HasLengthAltGenotypes("gangstr")
@@ -797,6 +838,7 @@ def test_HarmonizeRecord(vcfdir):
     assert not tr_rec1.HasFullStringGenotypes()
     assert not tr_rec1.HasFabricatedRefAllele()
     assert not tr_rec1.HasFabricatedAltAlleles()
+    assert tr_rec1.pos == tr_rec1.full_alleles_pos
     tr_rec2 = next(str_iter)
     tr_rec3 = next(str_iter)
     assert tr_rec3.ref_allele == 'TTTTTTTTTTTTTTT'
@@ -807,6 +849,8 @@ def test_HarmonizeRecord(vcfdir):
     while record.record_id != "STR_125":
         record = next(str_iter)
     assert record.HasFullStringGenotypes()
+    # record in the test file has flanking bp at the start of the ref. allele
+    assert record.pos > record.full_alleles_pos
     # TODO this isn't really the correct behavior -
     # we're trimming off an extra repeat from the alt allele
     assert record.full_alleles == (
@@ -931,4 +975,3 @@ def test_TRRecord_Quality(vcfdir):
     assert not var.HasQualityScores()
     with pytest.raises(TypeError):
         var.GetQualityScores()
-

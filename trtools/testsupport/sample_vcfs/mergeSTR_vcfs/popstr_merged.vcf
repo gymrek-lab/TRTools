@@ -1,5 +1,5 @@
 ##fileformat=VCFv4.1
-##command=/home/jmargoliash/anaconda3/envs/trtools/lib/python3.6/site-packages/pytest/__main__.py trtools/mergeSTR/tests/test_mergeSTR.py
+##command=/Users/yang/Desktop/TRTools/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_popstr1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_popstr2.vcf.gz --vcftype popstr --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/popstr_merged
 ##source=PopSTR
 ##contig=<ID=chr21,length=46709983>
 ##INFO=<ID=Motif,Number=1,Type=String,Description="Microsatellite repeat motif">

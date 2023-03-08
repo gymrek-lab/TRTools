@@ -22,7 +22,7 @@ def args(tmpdir):
 
 @pytest.fixture
 def mrgvcfdir(vcfdir):
-	return os.path.join(vcfdir, "mergeSTR_vcfs")
+   return os.path.join(vcfdir, "mergeSTR_vcfs")
 
 
 # Set up dummy class
@@ -33,6 +33,16 @@ class DummyRecord:
         self.REF = ref
         self.ALTS = alts
         self.INFO = info
+
+
+class DummyHarmonizedRecord:
+    def __init__(self, chrom, pos, ref, alts=None, info=None):
+        self.chrom = chrom
+        self.pos = pos
+        self.ref_allele = ref
+        self.alt_alleles = alts if alts is not None else []
+        self.info = info if info is not None else {}
+        self.vcfrecord = DummyRecord(chrom, pos, ref, self.alt_alleles, self.info)
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile(args, mrgvcfdir):
@@ -192,23 +202,23 @@ def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
 def test_ConflictingRefs():
     # Set up dummy records
     dummy_records = [] 
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG'))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAG'))
 
-    retval = GetRefAllele(dummy_records, [True, True, True])
+    retval = GetRefAllele(dummy_records, [True, True, True], None)
     assert retval is None
 
-    retval = GetRefAllele(dummy_records, [True, True, False])
+    retval = GetRefAllele(dummy_records, [True, True, False], None)
     assert retval == "CAGCAG"
 
 def test_GetInfoItem(capsys):
     # Set up dummy records
     dummy_records = []
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
-    dummy_records.append(DummyRecord('chr1', 100, 'CAGCAG', info={}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 120}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={'END': 110}))
+    dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG', info={}))
 
     GetInfoItem(dummy_records, [True, True, True, False], 'END')
     captured = capsys.readouterr()
@@ -249,6 +259,7 @@ def test_advntr_output(args, mrgvcfdir):
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/advntr_merged.vcf")
 
 
+
 def test_eh_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
@@ -256,6 +267,31 @@ def test_eh_output(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_merged.vcf")
+
+def test_eh_no_alt(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_no_alt.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_no_alt_merged.vcf")
+
+def test_eh_mixed_ploidy_no_alt(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh_X1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_X_no_alt.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_X_no_alt_merged.vcf")
+
+    # reverse order
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh_X_no_alt.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh_X1.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_X_no_alt_merged_swap.vcf")
+
 
 
 def test_gangstr_output(args, mrgvcfdir):
@@ -275,6 +311,13 @@ def test_hipstr_output(args, mrgvcfdir):
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
 
+def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-no-flanking.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_flanking_harmonization_test_output.vcf")
 
 def test_popstr_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_popstr1.vcf.gz")

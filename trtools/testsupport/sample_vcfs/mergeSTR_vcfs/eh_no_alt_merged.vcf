@@ -1,0 +1,22 @@
+##fileformat=VCFv4.1
+##command=/home/jmargoliash/anaconda3/envs/trtools/lib/python3.6/site-packages/pytest/__main__.py trtools/mergeSTR/tests/test_mergeSTR.py
+##contig=<ID=chr4,length=156508116>
+##ALT=<ID=STR18,Description="Allele comprised of 18 repeat units">
+##ALT=<ID=STR16,Description="Allele comprised of 16 repeat units">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant">
+##INFO=<ID=REF,Number=1,Type=Integer,Description="Reference copy number">
+##INFO=<ID=REPID,Number=1,Type=String,Description="Repeat identifier as specified in the variant catalog">
+##INFO=<ID=RL,Number=1,Type=Integer,Description="Reference length in bp">
+##INFO=<ID=RU,Number=1,Type=String,Description="Repeat unit in the reference orientation">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=VARID,Number=1,Type=String,Description="Variant identifier as specified in the variant catalog">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=ADFL,Number=1,Type=String,Description="Number of flanking reads consistent with the allele">
+##FORMAT=<ID=ADIR,Number=1,Type=String,Description="Number of in-repeat reads consistent with the allele">
+##FORMAT=<ID=ADSP,Number=1,Type=String,Description="Number of spanning reads consistent with the allele">
+##FORMAT=<ID=LC,Number=1,Type=Float,Description="Locus coverage">
+##FORMAT=<ID=REPCI,Number=1,Type=String,Description="Confidence interval for REPCN">
+##FORMAT=<ID=REPCN,Number=1,Type=String,Description="Number of repeat units spanned by the allele">
+##FORMAT=<ID=SO,Number=1,Type=String,Description="Type of reads that support the allele; can be SPANNING, FLANKING, or INREPEAT meaning that the reads span, flank, or are fully contained in the repeat">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA12878_S1_HTT	N27483924
+chr4	3076603	.	C	<STR16>,<STR18>	.	.	END=3076660;REF=19;REPID=HTT;RL=57;RU=CAG;VARID=HTT	GT:ADFL:ADIR:ADSP:LC:REPCI:REPCN:SO	1/2:319/320:0/0:4/7:34.624012:16-16/18-18:16/18:SPANNING/SPANNING	0/0:319/320:0/0:4/7:34.624013:19-19/19-19:19/19:SPANNING/SPANNING

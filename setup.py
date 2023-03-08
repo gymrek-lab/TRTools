@@ -13,7 +13,7 @@ LICENSE = 'MIT'
 
 # version-keeping code based on pybedtools
 curdir = os.path.abspath(os.path.dirname(__file__))
-MAJ = 4
+MAJ = 5
 MIN = 0
 REV = 1
 VERSION = '%d.%d.%d' % (MAJ, MIN, REV)
@@ -40,14 +40,18 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       license_file="LICENSE.txt",
-      scripts=["trtools/testsupport/test_trtools.sh"],
+      scripts=[
+          "trtools/testsupport/test_trtools.sh",
+          'scripts/trtools_prep_beagle_vcf.sh'
+      ],
       entry_points={
           'console_scripts': [
               'dumpSTR=trtools.dumpSTR:run',
               'mergeSTR=trtools.mergeSTR:run',
               'statSTR=trtools.statSTR:run',
               'compareSTR=trtools.compareSTR:run',
-              'qcSTR=trtools.qcSTR:run'
+              'qcSTR=trtools.qcSTR:run',
+              'associaTR=trtools.associaTR:run'
           ],
       },
       install_requires=['cyvcf2',
@@ -57,7 +61,8 @@ setup(name=NAME,
                         'pybedtools',
                         'pysam',
                         'scikit-learn',
-                        'scipy'],
+                        'scipy',
+                        'statsmodels'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.5',\
                        'License :: OSI Approved :: MIT License',\

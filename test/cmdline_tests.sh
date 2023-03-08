@@ -24,8 +24,14 @@ runcmd_fail()
 if [ $# -eq 0 ]; then
     # use default example location
     EXDATADIR="example-files"
+    BEAGLEDIR="trtools/testsupport/sample_vcfs/beagle"
+elif (( $# != 2 )) ; then
+    echo "usage: cmdline_tests.sh {example_dir} {beagle_dir}" 2>&1
+    echo "Expected 2 arguments but recieved $#" 2>&1
+    exit 1
 else
     EXDATADIR=$1
+    BEAGLEDIR=$2
 fi
 
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
@@ -33,7 +39,7 @@ TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 echo "Saving tmp files in ${TMPDIR}"
 
 # Check version
-for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR
+for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR
 do
     runcmd_pass "${tool} --version"
 done
@@ -66,6 +72,12 @@ runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz 
 runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx"
 runcmd_pass "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}"
 runcmd_fail "compareSTR --vcf1 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --vcf2 ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/"
+
+runcmd_pass "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy --same-samples"
+runcmd_pass "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy ${EXDATADIR}/simulated_traits_1.npy --same-samples"
+runcmd_fail "associaTR association_results.tsv nonexistant simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy ${EXDATADIR}/simulated_traits_1.npy --same-samples"
+runcmd_fail "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype nonexistant --same-samples"
+runcmd_fail "associaTR association_results.tsv ${EXDATADIR}/ceu_ex.vcf.gz simulated_phenotype ${EXDATADIR}/simulated_traits_0.npy nonexistant --same-samples"
 
 # check for invalid vcftypes
 
@@ -178,6 +190,40 @@ runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_eh.vcf --out ${TMPDIR}/test_qc_eh"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_advntr.vcf --out ${TMPDIR}/test_qc_advntr"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_popstr.vcf --out ${TMPDIR}/test_qc_popstr"
+
+echo "--- Running trtools_prep_beagle_vcf.sh tests --- "
+prep_beagle_out="$TMPDIR"/test_prep_beagle_vcf.vcf.gz
+ref_panel="$BEAGLEDIR"/1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz
+imputed_vcf="$BEAGLEDIR"/1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz
+
+runcmd_fail "trtools_prep_beagle_vcf.sh hipstr nonexistent.vcf.gz $imputed_vcf $prep_beagle_out"
+runcmd_fail "trtools_prep_beagle_vcf.sh hipstr $ref_panel nonexistent.vcf.gz $prep_beagle_out"
+
+trtools_prep_beagle_vcf.sh hipstr "$ref_panel" "$imputed_vcf" "$prep_beagle_out"
+
+if ! [[ -f "$prep_beagle_out" ]] ; then
+    echo "prep_beagle_vcf test didn't produce output file" >&2
+    exit 1
+fi
+
+if ! [[ -f "$prep_beagle_out".tbi ]] ; then
+    echo "prep_beagle_vcf test didn't produce index file" >&2
+    exit 1
+fi
+
+if (( 1172 != $(zcat "$prep_beagle_out" | grep -vc '#') )) ; then
+    echo "prep_beagle_vcf outputted a file that didn't have the expected number of lines (1172)"
+    exit 1
+fi
+
+if (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
+    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
+    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
+then
+    echo "prep_beagle_vcf outputted a file that didn't have the expected number of INFO annotations"
+    exit 1
+fi
+echo '------'
 
 echo "tests completed successfully!"
 exit 0

@@ -35,6 +35,12 @@ With conda
 
         conda install -c bioconda trtools
 
+Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
+
+::
+
+        conda install -c bioconda bcftools
+
 Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
 If you are using a different version of python we support (3.5 or >= 3.9),
@@ -42,6 +48,11 @@ install TRTools using pip.
 
 With pip
 ^^^^^^^^
+
+First install :code:`htslib` (which contains :code:`tabix` and :code:`bgzip`). Optionally install :code:`bcftools`.
+These are used to prepare input files for TRTools and aren't installed by pip.
+
+Then run:
 
 ::
 
@@ -74,6 +85,7 @@ TRTools includes the following tools.
 * `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
 * `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
 * `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
+* `associaTR <https://trtools.readthedocs.io/en/latest/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
 
 Type :code:`<command> --help` to see a full set of options.
 
@@ -110,17 +122,16 @@ See our description of the `features and example use-cases <https://trtools.read
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
-.. _Contributing:
-
 Development Notes
 -----------------
 
 * TRTools only currently supports diploid genotypes. Haploid calls, such as those on male chrX or chrY, are not yet supported but should be coming soon.
-* CompareSTR currently only compares STR loci between two callsets if they have the same start and end coordinates. In the future we will add the capacity to take in a user specificied mapping of loci between the two callsets and use that to compare loci even if they don't completely overlap one another.
 
 Contact Us
 ----------
 Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
+
+.. _Contributing:
 
 Contributing
 ------------

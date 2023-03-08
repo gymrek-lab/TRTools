@@ -1,0 +1,5 @@
+plink2.log
+plink2.*.id
+gp_dosages.tsv.gz
+ap1_dosages.tsv.gz
+ap2_dosages.tsv.gz

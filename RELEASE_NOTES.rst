@@ -1,3 +1,84 @@
+5.0.1
+-----
+
+Bug fixes:
+
+* Remove outdated call in qcSTR to np.float()
+
+5.0.0
+-----
+
+New features:
+
+* associaTR has been released!
+
+Current limitations:
+
+* Does not support binary phenotypes yet
+* Does not support producing data for plotting individual loci yet
+* Values in the output file aside from the p-values, coefficients and 
+  standard errors have not been fully tested
+
+4.2.1
+-----
+
+Bug fixes:
+
+* Fix bioconda build
+
+4.2.0
+-----
+
+New features:
+
+* TRTools can now read VCFs produced by Beagle imputation.
+
+Bug fixes:
+
+* MergeSTR now successfully merges files containing multiple chromosomes instead of emitting
+  a 'stuck in infinite loop' message and crashing
+* MergeSTR no longer crashes if run with the --verbose flag and the last position in each of the
+  VCFs being merged isn't identical.
+* StatSTR now errors out if any of the files listed in --samples contain no samples that are present
+  in the input VCF.
+* DumpSTR now reads call depth from the LC format field when the DP format field is not present.
+  This was intended previously but was not happening.
+
+Doc changes:
+
+* Clarified in PUBLISHING.rst how to handle dependencies and how to publish to bioconda.
+* requirements.txt was unneeded, so delete it and remove the reference to it from PUBLISHING.rst
+
+4.1.0
+-----
+
+Functionality Changes:
+
+* MergeSTR: Flanking basepairs are now removed from HipSTR records before merging.
+  In particular, records with different flank lengths but the same repeat section will now merge instead of being
+  marked as incompatible.
+
+* CompareSTR: the tool now only compares records that start and end at the same position. If a partial overlap in records
+  is detected, the program will output a warning to the user. This warning contains IDs of the records and their positions.
+
+Misc:
+
+* mergeutils: function GetMinHarmonizedRecords was transformed into GetIncrementAndComparability, which allows the caller
+  to define custom predicate that decides whether records are comparable.
+
+4.0.2
+-----
+
+Bug fixes:
+
+* https://github.com/gymreklab/TRTools/issues/146 fixed record positions being compared twice
+* CompareSTR: Decision on which records are comparable is now based on data from harmonized TRRecords,
+  and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
+  but position of their repeat is at the same position are compared correctly (harmonization step removes this difference).
+* MergeSTR failed on mixed ploidy samples (i.e. chrX). Fix one such bug. Note: none of the tools are 
+  fully tested for chrX even with this fix.
+
+
 4.0.1
 -----
 

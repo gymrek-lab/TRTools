@@ -20,6 +20,8 @@ def args(tmpdir):
     args.thresh = False
     args.afreq = False
     args.acount = False
+    args.nalleles = False
+    args.nalleles_thresh = 0.01
     args.hwep = False
     args.het = False
     args.use_length = False
@@ -48,7 +50,7 @@ def test_RightFile(args, vcfdir):
     assert retcode==0
 
 # Test all the statSTR options
-def test_Stats(args, vcfdir):
+def test_Stats(args, vcfdir, capsys):
     fname = os.path.join(vcfdir, "few_samples_few_loci.vcf.gz")
     args.vcf = fname
     args.thresh = True
@@ -61,6 +63,7 @@ def test_Stats(args, vcfdir):
     args.var = True
     args.acount = True
     args.afreq = True
+    args.nalleles = True
     assert main(args) == 0
     args.uselength = True
     assert main(args) == 0
@@ -68,6 +71,10 @@ def test_Stats(args, vcfdir):
     assert main(args) == 0
     args.samples = os.path.join(vcfdir, "fewer_samples.txt")
     assert main(args) == 0
+    # test that using only nonexistant samples errors out
+    args.samples = os.path.join(vcfdir, "missing_samples.txt")
+    assert main(args) == 1
+    assert 'no samples' in capsys.readouterr().err.lower()
 
 def test_require_tabix_for_regions(args, vcfdir, capsys):
     # args.samples = os.path.join(vcfdir, "test_gangstr_samples.txt")
@@ -243,6 +250,8 @@ def test_output(args, vcfdir, statsdir):
     args.thresh = True
     args.afreq = True
     args.acount = True
+    args.nalleles = True
+    args.nalleles_thresh = 0.1
     args.hwep = True
     args.het = True
     args.entropy = True
@@ -275,6 +284,8 @@ def test_output_samplestrat(args, vcfdir, statsdir):
     args.thresh = True
     args.afreq = True
     args.acount = True
+    args.nalleles = True
+    args.nalleles_thresh = 0.1
     args.hwep = True
     args.het = True
     args.entropy = True

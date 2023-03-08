@@ -9,7 +9,10 @@ from trtools.testsupport.utils import assert_same_vcf, assert_same_file
 
 
 # Set up base argparser
-@pytest.fixture
+@pytest.fixture(name='args')
+def args_fixture(tmpdir):
+    return args(tmpdir)
+
 def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
@@ -38,7 +41,7 @@ def args(tmpdir):
     args.gangstr_filter_spanbound_only = False
     args.gangstr_filter_badCI = None
     #args.gangstr_require_support = None
-    args.gangstr_readlen = None
+    #args.gangstr_readlen = None
     args.gangstr_min_call_DP = None
     args.gangstr_max_call_DP = None
     args.gangstr_min_call_Q = None
@@ -128,7 +131,7 @@ def test_GangSTRFile(args, testDumpSTRdir):
     args.gangstr_filter_spanbound_only = True
     args.gangstr_filter_badCI = True
     #args.gangstr_require_support = 2
-    args.gangstr_readlen = 100
+    #args.gangstr_readlen = 100
     retcode = main(args)
     assert retcode==0
 
@@ -206,7 +209,7 @@ def test_zippedOutput(args, testDumpSTRdir):
     args.gangstr_filter_spanbound_only = True
     args.gangstr_filter_badCI = True
     #args.gangstr_require_support = 2
-    args.gangstr_readlen = 100
+    #args.gangstr_readlen = 100
     args.zip = True
     retcode = main(args)
     assert retcode==0
@@ -492,7 +495,160 @@ def test_BrokenVCF(args, testDumpSTRdir):
     args.verbose = True
     assert main(args)==1
 
+def test_beagle_allowed_locus_filters(args, vcfdir, regiondir):#(tmpdir):
+    args.min_locus_hwep = 0.1
+    args.min_locus_het = 0.1
+    args.max_locus_het = 0.9
+    args.filter_regions = os.path.join(regiondir, "test_regions1.bed.gz")
+    for caller in 'advntr', 'eh', 'gangstr', 'hipstr':
+        args.vcf = os.path.join(vcfdir, f'beagle/{caller}_imputed.vcf.gz')
+        assert main(args) == 0
 
+def test_beagle_disallowed_locus_filters(tmpdir, vcfdir):
+    args_obj = args(tmpdir)
+    args_obj.min_locus_callrate = 0.1
+    for caller in 'advntr', 'eh', 'gangstr', 'hipstr':
+        args_obj.vcf = os.path.join(vcfdir, f'beagle/{caller}_imputed.vcf.gz')
+        assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.filter_hrun = True
+    assert main(args_obj) == 1
+
+def test_beagle_disallowed_call_filters(tmpdir, vcfdir):
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_min_call_DP = 5
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_max_call_DP = 1000
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_min_call_Q = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_max_call_flank_indel = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_max_call_stutter = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
+    args_obj.hipstr_min_supp_reads = 2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_expansion_prob_het = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_expansion_prob_hom = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_expansion_prob_total = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_filter_span_only = True
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_filter_spanbound_only = True
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_filter_badCI = True
+    assert main(args_obj) == 1
+
+    #args_obj = args(tmpdir)
+    #args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    #args_obj.gangstr_require_support = None
+    #args_obj.gangstr_readlen = None
+    #assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_min_call_DP = 2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_max_call_DP = 1000
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/gangstr_imputed.vcf.gz')
+    args_obj.gangstr_min_call_Q = 0.2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/advntr_imputed.vcf.gz')
+    args_obj.advntr_min_call_DP = 2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/advntr_imputed.vcf.gz')
+    args_obj.advntr_max_call_DP = 1000
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/advntr_imputed.vcf.gz')
+    args_obj.advntr_min_spanning = 2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/advntr_imputed.vcf.gz')
+    args_obj.advntr_min_flanking = 2
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/advntr_imputed.vcf.gz')
+    args_obj.advntr_min_ML = 0.1
+    assert main(args_obj) == 1
+
+    '''
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/eh_imputed.vcf.gz')
+    args_obj.eh_min_ADFL = None
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/eh_imputed.vcf.gz')
+    args_obj.eh_min_ADIR = None
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/eh_imputed.vcf.gz')
+    args_obj.eh_min_ADSP = None
+    assert main(args_obj) == 1
+    '''
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/eh_imputed.vcf.gz')
+    args_obj.eh_min_call_LC = 1
+    assert main(args_obj) == 1
+
+    args_obj = args(tmpdir)
+    args_obj.vcf = os.path.join(vcfdir, 'beagle/eh_imputed.vcf.gz')
+    args_obj.eh_max_call_LC = 50
+    assert main(args_obj) == 1
 
 
 """
