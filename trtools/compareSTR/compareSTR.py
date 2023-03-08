@@ -110,16 +110,19 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
         If True, don't output plots
     """
     with open(outprefix + '-locuscompare.tab', 'w') as tabfile:
-        tabfile.write('chrom\tstart\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
-        for chrom, start, metric_conc_seq, metric_conc_len, numcalls in zip(
+        tabfile.write('chrom\tstart\tfraction-concordant-seq\tfraction-concordant-len\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
+        for chrom, start, fraction_concordant_seq, fraction_concordant_len, numcalls, n_missing_only_vcf1, n_missing_only_vcf2, n_missing_both in zip(
                 locus_results['chrom'],
                 locus_results['start'],
-                locus_results['metric-conc-seq'],
-                locus_results['metric-conc-len'],
-                locus_results['numcalls']
+                locus_results['fraction-concordant-seq'],
+                locus_results['fraction-concordant-len'],
+                locus_results['numcalls'],
+                locus_results['n_missing_only_vcf1'],
+                locus_results['n_missing_only_vcf2'],
+                locus_results['n_missing_both']
         ):
-            tabfile.write('{}\t{}\t{}\t{}\t{}\n'.format(
-                chrom, start, metric_conc_seq, metric_conc_len, numcalls
+            tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                chrom, start, fraction_concordant_seq, fraction_concordant_len, numcalls, n_missing_only_vcf1, n_missing_only_vcf2, n_missing_both
             ))
 
     # Create per-locus plot
@@ -130,10 +133,10 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
 
     nloci = len(locus_results['chrom'])
     if nloci <= 20:
-        sort_idx = np.argsort(locus_results['metric-conc-len'])[::-1]
-        for key in {'chrom', 'start', 'metric-conc-len'}:
+        sort_idx = np.argsort(locus_results['fraction-concordant-len'])[::-1]
+        for key in {'chrom', 'start', 'fraction-concordant-len'}:
             locus_results[key] = np.array(locus_results[key])[sort_idx]
-        ax.scatter(np.arange(nloci), locus_results['metric-conc-len'], color="darkblue")
+        ax.scatter(np.arange(nloci), locus_results['fraction-concordant-len'], color="darkblue")
         ax.set_xticks(np.arange(nloci))
         ax.set_xticklabels(
             ["{}:{}".format(chrom, start) for chrom, start in zip(
@@ -141,7 +144,7 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
             )], size=12, rotation=90
         )
     else:
-        sorted_results = np.sort(locus_results['metric-conc-len'])[::-1]
+        sorted_results = np.sort(locus_results['fraction-concordant-len'])[::-1]
         ax.scatter(np.arange(nloci), sorted_results, color="darkblue")
         ax.set_xlabel("Successive TR Loci", size=15)
     ax.set_ylabel("Length Concordance", size=15)
@@ -172,13 +175,16 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     sample_results['conc-len-count'] = \
         sample_results['conc-len-count'] / sample_results['numcalls']
     with open(outprefix + '-samplecompare.tab', 'w') as tabfile:
-        tabfile.write('sample\tmetric-conc-seq\tmetric-conc-len\tnumcalls\n')
+        tabfile.write('sample\tfraction-concordant-seq\tfraction-concordant-len\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
         for idx, sample in enumerate(sample_names):
-            tabfile.write('{}\t{}\t{}\t{}\n'.format(
+            tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                 sample,
                 sample_results['conc-seq-count'][idx],
                 sample_results['conc-len-count'][idx],
-                sample_results['numcalls'][idx]
+                sample_results['numcalls'][idx],
+                sample_results['n_missing_only_vcf1'][idx],
+                sample_results['n_missing_only_vcf2'][idx],
+                sample_results['n_missing_both'][idx]
             ))
 
     # Create per-locus plot
@@ -241,11 +247,14 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
                 tabfile.write('\t')
             else:
                 tabfile.write('NA\t')
-        tabfile.write('{}\t{}\t{}\t{}\n'.format(
+        tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
             format_bin_results['conc_seq_count'] / numcalls,
             format_bin_results['conc_len_count'] / numcalls,
-            CalcR2(format_bin_results),
-            numcalls
+            CalcR(format_bin_results),
+            numcalls,
+            format_bin_results['n_missing_only_vcf1'],
+            format_bin_results['n_missing_only_vcf2'],
+            format_bin_results['n_missing_both']
         ))
 
     with open(outprefix + "-overall.tab", "w") as tabfile:
@@ -253,7 +262,7 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
         for fmt in format_fields:
             tabfile.write(fmt)
             tabfile.write('\t')
-        tabfile.write("concordance-seq\tconcordance-len\tr2\tnumcalls\n")
+        tabfile.write("concordance-seq\tconcordance-len\tr\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n")
 
         for per in periods:
             # write the entry that is not stratified across formats
@@ -435,6 +444,9 @@ def NewOverallFormatBin():
         conc_len_count
         conc_seq_cont
         numcalls
+        n_missing_only_vcf1
+        n_missing_only_vcf2
+        n_missing_both
         total_len_1
         total_len_2
         total_len_11
@@ -445,6 +457,9 @@ def NewOverallFormatBin():
         'conc_seq_count': 0,
         'conc_len_count': 0,
         'numcalls': 0,
+        'n_missing_only_vcf1': 0,
+        'n_missing_only_vcf2': 0,
+        'n_missing_both': 0,
         'total_len_1': 0,
         'total_len_2': 0,
         'total_len_11': 0,
@@ -453,16 +468,16 @@ def NewOverallFormatBin():
     }
 
 
-def CalcR2(format_bin_results):
+def CalcR(format_bin_results):
     """
-    Calculate the squared (pearson) correlation coefficient
+    Calculate the (Pearson) correlation coefficient
     for the values in this bin.
 
     Calculation is done using the formulas:
         n = numcalls
         var(X) = sum(X_i**2)/n - [sum(X_i)/n]**2
         covar(X,Y) = sum(X_i*Y_i)/n - sum(X_i)/n * sum(Y_i)/n
-        r^2 = covar(X,Y)**2/(var(X) * var(Y))
+        r = covar(X,Y)/sqrt(var(X) * var(Y))
 
     Parameters
     ----------
@@ -472,7 +487,7 @@ def CalcR2(format_bin_results):
     Returns
     -------
     float:
-        r^2, or np.nan if one of the two vcfs has
+        r, or np.nan if one of the two vcfs has
         no variance in this format bin
     """
     f = format_bin_results
@@ -482,7 +497,7 @@ def CalcR2(format_bin_results):
     if var1 == 0 or var2 == 0:
         return np.nan
     covar = f['total_len_12'] / n - f['total_len_1'] * f['total_len_2'] / n ** 2
-    return covar ** 2 / (var1 * var2)
+    return covar / np.sqrt(var1 * var2)
 
 
 def NewOverallPeriod(format_fields, format_bins):
@@ -547,17 +562,23 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     period = len(record1.motif)
     reflen = len(record1.ref_allele) / period
 
-    both_called = np.logical_and(
-        record1.GetCalledSamples()[sample_idxs[0]],
-        record2.GetCalledSamples()[sample_idxs[1]]
-    )
+    calls1 = record1.GetCalledSamples()[sample_idxs[0]]
+    calls2 = record2.GetCalledSamples()[sample_idxs[1]]
+    both_called = np.logical_and(calls1, calls2)
+    called_only_vcf1 = calls1 & ~calls2
+    called_only_vcf2 = calls2 & ~calls1
+    calls_neither = ~calls1 & ~calls2
     numcalls = np.sum(both_called)
-    if numcalls == 0:
-        return
 
     locus_results["chrom"].append(chrom)
     locus_results["start"].append(pos)
     locus_results["numcalls"].append(numcalls)
+    locus_results["n_missing_only_vcf1"].append(np.sum(called_only_vcf2))
+    locus_results["n_missing_only_vcf2"].append(np.sum(called_only_vcf1))
+    locus_results["n_missing_both"].append(np.sum(calls_neither))
+    sample_results["n_missing_only_vcf1"] += called_only_vcf1
+    sample_results["n_missing_only_vcf2"] += called_only_vcf2
+    sample_results["n_missing_both"] += calls_neither
     sample_results['numcalls'] += both_called
 
     # build this so indexing later in the method is more intuitive
@@ -590,7 +611,10 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         gts_string_2 = np.sort(gts_string_2, axis=1)
     conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
 
-    locus_results["metric-conc-seq"].append(np.sum(conc_seq) / numcalls)
+    if numcalls > 0:
+        locus_results["fraction-concordant-seq"].append(np.sum(conc_seq) / numcalls)
+    else:
+        locus_results["fraction-concordant-seq"].append(np.nan)
     sample_results['conc-seq-count'][both_called] += conc_seq
 
     gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
@@ -600,7 +624,10 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         gts_length_2 = np.sort(gts_length_2, axis=1)
     conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
 
-    locus_results["metric-conc-len"].append(np.sum(conc_len) / numcalls)
+    if numcalls > 0:
+        locus_results["fraction-concordant-len"].append(np.sum(conc_len) / numcalls)
+    else:
+        locus_results["fraction-concordant-len"].append(np.nan)
     sample_results['conc-len-count'][both_called] += conc_len
 
     sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
@@ -631,6 +658,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     # handle overall results
     for key in outer_keys:
         overall_results[key]['ALL']['numcalls'] += numcalls
+        overall_results[key]['ALL']['n_missing_only_vcf1'] += np.sum(called_only_vcf2)
+        overall_results[key]['ALL']['n_missing_only_vcf2'] += np.sum(called_only_vcf1)
+        overall_results[key]['ALL']['n_missing_both'] += np.sum(calls_neither)
         overall_results[key]['ALL']['conc_seq_count'] += np.sum(conc_seq)
         overall_results[key]['ALL']['conc_len_count'] += np.sum(conc_len)
         overall_results[key]['ALL']['total_len_1'] += np.sum(sum_length_1)
@@ -651,7 +681,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                 mask = (fmt1 >= bins[idx]) & (fmt1 < bins[idx + 1])
             elif stratify_file == 2:
                 mask = (fmt2 >= bins[idx]) & (fmt2 < bins[idx + 1])
-            masks.append(mask[both_called])
+            masks.append(mask)
 
         # last bin has inclusive end
         if stratify_file == 0:
@@ -661,9 +691,15 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
             mask = (fmt1 >= bins[-2]) & (fmt1 <= bins[-1])
         elif stratify_file == 2:
             mask = (fmt2 >= bins[-2]) & (fmt2 <= bins[-1])
-        masks.append(mask[both_called])
+        masks.append(mask)
 
         for _bin, mask in zip(bins[:-1], masks):
+            for key in outer_keys:
+                overall_results[key][fmt][_bin]['n_missing_only_vcf1'] += np.sum(called_only_vcf2[mask])
+                overall_results[key][fmt][_bin]['n_missing_only_vcf2'] += np.sum(called_only_vcf1[mask])
+                overall_results[key][fmt][_bin]['n_missing_both'] += np.sum(calls_neither[mask])
+
+            mask = mask[both_called]
             ncalls = np.sum(mask)
             if ncalls == 0:
                 continue
@@ -691,7 +727,6 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                     total_len_12
                 overall_results[key][fmt][_bin]['total_len_22'] += \
                     total_len_22
-
 
 def check_region(contigs1, contigs2, region_str):
     def check_contig(contig):
@@ -813,17 +848,25 @@ def main(args):
     chroms = utils.GetContigs(vcfreaders[0])
 
     ### Load shared samples ###
-    samples = mergeutils.GetSharedSamples(vcfreaders)
+    samples, omitted_samples = mergeutils.GetSharedSamples(vcfreaders)
     if len(samples) == 0:
-        common.WARNING("No shared smaples found between the vcfs")
+        common.WARNING("No shared samples found between the vcfs")
         return 1
     if args.samples:
         usesamples = set([item.strip() for item in open(args.samples, "r").readlines()])
         samples = list(set(samples).intersection(usesamples))
+        omitted_samples = [list(usesamples.intersection(set(omitted_sample_list))) for omitted_sample_list in omitted_samples]
     if len(samples) == 0:
         common.WARNING("No shared samples found between the vcfs and the "
                        "--samples file")
         return 1
+    if len(omitted_samples[0]) != 0 or len(omitted_samples[1]) != 0:
+        common.WARNING("Some samples were not shared between both VCFs and were omitted.")
+        for idx, omitted_sample_list in enumerate(omitted_samples):
+            if len(omitted_sample_list) != 0:
+                with open(args.out + '-vcf' + str(idx+1) + '-omitted-samples.tab', 'w') as omitted_samples_file:
+                    omitted_samples_file.write('\n'.join(omitted_sample_list) + '\n')
+
     samples.sort()
     sample_idxs = []
     for vcf in vcfreaders:
@@ -844,16 +887,23 @@ def main(args):
         "chrom": [],
         "start": [],
         "numcalls": [],
-        "metric-conc-seq": [],
-        "metric-conc-len": [],
+        "n_missing_only_vcf1": [],
+        "n_missing_only_vcf2": [],
+        "n_missing_both": [],
+        "fraction-concordant-seq": [],
+        "fraction-concordant-len": [],
     }
     sample_results = {
         "numcalls": np.zeros((len(samples)), dtype=int),
+        "n_missing_only_vcf1": np.zeros((len(samples)), dtype=int),
+        "n_missing_only_vcf2": np.zeros((len(samples)), dtype=int),
+        "n_missing_both": np.zeros((len(samples)), dtype=int),
         "conc-seq-count": np.zeros((len(samples)), dtype=int),
         "conc-len-count": np.zeros((len(samples)), dtype=int)
     }
     # nested dicts period -> format -> val
     # record running totals so results do not need to be stored in memory
+    # TODO add n_missings
     overall_results = {
         'ALL': NewOverallPeriod(format_fields, format_bins)
     }

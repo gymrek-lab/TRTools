@@ -1,3 +1,23 @@
+Unreleased
+----------
+
+New features:
+
+* CompareSTR now reports the samples omitted from each VCF due to not
+  being present in the other VCF.
+* CompareSTR now reports, for each sample and each locus, the number of calls missing
+  from only the first vcf, only the second, or both (as restricted by the number of
+  samples present in both VCFs and the --samples file if specified).
+
+Functionality Changes:
+
+* CompareSTR now reports Pearson's correlation coefficient instead of its 
+  squared value. The column :code:`r2` has accordingly been renamed to :code:`r`
+* CompareSTR now reports loci where no samples were called by both VCFs, with fields
+  appropriately filled with NaNs
+* Renamed :code:`metric-conc-seq/len` columns in CompareSTR output to
+  :code:`fraction-concordant-seq/len`.
+
 5.0.1
 -----
 

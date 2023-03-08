@@ -61,26 +61,27 @@ Other options:
 * :code:`--noplot`: Don't output any plots. Only produce text output.
 * :code:`--vcftype1 <string>`: Type of VCF file 1.
 * :code:`--vcftype2 <string>`: Type of VCF file 2.
-* :code:`--ignore-phasing`: Treat all calls as if they are unphased
+* :code:`--ignore-phasing`: Treat all calls as if they are unphased, ignoring any phasing information in the VCF.
 
 Outputs
 -------
 
 In output files, compareSTR reports the following metrics:
 
-* Length concordance: % of genotypes concordant between the two VCF files when only considering TR allele lengths
-* Sequence concordance: % of genotypes concordant between the two VCF files when considering TR allele sequence. Currently only relevant for HipSTR. Otherwise will be identical to length concordance
-* R2: Pearson r2 between the sum of allele lengths at each call compared between the two VCF files, where allele lengths are measured as number of repeat copies different from the reference.
+* Length concordance: fraction of genotypes concordant between the two VCF files when only considering TR allele lengths
+* Sequence concordance: fraction of genotypes concordant between the two VCF files when considering TR allele sequence. Currently only relevant for HipSTR. Otherwise will be identical to length concordance
+* R: Pearson r between the sum of allele lengths at each call compared between the two VCF files, where allele lengths are measured as number of repeat copies different from the reference.
 
-These metrics and numcalls only reflect the (sample, locus) pairs that were called by both callers
+These metrics and numcalls only reflect the (sample, locus) pairs that were called by both callers. Pairs which were not called by both callers are omitted instead of being counted as 
+disconcordant.
 
 compareSTR outputs the following text files and plots:
 
-* :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r2, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately if request by :code:`--period`. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
+* :code:`<outprefix>-overall.tab`: Has columns period, concordance-seq, concordance-len, r, numcalls. Plus additional columns for any FORMAT fields to stratify results on. This file has one line for all results (period="ALL") and a different line for each period analyzed separately if request by :code:`--period`. If stratifying by format fields, it will have additional lines for each range of values for each of those fields.
 * :code:`<outprefix>-bubble-period$period.pdf`: "Bubble" plot, which plots the sum of allele lengths for each call in :code:`--vcf1` vs. :code:`--vcf2`. Allele lengths are given in terms of difference in number of repeat units from the reference. The size of each bubble gives the number of calls at each cooordinate. A seperate plot is output for all TRs (period="ALL") and for each period if requested by :code:`--period`.
-* :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, metric-conc-seq, metric-conc-len, numcalls. There is one line for each TR.
+* :code:`<outprefix>-locuscompare.tab`: Has columns chrom, start, fraction-concordant-seq, fraction-concordant-len, numcalls. There is one line for each TR.
 * :code:`<outprefix>-locuscompare.pdf`: Plots the length concordance metric for each TR locus considered.
-* :code:`<outprefix>-samplecompare.tab`: Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
+* :code:`<outprefix>-samplecompare.tab`: Has columns sample, fraction-concordant-seq, fraction-concordant-len, numcalls. One line per sample
 * :code:`<outprefix>-samplecompare.pdf`: Plots the length concordance metric for each sample considered.
 
 See `Example Commands`_ below for example compareSTR commands for different supported TR genotypers based on example data files in this repository. More detailed use cases are also given in the vignettes https://trtools.readthedocs.io/en/develop/VIGNETTES.html.

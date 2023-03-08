@@ -48,7 +48,7 @@ def LoadReaders(vcffiles: List[str], region: Optional[str] = None) -> List[CYVCF
         return [r.fetch(region) for r in readers]
 
 
-def GetSharedSamples(readers: List[CYVCF_READER]) -> List[str]:
+def GetSharedSamples(readers: List[CYVCF_READER]) -> Tuple[List[str], List[List[str]]]:
     r"""Get list of samples used in all files being merged
 
     Parameters
@@ -57,16 +57,22 @@ def GetSharedSamples(readers: List[CYVCF_READER]) -> List[str]:
 
     Returns
     -------
-    samples : list of str
+    samples :
         Samples present in all readers
+    omitted_samples :
+        Samples present in each of the VCFs that are not present in the intersection
     """
-    if len(readers) == 0: return list()
+    if len(readers) == 0:
+        return [], []
+
     samples = set(readers[0].samples)
-    if len(readers) == 1: return list(samples)
+    if len(readers) == 1:
+        return list(samples), []
+
     for r in readers[1:]:
         samples = samples.intersection(set(r.samples))
-    return list(samples)
 
+    return list(samples), [list(set(reader.samples) - samples) for reader in readers]
 
 def GetSamples(readers: List[CYVCF_READER], filenames: Optional[str] = None) -> List[str]:
     r"""Get list of samples used in all files being merged

@@ -1,6 +1,5 @@
 import argparse
 import os
-from typing import List
 
 import numpy as np
 import pytest
@@ -341,6 +340,21 @@ def test_region(tmpdir, vcfdir, capsys):
     args.region = '1:-42'
     retcode = main(args)
     assert retcode == 1
+
+def test_ten_sample_output(tmpdir, vcfdir, capsys):
+    # also tests sample reordering and non equivalent sample lists
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+    VCF1 = os.path.join(vcfcomp, "test_ten_sample1.vcf.gz")
+    VCF2 = os.path.join(vcfcomp, "test_ten_sample2.vcf.gz")
+    args = base_argparse(tmpdir)
+    args.region = None
+    args.vcf1 = VCF1
+    args.vcf2 = VCF2
+    retcode = main(args)
+    assert retcode == 0
+
+    assert open(tmpdir + "/test_compare-vcf1-omitted-samples.tab", "r").read().strip() == 'HG00117'
+    assert open(tmpdir + "/test_compare-vcf2-omitted-samples.tab", "r").read().strip() == 'HG00119'
 
 def test_GetBubbleLegend():
     # only 3 values
