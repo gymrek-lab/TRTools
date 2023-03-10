@@ -2,6 +2,7 @@ import argparse
 import os
 
 import numpy as np
+import pandas as pd
 import pytest
 from trtools.utils.tests.test_mergeutils import DummyHarmonizedRecord
 from ..compareSTR import *
@@ -28,6 +29,9 @@ def base_argparse(tmpdir):
     args.ignore_phasing = False
     args.bubble_min = -5
     args.bubble_max = 5
+    args.balanced_accuracy = False
+    args.fraction_concordant_len_sum = False
+    args.vcf2_beagle_dosages = False
     return args
 
 
@@ -341,8 +345,12 @@ def test_region(tmpdir, vcfdir, capsys):
     retcode = main(args)
     assert retcode == 1
 
-def test_ten_sample_output(tmpdir, vcfdir, capsys):
+def test_ten_sample_output(tmpdir, vcfdir):
     # also tests sample reordering and non equivalent sample lists
+    # also tests missingness for one or the other or both samples
+    # also tests samples with no shared calls (but does not test loci with no shared calls)
+    # does not test phasedness
+    # currently only tests the locus file output
     vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
     VCF1 = os.path.join(vcfcomp, "test_ten_sample1.vcf.gz")
     VCF2 = os.path.join(vcfcomp, "test_ten_sample2.vcf.gz")
@@ -350,11 +358,80 @@ def test_ten_sample_output(tmpdir, vcfdir, capsys):
     args.region = None
     args.vcf1 = VCF1
     args.vcf2 = VCF2
+    args.ignore_phasing = True
+    args.balanced_accuracy = True
+    args.fraction_concordant_len_sum = True
     retcode = main(args)
     assert retcode == 0
 
     assert open(tmpdir + "/test_compare-vcf1-omitted-samples.tab", "r").read().strip() == 'HG00117'
     assert open(tmpdir + "/test_compare-vcf2-omitted-samples.tab", "r").read().strip() == 'HG00119'
+
+    locus = pd.read_csv(tmpdir + "/test_compare-locuscompare.tab", sep='\t')
+    assert np.all(locus['start'] == [31720, 33450])
+    assert np.allclose(locus['fraction_concordant_len'], [1/3, 4/9])
+    assert np.allclose(locus['fraction_concordant_len_sum'], [4/9, 4/9])
+    assert np.allclose(locus['balanced_accuracy'], [(1 + 3/8)/2, (3/4 + 1/4) / 3])
+    assert eval(locus['len_sum_frequencies'][0]) == {28: 8/9, 27: 1/9}
+    assert eval(locus['len_sum_frequencies'][1]) == {30: 4/9, 31: 4/9, 28: 1/9}
+    assert eval(locus['len_sum_accuracies'][0]) == {28: 3/8, 27: 1}
+    assert eval(locus['len_sum_accuracies'][1]) == {30: 3/4, 31: 1/4, 28: 0}
+    assert np.allclose(locus['mean_absolute_difference'], [5/9, 2])
+    assert np.allclose(locus['r'], [0.35, 0.3228208661506])
+    assert np.all(locus['numcalls']  == [9, 9])
+    assert np.all(locus['n_missing_only_vcf1']  == [0, 1])
+    assert np.all(locus['n_missing_only_vcf2']  == [1, 0])
+    assert np.all(locus['n_missing_both']  == [1, 1])
+
+def dicts_close(d1, d2):
+    keylist = d1.keys()
+    if not set(keylist) == set(d2.keys()):
+        return False
+    array_1 = np.array([d1[key] for key in keylist])
+    array_2 = np.array([d2[key] for key in keylist])
+
+    return np.allclose(array_1, array_2)
+
+def test_ten_sample_output_beagle(tmpdir, vcfdir):
+    # also tests sample reordering and non equivalent sample lists
+    # also tests missingness for one or the other or both samples
+    # also tests samples with no shared calls (but does not test loci with no shared calls)
+    # does not test phasedness
+    # currently only tests the locus file output
+    vcfcomp = os.path.join(vcfdir, "compareSTR_vcfs")
+    VCF1 = os.path.join(vcfcomp, "test_ten_sample1.vcf.gz")
+    VCF2 = os.path.join(vcfcomp, "test_ten_sample2.vcf.gz")
+    args = base_argparse(tmpdir)
+    args.region = None
+    args.vcf1 = VCF1
+    args.vcf2 = VCF2
+    args.ignore_phasing = True
+    args.balanced_accuracy = True
+    args.fraction_concordant_len_sum = True
+    args.vcf2_beagle_dosages = True
+    args.samples = os.path.join(vcfcomp, "test_ten_sample_beagle_samples.txt")
+    retcode = main(args)
+    assert retcode == 0
+
+    assert "test_compare-vcf1-omitted-samples.tab" in os.listdir(tmpdir)
+    assert "test_compare-vcf2-omitted-samples.tab" not in os.listdir(tmpdir)
+    assert open(tmpdir + "/test_compare-vcf1-omitted-samples.tab", "r").read().strip() == 'HG00117'
+
+    locus = pd.read_csv(tmpdir + "/test_compare-locuscompare.tab", sep='\t')
+    assert np.all(locus['start'] == [31720, 33450])
+    assert np.allclose(locus['fraction_concordant_len'], [(1 + .1 + .08)/5, (.42 + 1 + .06 + .6)/5])
+    assert np.allclose(locus['fraction_concordant_len_sum'], [(1+.32+.32)/5, (.42 + 1 + .06 + .6)/5])
+    assert np.allclose(locus['balanced_accuracy'], [(1+.32+.32)/5,  ((.42 + .6)/2 + (1 + .06)/3) / 2])
+    assert dicts_close(eval(locus['len_sum_frequencies'][0]), {28: 1})
+    assert dicts_close(eval(locus['len_sum_frequencies'][1]), {30: 2/5, 31: 3/5})
+    assert dicts_close(eval(locus['len_sum_accuracies'][0]), {28: (1+.32+.32)/5})
+    assert dicts_close(eval(locus['len_sum_accuracies'][1]), {30: (.42 + .6)/2, 31: (1 + .06)/3})
+    #assert np.allclose(locus['mean_absolute_difference'], [5/9, 2])
+    #assert np.allclose(locus['r'], [0.35, 0.3228208661506])
+    assert np.all(locus['numcalls']  == [5, 5])
+    assert np.all(locus['n_missing_only_vcf1']  == [0, 1])
+    assert np.all(locus['n_missing_only_vcf2']  == [1, 0])
+    assert np.all(locus['n_missing_both']  == [1, 1])
 
 def test_GetBubbleLegend():
     # only 3 values

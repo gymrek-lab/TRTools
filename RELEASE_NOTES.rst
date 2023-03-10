@@ -5,7 +5,15 @@ New features:
 
 * CompareSTR now reports the samples omitted from each VCF due to not
   being present in the other VCF.
-* CompareSTR now reports, for each sample and each locus, the number of calls missing
+* CompareSTR previously reported Pearson's r for the overall summaries.
+  It now also reports that for each locus.
+* CompareSTR now reports the mean absolute difference (between gt length sums, measured in # repeat copies)
+  between VCFs at each locus
+* CompareSTR now has the flag --fraction-concordant-len-sum which calculates the concordance fraction
+  between length sums (before this was just done between length pairs)
+* CompareSTR now has the flag --balanced-accuracy for calculating balanced accuracy of length sums (see docs)
+* CompareSTR now reports, for each sample, each locus, and the overall summaries,
+  the number of calls missing
   from only the first vcf, only the second, or both (as restricted by the number of
   samples present in both VCFs and the --samples file if specified).
 
@@ -15,8 +23,8 @@ Functionality Changes:
   squared value. The column :code:`r2` has accordingly been renamed to :code:`r`
 * CompareSTR now reports loci where no samples were called by both VCFs, with fields
   appropriately filled with NaNs
-* Renamed :code:`metric-conc-seq/len` columns in CompareSTR output to
-  :code:`fraction-concordant-seq/len`.
+* Renamed :code:`metric-conc-seq/len` and :code:`concordance-seq/len` columns in CompareSTR output to
+  :code:`fraction_concordant_seq/len`.
 
 5.0.1
 -----

@@ -13,11 +13,6 @@ import numpy as np
 
 import trtools.utils.utils as utils
 
-
-# List of supported VCF types
-# TODO: add Beagle
-# TODO: add support for tool version numbers
-
 _beagle_error = "If this file was imputed by Beagle, did you remember to copy the info fields over?"
 
 class VcfTypes(enum.Enum):

@@ -29,7 +29,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
-from typing import List, Any, Callable, Tuple, Optional
+from typing import List, Any, Callable, Optional
 
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
@@ -93,7 +93,7 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     return formats, bins
 
 
-def OutputLocusMetrics(locus_results, outprefix, noplot):
+def OutputLocusMetrics(locus_results, outprefix, noplot, calc_fraction_concordant_len_sum, balanced_accuracy):
     r"""Output per-locus metrics
 
     Outputs text file and plot of per-locus metrics
@@ -110,20 +110,36 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
         If True, don't output plots
     """
     with open(outprefix + '-locuscompare.tab', 'w') as tabfile:
-        tabfile.write('chrom\tstart\tfraction-concordant-seq\tfraction-concordant-len\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
-        for chrom, start, fraction_concordant_seq, fraction_concordant_len, numcalls, n_missing_only_vcf1, n_missing_only_vcf2, n_missing_both in zip(
-                locus_results['chrom'],
-                locus_results['start'],
-                locus_results['fraction-concordant-seq'],
-                locus_results['fraction-concordant-len'],
-                locus_results['numcalls'],
-                locus_results['n_missing_only_vcf1'],
-                locus_results['n_missing_only_vcf2'],
-                locus_results['n_missing_both']
-        ):
-            tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                chrom, start, fraction_concordant_seq, fraction_concordant_len, numcalls, n_missing_only_vcf1, n_missing_only_vcf2, n_missing_both
-            ))
+        tabfile.write('chrom\tstart\tfraction_concordant_seq\tfraction_concordant_len\t')
+        if calc_fraction_concordant_len_sum:
+            tabfile.write('fraction_concordant_len_sum\t')
+        if balanced_accuracy:
+            tabfile.write('balanced_accuracy\tlen_sum_frequencies\tlen_sum_accuracies\t')
+        tabfile.write('mean_absolute_difference\tr\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
+        cols = [
+            locus_results['chrom'],
+            locus_results['start'],
+            locus_results['fraction_concordant_seq'],
+            locus_results['fraction_concordant_len']
+        ]
+        if calc_fraction_concordant_len_sum:
+            cols.append(locus_results['fraction_concordant_len_sum'])
+        if balanced_accuracy:
+            cols.extend([
+                locus_results['balanced_accuracy'],
+                locus_results['len_sum_frequencies'],
+                locus_results['len_sum_accuracies']
+            ])
+        cols.extend([
+            locus_results['mean_absolute_difference'],
+            locus_results['r'],
+            locus_results['numcalls'],
+            locus_results['n_missing_only_vcf1'],
+            locus_results['n_missing_only_vcf2'],
+            locus_results['n_missing_both']
+        ])
+        for vals in zip(*cols):
+            tabfile.write('\t'.join('{}'.format(val) for val in vals) + '\n')
 
     # Create per-locus plot
     if noplot: return
@@ -133,10 +149,10 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
 
     nloci = len(locus_results['chrom'])
     if nloci <= 20:
-        sort_idx = np.argsort(locus_results['fraction-concordant-len'])[::-1]
-        for key in {'chrom', 'start', 'fraction-concordant-len'}:
+        sort_idx = np.argsort(locus_results['fraction_concordant_len'])[::-1]
+        for key in {'chrom', 'start', 'fraction_concordant_len'}:
             locus_results[key] = np.array(locus_results[key])[sort_idx]
-        ax.scatter(np.arange(nloci), locus_results['fraction-concordant-len'], color="darkblue")
+        ax.scatter(np.arange(nloci), locus_results['fraction_concordant_len'], color="darkblue")
         ax.set_xticks(np.arange(nloci))
         ax.set_xticklabels(
             ["{}:{}".format(chrom, start) for chrom, start in zip(
@@ -144,7 +160,7 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
             )], size=12, rotation=90
         )
     else:
-        sorted_results = np.sort(locus_results['fraction-concordant-len'])[::-1]
+        sorted_results = np.sort(locus_results['fraction_concordant_len'])[::-1]
         ax.scatter(np.arange(nloci), sorted_results, color="darkblue")
         ax.set_xlabel("Successive TR Loci", size=15)
     ax.set_ylabel("Length Concordance", size=15)
@@ -153,7 +169,7 @@ def OutputLocusMetrics(locus_results, outprefix, noplot):
     plt.close()
 
 
-def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
+def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot, calc_fraction_concordant_len_sum):
     r"""Output per-sample metrics
 
     Outputs text file and plot of per-sample metrics
@@ -170,17 +186,26 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     noplot : bool
         If True, don't output plots
     """
-    sample_results['conc-seq-count'] = \
-        sample_results['conc-seq-count'] / sample_results['numcalls']
-    sample_results['conc-len-count'] = \
-        sample_results['conc-len-count'] / sample_results['numcalls']
+    sample_results['conc_seq_count'] = \
+        sample_results['conc_seq_count'] / sample_results['numcalls']
+    sample_results['conc_len_count'] = \
+        sample_results['conc_len_count'] / sample_results['numcalls']
     with open(outprefix + '-samplecompare.tab', 'w') as tabfile:
-        tabfile.write('sample\tfraction-concordant-seq\tfraction-concordant-len\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
+        tabfile.write('sample\tfraction_concordant_seq\tfraction_concordant_len\t')
+        if calc_fraction_concordant_len_sum:
+            tabfile.write('fraction_concordant_len_sum\t')
+        tabfile.write('numcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
         for idx, sample in enumerate(sample_names):
-            tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+            tabfile.write('{}\t{}\t{}\t'.format(
                 sample,
-                sample_results['conc-seq-count'][idx],
-                sample_results['conc-len-count'][idx],
+                sample_results['conc_seq_count'][idx]/sample_results['numcalls'][idx],
+                sample_results['conc_len_count'][idx]/sample_results['numcalls'][idx],
+            ))
+            if calc_fraction_concordant_len_sum:
+                tabfile.write('{}\t'.format(
+                    sample_results['conc_len_sum_count'][idx]/sample_results['numcalls'][idx],
+                ))
+            tabfile.write('{}\t{}\t{}\t{}\n'.format(
                 sample_results['numcalls'][idx],
                 sample_results['n_missing_only_vcf1'][idx],
                 sample_results['n_missing_only_vcf2'][idx],
@@ -193,14 +218,14 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     if nsamples <= 20:
-        sort_idx = np.argsort(sample_results['conc-len-count'])[::-1]
+        sort_idx = np.argsort(sample_results['conc_len_count'])[::-1]
         ax.scatter(np.arange(nsamples),
-                   sample_results['conc-len-count'][sort_idx],
+                   sample_results['conc_len_count'][sort_idx],
                    color="darkblue")
         ax.set_xticks(np.arange(nsamples))
         ax.set_xticklabels(np.array(sample_names)[sort_idx], size=12, rotation=90)
     else:
-        sorted_results = np.sort(sample_results['conc-len-count'])[::-1]
+        sorted_results = np.sort(sample_results['conc_len_count'])[::-1]
         ax.scatter(np.arange(nsamples), sorted_results, color="darkblue")
         ax.set_xlabel("Successive samples", size=15)
     ax.set_ylabel("Length Concordance", size=15)
@@ -209,7 +234,7 @@ def OutputSampleMetrics(sample_results, sample_names, outprefix, noplot):
     plt.close()
 
 
-def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix):
+def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix, calc_fraction_concordant_len_sum):
     r"""Output overall accuracy metrics
 
     Output metrics overall, by period, and by FORMAT bins
@@ -247,9 +272,15 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
                 tabfile.write('\t')
             else:
                 tabfile.write('NA\t')
-        tabfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+        tabfile.write('{}\t{}\t'.format(
             format_bin_results['conc_seq_count'] / numcalls,
-            format_bin_results['conc_len_count'] / numcalls,
+            format_bin_results['conc_len_count'] / numcalls
+        ))
+        if calc_fraction_concordant_len_sum:
+            tabfile.write('{}\t'.format(
+                format_bin_results['conc_len_sum_count'] / numcalls,
+            ))
+        tabfile.write('{}\t{}\t{}\t{}\t{}\n'.format(
             CalcR(format_bin_results),
             numcalls,
             format_bin_results['n_missing_only_vcf1'],
@@ -262,7 +293,10 @@ def OutputOverallMetrics(overall_results, format_fields, format_bins, outprefix)
         for fmt in format_fields:
             tabfile.write(fmt)
             tabfile.write('\t')
-        tabfile.write("concordance-seq\tconcordance-len\tr\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n")
+        tabfile.write("fraction_concordant_seq\tfraction_concordant_len\t")
+        if calc_fraction_concordant_len_sum:
+            tabfile.write('fraction_concordant_len_sum\t')
+        tabfile.write("r\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n")
 
         for per in periods:
             # write the entry that is not stratified across formats
@@ -400,17 +434,22 @@ def getargs():  # pragma: no cover
     filter_group.add_argument("--samples", help="File containing list of samples to include", type=str)
     filter_group.add_argument("--region", help="Restrict to this region chrom:start-end", type=str)
     ### Stratify results ###
-    stats_group = parser.add_argument_group("Metrics to stratify results")
-    stats_group.add_argument("--stratify-fields", help="Comma-separated list of FORMAT fields to stratify by", type=str)
-    stats_group.add_argument("--stratify-binsizes",
+    stratify_group = parser.add_argument_group("Options to stratify the overall results")
+    stratify_group.add_argument("--stratify-fields", help="Comma-separated list of FORMAT fields to stratify by", type=str)
+    stratify_group.add_argument("--stratify-binsizes",
                              help="Comma-separated list of min:max:binsize to stratify each field on. Must be same length as --stratify-fields.",
                              type=str)
-    stats_group.add_argument("--stratify-file",
+    stratify_group.add_argument("--stratify-file",
                              help="Set to 1 to stratify based on --vcf1. Set to 2 to stratify based on --vcf2. Set to 0 to apply stratification to both --vcf1 and --vcf2",
                              default=0, type=int)
-    stats_group.add_argument("--period",
+    stratify_group.add_argument("--period",
                              help="Report results overall and also stratified by repeat unit length (period)",
                              action="store_true")
+    ### Additional stats ###
+    stats_group = parser.add_argument_group("Options to compute additional statistics")
+    stats_group.add_argument("--fraction-concordant-len-sum", help="Calculate the concordance between the sums of the haplotype lengths at each (sample, locus) pair", action='store_true')
+    stats_group.add_argument("--balanced-accuracy", help="Calculate the balanced accuracy for each locus (see the docs for more info)", action='store_true')
+    #stats_group.add_argument("--summed-len-confusion-matrix", help="Added a confusion matrix comparing the summed lengths between vcfs at each locus", action='store_true')
     ### Plotting args ###
     plot_group = parser.add_argument_group("Plotting options")
     plot_group.add_argument("--bubble-min", help="Minimum x/y axis value to display on bubble plots", type=int)
@@ -426,6 +465,9 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--vcftype2",
                               help="Type of --vcf2. Options=%s" % [str(item) for item in trh.VcfTypes.__members__],
                               type=str, default="auto")
+    option_group.add_argument("--vcf2-beagle-dosages",
+                              help="Use dosages imputed by Beagle from the AP fields in VCF2 instead of the best-guess calls in the GT field",
+                              action='store_true')
     option_group.add_argument("--ignore-phasing", help="Treat all calls as if they are unphased", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version='{version}'.format(version=__version__))
@@ -433,7 +475,7 @@ def getargs():  # pragma: no cover
     return args
 
 
-def NewOverallFormatBin():
+def NewOverallFormatBin(calc_fraction_concordant_len_sum):
     """
     Return an empty bin for the overall dictionary.
 
@@ -453,7 +495,7 @@ def NewOverallFormatBin():
         total_len_12
         total_len_22
     """
-    return {
+    d = {
         'conc_seq_count': 0,
         'conc_len_count': 0,
         'numcalls': 0,
@@ -466,6 +508,9 @@ def NewOverallFormatBin():
         'total_len_12': 0,
         'total_len_22': 0
     }
+    if calc_fraction_concordant_len_sum:
+        d['conc_len_sum_count'] = 0
+    return d
 
 
 def CalcR(format_bin_results):
@@ -500,7 +545,7 @@ def CalcR(format_bin_results):
     return covar / np.sqrt(var1 * var2)
 
 
-def NewOverallPeriod(format_fields, format_bins):
+def NewOverallPeriod(format_fields, format_bins, calc_fraction_concordant_len_sum):
     """
     Return an empty dictionary containing
     bins for each format stratification and for
@@ -511,18 +556,21 @@ def NewOverallPeriod(format_fields, format_bins):
     The empty dictionary.
     """
     period_dict = {
-        'ALL': NewOverallFormatBin()
+        'ALL': NewOverallFormatBin(calc_fraction_concordant_len_sum)
     }
     for fmt, bins in zip(format_fields, format_bins):
         period_dict[fmt] = {}
         for _bin in bins[:-1]:
-            period_dict[fmt][_bin] = NewOverallFormatBin()
+            period_dict[fmt][_bin] = NewOverallFormatBin(calc_fraction_concordant_len_sum)
     return period_dict
 
 
 def UpdateComparisonResults(record1, record2, sample_idxs,
                             ignore_phasing,
                             stratify_by_period,
+                            calc_fraction_concordant_len_sum,
+                            balanced_accuracy,
+                            vcf2_beagle_dosages,
                             format_fields, format_bins, stratify_file,
                             overall_results, locus_results, sample_results,
                             bubble_results):
@@ -604,31 +652,120 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         if not (all_unphased or np.all(~unphased)):
             raise ValueError("Found sample(s) with different phasedness at %s:%s" % (chrom, pos))
 
+    if vcf2_beagle_dosages:
+        aps = []
+        for i in range(1, 3):
+            ap = record2.format['AP' + str(i)][called_sample_idxs[1], :]
+            ap = np.hstack((np.maximum(0, 1 - np.sum(ap, axis=1)).reshape(-1 ,1), ap))
+            aps.append(ap)
+
     gts_string_1 = gts_string_1[:, :-1]
-    gts_string_2 = gts_string_2[:, :-1]
-    if all_unphased:
-        gts_string_1 = np.sort(gts_string_1, axis=1)
-        gts_string_2 = np.sort(gts_string_2, axis=1)
-    conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
+    if not vcf2_beagle_dosages:
+        gts_string_2 = gts_string_2[:, :-1]
+        if all_unphased:
+            gts_string_1 = np.sort(gts_string_1, axis=1)
+            gts_string_2 = np.sort(gts_string_2, axis=1)
+        conc_seq = np.all(gts_string_1 == gts_string_2, axis=1)
+    else:
+        conc_seq = np.zeros(numcalls)
+        vcf2_alleles = np.array([record2.ref_allele] + record2.alt_alleles)
+        for a1 in range(len(vcf2_alleles)):
+            for a2 in range(len(vcf2_alleles)):
+                samples = np.all(np.char.equal(gts_string_1, [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+                if a1 != a2 and all_unphased:
+                    samples |= np.all(np.char.equal(gts_string_1[:, ::-1], [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+                conc_seq[samples] += aps[0][samples, a1] * aps[1][samples, a2]
 
     if numcalls > 0:
-        locus_results["fraction-concordant-seq"].append(np.sum(conc_seq) / numcalls)
+        locus_results["fraction_concordant_seq"].append(np.sum(conc_seq) / numcalls)
     else:
-        locus_results["fraction-concordant-seq"].append(np.nan)
-    sample_results['conc-seq-count'][both_called] += conc_seq
+        locus_results["fraction_concordant_seq"].append(np.nan)
+    sample_results['conc_seq_count'][both_called] += conc_seq
 
     gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
+    # TODO temp move this down
     gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1]
-    if all_unphased:
-        gts_length_1 = np.sort(gts_length_1, axis=1)
-        gts_length_2 = np.sort(gts_length_2, axis=1)
-    conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
+    if not vcf2_beagle_dosages:
+        if all_unphased:
+            gts_length_1 = np.sort(gts_length_1, axis=1)
+            gts_length_2 = np.sort(gts_length_2, axis=1)
+        conc_len = np.all(gts_length_1 == gts_length_2, axis=1)
+        if calc_fraction_concordant_len_sum:
+            conc_len_sum = np.sum(gts_length_1, axis=1) == np.sum(gts_length_2, axis=1)
+    else:
+        conc_len = np.zeros(numcalls)
+        conc_len_sum = np.zeros(numcalls)
+        vcf2_alleles = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
+        for a1 in range(len(vcf2_alleles)):
+            for a2 in range(len(vcf2_alleles)):
+                samples = np.all(np.equal(gts_length_1, [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+                if a1 != a2 and all_unphased:
+                    samples |= np.all(np.equal(gts_length_1[:, ::-1], [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+                conc_len[samples] += aps[0][samples, a1] * aps[1][samples, a2]
+
+                if calc_fraction_concordant_len_sum:
+                    samples = np.sum(gts_length_1, axis=1) == vcf2_alleles[a1] + vcf2_alleles[a2]
+                    conc_len_sum[samples] += aps[0][samples, a1] * aps[1][samples, a2]
 
     if numcalls > 0:
-        locus_results["fraction-concordant-len"].append(np.sum(conc_len) / numcalls)
+        locus_results['mean_absolute_difference'].append(
+            np.mean(np.abs(
+                np.sum(gts_length_1, axis=1) - np.sum(gts_length_2, axis=1)
+            ))
+        )
+        locus_results['r'].append(np.corrcoef(
+            np.sum(gts_length_1, axis=1),
+            np.sum(gts_length_2, axis=1)
+        )[0,1])
+        locus_results["fraction_concordant_len"].append(np.sum(conc_len) / numcalls)
+        if calc_fraction_concordant_len_sum:
+            locus_results['fraction_concordant_len_sum'].append(np.sum(conc_len_sum) / numcalls)
+        if balanced_accuracy:
+            len_sums_1 = np.round(np.sum(gts_length_1, axis=1), 5)
+            len_sum_frequencies = {
+                k: v/numcalls
+                for k, v in dict(zip(*np.unique(len_sums_1, return_counts=True))).items()
+            }
+            locus_results['len_sum_frequencies'].append(len_sum_frequencies)
+            if not vcf2_beagle_dosages:
+                len_sum_accuracies = {}
+                balanced_accuracy = 0
+                len_sums_2 = np.round(np.sum(gts_length_2, axis=1), 5)
+                for len_ in len_sum_frequencies:
+                    accuracy = np.sum((len_sums_1 == len_sums_2)[len_sums_1 == len_]) / len_sum_frequencies[len_] / numcalls
+                    balanced_accuracy += accuracy
+                    len_sum_accuracies[len_] = accuracy
+                balanced_accuracy /= len(len_sum_frequencies)
+                locus_results['len_sum_accuracies'].append(len_sum_accuracies)
+                locus_results['balanced_accuracy'].append(balanced_accuracy)
+            else:
+                len_sum_totals = {len_: 0 for len_ in len_sum_frequencies.keys()}
+                vcf2_alleles = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
+                for a1 in range(len(vcf2_alleles)):
+                    for a2 in range(len(vcf2_alleles)):
+                        len_ = vcf2_alleles[a1] + vcf2_alleles[a2]
+                        if len_ not in len_sum_frequencies:
+                            continue
+                        samples = np.sum(gts_length_1, axis=1) == len_
+                        len_sum_totals[len_] += np.sum(aps[0][samples, a1] * aps[1][samples, a2])
+
+                len_sum_accuracies = {len_ : len_sum_totals[len_]/frequency/numcalls for len_, frequency in len_sum_frequencies.items()}
+                locus_results['len_sum_accuracies'].append(len_sum_accuracies)
+                locus_results['balanced_accuracy'].append(
+                    np.mean(list(len_sum_accuracies.values()))
+                )
     else:
-        locus_results["fraction-concordant-len"].append(np.nan)
-    sample_results['conc-len-count'][both_called] += conc_len
+        locus_results["mean_absolute_difference"].append(np.nan)
+        locus_results["r"].append(np.nan)
+        locus_results["fraction_concordant_len"].append(np.nan)
+        if calc_fraction_concordant_len_sum:
+            locus_results['fraction_concordant_len_sum'].append(np.nan)
+        if balanced_accuracy:
+            locus_results['balanced_accuracy'].append(np.nan)
+            locus_results['len_sum_frequencies'].append(np.nan)
+    sample_results['conc_len_count'][both_called] += conc_len
+    if calc_fraction_concordant_len_sum:
+        sample_results['conc_len_sum_count'][both_called] += conc_len_sum
 
     sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
     sum_length_2 = np.sum(gts_length_2 - reflen, axis=1)
@@ -637,7 +774,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     if stratify_by_period:
         outer_keys.append(period)
         if period not in overall_results:
-            overall_results[period] = NewOverallPeriod(format_fields, format_bins)
+            overall_results[period] = NewOverallPeriod(format_fields, format_bins, calc_fraction_concordant_len_sum)
             if bubble_results:
                 bubble_results[period] = {}
 
@@ -663,6 +800,8 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         overall_results[key]['ALL']['n_missing_both'] += np.sum(calls_neither)
         overall_results[key]['ALL']['conc_seq_count'] += np.sum(conc_seq)
         overall_results[key]['ALL']['conc_len_count'] += np.sum(conc_len)
+        if calc_fraction_concordant_len_sum:
+            overall_results[key]['ALL']['conc_len_sum_count'] += np.sum(conc_len_sum)
         overall_results[key]['ALL']['total_len_1'] += np.sum(sum_length_1)
         overall_results[key]['ALL']['total_len_2'] += np.sum(sum_length_2)
         overall_results[key]['ALL']['total_len_11'] += np.sum(sum_length_1 ** 2)
@@ -705,6 +844,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                 continue
             conc_seq_count = np.sum(conc_seq[mask])
             conc_len_count = np.sum(conc_len[mask])
+            conc_len_sum_count = np.sum(conc_len_sum[mask])
             total_len_1 = np.sum(sum_length_1[mask])
             total_len_2 = np.sum(sum_length_2[mask])
             total_len_11 = np.sum(sum_length_1[mask] ** 2)
@@ -717,6 +857,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                     conc_seq_count
                 overall_results[key][fmt][_bin]['conc_len_count'] += \
                     conc_len_count
+                if calc_fraction_concordant_len_sum:
+                    overall_results[key][fmt][_bin]['conc_len_sum_count'] += \
+                        conc_len_sum_count
                 overall_results[key][fmt][_bin]['total_len_1'] += \
                     total_len_1
                 overall_results[key][fmt][_bin]['total_len_2'] += \
@@ -886,26 +1029,37 @@ def main(args):
     locus_results = {
         "chrom": [],
         "start": [],
+        "fraction_concordant_seq": [],
+        "fraction_concordant_len": [],
+        'mean_absolute_difference': [], # between len sums, in number of repeat copies
+        'r': [],
         "numcalls": [],
         "n_missing_only_vcf1": [],
         "n_missing_only_vcf2": [],
         "n_missing_both": [],
-        "fraction-concordant-seq": [],
-        "fraction-concordant-len": [],
     }
+    if args.fraction_concordant_len_sum:
+        locus_results['fraction_concordant_len_sum'] = []
+    if args.balanced_accuracy:
+        locus_results['balanced_accuracy'] = []
+        locus_results['len_sum_frequencies'] = []
+        locus_results['len_sum_accuracies'] = []
+
     sample_results = {
         "numcalls": np.zeros((len(samples)), dtype=int),
         "n_missing_only_vcf1": np.zeros((len(samples)), dtype=int),
         "n_missing_only_vcf2": np.zeros((len(samples)), dtype=int),
         "n_missing_both": np.zeros((len(samples)), dtype=int),
-        "conc-seq-count": np.zeros((len(samples)), dtype=int),
-        "conc-len-count": np.zeros((len(samples)), dtype=int)
+        "conc_seq_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float),
+        "conc_len_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float),
     }
+    if args.fraction_concordant_len_sum:
+        sample_results['conc_len_sum_count'] = np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float)
+
     # nested dicts period -> format -> val
     # record running totals so results do not need to be stored in memory
-    # TODO add n_missings
     overall_results = {
-        'ALL': NewOverallPeriod(format_fields, format_bins)
+        'ALL': NewOverallPeriod(format_fields, format_bins, args.fraction_concordant_len_sum)
     }
 
     if not args.noplot:
@@ -958,6 +1112,9 @@ def main(args):
             UpdateComparisonResults(*harmonized_records,
                                     sample_idxs,
                                     args.ignore_phasing, args.period,
+                                    args.fraction_concordant_len_sum,
+                                    args.balanced_accuracy,
+                                    args.vcf2_beagle_dosages,
                                     format_fields, format_bins,
                                     args.stratify_file,
                                     overall_results, locus_results,
@@ -973,14 +1130,14 @@ def main(args):
         return 1
 
     ### Overall metrics ###
-    OutputOverallMetrics(overall_results, format_fields, format_bins, args.out)
+    OutputOverallMetrics(overall_results, format_fields, format_bins, args.out, args.fraction_concordant_len_sum)
     if not args.noplot: OutputBubblePlot(bubble_results, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
-    OutputLocusMetrics(locus_results, args.out, args.noplot)
+    OutputLocusMetrics(locus_results, args.out, args.noplot, args.fraction_concordant_len_sum, args.balanced_accuracy)
 
     ### Per-sample metrics ###
-    OutputSampleMetrics(sample_results, samples, args.out, args.noplot)
+    OutputSampleMetrics(sample_results, samples, args.out, args.noplot, args.fraction_concordant_len_sum)
 
     return 0
 
