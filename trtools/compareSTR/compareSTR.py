@@ -21,6 +21,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 import scipy.stats
+import statsmodels.stats.weightstats
 import sys
 
 import trtools.utils.common as common
@@ -31,6 +32,18 @@ from trtools import __version__
 
 from typing import List, Any, Callable, Optional
 
+#def _weighted_mean(x, w):
+#    """Weighted Mean"""
+#    return np.sum(x * w) / np.sum(w)
+#
+#def _weighted_cov(x, y, w):
+#    """Weighted Covariance"""
+#    print(np.sum(w * (x - _weighted_mean(x, w)) * (y - _weighted_mean(y, w))) / np.sum(w), x, y, w)
+#    return np.sum(w * (x - _weighted_mean(x, w)) * (y - _weighted_mean(y, w))) / np.sum(w)
+#
+#def _weighted_corr(x, y, w):
+#    """Weighted Correlation"""
+#    return _weighted_cov(x, y, w) / np.sqrt(_weighted_cov(x, x, w) * _weighted_cov(y, y, w))
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on
@@ -93,7 +106,7 @@ def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreader
     return formats, bins
 
 
-def OutputLocusMetrics(locus_results, outprefix, noplot, calc_fraction_concordant_len_sum, balanced_accuracy):
+def OutputLocusMetrics(locus_results, outprefix, noplot, calc_fraction_concordant_len_sum, balanced_accuracy, vcf2_beagle_probabilities):
     r"""Output per-locus metrics
 
     Outputs text file and plot of per-locus metrics
@@ -115,7 +128,10 @@ def OutputLocusMetrics(locus_results, outprefix, noplot, calc_fraction_concordan
             tabfile.write('fraction_concordant_len_sum\t')
         if balanced_accuracy:
             tabfile.write('balanced_accuracy\tlen_sum_frequencies\tlen_sum_accuracies\t')
-        tabfile.write('mean_absolute_difference\tr\tnumcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
+        tabfile.write('mean_absolute_difference\tr\t')
+        if vcf2_beagle_probabilities:
+            tabfile.write('dosage_r\t')
+        tabfile.write('numcalls\tn_missing_only_vcf1\tn_missing_only_vcf2\tn_missing_both\n')
         cols = [
             locus_results['chrom'],
             locus_results['start'],
@@ -132,7 +148,11 @@ def OutputLocusMetrics(locus_results, outprefix, noplot, calc_fraction_concordan
             ])
         cols.extend([
             locus_results['mean_absolute_difference'],
-            locus_results['r'],
+            locus_results['r']
+        ])
+        if vcf2_beagle_probabilities:
+            cols.append(locus_results['dosage_r'])
+        cols.extend([
             locus_results['numcalls'],
             locus_results['n_missing_only_vcf1'],
             locus_results['n_missing_only_vcf2'],
@@ -449,6 +469,10 @@ def getargs():  # pragma: no cover
     stats_group = parser.add_argument_group("Options to compute additional statistics")
     stats_group.add_argument("--fraction-concordant-len-sum", help="Calculate the concordance between the sums of the haplotype lengths at each (sample, locus) pair", action='store_true')
     stats_group.add_argument("--balanced-accuracy", help="Calculate the balanced accuracy for each locus (see the docs for more info)", action='store_true')
+    stats_group.add_argument("--vcf2-beagle-probabilities",
+                              help="For use when VCF2 was produced using Beagle imputation. Use the imputed allelel probabilities in the AP fields instead of the best-guess calls in the GT field",
+                              action='store_true')
+    stats_group.add_argument("--ignore-phasing", help="Treat all calls as if they are unphased", action="store_true")
     #stats_group.add_argument("--summed-len-confusion-matrix", help="Added a confusion matrix comparing the summed lengths between vcfs at each locus", action='store_true')
     ### Plotting args ###
     plot_group = parser.add_argument_group("Plotting options")
@@ -465,10 +489,6 @@ def getargs():  # pragma: no cover
     option_group.add_argument("--vcftype2",
                               help="Type of --vcf2. Options=%s" % [str(item) for item in trh.VcfTypes.__members__],
                               type=str, default="auto")
-    option_group.add_argument("--vcf2-beagle-dosages",
-                              help="Use dosages imputed by Beagle from the AP fields in VCF2 instead of the best-guess calls in the GT field",
-                              action='store_true')
-    option_group.add_argument("--ignore-phasing", help="Treat all calls as if they are unphased", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version='{version}'.format(version=__version__))
     args = parser.parse_args()
@@ -570,7 +590,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                             stratify_by_period,
                             calc_fraction_concordant_len_sum,
                             balanced_accuracy,
-                            vcf2_beagle_dosages,
+                            vcf2_beagle_probabilities,
                             format_fields, format_bins, stratify_file,
                             overall_results, locus_results, sample_results,
                             bubble_results):
@@ -652,7 +672,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         if not (all_unphased or np.all(~unphased)):
             raise ValueError("Found sample(s) with different phasedness at %s:%s" % (chrom, pos))
 
-    if vcf2_beagle_dosages:
+    if vcf2_beagle_probabilities:
         aps = []
         for i in range(1, 3):
             ap = record2.format['AP' + str(i)][called_sample_idxs[1], :]
@@ -660,7 +680,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
             aps.append(ap)
 
     gts_string_1 = gts_string_1[:, :-1]
-    if not vcf2_beagle_dosages:
+    if not vcf2_beagle_probabilities:
         gts_string_2 = gts_string_2[:, :-1]
         if all_unphased:
             gts_string_1 = np.sort(gts_string_1, axis=1)
@@ -683,9 +703,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     sample_results['conc_seq_count'][both_called] += conc_seq
 
     gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
-    # TODO temp move this down
+    # TODO move down
     gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1]
-    if not vcf2_beagle_dosages:
+    if not vcf2_beagle_probabilities:
         if all_unphased:
             gts_length_1 = np.sort(gts_length_1, axis=1)
             gts_length_2 = np.sort(gts_length_2, axis=1)
@@ -695,31 +715,59 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     else:
         conc_len = np.zeros(numcalls)
         conc_len_sum = np.zeros(numcalls)
-        vcf2_alleles = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
-        for a1 in range(len(vcf2_alleles)):
-            for a2 in range(len(vcf2_alleles)):
-                samples = np.all(np.equal(gts_length_1, [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+        vcf2_allele_lens = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
+        for a1 in range(len(vcf2_allele_lens)):
+            for a2 in range(len(vcf2_allele_lens)):
+                samples = np.all(np.equal(gts_length_1, [vcf2_allele_lens[a1], vcf2_allele_lens[a2]]), axis=1)
                 if a1 != a2 and all_unphased:
-                    samples |= np.all(np.equal(gts_length_1[:, ::-1], [vcf2_alleles[a1], vcf2_alleles[a2]]), axis=1)
+                    samples |= np.all(np.equal(gts_length_1[:, ::-1], [vcf2_allele_lens[a1], vcf2_allele_lens[a2]]), axis=1)
                 conc_len[samples] += aps[0][samples, a1] * aps[1][samples, a2]
 
                 if calc_fraction_concordant_len_sum:
-                    samples = np.sum(gts_length_1, axis=1) == vcf2_alleles[a1] + vcf2_alleles[a2]
+                    samples = np.sum(gts_length_1, axis=1) == vcf2_allele_lens[a1] + vcf2_allele_lens[a2]
                     conc_len_sum[samples] += aps[0][samples, a1] * aps[1][samples, a2]
 
     if numcalls > 0:
-        locus_results['mean_absolute_difference'].append(
-            np.mean(np.abs(
-                np.sum(gts_length_1, axis=1) - np.sum(gts_length_2, axis=1)
-            ))
-        )
-        locus_results['r'].append(np.corrcoef(
-            np.sum(gts_length_1, axis=1),
-            np.sum(gts_length_2, axis=1)
-        )[0,1])
         locus_results["fraction_concordant_len"].append(np.sum(conc_len) / numcalls)
         if calc_fraction_concordant_len_sum:
             locus_results['fraction_concordant_len_sum'].append(np.sum(conc_len_sum) / numcalls)
+
+        if not vcf2_beagle_probabilities:
+            locus_results['mean_absolute_difference'].append(
+                np.mean(np.abs(
+                    np.sum(gts_length_1, axis=1) - np.sum(gts_length_2, axis=1)
+                ))
+            )
+            locus_results['r'].append(np.corrcoef(
+                np.sum(gts_length_1, axis=1),
+                np.sum(gts_length_2, axis=1)
+            )[0,1])
+        else:
+            weights = aps[0][:, :, None]*aps[1][:, None, :] # compute outer product of aps using broadcasting to get weights
+            gt2_possible_lens = vcf2_allele_lens[:, None] + vcf2_allele_lens[None, :] # computer outer sum of lengths using broadcasting to get length sums
+            gt1_sums = np.sum(gts_length_1, axis=1)
+            locus_results['mean_absolute_difference'].append(
+                np.sum(weights*np.abs(gt1_sums[:, None, None]  - gt2_possible_lens))/np.sum(weights)
+            )
+            locus_results['r'].append(
+                statsmodels.stats.weightstats.DescrStatsW(
+                    np.array([
+                        gt1_sums.repeat(gt2_possible_lens.size),
+                        np.tile(gt2_possible_lens.reshape(-1), numcalls)
+                    ]).T,
+                    weights.flatten()
+                ).corrcoef[0,1]
+                #_weighted_corr(gt1_sums[:, None, None], gt2_possible_lens, weights)
+            )
+
+            dosages = np.zeros(numcalls)
+            for a, len_ in enumerate(vcf2_allele_lens):
+                dosages += len_ * (aps[0][:, a] + aps[1][:, a])
+            locus_results['dosage_r'].append(np.corrcoef(
+                np.sum(gts_length_1, axis=1),
+                dosages
+            )[0,1])
+
         if balanced_accuracy:
             len_sums_1 = np.round(np.sum(gts_length_1, axis=1), 5)
             len_sum_frequencies = {
@@ -727,7 +775,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                 for k, v in dict(zip(*np.unique(len_sums_1, return_counts=True))).items()
             }
             locus_results['len_sum_frequencies'].append(len_sum_frequencies)
-            if not vcf2_beagle_dosages:
+            if not vcf2_beagle_probabilities:
                 len_sum_accuracies = {}
                 balanced_accuracy = 0
                 len_sums_2 = np.round(np.sum(gts_length_2, axis=1), 5)
@@ -767,6 +815,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     if calc_fraction_concordant_len_sum:
         sample_results['conc_len_sum_count'][both_called] += conc_len_sum
 
+    # TODO overall results are very wrong for beagle
     sum_length_1 = np.sum(gts_length_1 - reflen, axis=1)
     sum_length_2 = np.sum(gts_length_2 - reflen, axis=1)
 
@@ -1040,6 +1089,9 @@ def main(args):
     }
     if args.fraction_concordant_len_sum:
         locus_results['fraction_concordant_len_sum'] = []
+    if args.vcf2_beagle_probabilities:
+        locus_results['dosage_r'] = []
+        # TODO dosage_r for ALL
     if args.balanced_accuracy:
         locus_results['balanced_accuracy'] = []
         locus_results['len_sum_frequencies'] = []
@@ -1050,11 +1102,11 @@ def main(args):
         "n_missing_only_vcf1": np.zeros((len(samples)), dtype=int),
         "n_missing_only_vcf2": np.zeros((len(samples)), dtype=int),
         "n_missing_both": np.zeros((len(samples)), dtype=int),
-        "conc_seq_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float),
-        "conc_len_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float),
+        "conc_seq_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_probabilities else float),
+        "conc_len_count": np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_probabilities else float),
     }
     if args.fraction_concordant_len_sum:
-        sample_results['conc_len_sum_count'] = np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_dosages else float)
+        sample_results['conc_len_sum_count'] = np.zeros((len(samples)), dtype=int if not args.vcf2_beagle_probabilities else float)
 
     # nested dicts period -> format -> val
     # record running totals so results do not need to be stored in memory
@@ -1114,7 +1166,7 @@ def main(args):
                                     args.ignore_phasing, args.period,
                                     args.fraction_concordant_len_sum,
                                     args.balanced_accuracy,
-                                    args.vcf2_beagle_dosages,
+                                    args.vcf2_beagle_probabilities,
                                     format_fields, format_bins,
                                     args.stratify_file,
                                     overall_results, locus_results,
@@ -1134,7 +1186,7 @@ def main(args):
     if not args.noplot: OutputBubblePlot(bubble_results, args.out, minval=args.bubble_min, maxval=args.bubble_max)
 
     ### Per-locus metrics ###
-    OutputLocusMetrics(locus_results, args.out, args.noplot, args.fraction_concordant_len_sum, args.balanced_accuracy)
+    OutputLocusMetrics(locus_results, args.out, args.noplot, args.fraction_concordant_len_sum, args.balanced_accuracy, args.vcf2_beagle_probabilities)
 
     ### Per-sample metrics ###
     OutputSampleMetrics(sample_results, samples, args.out, args.noplot, args.fraction_concordant_len_sum)

@@ -4,6 +4,8 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+from statsmodels.stats.weightstats import DescrStatsW
+
 from trtools.utils.tests.test_mergeutils import DummyHarmonizedRecord
 from ..compareSTR import *
 
@@ -31,7 +33,7 @@ def base_argparse(tmpdir):
     args.bubble_max = 5
     args.balanced_accuracy = False
     args.fraction_concordant_len_sum = False
-    args.vcf2_beagle_dosages = False
+    args.vcf2_beagle_probabilities = False
     return args
 
 
@@ -408,7 +410,7 @@ def test_ten_sample_output_beagle(tmpdir, vcfdir):
     args.ignore_phasing = True
     args.balanced_accuracy = True
     args.fraction_concordant_len_sum = True
-    args.vcf2_beagle_dosages = True
+    args.vcf2_beagle_probabilities = True
     args.samples = os.path.join(vcfcomp, "test_ten_sample_beagle_samples.txt")
     retcode = main(args)
     assert retcode == 0
@@ -426,8 +428,34 @@ def test_ten_sample_output_beagle(tmpdir, vcfdir):
     assert dicts_close(eval(locus['len_sum_frequencies'][1]), {30: 2/5, 31: 3/5})
     assert dicts_close(eval(locus['len_sum_accuracies'][0]), {28: (1+.32+.32)/5})
     assert dicts_close(eval(locus['len_sum_accuracies'][1]), {30: (.42 + .6)/2, 31: (1 + .06)/3})
-    #assert np.allclose(locus['mean_absolute_difference'], [5/9, 2])
-    #assert np.allclose(locus['r'], [0.35, 0.3228208661506])
+    assert np.allclose(locus['mean_absolute_difference'],
+       [(.12*2 + .34 + .16 + .06*2 + .24*2 + .38 + .06 + .7 + .3*2 + 1)/5,
+        (.01*6 + .03*5 + .02*4 + .13*3 + .22*2 + .03 + .13 + .01*2 +
+         .18*6 + .18*4 + .56*3 + .02 +
+         .4*2 +
+         .12*7 + .32*6 + .16*5 + .06*4 + .22*3 + .12*2)/5]
+    )
+    assert np.allclose(locus['r'],
+       [np.nan,
+        DescrStatsW(np.array([
+           [1, -2, 0, -6, -5, -4, -3, -2, -1, 0, 1, 2, -5, -3, -2, 0, 1, -6, -5, -4, -3, -2, -1],
+           [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]).T,
+           [1, .4, .6, .01, .03, .02, .13, .22, .03, .42, .13, .01, .18, .18, .56, .02, .06, .12, .32, .16, .06, .22, .12]).corrcoef[0,1]],
+        equal_nan=True
+    )
+    assert np.allclose(locus['dosage_r'],
+       [np.nan,
+        np.corrcoef(np.array([
+            [0, 1, 1, 0 ,1],
+            [.01*-6 + .03*-5 + .02*-4 + .13*-3 + .22*-2 + .03*-1 + .42*0 + .13*1 + .01*2,
+             1,
+             .18*-5 + .18*-3 + .56*-2 + .02*0 + .06*1,
+             .4*-2 + .06*0,
+             .12*-6 + .32*-5 + .16*-4 + .06*-3 + .22*-2 + .12*-1
+            ]
+        ]))[0,1]],
+        equal_nan=True
+    )
     assert np.all(locus['numcalls']  == [5, 5])
     assert np.all(locus['n_missing_only_vcf1']  == [0, 1])
     assert np.all(locus['n_missing_only_vcf2']  == [1, 0])
