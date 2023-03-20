@@ -1,5 +1,7 @@
 import argparse
 import os
+
+import cyvcf2
 import numpy as np
 import pytest
 
@@ -199,9 +201,20 @@ def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
     captured = capsys.readouterr()
     assert "Expected format field DP not found" in captured.err
 
+def test_alt_same_len_as_ref_different_flanking(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_hipstr2_alt_v_ref.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    main(args)
+
+    vcf = cyvcf2.VCF(args.out + '.vcf')
+    var = next(vcf)
+    for alt in var.ALT:
+        assert alt != var.REF
+
 def test_ConflictingRefs():
     # Set up dummy records
-    dummy_records = [] 
+    dummy_records = []
     dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
     dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAGCAG'))
     dummy_records.append(DummyHarmonizedRecord('chr1', 100, 'CAG'))
@@ -337,3 +350,4 @@ def test_popstr_output(args, mrgvcfdir):
 # what if there are multiple records at the same location in the same VCF
 # if a genotype is no called but there is other format info,
 # we aren't emitting it. Is that intended?
+# TODO write test where sample and allele orderings change
