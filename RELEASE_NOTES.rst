@@ -1,3 +1,11 @@
+5.0.2
+-----
+
+Bug fixes:
+
+* MergeSTR now will no longer sometimes emit an alternate allele identical to the ref allele when
+  dealing with flanking base pairs.
+
 5.0.1
 -----
 

@@ -42,7 +42,7 @@ Once changes have been made to develop that are ready to be published, first cho
 
 Then go through the steps of merging the changes into the master branch:
 
-#. Run pytest and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
+#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
 #. Update the version number in setup.py
