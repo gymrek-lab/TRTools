@@ -17,7 +17,7 @@ New features:
   from only the first vcf, only the second, or both (as restricted by the number of
   samples present in both VCFs and the --samples file if specified).
 
-Functionality Changes:
+Functionality changes:
 
 * CompareSTR now reports Pearson's correlation coefficient instead of its 
   squared value. The column :code:`r2` has accordingly been renamed to :code:`r`
@@ -25,6 +25,11 @@ Functionality Changes:
   appropriately filled with NaNs
 * Renamed :code:`metric-conc-seq/len` and :code:`concordance-seq/len` columns in CompareSTR output to
   :code:`fraction_concordant_seq/len`.
+
+Bug fixes:
+
+* If two STRs calls have the same number of base pairs, compareSTR recognizes them as concordant
+  even if the two callers have assigned the STR two different motif lengths.
 
 5.0.1
 -----

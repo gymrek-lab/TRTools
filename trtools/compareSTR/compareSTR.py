@@ -32,19 +32,6 @@ from trtools import __version__
 
 from typing import List, Any, Callable, Optional
 
-#def _weighted_mean(x, w):
-#    """Weighted Mean"""
-#    return np.sum(x * w) / np.sum(w)
-#
-#def _weighted_cov(x, y, w):
-#    """Weighted Covariance"""
-#    print(np.sum(w * (x - _weighted_mean(x, w)) * (y - _weighted_mean(y, w))) / np.sum(w), x, y, w)
-#    return np.sum(w * (x - _weighted_mean(x, w)) * (y - _weighted_mean(y, w))) / np.sum(w)
-#
-#def _weighted_corr(x, y, w):
-#    """Weighted Correlation"""
-#    return _weighted_cov(x, y, w) / np.sqrt(_weighted_cov(x, x, w) * _weighted_cov(y, y, w))
-
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
     r"""Get which FORMAT fields to stratify on
 
@@ -627,8 +614,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     # Extract shared info
     chrom = record1.chrom
     pos = record1.pos
+    # TODO this assumes the periods are the same for both VCFs, which isn't always the case
     period = len(record1.motif)
-    reflen = len(record1.ref_allele) / period
+    reflen = record1.ref_allele_length
 
     calls1 = record1.GetCalledSamples()[sample_idxs[0]]
     calls2 = record2.GetCalledSamples()[sample_idxs[1]]
@@ -702,9 +690,9 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
         locus_results["fraction_concordant_seq"].append(np.nan)
     sample_results['conc_seq_count'][both_called] += conc_seq
 
-    gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1]
+    gts_length_1 = record1.GetLengthGenotypes()[called_sample_idxs[0], :-1] * len(record1.motif)
     # TODO move down
-    gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1]
+    gts_length_2 = record2.GetLengthGenotypes()[called_sample_idxs[1], :-1] * len(record2.motif)
     if not vcf2_beagle_probabilities:
         if all_unphased:
             gts_length_1 = np.sort(gts_length_1, axis=1)
@@ -715,7 +703,7 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
     else:
         conc_len = np.zeros(numcalls)
         conc_len_sum = np.zeros(numcalls)
-        vcf2_allele_lens = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
+        vcf2_allele_lens = np.array([record2.ref_allele_length] + record2.alt_allele_lengths) * len(record2.motif)
         for a1 in range(len(vcf2_allele_lens)):
             for a2 in range(len(vcf2_allele_lens)):
                 samples = np.all(np.equal(gts_length_1, [vcf2_allele_lens[a1], vcf2_allele_lens[a2]]), axis=1)
@@ -788,13 +776,13 @@ def UpdateComparisonResults(record1, record2, sample_idxs,
                 locus_results['balanced_accuracy'].append(balanced_accuracy)
             else:
                 len_sum_totals = {len_: 0 for len_ in len_sum_frequencies.keys()}
-                vcf2_alleles = np.array([record2.ref_allele_length] + record2.alt_allele_lengths)
+                vcf2_alleles = np.array([record2.ref_allele_length] + record2.alt_allele_lengths) * len(record2.motif)
                 for a1 in range(len(vcf2_alleles)):
                     for a2 in range(len(vcf2_alleles)):
-                        len_ = vcf2_alleles[a1] + vcf2_alleles[a2]
+                        len_ = np.round(vcf2_alleles[a1] + vcf2_alleles[a2], 5)
                         if len_ not in len_sum_frequencies:
                             continue
-                        samples = np.sum(gts_length_1, axis=1) == len_
+                        samples = np.round(np.sum(gts_length_1, axis=1), 5) == len_
                         len_sum_totals[len_] += np.sum(aps[0][samples, a1] * aps[1][samples, a2])
 
                 len_sum_accuracies = {len_ : len_sum_totals[len_]/frequency/numcalls for len_, frequency in len_sum_frequencies.items()}
