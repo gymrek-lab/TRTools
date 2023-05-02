@@ -103,16 +103,6 @@ def _weighted_binom_conf(weights, successes, confidence):
 
     return (phat, center - interval_size, center + interval_size)
 
-#    outfile,
-#    traits_fnames,
-#    untransformed_phenotypes_fname,
-#    get_genotype_iter,
-#    phenotype,
-#    samples,
-#    binary,
-#    region,
-#    runtype,
-#):
 def perform_gwas_helper(
     outfile,
     all_samples,
@@ -122,7 +112,7 @@ def perform_gwas_helper(
     same_samples,
     sample_fname,
     beagle_dosages,
-    plotting_phenotype_fname,
+    stats_for_plotting,
     paired_genotype_plot,
     plot_phenotype_residuals,
     plotting_ci_alphas
@@ -132,7 +122,6 @@ def perform_gwas_helper(
     )
     #if binary != 'logistic':
     outfile.write('se_{}\tregression_R^2\t'.format(phenotype_name))
-    outfile.flush()
    
     print('{} samples in the VCF'.format(len(all_samples)), flush=True)
 
@@ -187,33 +176,39 @@ def perform_gwas_helper(
     ).format(prev_n_samples - current_n_samples, current_n_samples))
 
     covars = covars[sample_filter, :]
+
+    if stats_for_plotting == '__same':
+        plotting_phenotype = covars[:, 1].copy()
+    elif stats_for_plotting:
+        plotting_phenotype = np.load(stats_for_plotting)
+        if not same_samples:
+            plotting_phenotype = _merge_arrays(
+                np.array(all_samples, dtype=float).reshape(-1, 1), plotting_phenotype
+            )[sample_filter, 1]
+            if np.any(np.isnan(plotting_phenotype)):
+                print("Some samples in the association are missing values in the --stats-for-plotting file")
+                exit(1)
+        else:
+            plotting_phenotype = plotting_phenotype[sample_filter, 0]
+
     pheno_std = np.std(covars[:, 1])
     covars = (covars - np.mean(covars, axis=0))/np.std(covars, axis=0)
     outcome = covars[:, 1].copy()
     covars[:, 1] = 1 # reuse the column that was the outcome as the intercept
    
-    if plotting_phenotype_fname:
-        plotting_phenotype = np.load(plotting_phenotype_fname)
-        if not same_samples:
-            plotting_phenotype = _merge_arrays(
-                np.array(all_samples, dtype=float).reshape(-1, 1), plotting_phenotype
-            )[sample_filter, 1]
-        else:
-            plotting_phenotype = plotting_phenotype[sample_filter, 0]
-
     genotype_iter = get_genotype_iter(sample_filter.copy())
 
     # first yield is special
     extra_detail_fields = next(genotype_iter)
-    outfile.write('\t'.join(extra_detail_fields) + '\n')
+    outfile.write('\t'.join(extra_detail_fields))
 
-    #if not binary:
-    #    stat = 'mean'
-    #else:
-    #    stat = 'fraction'
-    stat = 'mean'
+    if stats_for_plotting:
+        #if not binary:
+        #    stat = 'mean'
+        #else:
+        #    stat = 'fraction'
+        stat = 'mean'
 
-    if plotting_phenotype_fname:
         residual = 'residual_' if plot_phenotype_residuals else ''
 
         if not beagle_dosages:
@@ -233,8 +228,8 @@ def perform_gwas_helper(
             for alpha in plotting_ci_alphas:
                 outfile.write('\tlength_pair_{:.2g}_alpha_CI'.format(alpha))
 
-        outfile.write('\n')
-        outfile.flush()
+    outfile.write('\n')
+    outfile.flush()
 
     n_loci = 0
     batch_time = 0
@@ -258,7 +253,7 @@ def perform_gwas_helper(
         if locus_filtered:
             outfile.write('{}\tnan\tnan\tnan\tnan\t'.format(locus_filtered))
             outfile.write('\t'.join(locus_details))
-            n_nans = (2 + len(plotting_ci_alphas)) * (int(bool(plotting_phenotype_fname)) + int(bool(paired_genotype_plot)))
+            n_nans = (2 + len(plotting_ci_alphas)) * (int(bool(stats_for_plotting)) + int(bool(paired_genotype_plot)))
             outfile.write('\tnan'*n_nans + '\n')
             outfile.flush()
             continue
@@ -272,8 +267,7 @@ def perform_gwas_helper(
                 len_*np.sum(dosages, axis=1) for len_, dosages in gts.items()
             ], axis=0)
         std = np.std(summed_gts)
-        summed_gts = (summed_gts - np.mean(summed_gts))/np.std(summed_gts)
-        covars[called_samples_filter, 0] = summed_gts
+        covars[called_samples_filter, 0] = (summed_gts - np.mean(summed_gts))/np.std(summed_gts)
 
         #if not binary or binary == 'linear':
         #do da regression
@@ -304,15 +298,15 @@ def perform_gwas_helper(
 
         # ----- plot phenotype statistics -----
 
-        if plotting_phenotype_fname:
+        if stats_for_plotting:
             if not plot_phenotype_residuals:
-                phenotypes = plotting_phenotype
+                phenotypes = plotting_phenotype[called_samples_filter]
             else:
                 #if not binary or binary == 'linear':
                 #do da regression
                 untrans_model = OLS(
-                    plotting_phenotype,
-                    covars[:, 1:],
+                    plotting_phenotype[called_samples_filter],
+                    covars[called_samples_filter, 1:],
                     missing='drop',
                 )
         #        else:
@@ -327,7 +321,7 @@ def perform_gwas_helper(
 
             #if not binary:
             summed_lengths = {}
-            genod_dicts = [summed_lengths]
+            geno_dicts = [summed_lengths]
             if paired_genotype_plot:
                 paired_gts = {}
                 geno_dicts.append(paired_gts)
@@ -364,10 +358,10 @@ def perform_gwas_helper(
             for geno_dict in geno_dicts:
                 outfile.write('\t' + load_and_filter_genotypes.dict_str({key: np.sum(arr) for key, arr in geno_dict.items()}))
                 stats = {}
-                CIs = {alpha: {} for _ in plotting_ci_alphas}
+                CIs = {alpha: {} for alpha in plotting_ci_alphas}
                 for len_, weights in geno_dict.items():
                     if len(np.unique(phenotypes[weights != 0])) <= 1:
-                        stats[len_] = phenotype
+                        stats[len_] = np.unique(phenotypes[weights != 0])[0]
                         for alpha in plotting_ci_alphas:
                             CIs[alpha][len_] = (np.nan, np.nan)
                         continue
@@ -392,9 +386,9 @@ def perform_gwas_helper(
         #                        dosages, phenotypes, 5e-8
         #                    )
         #                    summed_length_GWAS_CI[len_] = (lower_gwas, upper_gwas)
-                outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_stat))
-                for CI in CIs:
-                    outfile.write('\t' + load_and_filter_genotypes.dict_str(summed_length_GWAS_CI))
+                outfile.write('\t' + load_and_filter_genotypes.dict_str(stats))
+                for _, CI in CIs.items():
+                    outfile.write('\t' + load_and_filter_genotypes.dict_str(CI))
 
         outfile.write('\n')
         outfile.flush()
@@ -431,7 +425,7 @@ def perform_gwas(
         region,
         non_major_cutoff,
         beagle_dosages,
-        plotting_phenotype_fname,
+        stats_for_plotting,
         paired_genotype_plot,
         plot_phenotype_residuals,
         plotting_ci_alphas,
@@ -455,7 +449,7 @@ def perform_gwas(
             same_samples,
             sample_fname,
             beagle_dosages,
-            plotting_phenotype_fname,
+            stats_for_plotting,
             paired_genotype_plot,
             plot_phenotype_residuals,
             plotting_ci_alphas
@@ -495,7 +489,7 @@ def run():
                        help="Specify which caller produced the TR VCF, useful when the VCF is ambiguous "
                             "and the caller cannot be automatically inferred.")
     parser.add_argument('--same-samples', default=False, action='store_true',
-                        help='see the traits help string')
+                        help='see the --traits help string')
     #parser.add_argument('--binary', default=None, choices={'linear', 'logistic'}, type=Optional[str])
     parser.add_argument(
         '--sample-list',
@@ -520,24 +514,27 @@ def run():
              "(The GP field is not supported)"
     )
     parser.add_argument(
-        '--plotting-phenotype',
-        help=argparse.SUPPRESS
-        #help="An npy array with the same format as traits. If specified, statistics "
-        #     "will be output to allow for plotting TR loci against the first trait in this file "
-        #     "(the plotting phenotype). All other triats in the file will be ignored. "
-        #     "This is useful because often you will wish to regress against rank-inverse-normalized "
-        #     "phenotypes, but the axis when plotting those is mostly meaningless, so this allows "
-        #     "for plotting against the untransformed phenotypes. If unspecified then "
-        #     "plotting phenotype statistics will not be computed or written out. "
-        #     "If not using dosages, then samples are binned according to the summed value of their "
-        #     "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
-        #     'proportionally to the estimated probability of their having that summed allele length.'
+        '--stats-for-plotting',
+        nargs='?',
+        const='__same',
+        # TODO currently untested for dosages
+        help="Causes associaTR to output stats that can then be fed into a tool for per-locus association plotting. "
+             "This takes zero or one argument. If no argument is passed, then the phenotype that is being used for "
+             "association testing is also the phenotype used for the per-locus plotting statistics. If an argument "
+             "is passed, it should be an npy array with the same format as --traits and the first trait in that file "
+             "will be used as the plotting phenotype. All other triats in the file will be ignored. "
+             "This is useful because often you will wish to regress against rank-inverse-normalized "
+             "phenotypes for association testing, but the axis when plotting those is mostly meaningless. "
+             "So this allows for plotting against the untransformed phenotypes. "
+             "If not using dosages, then samples are binned according to the summed value of their "
+             "two alleles' lengths. If using dosages, then each sample contributes to each sum-bin "
+             'proportionally to the estimated probability of their having that summed allele length.'
     )
     parser.add_argument(
         '--paired-genotype-plot',
         action='store_true',
         default=False,
-        help=argparse.SUPPRESS
+        help=argparse.SUPPRESS # remains untested
         #help='Only used for the --plotting-phenotype option. If True, then in addition to '
         #     'generating statistics for summed genotype values, also generate statistics for '
         #     'paired genotype values. This could be important if you wish to look for examples of '
@@ -550,7 +547,7 @@ def run():
         '--plot-phenotype-residuals',
         action='store_true',
         default=False,
-        help=argparse.SUPPRESS
+        help=argparse.SUPPRESS # remains untested
         #help='Only used for the --plotting-phenotype option. If True, then linearlly regress out '
         #     'all covariates from the plotting phenotype before calculating the statistics. '
         #     'I would recommend against using this feature, as (a) in my small experience it has not '
@@ -562,12 +559,11 @@ def run():
     parser.add_argument(
         '--plotting-ci-alphas',
         type=float,
-        nargs='*',
+        nargs='+',
         default=[],
-        help=argparse.SUPPRESS
-        #help='Only used for the --plotting-phenotype option. Will generate these confidence intervals '
-        #     'of size 1-alpha for each alpha in this list for each of the statistics generated for '
-        #     'plotting.'
+        help='Only used for the --stats-for-plotting option. In addition to generating mean phenotype values per summed length bin, '
+             'this will make associaTR also output confidence intervals for those means '
+             'of size 1-alpha for each alpha in this list.'
     )
     parser.add_argument(
         #This is only for one specific use case, don't use this
@@ -607,7 +603,7 @@ def main(args):
         args.region,
         args.non_major_cutoff,
         args.beagle_dosages,
-        args.plotting_phenotype,
+        args.stats_for_plotting,
         args.paired_genotype_plot,
         args.plot_phenotype_residuals,
         args.plotting_ci_alphas,

@@ -30,22 +30,32 @@ samples_40 = list(range(5, 45))
 np.save('traits_0_40_samples.npy', np.hstack((samples.reshape(-1, 1), traits[0]))[50::-1, :][samples_40, :]) # samples 5-46 in reverse order
 with open('samples_6_to_45.txt', 'w') as samples_40_file:
     samples_40_file.write('#IID\n')
-    for sample in samples[samples_40]:
+    for sample in samples[samples_40][::-1]:
         samples_40_file.write(str(sample) + '\n')
 
 samples_45 = [*range(21),21,23,25,27,29,*range(31, 50)]
 np.save('traits_1_45_samples.npy', np.hstack((samples.reshape(-1, 1), traits[1]))[samples_45, :])  # all samples excluding 23, 25, 27, 29, 31 (base one)
 with open('45_samples.txt', 'w') as samples_45_file:
     samples_45_file.write('#IID\n')
-    for sample in samples[samples_45]:
+    for sample in samples[samples_45][::-1]:
         samples_45_file.write(str(sample) + '\n')
 
 with open('35_samples.txt', 'w') as samples_35_file:
     samples_35_file.write('#IID\n')
+    samples_35 = []
     for idx, sample in enumerate(samples):
         if idx not in samples_45 or idx not in samples_40:
             continue
+        samples_35.append(sample)
         samples_35_file.write(str(sample) + '\n')
+
+extra_trait = rng.random(size=(35, 2))
+extra_trait[:, 0] = samples_35
+np.save("extra_trait.npy", extra_trait)
+
+extra_trait_same_samples = rng.random(size=(50, 1))
+np.save("extra_trait_same_samples.npy", extra_trait_same_samples)
+
 
 # These regenerate test files for associaTR using a seed. There's currently a bug in the associaTR tests where sometimes a rounding error
 # in the test comparisons causes the tests to fail, so rerunning this with a different seed my cause the tests to fail even though you in theory should be able to

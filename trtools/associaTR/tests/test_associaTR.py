@@ -1,10 +1,12 @@
 import argparse
+import ast
 
 import cyvcf2
 import numpy as np
 import pandas as pd
 import pytest
 import statsmodels.api as sm
+from statsmodels.stats import descriptivestats
 
 from .. import associaTR
 
@@ -30,7 +32,7 @@ def args(test_associaTR_dir):
     args.region = None
     args.non_major_cutoff = 0
     args.beagle_dosages = False
-    args.plotting_phenotype = None
+    args.stats_for_plotting = None
     args.paired_genotype_plot = False
     args.plot_phenotype_residuals = False
     args.plotting_ci_alphas = []
@@ -159,7 +161,7 @@ def test_dosage_sample_subset(args, test_associaTR_dir):
 # test multiallelic
 # first multiallelic allele has 3 separate alleles
 # second has 3 alleles, but lens of 0 and 2 are the same
-# first multiallelic allele has allelec counts
+# first multiallelic allele has allele counts
 #  95, 3, 2
 # and dosage allele totals
 # [62.58339285850525, 19.654988, 17.76162], non major = 37.416608
@@ -284,8 +286,167 @@ def test_dosage_multiallelic_cutoff(args, test_associaTR_dir):
     out_df = pd.read_csv(args.outfile, sep='\t')
     assert np.all(out_df.loc[:, 'coeff_' + args.phenotype_name].isna())
 
+def comp_dicts(d1, d2):
+    assert d1.keys() == d2.keys()
+    for k in d1:
+        assert np.isclose(d1[k], d2[k]), (d1[k], d2[k])
+
+def comp_dict_of_pairs(d1, d2):
+    assert d1.keys() == d2.keys()
+    for k in d1:
+        for i in range(2):
+            assert np.isclose(d1[k][i], d2[k][i]), (d1[k][i], d2[k][i])
+
+
+def test_multiallelic_plot_stats(args, test_associaTR_dir):
+    args.same_samples = True
+    args.stats_for_plotting = '__same'
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    outcome = np.load(args.traits[0])[:, 0]
+    vcf = cyvcf2.VCF(args.tr_vcf)
+
+    # test var 1
+    var = next(vcf)
+    gts = var.genotype.array()[:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -1
+    new_gts[gts == 2] = 1
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dicts(ast.literal_eval(out_df.loc[0, 'sample_count_per_summed_length']), {'28.0': 45, '27.0': 3, '29.0': 2})
+    comp_dicts(
+        ast.literal_eval(out_df.loc[0, 'mean_' + args.phenotype_name + '_per_summed_length']),
+        {str(len_ + 14.0*2): np.mean(outcome[summed_gts == len_]) for len_ in (0, -1, 1)}
+    )
+
+    # test var 2
+    # remove the missing sample
+    var = next(vcf)
+    gts = var.genotype.array()[1:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -2
+    new_gts[gts == 2] = 0
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dicts(ast.literal_eval(out_df.loc[1, 'sample_count_per_summed_length']), {'42.0': 40, '40.0': 9})
+    comp_dicts(
+        ast.literal_eval(out_df.loc[1, 'mean_' + args.phenotype_name + '_per_summed_length']),
+        {str(len_ + 21.0*2): np.mean(outcome[1:][summed_gts == len_]) for len_ in (0, -2)}
+    )
+
+def test_multiallelic_plot_stats_alphas(args, test_associaTR_dir):
+    args.same_samples = True
+    args.stats_for_plotting = '__same'
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    args.plotting_ci_alphas = [0.1, 5e-8]
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    outcome = np.load(args.traits[0])[:, 0]
+    vcf = cyvcf2.VCF(args.tr_vcf)
+
+    # test var 1
+    var = next(vcf)
+    gts = var.genotype.array()[:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -1
+    new_gts[gts == 2] = 1
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dict_of_pairs(
+        ast.literal_eval(out_df.loc[0, 'summed_length_0.1_alpha_CI']),
+        {str(len_ + 14.0*2): descriptivestats.describe(outcome[summed_gts == len_], alpha=0.1, use_t=True).loc[['lower_ci', 'upper_ci']].to_numpy().flatten() for len_ in (0, -1, 1)}
+    )
+    comp_dict_of_pairs(
+        ast.literal_eval(out_df.loc[0, 'summed_length_5e-08_alpha_CI']),
+        {str(len_ + 14.0*2): descriptivestats.describe(outcome[summed_gts == len_], alpha=5e-8, use_t=True).loc[['lower_ci', 'upper_ci']].to_numpy().flatten() for len_ in (0, -1, 1)}
+    )
+
+    # test var 2
+    # remove the missing sample
+    var = next(vcf)
+    gts = var.genotype.array()[1:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -2
+    new_gts[gts == 2] = 0
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dict_of_pairs(
+        ast.literal_eval(out_df.loc[1, 'summed_length_0.1_alpha_CI']),
+        {str(len_ + 21.0*2): descriptivestats.describe(outcome[1:][summed_gts == len_], alpha=0.1, use_t=True).loc[['lower_ci', 'upper_ci']].to_numpy().flatten() for len_ in (0, -2)}
+    )
+    comp_dict_of_pairs(
+        ast.literal_eval(out_df.loc[1, 'summed_length_5e-08_alpha_CI']),
+        {str(len_ + 21.0*2): descriptivestats.describe(outcome[1:][summed_gts == len_], alpha=5e-8, use_t=True).loc[['lower_ci', 'upper_ci']].to_numpy().flatten() for len_ in (0, -2)}
+    )
+
+
+def test_multiallelic_plot_stats_same_samples_new_file(args, test_associaTR_dir):
+    args.same_samples = True
+    args.stats_for_plotting = test_associaTR_dir + '/extra_trait_same_samples.npy'
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    outcome = np.load(args.stats_for_plotting).flatten()
+    vcf = cyvcf2.VCF(args.tr_vcf)
+
+    var = next(vcf)
+    gts = var.genotype.array()[:, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -1
+    new_gts[gts == 2] = 1
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dicts(
+        ast.literal_eval(out_df.loc[0, 'sample_count_per_summed_length']),
+        {str(len_ + 14.0*2): np.sum(summed_gts == len_) for len_ in (0, -1, 1)}
+    )
+    comp_dicts(
+        ast.literal_eval(out_df.loc[0, 'mean_' + args.phenotype_name + '_per_summed_length']),
+        {str(len_ + 14.0*2): np.mean(outcome[summed_gts == len_]) for len_ in (0, -1, 1)}
+    )
+
+# tests sample list with specifying  stats for plotting, also alphas
+def test_multiallelic_plot_stats_new_file_and_sample_list(args, test_associaTR_dir):
+    args.traits = [test_associaTR_dir + "/traits_0_40_samples.npy"]
+    args.sample_list = test_associaTR_dir + "/45_samples.txt"
+    args.stats_for_plotting = test_associaTR_dir + '/extra_trait.npy'
+    args.tr_vcf = test_associaTR_dir + "/many_samples_multiallelic_dosages.vcf.gz"
+    associaTR.main(args)
+    out_df = pd.read_csv(args.outfile, sep='\t')
+    plotting_array = np.load(args.stats_for_plotting)
+    samples = [int(line.strip()) for line in open(test_associaTR_dir + '/35_samples.txt').readlines()[1:]]
+    outcome = plotting_array[np.isin(plotting_array[:, 0], samples), 1]
+    vcf = cyvcf2.VCF(args.tr_vcf)
+    samp_idx = np.isin(vcf.samples, [str(sample) for sample in samples])
+
+    var = next(vcf)
+    gts = var.genotype.array()[samp_idx, :-1]
+    new_gts = np.full(gts.shape, np.nan)
+    # recode based on lengths compared to ref
+    new_gts[gts == 0] = 0
+    new_gts[gts == 1] = -1
+    new_gts[gts == 2] = 1
+    summed_gts = np.sum(new_gts, axis=1)
+    comp_dicts(
+        ast.literal_eval(out_df.loc[0, 'sample_count_per_summed_length']),
+        {str(len_ + 14.0*2): np.sum(summed_gts == len_) for len_ in (0, -1, 1)}
+    )
+    comp_dicts(
+        ast.literal_eval(out_df.loc[0, 'mean_' + args.phenotype_name + '_per_summed_length']),
+        {str(len_ + 14.0*2): np.mean(outcome[summed_gts == len_]) for len_ in (0, -1, 1)}
+    )
+
 # TODO test fields other than p coeff and se
 
 # TODO test binary
 
-# TODO test plotting phenotype, in addition to paired genotype plot and residuals and cis
+# TODO test plotting phenotype with dosages
+# TODO test plotting paired genotype plot with and without dosages
+# TODO test plotting residuals
