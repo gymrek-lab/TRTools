@@ -170,7 +170,7 @@ def load_trs(vcf_fname: str,
         len_alleles = [round(allele_len, allele_len_precision) for allele_len in len_alleles]
 
         if not beagle_dosages:
-            gts = trrecord.GetLengthGenotypes()[curr_samples, :-1]
+            gts = np.round(trrecord.GetLengthGenotypes()[curr_samples, :-1], 2)
             allele_frequency = clean_len_alleles(trrecord.GetAlleleFreqs(curr_samples))
         else:
             gts = {
