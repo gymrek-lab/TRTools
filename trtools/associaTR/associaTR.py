@@ -326,6 +326,7 @@ def perform_gwas_helper(
                 paired_gts = {}
                 geno_dicts.append(paired_gts)
             if not beagle_dosages:
+                summed_gts = np.round(summed_gts, 2)
                 for summed_len in np.unique(summed_gts):
                     summed_lengths[summed_len] = summed_gts == summed_len
                 if paired_genotype_plot:
