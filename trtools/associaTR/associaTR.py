@@ -317,7 +317,7 @@ def perform_gwas_helper(
         #                family=sm.families.Binomial()
         #            )
                 untrans_reg_result = untrans_model.fit()
-                phenotypes = plotting_phenotype - untrans_reg_result.fittedvalues
+                phenotypes = plotting_phenotype[called_samples_filter] - untrans_reg_result.fittedvalues
 
             #if not binary:
             summed_lengths = {}
