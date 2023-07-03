@@ -86,6 +86,7 @@ TRTools includes the following tools.
 * `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
 * `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
 * `associaTR <https://trtools.readthedocs.io/en/latest/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
+* `mosaicSTR <https://trtools.readthedocs.io/en/latest/source/mosaicSTR.html>`_: a tool for identifying somatic mosacisim at TRs. Currently only compatible with HipSTR VCF files. 
 
 Type :code:`<command> --help` to see a full set of options.
 

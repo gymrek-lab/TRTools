@@ -1,0 +1,1 @@
+.. include:: ../../trtools/mosaicSTR/README.rst
