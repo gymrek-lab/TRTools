@@ -49,7 +49,7 @@ def StutterProb(delta, stutter_u, stutter_d, stutter_rho):
         prob = (stutter_d)*(stutter_rho)*(pow((1-stutter_rho), (abs_delta-1)))
     return prob
 
-def MaximizeMosaicLikelihoodBoth(reads, A, B, period,
+def MaximizeMosaicLikelihoodBoth(reads, A, B,
                                  stutter_probs,
                                  maxiter=100, locname="None"):
     r"""Find the maximum likelihood values of 
@@ -64,8 +64,6 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B, period,
        First allele of the genotype
     B : int
        Second allele of the genotype
-    period : int
-       Length of the repeat unit
     stutter_probs : list of floats
        stutter probs for each delta
     max_iter : int (optional)
@@ -88,8 +86,8 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B, period,
     f_prev = 0
 
     # First predict C and F separately
-    C = Just_C_Pred(reads, A, B, period, f, stutter_probs)
-    f = Just_F_Pred(reads, A, B, period, C, stutter_probs)
+    C = Just_C_Pred(reads, A, B, f, stutter_probs)
+    f = Just_F_Pred(reads, A, B, C, stutter_probs)
 
     # Iterate between predicting C and F
     iter_num = 1
@@ -97,11 +95,9 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B, period,
         c_prev = C
         f_prev = f
         # calling function for predicting mosaic allele value
-        C = Just_C_Pred(reads, A, B, period, f,
-                        stutter_probs)
+        C = Just_C_Pred(reads, A, B, f, stutter_probs)
         # calling function for predicting mosaic fraction value
-        f = Just_F_Pred(reads, A, B, period, C,
-                        stutter_probs)
+        f = Just_F_Pred(reads, A, B, C, stutter_probs)
         iter_num += 1
         if iter_num > maxiter:
             common.WARNING("ML didn't converge reads=%s A=%s B=%s %s" %
@@ -113,7 +109,7 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B, period,
         C = None  # stating C as None when the mosaic allele fraction is 0
     return C, f
 
-def Just_C_Pred(reads, A, B, period, f, stutter_probs):
+def Just_C_Pred(reads, A, B, f, stutter_probs):
     r"""Predict C, holding f constant
 
     Parameters
@@ -124,8 +120,6 @@ def Just_C_Pred(reads, A, B, period, f, stutter_probs):
        First allele of the genotype
     B : int
        Second allele of the genotype
-    period : int
-       Length of the repeat unit
     f : float
        Mosaic fraction
     stutter_probs : list of floats
@@ -143,7 +137,7 @@ def Just_C_Pred(reads, A, B, period, f, stutter_probs):
     max_likehood = float("-inf")
 
     def Likelihood_mosaic_C(c_value):
-        return Likelihood_mosaic(A, B, period, c_value, f, reads,
+        return Likelihood_mosaic(A, B, c_value, f, reads,
                                  stutter_probs)
     c_final = 0
     for i in c_range:
@@ -154,7 +148,7 @@ def Just_C_Pred(reads, A, B, period, f, stutter_probs):
     return c_final
 
 
-def Just_F_Pred(reads, A, B, period, C, stutter_probs):
+def Just_F_Pred(reads, A, B, C, stutter_probs):
     r"""Predict f, holding C constant
 
     Parameters
@@ -165,8 +159,6 @@ def Just_F_Pred(reads, A, B, period, C, stutter_probs):
        First allele of the genotype
     B : int
        Second allele of the genotype
-    period : int
-       Length of the repeat unit
     C : integer
        Mosaic allele
     stutter_probs : list of floats
@@ -179,7 +171,7 @@ def Just_F_Pred(reads, A, B, period, C, stutter_probs):
     """
 
     def Likelihood_mosaic_f(f):
-        return (-Likelihood_mosaic(A, B, period, C, f[0], reads,
+        return (-Likelihood_mosaic(A, B, C, f[0], reads,
                                    stutter_probs))
 
     f_initial = np.array([0.01])
@@ -274,7 +266,7 @@ def ConfineRange(x, minval, maxval):
 		x_cons = maxval
 	return x_cons
 
-def Likelihood_mosaic(A, B, period, C, f, reads, stutter_probs):
+def Likelihood_mosaic(A, B, C, f, reads, stutter_probs):
     r"""
     Compute likelihood of observing the reads, given
     true genotype=A,B and mosaic allele C, mosaic fraction f
@@ -287,8 +279,6 @@ def Likelihood_mosaic(A, B, period, C, f, reads, stutter_probs):
        First allele of the genotype
     B : int
        Second allele of the genotype
-    period : int
-       Length of the repeat unit
     C : integer
        Mosaic allele
     stutter_probs : list of floats
@@ -514,14 +504,11 @@ def main(args):
                     continue
 
                 locname = "%s:%s" % (record.CHROM, record.POS)
-                best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, period,
-                                                              stutter_probs,
+                best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
                                                               locname=locname)
-                log_obs = Likelihood_mosaic(A, B, period,
-                                            best_C, best_f, reads,
+                log_obs = Likelihood_mosaic(A, B, best_C, best_f, reads,
                                             stutter_probs)
-                log_exp = Likelihood_mosaic(A, B, period,
-                                            best_C, 0, reads,
+                log_exp = Likelihood_mosaic(A, B, best_C, 0, reads,
                                             stutter_probs)
                 test_stat = -2*(log_exp-log_obs)
 
