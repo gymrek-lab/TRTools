@@ -267,6 +267,7 @@ def ConfineRange(x, minval, maxval):
 	   New value, which cannot exceed maxval
 	   or go below minval
 	"""
+	x_cons = x
 	if x < minval:
 		x_cons = minval
 	if x > maxval:
