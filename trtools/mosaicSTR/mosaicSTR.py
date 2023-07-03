@@ -348,6 +348,36 @@ def SF(x):
 	if x <= 0: sf = 1
 	return sf
 
+def ComputePvalue(reads, A, B, best_C, best_f, stutter_probs):
+	r"""Compute pvalue testing H0: f=0
+
+	Parameters
+	----------
+    reads : list of int
+       list of repeat lengths seen in each read
+    A : int
+       First allele of the genotype
+    B : int
+       Second allele of the genotype
+    best_C : integer
+       Estimated mosaic allele
+    best_f : float
+       mosaic fraction
+    stutter_probs : list of floats
+       stutter probs for each delta
+
+    Returns
+    -------
+    pval : float
+       P-value testing H0: f=0
+	"""
+	log_obs = Likelihood_mosaic(A, B, best_C, best_f, reads, stutter_probs)
+	log_exp = Likelihood_mosaic(A, B, best_C, 0, reads, stutter_probs)
+	test_stat = -2*(log_exp-log_obs)
+	pval = 0.5*SF(test_stat) + 0.5*chi2.sf(test_stat, 2)
+	#pval = 1 - scipy.stats.chi2.cdf(test_stat, 1)
+	return pval
+
 def getargs():
     parser = argparse.ArgumentParser(
         __doc__,
@@ -506,14 +536,7 @@ def main(args):
                 locname = "%s:%s" % (record.CHROM, record.POS)
                 best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
                                                               locname=locname)
-                log_obs = Likelihood_mosaic(A, B, best_C, best_f, reads,
-                                            stutter_probs)
-                log_exp = Likelihood_mosaic(A, B, best_C, 0, reads,
-                                            stutter_probs)
-                test_stat = -2*(log_exp-log_obs)
-
-                pval = 0.5*SF(test_stat) + 0.5*chi2.sf(test_stat, 2)
-                #pval = 1 - scipy.stats.chi2.cdf(test_stat, 1)
+                pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
 
                 outf.write('\t'.join([samples[i], record.CHROM, str(record.POS),
                                       str(record.ID), trrecord.motif, str(
