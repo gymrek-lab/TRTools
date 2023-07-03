@@ -51,7 +51,8 @@ setup(name=NAME,
               'statSTR=trtools.statSTR:run',
               'compareSTR=trtools.compareSTR:run',
               'qcSTR=trtools.qcSTR:run',
-              'associaTR=trtools.associaTR:run'
+              'associaTR=trtools.associaTR:run',
+              'mosaicSTR=trtools.mosaicSTR:run'
           ],
       },
       install_requires=['cyvcf2',
