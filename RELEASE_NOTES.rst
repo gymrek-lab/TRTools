@@ -1,3 +1,10 @@
+Unreleased Changes
+------------------
+
+New features:
+
+* Added mosaicSTR
+
 5.0.2
 -----
 
