@@ -51,7 +51,8 @@ def StutterProb(delta, stutter_u, stutter_d, stutter_rho):
 
 def MaximizeMosaicLikelihoodBoth(reads, A, B,
                                  stutter_probs,
-                                 maxiter=100, locname="None"):
+                                 maxiter=100, locname="None",
+                                 quiet=False):
     r"""Find the maximum likelihood values of 
     C: mosaic allele
     f: mosaic fraction
@@ -72,7 +73,8 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B,
     locname : str (optional)
        String identifier of the locus. For
        warning message purposes. Default: "None"
-    
+    quiet : bool
+       Don't print out any messages
     Returns
     -------
     C : int
@@ -100,7 +102,7 @@ def MaximizeMosaicLikelihoodBoth(reads, A, B,
         f = Just_F_Pred(reads, A, B, C, stutter_probs)
         iter_num += 1
         if iter_num > maxiter:
-            common.WARNING("ML didn't converge reads=%s A=%s B=%s %s" %
+            if not quiet: common.WARNING("ML didn't converge reads=%s A=%s B=%s %s" %
                            (str(reads), A, B, locname))
             break
         if abs(f-f_prev) < 0.01 and (f < 0.000001 or C == c_prev):
@@ -400,7 +402,8 @@ def getargs():
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "--debug", help="Print helpful debug messages", action="store_true")
-
+    other_group.add_argument(
+    	"--quiet", help="Don't print messages to the screen", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version",
                            version='{version}'.format(version=__version__))
@@ -535,7 +538,7 @@ def main(args):
 
                 locname = "%s:%s" % (record.CHROM, record.POS)
                 best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
-                                                              locname=locname)
+                                                              locname=locname, quiet=args.quiet)
                 pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
 
                 outf.write('\t'.join([samples[i], record.CHROM, str(record.POS),
