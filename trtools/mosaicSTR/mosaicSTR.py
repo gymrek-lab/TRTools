@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Performs detection of somatic variation at STRs
+"""
 
 import argparse
 import numpy as np
@@ -391,7 +394,6 @@ def getargs():
         "--out", help=("Output file prefix. Use stdout to print file to standard output"), type=str, required=True)
     inout_group.add_argument("--vcftype", help="Options=%s" %
                              [str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
-
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--region", help="Restrict to the region "
                               "chrom:start-end. Requires file to bgzipped and"
