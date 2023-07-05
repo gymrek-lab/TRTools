@@ -9,7 +9,6 @@ import time
 from scipy.optimize import minimize
 from scipy.stats.distributions import chi2
 
-import trtools
 import trtools.utils.utils as utils
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
