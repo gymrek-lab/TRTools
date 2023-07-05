@@ -413,7 +413,7 @@ def getargs():
 
 def main(args):
     if not os.path.exists(args.vcf):
-        common.WARNING("Error: %s does not exist" % args.vcf)
+        common.WARNING("Error: {} does not exist".format(args.vcf))
         return 1
 
     if not os.path.exists(os.path.dirname(os.path.abspath(args.out))):
