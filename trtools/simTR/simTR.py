@@ -159,7 +159,7 @@ def CreateAlleleFasta(newseq, delta, tmpdir):
 	return fname
 
 def SimulateReads(newfasta, coverage, read_length,
-		insert, sd, tmpdir, delta, art_cmd):
+		single, insert, sd, tmpdir, delta, art_cmd):
 	r"""
 	Run ART on our dummy fasta file
 	with specified parameters
@@ -172,6 +172,8 @@ def SimulateReads(newfasta, coverage, read_length,
 	   Desired coverage level (ART -f)
 	read_length : int
 	   Read length (ART -l)
+	single : bool
+	   Use single-end read mode
 	insert : float
 	   Mean fragment length (ART -m)
 	sd : float
@@ -190,22 +192,26 @@ def SimulateReads(newfasta, coverage, read_length,
 	   Paths to fastq file output
 	   for the two read pairs.
 	   Return None, None if failed
+	   If single end mode, fq2file is None
 	"""
 	outprefix = os.path.join(tmpdir, "artsim_{}_".format(delta))
-	process = subprocess.run([art_cmd, \
+	cmd = [art_cmd, \
 			"-i", newfasta, \
-			"-p", \
 			"-l", str(read_length), \
 			"-f", str(coverage), \
 			"-m", str(insert), \
 			"-s", str(sd), \
 			"-o", outprefix
-		], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+		]
+	if not single: cmd.append("-p")
+	process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 	if process.returncode != 0:
 		common.WARNING(process.stdout)
 		return None, None
 	fq1file = outprefix+"1.fq"
-	fq2file = outprefix+"2.fq"
+	if single:
+		fq2file = None
+	else: fq2file = outprefix+"2.fq"
 	return fq1file, fq2file
 
 def WriteCombinedFastqs(fqfiles, fname):
@@ -272,6 +278,8 @@ def main(args):
 		common.WARNING("Error: The directory which contains the output location {} does"
 			" not exist".format(args.outprefix))
 		return 1
+	if args.single and (args.insert is not None or args.sd is not None):
+		common.WARNING("Ignoring --insert and --sd in single-end mode")
 
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
@@ -310,18 +318,23 @@ def main(args):
 			return 1
 		newfasta = CreateAlleleFasta(newseq, delta, tmpdir)
 		fq1, fq2 = SimulateReads(newfasta, int(sprob*args.coverage),
-			args.read_length, args.insert, args.sd, tmpdir, delta, art_path)
-		if fq1 is None or fq2 is None:
+			args.read_length, args.single, args.insert, args.sd, 
+			tmpdir, delta, art_path)
+		if fq1 is None:
 			return 1
-		common.MSG("Created {} and {}".format(fq1, fq2), debug=args.debug)
+		if args.single:
+			common.MSG("Created {}".format(fq1), debug=args.debug)
+		else: common.MSG("Created {} and {}".format(fq1, fq2), debug=args.debug)
 		fq1files.append(fq1)
 		fq2files.append(fq2)
 
 	# Combine all fastqs to single output
 	WriteCombinedFastqs(fq1files, args.outprefix+"_1.fq")
-	WriteCombinedFastqs(fq2files, args.outprefix+"_2.fq")
-	common.MSG("Output fastq files {} and {}".format(args.outprefix+"_1.fq", \
-		args.outprefix+"_2.fq"), debug=args.debug)
+	common.MSG("Output fastq file {}".format(args.outprefix+"_1.fq", debug=args.debug))
+
+	if not args.single:
+		WriteCombinedFastqs(fq2files, args.outprefix+"_2.fq")
+		common.MSG("Output fastq file {}".format(args.outprefix+"_2.fq", debug=args.debug))
 
 def getargs():
 	parser = argparse.ArgumentParser(
@@ -349,6 +362,7 @@ def getargs():
 	seq_group.add_argument("--insert", help="Mean fragment length", type=int, default=350)
 	seq_group.add_argument("--sd", help="Std. deviation of fragmen tlength", type=int, default=50)
 	seq_group.add_argument("--window", help="Size of window around target TR to sequence (bp)", type=int, default=1000)
+	seq_group.add_argument("--single", help="Generate single-end reads (default is paired)", action="store_true")
 	other_group = parser.add_argument_group("Other options")
 	other_group.add_argument("--art", help="Path to ART simulator package (Default: art_illumina)", \
 		type=str, required=False)
