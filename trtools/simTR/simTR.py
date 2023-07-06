@@ -5,10 +5,12 @@ STR-specific stutter errors
 """
 
 import argparse
+import numpy as np
 import os
 import pyfaidx
 import shutil
 import sys
+import trtools.utils.common as common
 import trtools.utils.utils as utils
 from trtools import __version__
 
@@ -59,7 +61,7 @@ def GetMaxDelta(sprob, rho, pthresh):
 	   Highest delta for which freq>prob
 	"""
 	delta = np.ceil(np.log(pthresh/(sprob*rho))/np.log(1-rho)+1)
-	return delta
+	return int(delta)
 
 def CheckRepeatUnit(seq, repeat_unit):
 	r"""
@@ -67,7 +69,7 @@ def CheckRepeatUnit(seq, repeat_unit):
 	the specified repeat unit is in the sequence
 	"""
 	# TODO - check if we have this function somewhere else
-	return 0
+	return 1 # TODO
 
 def GetTempDir():
 	r"""
@@ -98,14 +100,14 @@ def SimulateReads(newfasta, coverage, read_length,
 	r"""
 	TODO
 	"""
-	pass # TODO
+	return None, None # TODO
 
 def WriteCombinedFastqs(fqfiles, fname):
 	r"""
 	concatenate fastq files to output
 	"""
 	pass # TODO
-	
+
 def main(args):
 	if not os.path.exists(args.ref):
 		common.WARNING("Error: {} does not exist".format(args.ref))
@@ -161,10 +163,10 @@ def main(args):
 	refgenome = pyfaidx.Fasta(args.ref)
 	seq_repeat = refgenome[chrom][start-1:end]
 	seq_preflank = refgenome[chrom][start-args.window-1:start-1]
-	seq_postflank = refgenome[chrom][end:end+window]
+	seq_postflank = refgenome[chrom][end:end+args.window]
 	check_rpt = CheckRepeatUnit(seq_repeat, args.repeat_unit)
 	if check_rpt == 0:
-		common.WARNING("Did not find the unit {} in the repeat region {}".format(repeat_unit, seq_repeat))
+		common.WARNING("Did not find the unit {} in the repeat region {}".format(args.repeat_unit, seq_repeat))
 		return 1
 	else:
 		common.MSG("Found the repeat unit {} times in the repeat region".format(check_rpt))
@@ -179,8 +181,8 @@ def main(args):
 		sprob = GetStutterProb(delta, args.u, args.d, args.rho)
 		newfasta = CreateAlleleFasta(seq_preflank, seq_postflank, \
 				seq_repeat, args.repeat_unit, delta, tmpdir)
-		fq1, fq2 = SimulateReads(newfasta, coverage=int*sprob*args.coverage,
-			read_length=args.read_length, insert=args.insert, sd=args.sd, args.outprefix)
+		fq1, fq2 = SimulateReads(newfasta, int(sprob*args.coverage),
+			args.read_length, args.insert, args.sd, args.outprefix)
 		fq1files.append(fq1)
 		fq2files.append(fq2)
 
@@ -214,7 +216,7 @@ def getargs():
 	seq_group.add_argument("--window", help="Size of window around target TR to sequence (bp)", type=int, default=1000)
 	other_group = parser.add_argument_group("Other options")
 	other_group.add_argument("--art", help="Path to ART simulator package (Default: art_illumina)", \
-		type=str, required=True)
+		type=str, required=False)
 	ver_group = parser.add_argument_group("Version")
 	ver_group.add_argument("--version", action="version", \
 		version='{version}'.format(version=__version__))
