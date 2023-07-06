@@ -484,6 +484,57 @@ def InferRepeatSequence(seq, period):
                 best_copies = current_best_copies
     return GetCanonicalOneStrand(best_kmer)
 
+def LongestPerfectRepeat(seq, motif):
+    r"""
+    Determine the length (bp) of the longest 
+    perfect repeat stretch
+
+    Credit: function originally written by
+    Helyaneh Ziaei-Jam
+
+    Parameters
+    ----------
+    seq : str
+       Repeat region sequence
+    motif : str
+       Repeat unit sequence
+
+    Returns
+    -------
+    max_match : int
+       Number of bp of longest perfect stretch
+    """
+    max_matches = []
+    seq = seq.upper()
+    strand_seq = ReverseComplement(seq)   
+    for ref_ in [seq, strand_seq]:
+        for mot in [motif, motif[::-1]]:
+                i = 0
+                match = 0
+                max_match = 0  
+                while True:
+                    if i >= len(ref_):
+                        break
+                    for j in range(0,len(motif)):
+                        k = i
+                        while True:
+                            while j < len(mot) and k < len(ref_) and ref_[k] == mot[j]:
+                                k += 1
+                                j += 1
+                                match += 1
+                            max_match = max(max_match, match)
+                            if j == len(motif):
+                                j = 0
+                                i = k
+                            else:
+                                if j == len(motif) - 1:
+                                    i += 1
+                                match = 0
+                                break
+                        j = 0
+                max_matches.append(max_match)
+    return max(max_matches)
+
 def FabricateAllele(motif, length):
     """
     Fabricate an allele with the given motif and length.

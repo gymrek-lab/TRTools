@@ -9,8 +9,11 @@ import numpy as np
 import os
 import pyfaidx
 import shutil
+import subprocess
 import sys
+import tempfile
 import trtools.utils.common as common
+import trtools.mosaicSTR as ms
 import trtools.utils.utils as utils
 from trtools import __version__
 
@@ -63,63 +66,181 @@ def GetMaxDelta(sprob, rho, pthresh):
 	delta = np.ceil(np.log(pthresh/(sprob*rho))/np.log(1-rho)+1)
 	return int(delta)
 
-def CheckRepeatUnit(seq, repeat_unit):
-	r"""
-	Count the number of consecutive times
-	the specified repeat unit is in the sequence
-	"""
-	# TODO - check if we have this function somewhere else
-	return 1 # TODO
-
-def GetTempDir():
+def GetTempDir(debug=False, dir=None):
 	r"""
 	Create a temporary directory to store
 	intermediate fastas and fastqs
-	"""
-	# TODO print out name of dir
-	# TODO if debug mode, don't delete it (add debug mode)
-	return "TODO" # TODO
 
-def GetStutterProb(delta, u, d, rho):
+	Parameters
+	----------
+	debug : bool
+	   If True, set up temp directory in a way that
+	   it will not be removed when the script ends.
+	   Otherwise, it will be cleaned up
+	dir : str
+	   Directory in which to create the temporary directory
+
+	Returns
+	-------
+	dirname : str
+	   Path to the temporary directory
+	"""
+	if debug:
+		dirname = tempfile.mkdtemp(dir=dir)
+	else:
+		dirname = tempfile.TemporaryDirectory(dir=dir)
+	return dirname
+
+def GetAlleleSeq(seq_preflank, seq_postflank, \
+				seq_repeat, repeat_unit, delta):
 	r"""
-	Return the probability of seeing the given delta
-	"""
-	# TODO - don't we have this in mosaicSTR? can copy
-	return 0
+	Generate a new allele with a change of 
+	delta repeat units
 
-def CreateAlleleFasta(seq_preflank, seq_postflank, \
-				seq_repeat, repeat_unit, delta, tmpdir):
+	Parameters
+	----------
+	seq_preflank : str
+	   Sequence upstream of the STR
+	seq_postflank : str
+	   Sequence downstream of the STR
+	seq_repeat : str
+	   Sequence of the STR region
+	repeat_unit : str
+	   Repeat unit sequence
+	delta : int
+	   Change in repeat units compared to ref
+	tmpdir : str
+	   Path to create the fasta in
+
+	Returns
+	-------
+	newseq : str
+	   New repeat allele sequence
+	   Return None if there was a problem
+	"""
+	newseq = seq_preflank
+	if delta == 0:
+		newseq += seq_repeat
+	elif delta > 0:
+		newseq += seq_repeat + repeat_unit*delta
+	else:
+		subtract_size = -1*delta*len(repeat_unit)
+		if subtract_size > len(seq_repeat):
+			common.WARNING("Error: tried to delete {} bp but the "
+				"total repeat is {} bp long".format(subtract_size, len(seq_repeat)))
+			return None
+		newseq += seq_repeat[:-1*subtract_size]
+	newseq += seq_postflank
+	return newseq
+
+def CreateAlleleFasta(newseq, delta, tmpdir):
 	r"""
 	Create fasta file for this allele
 	Return the path to the fasta
+
+	Parameters
+	----------
+	newseq : str
+	   New repeat allele sequence
+	delta : int
+	   Change in repeat units compared to ref
+	tmpdir : str
+	   Path to create the fasta in
+
+	Returns
+	-------
+	fname : str
+	   Path to created fasta file
 	"""
-	pass # TODO
+	fname = os.path.join(tmpdir, "simTR_{}.fa".format(delta))
+	with open(fname, "w") as f:
+		f.write(">seq_{}\n".format(delta))
+		f.write(newseq+"\n")
+	return fname
 
 def SimulateReads(newfasta, coverage, read_length,
-		insert, sd, outprefix):
+		insert, sd, tmpdir, delta, art_cmd):
 	r"""
-	TODO
+	Run ART on our dummy fasta file
+	with specified parameters
+
+	Parameters
+	----------
+	newfasta : str
+	   Path to dummy fasta file
+	coverage : int
+	   Desired coverage level (ART -f)
+	read_length : int
+	   Read length (ART -l)
+	insert : float
+	   Mean fragment length (ART -m)
+	sd : float
+	   Std dev of fragment length distribution (ART -s)
+	tmpdir : str
+	   Path to create the fasta in
+	delta : int
+	   Difference in repeat units from reference
+	   Used for naming files
+	art_cmd : str
+	   Command to run ART
+
+	Returns
+	-------
+	fq1file, fq2file : str, str
+	   Paths to fastq file output
+	   for the two read pairs.
+	   Return None, None if failed
 	"""
-	return None, None # TODO
+	outprefix = os.path.join(tmpdir, "artsim_{}_".format(delta))
+	process = subprocess.run([art_cmd, \
+			"-i", newfasta, \
+			"-p", \
+			"-l", str(read_length), \
+			"-f", str(coverage), \
+			"-m", str(insert), \
+			"-s", str(sd), \
+			"-o", outprefix
+		], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+	if process.returncode != 0:
+		common.WARNING(process.stdout)
+		return None, None
+	fq1file = outprefix+"1.fq"
+	fq2file = outprefix+"2.fq"
+	return fq1file, fq2file
 
 def WriteCombinedFastqs(fqfiles, fname):
 	r"""
-	concatenate fastq files to output
+	Concatenate fastq files to output
+
+	Parameters
+	----------
+	fqfiles : list of str
+	   List of paths to fastqfiles to concatenate
+	fname : str
+	   Name of final output file
 	"""
-	pass # TODO
+	with open(fname, "w") as outfile:
+		for fqn in fqfiles:
+			with open(fqn) as infile:
+				for line in infile:
+					outfile.write(line)
+	return
 
 def main(args):
 	if not os.path.exists(args.ref):
 		common.WARNING("Error: {} does not exist".format(args.ref))
 		return 1
+	art_path = None
 	if args.art is not None:
 		if not os.path.exists(args.art):
 			common.WARNING("Error: ART path {} does not exist".format(args.art))
 			return 1
+		else: art_path = args.art
 	else:
 		if shutil.which("art_illumina") is None:
 			common.WARNING("Error: Could not find art_illumina executable")
 			return 1
+		else: art_path = "art_illumina"
 	if args.u < 0 or args.u > 1:
 		common.WARNING("Error: --u u ({}) is not between 0 and 1".format(args.u))
 		return 1
@@ -161,34 +282,46 @@ def main(args):
 
 	# Extract ref sequences
 	refgenome = pyfaidx.Fasta(args.ref)
-	seq_repeat = refgenome[chrom][start-1:end]
-	seq_preflank = refgenome[chrom][start-args.window-1:start-1]
-	seq_postflank = refgenome[chrom][end:end+args.window]
-	check_rpt = CheckRepeatUnit(seq_repeat, args.repeat_unit)
-	if check_rpt == 0:
-		common.WARNING("Did not find the unit {} in the repeat region {}".format(args.repeat_unit, seq_repeat))
+	seq_repeat = str(refgenome[chrom][start-1:end]).upper()
+	seq_preflank = str(refgenome[chrom][start-args.window-1:start-1]).upper()
+	seq_postflank = str(refgenome[chrom][end:end+args.window]).upper()
+	check_rpt = utils.LongestPerfectRepeat(seq_repeat, args.repeat_unit)
+	if check_rpt <= len(args.repeat_unit)*2:
+		common.WARNING("Did not find the unit {} a sufficient "
+			"number of times in the repeat region {}".format(args.repeat_unit, seq_repeat))
 		return 1
 	else:
-		common.MSG("Found the repeat unit {} times in the repeat region".format(check_rpt))
+		common.MSG("Found a {} bp stretch with a perfect match to the repeat unit".format(check_rpt), \
+			debug=args.debug)
 
 	# Create folder structure
-	tmpdir = GetTempDir()
+	tmpdir = GetTempDir(debug=args.debug, dir=args.tmpdir)
+	common.MSG("Created temporary directory at {}".format(tmpdir), debug=args.debug)
 
 	# Simulate reads from each potential allele
 	fq1files = []
 	fq2files = []
 	for delta in range(-1*lowdelta, highdelta+1):
-		sprob = GetStutterProb(delta, args.u, args.d, args.rho)
-		newfasta = CreateAlleleFasta(seq_preflank, seq_postflank, \
-				seq_repeat, args.repeat_unit, delta, tmpdir)
+		sprob = ms.StutterProb(delta, args.u, args.d, args.rho)
+		newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, \
+				args.repeat_unit, delta)
+		if newseq is None:
+			common.WARNING("Problem getting allele sequence for delta={}".format(delta))
+			return 1
+		newfasta = CreateAlleleFasta(newseq, delta, tmpdir)
 		fq1, fq2 = SimulateReads(newfasta, int(sprob*args.coverage),
-			args.read_length, args.insert, args.sd, args.outprefix)
+			args.read_length, args.insert, args.sd, tmpdir, delta, art_path)
+		if fq1 is None or fq2 is None:
+			return 1
+		common.MSG("Created {} and {}".format(fq1, fq2), debug=args.debug)
 		fq1files.append(fq1)
 		fq2files.append(fq2)
 
 	# Combine all fastqs to single output
 	WriteCombinedFastqs(fq1files, args.outprefix+"_1.fq")
-	WriteCombinedFastqs(fq2files, args.outprefix+"_1.fq")
+	WriteCombinedFastqs(fq2files, args.outprefix+"_2.fq")
+	common.MSG("Output fastq files {} and {}".format(args.outprefix+"_1.fq", \
+		args.outprefix+"_2.fq"), debug=args.debug)
 
 def getargs():
 	parser = argparse.ArgumentParser(
@@ -202,6 +335,8 @@ def getargs():
 	inout_group.add_argument("--repeat-unit", help="Repeat unit of the target TR", \
 		type=str, required=True)
 	inout_group.add_argument("--outprefix", help="Prefix to name output files", type=str, required=True)
+	inout_group.add_argument("--tmpdir", help="Temporary directory to store intermediate "
+		"results. Default: {}".format(os.environ["TMPDIR"]), type=str, default=os.environ["TMPDIR"])
 	stutter_group = parser.add_argument_group("Stutter simulation parameters")
 	stutter_group.add_argument("--u", help="Probability of adding additional copy of repeat", type=float, default=0.05)
 	stutter_group.add_argument("--d", help="Probability of deleting copy of repeat", type=float, default=0.05)
@@ -217,6 +352,7 @@ def getargs():
 	other_group = parser.add_argument_group("Other options")
 	other_group.add_argument("--art", help="Path to ART simulator package (Default: art_illumina)", \
 		type=str, required=False)
+	other_group.add_argument("--debug", help="Run in debug mode", action="store_true")
 	ver_group = parser.add_argument_group("Version")
 	ver_group.add_argument("--version", action="version", \
 		version='{version}'.format(version=__version__))
