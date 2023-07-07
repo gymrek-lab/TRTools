@@ -400,6 +400,7 @@ def getargs():
                               " tabix indexed.", type=str)
     filter_group.add_argument("--only-passing", help="Only process records "
                               " where FILTER==PASS", action="store_true")
+    filter_group.add_argument("--output-all", help="Force output results for all loci", action="store_true")
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "--debug", help="Print helpful debug messages", action="store_true")
@@ -466,13 +467,24 @@ def main(args):
             nrecords += 1
             trrecord = trh.HarmonizeRecord(vcftype, record)
 
-            if args.only_passing and (record.FILTER is not None):
+            if args.only_passing and not args.output_all and (record.FILTER is not None):
                 common.WARNING("Skipping non-passing record %s" %
                                str(trrecord))
                 continue
 
             ########### Extract necessary info from the VCF file #######
             # Stutter params for the locus. These are the same for all samples
+            # First check we have all the fields we need
+            if READFIELD not in trrecord.format.keys():
+                common.WARNING("Could not find MALLREADS for %s" %
+                               str(trrecord))
+                continue
+            if "INFRAME_UP" not in trrecord.info.keys() or \
+                "INFRAME_DOWN" not in trrecord.info.keys() or \
+                    "INFRAME_PGEOM" not in trrecord.info.keys():
+                common.WARNING(
+                    "Could not find stutter info for %s" % str(trrecord))
+                continue
             stutter_u = trrecord.info["INFRAME_UP"]
             stutter_d = trrecord.info["INFRAME_DOWN"]
             stutter_rho = trrecord.info["INFRAME_PGEOM"]
@@ -485,17 +497,6 @@ def main(args):
             stutter_probs = [StutterProb(d, stutter_u, stutter_d, stutter_rho) \
                 for d in range(-MAXSTUTTEROFFSET, MAXSTUTTEROFFSET)]
             period = len(trrecord.motif)
-
-            # First check we have all the fields we need
-            if READFIELD not in trrecord.format.keys():
-                common.WARNING("Could not find MALLREADS for %s" %
-                               str(trrecord))
-                continue
-            if "INFRAME_UP" not in trrecord.info.keys() or \
-                "INFRAME_DOWN" not in trrecord.info.keys() or \
-                    "INFRAME_PGEOM" not in trrecord.info.keys():
-                common.WARNING(
-                    "Could not find stutter info for %s" % str(trrecord))
 
             # Array of (A,B) for each sample
             # given in bp diff from ref
@@ -531,10 +532,10 @@ def main(args):
                     common.WARNING("A=%s B=%s reads=%s" % (A, B, str(reads)))
 
                 # Discard locus if: no evidence for caleld genotypes
-                if A not in reads or B not in reads:
+                if A not in reads or B not in reads and not args.output_all:
                     continue
                 # Discard locus if: only a single allele seen in the reads
-                if len(set(reads)) == 1:
+                if len(set(reads)) == 1 and not args.output_all:
                     continue
 
                 locname = "%s:%s" % (record.CHROM, record.POS)
