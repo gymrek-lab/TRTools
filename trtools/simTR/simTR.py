@@ -354,13 +354,13 @@ def getargs():
 	stutter_group.add_argument("--u", help="Probability of adding additional copy of repeat", type=float, default=0.05)
 	stutter_group.add_argument("--d", help="Probability of deleting copy of repeat", type=float, default=0.05)
 	stutter_group.add_argument("--rho", help="Size of stutter-induced changes", type=float, default=0.9)
-	stutter_group.add_argument("--p_thresh", help="Ignore stutter alleles expected to have lower than this frequency", \
+	stutter_group.add_argument("--p-thresh", help="Ignore stutter alleles expected to have lower than this frequency", \
 		type=float, default=0.01)
 	seq_group = parser.add_argument_group("Sequencing parameters")
 	seq_group.add_argument("--coverage", help="Target coverage level", type=int, default=1000)
-	seq_group.add_argument("--read_length", help="Length of each read (bp)", type=int, default=100)
+	seq_group.add_argument("--read-length", help="Length of each read (bp)", type=int, default=100)
 	seq_group.add_argument("--insert", help="Mean fragment length", type=int, default=350)
-	seq_group.add_argument("--sd", help="Std. deviation of fragmen tlength", type=int, default=50)
+	seq_group.add_argument("--sd", help="Std. deviation of fragment length", type=int, default=50)
 	seq_group.add_argument("--window", help="Size of window around target TR to sequence (bp)", type=int, default=1000)
 	seq_group.add_argument("--single", help="Generate single-end reads (default is paired)", action="store_true")
 	other_group = parser.add_argument_group("Other options")
