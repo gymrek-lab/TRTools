@@ -74,9 +74,7 @@ def GetTempDir(debug=False, dir=None):
 	Parameters
 	----------
 	debug : bool
-	   If True, set up temp directory in a way that
-	   it will not be removed when the script ends.
-	   Otherwise, it will be cleaned up
+	   Ignored for now
 	dir : str
 	   Directory in which to create the temporary directory
 
@@ -85,10 +83,7 @@ def GetTempDir(debug=False, dir=None):
 	dirname : str
 	   Path to the temporary directory
 	"""
-	if debug:
-		dirname = tempfile.mkdtemp(dir=dir)
-	else:
-		dirname = tempfile.TemporaryDirectory(dir=dir)
+	dirname = tempfile.mkdtemp(dir=dir)
 	return dirname
 
 def GetAlleleSeq(seq_preflank, seq_postflank, \
