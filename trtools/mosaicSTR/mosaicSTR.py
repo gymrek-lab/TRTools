@@ -555,18 +555,12 @@ def main(args):
                     common.WARNING("Inferred best_C=%s best_f=%s" %
                                    (best_C, best_f))
             #############################################################
-
             if args.out == "stdout" and nrecords % 50 == 0:
                 common.MSG("Finished {} records, time/record={:.5}sec".format(nrecords,
                       (time.time() - start_time)/nrecords), debug=True)
-
     finally:
         if outf is not None and args.out != "stdout":
             outf.close()
-
-    if args.out != "stdout":
-        common.MSG("\nDone", debug=True)
-
     return 0
 
 def run():  # pragma: no cover
