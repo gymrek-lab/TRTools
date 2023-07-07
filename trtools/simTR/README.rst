@@ -9,7 +9,7 @@ simTR
 
 Prerequisites
 -------------
-simTR is a wrapper on the `Illumina ART<TODO ART URL>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
+simTR is a wrapper on the `Illumina ART<https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
 
 Usage
 -----
@@ -34,7 +34,7 @@ By default, :code:`simTR` will simulate paired end reads and output reads to :co
 Stutter model
 -------------
 
-Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript<TODO ART URL>`_. The model can be specified using three optional parameters:
+Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript<https://www.nature.com/articles/nmeth.4267>`_. The model can be specified using three optional parameters:
 
 * :code:`--u <float>`: Probability a read contains stutter error that increases the total number of repeat units (Default: 0.05)
 * :code:`--d <float>`: Probability a read contains stutter error that decreases the total number of repeat units (Default: 0.05)
