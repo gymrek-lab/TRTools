@@ -354,7 +354,7 @@ def getargs():
 	stutter_group.add_argument("--d", help="Probability of deleting copy of repeat", type=float, default=0.05)
 	stutter_group.add_argument("--rho", help="Size of stutter-induced changes", type=float, default=0.9)
 	stutter_group.add_argument("--p-thresh", help="Ignore stutter alleles expected to have lower than this frequency", \
-		type=float, default=0.01)
+		type=float, default=0.001)
 	stutter_group.add_argument("--seed", help="Set the seed to make runs reproducible", type=int)
 	seq_group = parser.add_argument_group("Sequencing parameters")
 	seq_group.add_argument("--coverage", help="Target coverage level", type=int, default=1000)
