@@ -394,6 +394,7 @@ def getargs():
         "--out", help=("Output file prefix. Use stdout to print file to standard output"), type=str, required=True)
     inout_group.add_argument("--vcftype", help="Options=%s" %
                              [str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
+    inout_group.add_argument("--samples", help="Comma-separated list of samples to process", type=str)
     filter_group = parser.add_argument_group("Filtering group")
     filter_group.add_argument("--region", help="Restrict to the region "
                               "chrom:start-end. Requires file to bgzipped and"
@@ -445,6 +446,10 @@ def main(args):
         region = invcf(args.region)
     else:
         region = invcf
+
+    usesamples = []
+    if args.samples is not None:
+        usesamples = args.samples.split(",")
 
     start_time = time.time()
     nrecords = 0
@@ -516,6 +521,7 @@ def main(args):
 
             ########### Run detection on each sample #######
             for i in range(len(samples)):
+                if args.samples is not None and samples[i] not in usesamples: continue
                 reads = mallreads[i]
                 A, B = genotypes[i]
                 q = Q[i][0]
