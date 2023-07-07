@@ -344,7 +344,8 @@ def getargs():
 		type=str, required=True)
 	inout_group.add_argument("--outprefix", help="Prefix to name output files", type=str, required=True)
 	inout_group.add_argument("--tmpdir", help="Temporary directory to store intermediate "
-		"results. Default: {}".format(os.environ["TMPDIR"]), type=str, default=os.environ["TMPDIR"])
+		"results. Default: {}".format(os.environ.get("TMPDIR","/tmp")), type=str, \
+			default=os.environ.get("TMPDIR","/tmp"))
 	stutter_group = parser.add_argument_group("Stutter simulation parameters")
 	stutter_group.add_argument("--u", help="Probability of adding additional copy of repeat", type=float, default=0.05)
 	stutter_group.add_argument("--d", help="Probability of deleting copy of repeat", type=float, default=0.05)
