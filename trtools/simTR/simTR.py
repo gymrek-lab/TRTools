@@ -276,8 +276,8 @@ def main(args):
 		return 1
 	if args.single and (args.insert is not None or args.sd is not None):
 		common.WARNING("Ignoring --insert and --sd in single-end mode")
-        if args.seed is not None:
-                random.seed(args.seed)
+	if args.seed is not None:
+		random.seed(args.seed)
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
 
@@ -308,7 +308,7 @@ def main(args):
 	fq2files = []
 	for delta in range(-1*lowdelta, highdelta+1):
 		sprob = ms.StutterProb(delta, args.u, args.d, args.rho)
-                cov = np.random.binomial(coverage, sprob)
+		cov = np.random.binomial(args.coverage, sprob)
 		newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, \
 				args.repeat_unit, delta)
 		if newseq is None:
@@ -355,7 +355,7 @@ def getargs():
 	stutter_group.add_argument("--rho", help="Size of stutter-induced changes", type=float, default=0.9)
 	stutter_group.add_argument("--p-thresh", help="Ignore stutter alleles expected to have lower than this frequency", \
 		type=float, default=0.01)
-        stutter_group.add_argument("--seed", help="Set the seed to make runs reproducible", type=int)
+	stutter_group.add_argument("--seed", help="Set the seed to make runs reproducible", type=int)
 	seq_group = parser.add_argument_group("Sequencing parameters")
 	seq_group.add_argument("--coverage", help="Target coverage level", type=int, default=1000)
 	seq_group.add_argument("--read-length", help="Length of each read (bp)", type=int, default=100)
