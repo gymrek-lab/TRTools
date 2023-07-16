@@ -72,8 +72,6 @@ checkout the branch you're interested in, and run the following command from the
         pip install --upgrade pip
         pip install -e .
 
-Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
-
 Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing
 
 Tools

@@ -9,7 +9,6 @@ dependencies:
   - pytest
   - pytest-cov
   - numpy
-  - pybedtools
   - matplotlib-base
   - pysam
   - scipy
