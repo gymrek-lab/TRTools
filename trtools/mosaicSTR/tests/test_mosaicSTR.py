@@ -30,5 +30,231 @@ def test_WrongFile(args, vcfdir):
 def test_RightFile(args, vcfdir):
     fname = os.path.join(vcfdir, "test_hipstr.vcf")
     args.vcf = fname
+    args.samples = None
+    args.quiet = False
+    args.only_passing = False
+    args.output_all = False
     retcode = main(args)
     assert retcode==0
+
+# Test the probability of observing a certain repeat length
+def test_StutterProb1():
+    delta = 0
+    stutter_u = 0.1
+    stutter_d = 0.05
+    stutter_rho = 0.2
+    expected_prob = 1 - stutter_u - stutter_d
+    assert StutterProb(delta, stutter_u, stutter_d, stutter_rho) == expected_prob
+
+def test_StutterProb2():
+    delta = 3
+    stutter_u = 0.1
+    stutter_d = 0.05
+    stutter_rho = 0.2
+    expected_prob = stutter_u * stutter_rho * (pow((1 - stutter_rho), (delta - 1)))
+    assert StutterProb(delta, stutter_u, stutter_d, stutter_rho) == expected_prob
+
+def test_StutterProb3():
+    delta = -2
+    stutter_u = 0.1
+    stutter_d = 0.05
+    stutter_rho = 0.2
+    expected_prob = stutter_d * stutter_rho * (pow((1 - stutter_rho), (abs(delta) - 1)))
+    assert StutterProb(delta, stutter_u, stutter_d, stutter_rho) == expected_prob
+
+def test_StutterProb4():
+    delta = 10
+    stutter_u = 0.1
+    stutter_d = 0.05
+    stutter_rho = 0.2
+    expected_prob = stutter_u * stutter_rho * (pow((1 - stutter_rho), (delta - 1)))
+    assert StutterProb(delta, stutter_u, stutter_d, stutter_rho) == expected_prob
+
+def test_StutterProb5():
+    delta = -5
+    stutter_u = 0.1
+    stutter_d = 0.05
+    stutter_rho = 0.2
+    expected_prob = stutter_d * stutter_rho * (pow((1 - stutter_rho), (abs(delta) - 1)))
+    assert StutterProb(delta, stutter_u, stutter_d, stutter_rho) == expected_prob
+
+#Test the values of C and f
+def test_MaximizeMosaicLikelihoodBoth1():
+    reads = [10, 11, 10, 11, 10]
+    A = 9
+    B = 12
+    stutter_probs = [x * 0.001 for x in range(-100, 100)]
+    maxiter = 100
+    locname = "None"
+    quiet = True
+    C, f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs, maxiter, locname, quiet)
+    assert C == 9
+    assert f == 0.01
+
+def test_MaximizeMosaicLikelihoodBoth2():
+    reads = [-3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
+    A = -2
+    B = -2
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    maxiter = 100
+    locname = "None"
+    quiet = True
+    C, f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs, maxiter, locname, quiet)
+    assert C == -2
+    assert f== 0.01
+
+# Test values of the alleles into the difference in repetitions with respect to the reference
+def test_ExtractReadVector1():
+    mallreads=None
+    period=3
+    reads=ExtractReadVector(mallreads, period)
+    assert reads==[]
+
+def test_ExtractReadVector2():
+    mallreads="-6|4;-4|28"
+    period=1
+    reads=ExtractReadVector(mallreads, period)
+    assert reads==[-6, -6, -6, -6, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4]
+
+def test_ExtractReadVector3():
+    mallreads="9|3;10|5;11|2"
+    period=1
+    reads=ExtractReadVector(mallreads, period)
+    assert reads ==[9, 9, 9, 10, 10, 10, 10, 10, 11, 11]
+
+def test_ExtractReadVector4():
+    mallreads="-12|9;-4|16;0|29;4|11"
+    period=2
+    reads=ExtractReadVector(mallreads, period)
+    assert reads ==[-6, -6, -6, -6, -6, -6, -6, -6, -6, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+
+# Test minimum and maximum values of a number
+def test_ConfineRange1():
+    x_cons=ConfineRange(30, 40, 50)
+    assert x_cons==40
+
+def test_ConfineRange2():
+    x_cons=ConfineRange(60, 40, 50)
+    assert x_cons==50
+
+def test_ConfineRange3():
+    x_cons=ConfineRange(45, 40, 50)
+    assert x_cons==45
+
+#Test the likelihood of observing the reads
+def test_Likelihood_mosaic1():
+    reads = [10, 11, 10, 11, 10]
+    A = 9
+    B = 12
+    C = 9
+    f = 0.01
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    result_likelihood = Likelihood_mosaic(A, B, C, f, reads, stutter_probs)
+    assert -30.6 <= result_likelihood <= -30.5
+
+def test_Likelihood_mosaic2():
+    reads = [-3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
+    A = -2
+    B = -2
+    C = -2
+    f = 0.01
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    result_likelihood = Likelihood_mosaic(A, B, C, f, reads, stutter_probs)
+    assert -15000 <= result_likelihood <= -14000   
+
+#
+def test_SF1():
+    x=10
+    result_sf=SF(x)
+    assert result_sf==0
+
+def test_SF2():
+    x=0
+    result_sf=SF(x)
+    assert result_sf==1
+
+def test_SF3():
+    x=-1
+    result_sf=SF(x)
+    assert result_sf==1
+
+#
+def test_Just_C_Pred1():
+    reads = [10, 11, 10, 11, 10]
+    A = 9
+    B = 12
+    f = 0.01
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    C = Just_C_Pred(reads, A, B, f, stutter_probs)
+    assert C == 9
+
+def test_Just_C_Pred2():	
+    reads = [-6, -6, -6, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,]
+    A = -2
+    B = -2
+    f = 0.0362320
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    C = Just_C_Pred(reads, A, B, f, stutter_probs)
+    assert C == -2
+
+#
+def test_Just_F_Pred1():
+    reads = [10, 11, 10, 11, 10]
+    A = 9
+    B = 12
+    C = 9
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    f = Just_F_Pred(reads, A, B, C, stutter_probs)
+    assert f == 0.01
+
+def test_Just_F_Pred2():
+    reads = [-6, -6, -6, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,]
+    A = -2
+    B = -2
+    C = -2 
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    f = Just_F_Pred(reads, A, B, C, stutter_probs)
+    assert f == pytest.approx(0.036, abs=1e-1)
+
+
+
+
+
+"""
+Test the main function
+"""
+# Test VCF files
+def mock_ExtractAB(trrecord):
+    # Simular valores de A y B para diferentes escenarios de pruebas
+    if trrecord.CHROM == "chr1" and trrecord.POS == 100:
+        return [[10, 20], [15, 25], [None, None]]
+    elif trrecord.CHROM == "chr2" and trrecord.POS == 200:
+        return [[5, 10], [10, 15], [None, None]]
+
+mock_ExtractAB=ExtractAB
+
+def create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--vcf", type=str, default=vcf)
+    parser.add_argument("--out", type=str, default=out)
+    parser.add_argument("--samples", type=str, default=samples)
+    return parser.parse_args()
+
+def test_main():
+    # Caso de prueba 1: Archivo VCF con un registro válido y una muestra
+    if create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
+        retcode = main(args)
+        assert retcode == 0
+
+    # Caso de prueba 2: Archivo VCF con un registro válido y varias muestras
+    elif create_args(vcf="test.vcf", out="output.tab", samples="sample1,sample2"):
+        retcode = main(args)
+        assert retcode == 0
+
+    # Caso de prueba 3: Archivo VCF sin registros válidos
+    elif create_args(vcf="empty.vcf", out="output.tab", samples="sample1"):
+        retcode = main(args)
+        assert retcode == 1
+    
+
+
