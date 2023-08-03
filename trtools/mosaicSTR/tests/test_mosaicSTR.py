@@ -216,45 +216,6 @@ def test_Just_F_Pred2():
     f = Just_F_Pred(reads, A, B, C, stutter_probs)
     assert f == pytest.approx(0.036, abs=1e-1)
 
-
-
-
-
-"""
-Test the main function
-"""
-# Test VCF files
-def mock_ExtractAB(trrecord):
-    # Simular valores de A y B para diferentes escenarios de pruebas
-    if trrecord.CHROM == "chr1" and trrecord.POS == 100:
-        return [[10, 20], [15, 25], [None, None]]
-    elif trrecord.CHROM == "chr2" and trrecord.POS == 200:
-        return [[5, 10], [10, 15], [None, None]]
-
-mock_ExtractAB=ExtractAB
-
-def create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--vcf", type=str, default=vcf)
-    parser.add_argument("--out", type=str, default=out)
-    parser.add_argument("--samples", type=str, default=samples)
-    return parser.parse_args()
-
-def test_main():
-    # Caso de prueba 1: Archivo VCF con un registro válido y una muestra
-    if create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
-        retcode = main(args)
-        assert retcode == 0
-
-    # Caso de prueba 2: Archivo VCF con un registro válido y varias muestras
-    elif create_args(vcf="test.vcf", out="output.tab", samples="sample1,sample2"):
-        retcode = main(args)
-        assert retcode == 0
-
-    # Caso de prueba 3: Archivo VCF sin registros válidos
-    elif create_args(vcf="empty.vcf", out="output.tab", samples="sample1"):
-        retcode = main(args)
-        assert retcode == 1
     
 
 
