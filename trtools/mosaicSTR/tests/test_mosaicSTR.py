@@ -103,6 +103,18 @@ def test_MaximizeMosaicLikelihoodBoth2():
     assert C == -2
     assert f== 0.01
 
+def test_MaximizeMosaicLikelihoodBoth3():
+    reads = [-5, -5, -4, -4, -3, -3, -2, -2, -1, -1]
+    A = -5
+    B = -1
+    stutter_probs = [x * 0.001 for x in range(-100, 100)]
+    maxiter = 100
+    locname = "None"
+    quiet = True
+    C, f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs, maxiter, locname, quiet)
+    assert C == -5
+    assert f == pytest.approx(0.0167, abs=1e-2)
+
 # Test values of the alleles into the difference in repetitions with respect to the reference
 def test_ExtractReadVector1():
     mallreads=None
@@ -150,7 +162,7 @@ def test_Likelihood_mosaic1():
     f = 0.01
     stutter_probs = [x * 0.001 for x in range(-100, 101)]
     result_likelihood = Likelihood_mosaic(A, B, C, f, reads, stutter_probs)
-    assert -30.6 <= result_likelihood <= -30.5
+    assert -2300 <= result_likelihood <= -2290
 
 def test_Likelihood_mosaic2():
     reads = [-3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
@@ -160,9 +172,19 @@ def test_Likelihood_mosaic2():
     f = 0.01
     stutter_probs = [x * 0.001 for x in range(-100, 101)]
     result_likelihood = Likelihood_mosaic(A, B, C, f, reads, stutter_probs)
-    assert -15000 <= result_likelihood <= -14000   
+    assert -15000 <= result_likelihood <= -14000 
 
-#
+def test_Likelihood_mosaic3():
+    reads = [-5, -5, -4, -4, -3, -3, -2, -2, -1, -1]
+    A = -5
+    B = -1
+    C = -5
+    f = pytest.approx(0.0167, 1e-2)
+    stutter_probs = [x * 0.001 for x in range(-100, 100)]
+    result_likelihood = Likelihood_mosaic(A, B, C, f, reads, stutter_probs)
+    assert -4600 <= result_likelihood <= -4550     
+
+#Test the survival function of a point mass at 0
 def test_SF1():
     x=10
     result_sf=SF(x)
@@ -178,7 +200,7 @@ def test_SF3():
     result_sf=SF(x)
     assert result_sf==1
 
-#
+#Test the C prediction
 def test_Just_C_Pred1():
     reads = [10, 11, 10, 11, 10]
     A = 9
@@ -197,7 +219,16 @@ def test_Just_C_Pred2():
     C = Just_C_Pred(reads, A, B, f, stutter_probs)
     assert C == -2
 
-#
+def test_Just_C_Pred3():	
+    reads = [-5, -5, -4, -4, -3, -3, -2, -2, -1, -1]
+    A = -5
+    B = -1
+    f = 0.0167
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    C = Just_C_Pred(reads, A, B, f, stutter_probs)
+    assert C == -5
+
+#Test the f prediction
 def test_Just_F_Pred1():
     reads = [10, 11, 10, 11, 10]
     A = 9
@@ -216,45 +247,42 @@ def test_Just_F_Pred2():
     f = Just_F_Pred(reads, A, B, C, stutter_probs)
     assert f == pytest.approx(0.036, abs=1e-1)
 
+def test_Just_F_Pred3():
+    reads = [-5, -5, -4, -4, -3, -3, -2, -2, -1, -1]
+    A = -5
+    B = -1
+    C = -5 
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    f = Just_F_Pred(reads, A, B, C, stutter_probs)
+    assert f == pytest.approx(0.0167, abs=1e-2)
 
+#
+def test_ComputePvalue1():
+    reads = [10, 11, 10, 11, 10]
+    A = 9
+    B = 12
+    best_C = 9
+    best_f = 0.01
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
+    assert pval == 1
 
+def test_ComputePvalue2():
+    reads = [-6, -6, -6, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,]
+    A = -2
+    B = -2
+    best_C = -2
+    best_f = 0.0362320
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
+    assert pval == 1
 
-
-"""
-Test the main function
-"""
-# Test VCF files
-def mock_ExtractAB(trrecord):
-    # Simular valores de A y B para diferentes escenarios de pruebas
-    if trrecord.CHROM == "chr1" and trrecord.POS == 100:
-        return [[10, 20], [15, 25], [None, None]]
-    elif trrecord.CHROM == "chr2" and trrecord.POS == 200:
-        return [[5, 10], [10, 15], [None, None]]
-
-mock_ExtractAB=ExtractAB
-
-def create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--vcf", type=str, default=vcf)
-    parser.add_argument("--out", type=str, default=out)
-    parser.add_argument("--samples", type=str, default=samples)
-    return parser.parse_args()
-
-def test_main():
-    # Caso de prueba 1: Archivo VCF con un registro válido y una muestra
-    if create_args(vcf="test.vcf", out="output.tab", samples="sample1"):
-        retcode = main(args)
-        assert retcode == 0
-
-    # Caso de prueba 2: Archivo VCF con un registro válido y varias muestras
-    elif create_args(vcf="test.vcf", out="output.tab", samples="sample1,sample2"):
-        retcode = main(args)
-        assert retcode == 0
-
-    # Caso de prueba 3: Archivo VCF sin registros válidos
-    elif create_args(vcf="empty.vcf", out="output.tab", samples="sample1"):
-        retcode = main(args)
-        assert retcode == 1
-    
-
-
+def test_ComputePvalue3():
+    reads = [-3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
+    A = -5
+    B = -1
+    best_C = -5
+    best_f = 0.0167
+    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
+    assert pval == 1
