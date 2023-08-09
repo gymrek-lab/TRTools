@@ -286,3 +286,4 @@ def test_ComputePvalue3():
     stutter_probs = [x * 0.001 for x in range(-100, 101)]
     pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
     assert pval == 1
+
