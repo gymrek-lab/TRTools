@@ -1092,15 +1092,10 @@ class TRRecord:
         if idx_gts is None:
             return None
 
-        len_gts = np.empty(idx_gts.shape)
+        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths])
+
+        len_gts = allele_lens[idx_gts]
         len_gts[:, -1] = idx_gts[:, -1]
-
-        allele_lens = []
-        allele_lens.append(self.ref_allele_length)
-        allele_lens.extend(self.alt_allele_lengths)
-
-        for idx, allele_len in enumerate(allele_lens):
-            len_gts[:, :-1][idx_gts[:, :-1] == idx] = allele_len
 
         len_gts[idx_gts == -1] = -1
         len_gts[idx_gts == -2] = -2
