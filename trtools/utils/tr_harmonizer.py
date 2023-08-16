@@ -1096,7 +1096,7 @@ class TRRecord:
 
         # store allele lengths in a numpy array
         # (add a fake allele to avoid IndexErrors from -2 GTs when there are few ALTs)
-        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths] + [0])
+        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths, 0])
 
         # copy repeats lengths and phasing for each sample
         len_gts = allele_lens[idx_gts]
