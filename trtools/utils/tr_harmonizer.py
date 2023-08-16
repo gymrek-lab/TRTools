@@ -1095,16 +1095,12 @@ class TRRecord:
             idx_gts = idx_gts.astype(int)
 
         # store allele lengths in a numpy array
-        # (add a fake allele to avoid IndexErrors from -2 GTs when there are few ALTs)
-        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths, 0])
+        # and add fake alleles for -2 and -1 missing values
+        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths, -2, -1])
 
         # copy repeats lengths and phasing for each sample
         len_gts = allele_lens[idx_gts]
         len_gts[:, -1] = idx_gts[:, -1]
-
-        # restore missing GTs
-        len_gts[idx_gts == -1] = -1
-        len_gts[idx_gts == -2] = -2
 
         return len_gts
 
