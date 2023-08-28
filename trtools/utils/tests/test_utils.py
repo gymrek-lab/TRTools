@@ -1,8 +1,22 @@
-import os, sys
+import io, os, sys
 import numpy as np
 import pytest
 
 import trtools.utils.utils as utils
+
+# LoadSingleReader
+def test_LoadSingleReader(monkeypatch, vcfdir):
+    file1 = utils.LoadSingleReader(os.path.join(vcfdir, "few_samples_few_loci.vcf.gz"))
+    assert file1 is not None
+    file2 = utils.LoadSingleReader(os.path.join(vcfdir, "test_gangstr.vcf"), checkgz=False)
+    assert file2 is not None
+    file3 = utils.LoadSingleReader(os.path.join(vcfdir, "nonexistent.vcf"), checkgz=False)
+    assert file3 is None
+    # # TODO: figure out how to test stdin
+    # with open(os.path.join(vcfdir, "test_gangstr.vcf"), "r") as file4:
+    #     os.fdopen(0, 'w').write(file4.read())
+    #     file4 = utils.LoadSingleReader("/dev/stdin", checkgz=False)
+    # assert file4 is not None
 
 # ValidateAlleleFreqs
 def test_ValidateAlleleFreqs():
