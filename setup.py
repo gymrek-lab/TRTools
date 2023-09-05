@@ -52,7 +52,7 @@ setup(name=NAME,
               'compareSTR=trtools.compareSTR:run',
               'qcSTR=trtools.qcSTR:run',
               'associaTR=trtools.associaTR:run',
-              'mosaicSTR=trtools.mosaicSTR:run',
+              'prancSTR=trtools.prancSTR:run',
               'simTR=trtools.simTR:run'
           ],
       },
