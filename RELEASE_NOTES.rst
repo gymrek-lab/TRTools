@@ -3,7 +3,7 @@ Unreleased Changes
 
 New features:
 
-* Added mosaicSTR
+* Added prancSTR for mosaicim detection
 
 5.0.2
 -----

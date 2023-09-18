@@ -439,7 +439,7 @@ def main(args):
         vcftype = trh.InferVCFType(invcf)
     if vcftype != trh.VcfTypes.hipstr:
         common.WARNING("Error: Only HipSTR VCFs currently supported "
-                       " by mosaicSTR")
+                       " by prancSTR")
         return 1
 
     if args.region:

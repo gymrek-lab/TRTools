@@ -14,7 +14,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    source/compareSTR.rst
    source/mergeSTR.rst
    source/associaTR.rst
-   source/mosaicSTR.rst
+   source/prancSTR.rst
    source/simTR.rst
 
 .. Include directives from tool READMEs
@@ -43,7 +43,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    :start-after: overview_directive
    :end-before: overview_directive_done   
 
-.. include:: ../trtools/mosaicSTR/README.rst
+.. include:: ../trtools/prancSTR/README.rst
    :start-after: overview_directive
    :end-before: overview_directive_done   
 
@@ -75,9 +75,9 @@ TRTools offers a variety of command-line tools for performing manipulations to T
 
 * |associaTR overview|
 
-:doc:`source/mosaicSTR`
+:doc:`source/prancSTR`
 
-* |mosaicSTR overview|
+* |prancSTR overview|
 
 :doc:`source/simTR`
 

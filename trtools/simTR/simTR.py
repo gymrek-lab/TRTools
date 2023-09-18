@@ -14,7 +14,7 @@ import subprocess
 import sys
 import tempfile
 import trtools.utils.common as common
-import trtools.mosaicSTR as ms
+import trtools.prancSTR as ms
 import trtools.utils.utils as utils
 from trtools import __version__
 
