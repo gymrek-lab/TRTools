@@ -15,6 +15,9 @@ def args(tmpdir):
     args.only_passing = False
     args.debug = False
     args.vcftype = "hipstr"
+    args.samples = None
+    args.quiet = False
+    args.output_all = False
     return args
 
 # Test no such file or directory
