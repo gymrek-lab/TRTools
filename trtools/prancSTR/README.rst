@@ -5,7 +5,16 @@
 prancSTR
 =========
 
-|prancSTR overview|
+Population-level heterogeneity generally arises due to germline mutations that occur before the formation of the zygote and are inherited by all cells in the offspring.
+However, heterogeneity within an individual may also exist due to somatic mutations that occur post-zygotically in only a sub-population of cells (). 
+
+Short tandem repeats (STRs) consist of repeated sequences of 1-6bp and comprise more than 1 million loci in the human genome. Somatic mosaicism at STRs is known 
+to play a key role in the pathogenicity of loci implicated in repeat expansion disorders, and is highly prevalent in cancers exhibiting microsatellite instability.
+While a variety of tools have been developed to genotype germline variation at STRs, no method currently exists for systematically identifying mosaic STRs (mSTRs).
+
+We introduce prancSTR, a novel method for detecting mSTRs from individual next-generation sequencing datasets. Unlike many existing mosaicism detection methods 
+for other variant types, prancSTR does not require a matched control sample as input.
+
 
 Usage
 -----
@@ -26,12 +35,49 @@ prancSTR will output a tab-delimited file with candidate mosaic STRs (mSTRs) eit
 Other general parameters:
 
 * :code:`--region <string>`: Restrict to the region chr:start-end. VCF file must be bgzipped and indexed to use this option.
+* :code:`--samples <string>`: Restrict to the given list of samples. Samples are comma separated
+* :code:`--vcftype <string>`: Specify the tool which generated the vcf call file for STRs. e.g. hipstr, gangstr etc.
+* :code:`--only-passing <action=store_true>`: Filter out segmental duplication regions.
+* :code:`--output-all <action=store_true>`: Force tool to output results for all loci.
+* :code:`--debug <action=store_true>`: Print helpful debug messages.
+* :code:`--quiet <action=store_true>`: Restrict printing of any messages.
 * :code:`--version`: Print the version of the tool
 
 See `Example Commands`_ for examples running prancSTR under different settings.
 
 Output files
 ------------
+The final output is a tab-delimited file with candidate mosaic STRs (mSTRs) corresponding to different loci comprising of 16 columns: 
+
+1. sample: The ID of the sample whose locus is being analyzed.
+2. chrom: The chromosome on which the mosaic short tandem repeat (STR) lies.
+3. locus: Reference ID for the short tandem repeat.
+4. motif: The nucleotide sequence that the repeat is comprised of.
+5. A: Represents the first genotype allele for the given STR.
+6. B: Represents the second genotype allele for the given STR.
+7. C: This is the mosaic allele inferred by prancSTR.
+8. f: This represents the mosaic allele fraction. 
+9. pval: Gives the p-value metric for how significant our findings are.
+10. reads: Gives representation for how many reads support each allele.
+11. mosaic_support: The number of reads that support the mosaic allele. 
+12. stutter parameter u: Gives the probability that stutter error causes an increase in obs. STR size.
+13. stutter parameter d: Gives the probability that stutter error causes a decrease in obs. STR size.
+14. stutter parameter rho: Parameter for geometric step size distribution.
+15. quality factor: Reports the posterior probability of the genotype as a mesaure of quality of individual sample's genotype.
+16. read depth: Reports the total depth/number of informative reads for all samples at the locus.
+
+stutter parameter u, stutter parameter d, stutter parameter rho, quality factor and read depth are the parameters that have been imported from what HipSTR outputs.
+Below is an example file which contains 5 STR loci 
+
+**NOTE: The table header is for descriptive purposes. The BED file should not have a header**
+
+CHROM | START       | END         | MOTIF_LEN | NUM_COPIES | NAME
+----  | ----        | ----        | ---       | ---        | ---
+chr1  | 13784267    | 13784306    | 4         | 10         | GATA27E01
+chr1  | 18789523    | 18789555    | 3         | 11         | ATA008
+chr2  | 32079410    | 32079469    | 4         | 15         | AGAT117
+chr17 | 38994441    | 38994492    | 4         | 12         | GATA25A04
+chr17 | 55299940    | 55299992    | 4         | 13         | AAT245
 
 TODO - describe columns of the output file
 
