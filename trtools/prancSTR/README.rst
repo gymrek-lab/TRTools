@@ -90,9 +90,15 @@ Example Commands
 
 Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-	prancSTR \
-        --vcf /expanse/projects/gymreklab/mousavi/results/1000genomes/hipstr_outs/EUR/CEU/merged/CEU_filtered.vcf.gz \
-        --out /expanse/projects/gymreklab/aasehgal/data_DeSASTR/resources/chrom_pop_files/CEU_chr1 \
-        --vcftype hipstr \
-        --only-passing \
+	prancSTR
+        --vcf /expanse/projects/gymreklab/mousavi/results/1000genomes/hipstr_outs/EUR/CEU/merged/CEU_filtered.vcf.gz
+        --out /expanse/projects/gymreklab/aasehgal/data_DeSASTR/resources/chrom_pop_files/CEU_chr1
+        --vcftype hipstr
+        --only-passing
         --region chr1
+
+	prancSTR
+    	--vcf CEU_filtered.vcf.gx
+    	--only-passing
+    	--out NA12878_mosaicSTR
+    	--samples NA12878
