@@ -49,22 +49,22 @@ Output files
 ------------
 The final output is a tab-delimited file with candidate mosaic STRs (mSTRs) corresponding to different loci comprising of 16 columns: 
 
-1. sample: The ID of the sample whose locus is being analyzed.
-2. chrom: The chromosome on which the mosaic short tandem repeat (STR) lies.
-3. locus: Reference ID for the short tandem repeat.
-4. motif: The nucleotide sequence that the repeat is comprised of.
-5. A: Represents the first genotype allele for the given STR.
-6. B: Represents the second genotype allele for the given STR.
-7. C: This is the mosaic allele inferred by prancSTR.
-8. f: This represents the mosaic allele fraction. 
-9. pval: Gives the p-value metric for how significant our findings are.
-10. reads: Gives representation for how many reads support each allele.
-11. mosaic_support: The number of reads that support the mosaic allele. 
-12. stutter parameter u: Gives the probability that stutter error causes an increase in obs. STR size.
-13. stutter parameter d: Gives the probability that stutter error causes a decrease in obs. STR size.
-14. stutter parameter rho: Parameter for geometric step size distribution.
-15. quality factor: Reports the posterior probability of the genotype as a mesaure of quality of individual sample's genotype.
-16. read depth: Reports the total depth/number of informative reads for all samples at the locus.
+* :code:`sample`: The ID of the sample whose locus is being analyzed.
+* :code:`chrom`: The chromosome on which the mosaic short tandem repeat (STR) lies.
+* :code:`locus`: Reference ID for the short tandem repeat.
+* :code:`motif`: The nucleotide sequence that the repeat is comprised of.
+* :code:`A`: Represents the first genotype allele for the given STR.
+* :code:`B`: Represents the second genotype allele for the given STR.
+* :code:`C`: This is the mosaic allele inferred by prancSTR.
+* :code:`f`: This represents the mosaic allele fraction. 
+* :code:`pval`: Gives the p-value metric for how significant our findings are.
+* :code:`reads`: Gives representation for how many reads support each allele.
+* :code:`mosaic_support`: The number of reads that support the mosaic allele. 
+* :code:`stutter parameter u`: Gives the probability that stutter error causes an increase in obs. STR size.
+* :code:`stutter parameter d`: Gives the probability that stutter error causes a decrease in obs. STR size.
+* :code:`stutter parameter rho`: Parameter for geometric step size distribution.
+* :code:`quality factor`: Reports the posterior probability of the genotype as a mesaure of quality of individual sample's genotype.
+* :code:`read depth`: Reports the total depth/number of informative reads for all samples at the locus.
 
 stutter parameter u, stutter parameter d, stutter parameter rho, quality factor and read depth are the parameters that have been imported from what HipSTR outputs.
 Below is an example file which contains 5 STR loci 
@@ -90,14 +90,14 @@ Example Commands
 
 Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-	prancSTR
+	prancSTR \
         --vcf CEU_filtered.vcf.gz
         --out CEU_chr1
         --vcftype hipstr
         --only-passing
         --region chr1
 
-	prancSTR
+	prancSTR \
     	--vcf CEU_filtered.vcf.gz
     	--only-passing
     	--out NA12878_mosaicSTR
