@@ -85,67 +85,14 @@ Below is an example file which contains 5 STR loci
 | NA12347 | chr1  | 1002414 | Human_STR_295 |   T   | 5  | 5 | 4 | 0.262358 | 1.029537e-05 | 3|1;4|5;5|14;6|1 |       5        |        0.02         |        0.02        |         0.69         |      0.99      |     51     |
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 
-
-..
-	.. list-table:: Title
-	:widths: 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 
-	:header-rows: 1
-	* - sample
-		- chrom
-		- pos
-		- locus
-		- motif
-		- A 
-		- B 
-		- C 
-		- f 
-		- pval 
-		- reads
-		- mosaic_support 
-		- stutter parameter u 
-		- stutter parameter d 
-		- stutter parameter rho 
-		- quality factor
-		- read depth
-	* - NA07022
-		- chr1
-		- 987287
-		- Human_STR_285
-		- T
-		- 3
-		- 5
-		- 2
-		- 0.244079
-		- 1.530865e-04
-		- 2|4;3|4;5|4;6|1
-		- 4
-		- 0.01
-		- 0.07
-		- 0.31
-		- 0.98
-		- 21
-	* - NA12716
-		- chr1
-		- 987287
-		- Human_STR_285
-		- T
-		- 5
-		- 5
-		- 4
-		- 0.265958
-		- 1.842418e-05
-		- 4|6;5|15;9|1
-		- 6
-		- 0.01
-		- 0.07
-		- 0.31
-		- 1.00
-		- 34
-
-
 Example Commands
 ----------------
 
 Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-	TODO - example commands
+	prancSTR \
+        --vcf /expanse/projects/gymreklab/mousavi/results/1000genomes/hipstr_outs/EUR/CEU/merged/CEU_filtered.vcf.gz \
+        --out /expanse/projects/gymreklab/aasehgal/data_DeSASTR/resources/chrom_pop_files/CEU_chr1 \
+        --vcftype hipstr \
+        --only-passing \
+        --region chr1
