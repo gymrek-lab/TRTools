@@ -15,6 +15,8 @@ While a variety of tools have been developed to genotype germline variation at S
 We introduce prancSTR, a novel method for detecting mSTRs from individual next-generation sequencing datasets. Unlike many existing mosaicism detection methods 
 for other variant types, prancSTR does not require a matched control sample as input.
 
+prancSTR is in *beta* version while the manuscript is in preparation
+
 
 Usage
 -----
@@ -91,7 +93,7 @@ Example Commands
 Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
 	prancSTR \
-        --vcf CEU_filtered.vcf.gz
+    	--vcf CEU_filtered.vcf.gz
         --out CEU_chr1
         --vcftype hipstr
         --only-passing
