@@ -71,15 +71,15 @@ Known issues
 Example Commands
 ------------
 
-Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files/str-ngs-data/::
 
 	Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
 	simTR \
-    	--coords str-ngs-data/dummy_A_pos.bed \
-    	--ref str-ngs-data/CBL_dataset.fa \
-    	--art art_bin_MountRainier/art_illumina \
-    	--output_dir dummy_data_A \
-    	--coverage 10 \
-    	--read_length 150 \
-    	--u 0.02 \
-    	--d 0.02
+	   --coords str-ngs-data/dummy_A_pos.bed \
+	   --ref str-ngs-data/CBL_dataset.fa \
+	   --art art_bin_MountRainier/art_illumina \
+	   --output_dir dummy_data_A \
+	   --coverage 10 \
+	   --read_length 150 \
+	   --u 0.02 \
+	   --d 0.02
