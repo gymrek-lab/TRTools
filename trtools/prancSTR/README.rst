@@ -47,6 +47,9 @@ Other general parameters:
 
 See `Example Commands`_ for examples running prancSTR under different settings.
 
+prancSTR works downstream of HipSTR (or any other genotyper that provides estimated diploid repeat lengths and the observed distribution of copy numbers across all reads aligning to a locus). 
+We further utilize the information on diploid genotype, stutter params, and observed allele length distributions (from MALLREADS) computed by HipSTR to identify mosaic sites.
+
 Output files
 ------------
 The final output is a tab-delimited file with candidate mosaic STRs (mSTRs) corresponding to different loci comprising of 16 columns: 
