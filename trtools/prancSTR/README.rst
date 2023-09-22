@@ -92,7 +92,7 @@ Example Commands
 
 Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
 
-	Example command running prancSTR for only one chromosome with hipstr output file while filtering segemental duplicates
+	# Example command running prancSTR for only one chromosome with hipstr output file while filtering segemental duplicates
 	prancSTR \
 	   --vcf CEU_filtered_subset.vcf.gz 
 	   --out CEU_chr1 
@@ -100,7 +100,7 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 	   --only-passing
 	   --region chr1
 
-	Example command running prancSTR for only one sample while filtering segemental duplicates
+	# Example command running prancSTR for only one sample while filtering segemental duplicates
 	prancSTR \
 	   --vcf CEU_filtered_subset.vcf.gz
 	   --only-passing

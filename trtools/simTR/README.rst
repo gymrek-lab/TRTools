@@ -73,7 +73,7 @@ Example Commands
 
 Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files/str-ngs-data/::
 
-	Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
+	# Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
 	simTR \
 	   --coords str-ngs-data/dummy_A_pos.bed \
 	   --ref str-ngs-data/CBL_dataset.fa \
