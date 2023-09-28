@@ -1,5 +1,5 @@
 .. overview_directive
-.. |simTR overview| replace:: SimTR simulates NGS reads at a single TR region while modeling stutter errors common at TRs.
+.. |simTR overview| replace:: SimTR simulates next generation sequencing reads at a single TR region while modeling stutter errors common in such sequencing.
 .. overview_directive_done
 
 simTR
@@ -9,7 +9,7 @@ simTR
 
 Prerequisites
 -------------
-simTR is a wrapper on the `Illumina ART<https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
+simTR is a wrapper on the `Illumina ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
 
 Usage
 -----
@@ -34,7 +34,7 @@ By default, :code:`simTR` will simulate paired end reads and output reads to :co
 Stutter model
 -------------
 
-Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript<https://www.nature.com/articles/nmeth.4267>`_. The model can be specified using three optional parameters:
+Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript <https://www.nature.com/articles/nmeth.4267>`_. The model can be specified using three optional parameters:
 
 * :code:`--u <float>`: Probability a read contains stutter error that increases the total number of repeat units (Default: 0.05)
 * :code:`--d <float>`: Probability a read contains stutter error that decreases the total number of repeat units (Default: 0.05)
@@ -69,7 +69,7 @@ Known issues
 
 
 Example Commands
-------------
+----------------
 
 Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files/str-ngs-data/::
 

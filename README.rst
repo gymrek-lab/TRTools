@@ -141,7 +141,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
 #. Install TRTools from source `as above <From source_>`_.
-#. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_ and :code:`sphinx>=3` in your environment.
+#. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_, :code:`sphinx>=3` and :code:`sphinx_rtd_theme`, in your environment.
 #. Fork the TRTools repository.
 #. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
 #. Make your changes. 
