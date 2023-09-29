@@ -489,16 +489,21 @@ def main(args):
                     "INFRAME_PGEOM" not in trrecord.info.keys():
                 common.WARNING(
                     "Could not find stutter info for %s" % str(trrecord))
-                continue
-            stutter_u = trrecord.info["INFRAME_UP"]
-            stutter_d = trrecord.info["INFRAME_DOWN"]
-            stutter_rho = trrecord.info["INFRAME_PGEOM"]
-            if stutter_u == 0.0:
+                common.WARNING(
+                    "Adding default stutter info for %s" % str(trrecord))
                 stutter_u = 0.01
-            if stutter_d == 0.0:
                 stutter_d = 0.01
-            if stutter_rho == 1.0:
                 stutter_rho = 0.95
+            else:
+                stutter_u = trrecord.info["INFRAME_UP"]
+                stutter_d = trrecord.info["INFRAME_DOWN"]
+                stutter_rho = trrecord.info["INFRAME_PGEOM"]
+                if stutter_u == 0.0:
+                    stutter_u = 0.01
+                if stutter_d == 0.0:
+                    stutter_d = 0.01
+                if stutter_rho == 1.0:
+                    stutter_rho = 0.95
             stutter_probs = [StutterProb(d, stutter_u, stutter_d, stutter_rho) \
                 for d in range(-MAXSTUTTEROFFSET, MAXSTUTTEROFFSET)]
             period = len(trrecord.motif)
