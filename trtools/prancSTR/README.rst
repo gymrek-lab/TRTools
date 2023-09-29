@@ -40,9 +40,9 @@ prancSTR will output a tab-delimited file with predicted mosaicism at STR loci e
 Other general parameters:
 
 * :code:`--region <string>`: Restrict to the region chr:start-end. VCF file must be bgzipped and indexed to use this option.
-* :code:`--samples <string>`: Restrict to the given list of samples. Samples are comma separated
+* :code:`--samples <string>`: Restrict to the given list of samples. Samples are comma separated.
 * :code:`--vcftype <string>`: Specify the tool which generated the vcf call file for STRs. e.g. hipstr, gangstr etc.
-* :code:`--only-passing <action=store_true>`: Filters out the regions which don't have the PASS set as true.
+* :code:`--only-passing <action=store_true>`: Filters out the regions which don't have the PASS column set to true.
 * :code:`--output-all <action=store_true>`: Force tool to output results for all loci.
 * :code:`--debug <action=store_true>`: Print helpful debug messages.
 * :code:`--quiet <action=store_true>`: Restrict printing of any messages.
@@ -59,9 +59,9 @@ The output is a tab-delimited file with 16 columns where each row is a candidate
 * :code:`chrom`: The chromosome on which the mosaic short tandem repeat (STR) lies.
 * :code:`locus`: Reference ID for the short tandem repeat.
 * :code:`motif`: The nucleotide sequence that the repeat is comprised of.
-* :code:`A`: Represents the first genotype allele for the given STR in repeats units relative to the reference.
-* :code:`B`: Represents the second genotype allele for the given STR in repeats units relative to the reference.
-* :code:`C`: This is the mosaic allele inferred by prancSTR in repeats units relative to the reference.
+* :code:`A`: Represents the first genotype allele for the given STR in repeat units relative to the reference.
+* :code:`B`: Represents the second genotype allele for the given STR in repeat units relative to the reference.
+* :code:`C`: This is the mosaic allele inferred by prancSTR in repeat units relative to the reference.
 * :code:`f`: This represents the mosaic allele fraction. 
 * :code:`pval`: Gives the p-value metric for how significant our findings are.
 * :code:`reads`: Gives representation for how many reads support each allele.
@@ -89,7 +89,7 @@ Below is an example file which contains 5 STR loci
 | NA12347 | chr1  | 1002414 | Human_STR_295 |   T   | 5  | 5 | 4 | 0.262358 | 1.029537e-05 | 3|1;4|5;5|14;6|1 |       5        |        0.02         |        0.02        |         0.69         |      0.99      |     51     |
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 
-Currently prancSTR output file contains mosaicism predictions generated for each loci. It is upto the user's discretion to filter out for high confidence mosaic allele calls.
+Currently prancSTR output file contains mosaicism predictions generated for each locus. It is upto the user's discretion to filter out for high confidence mosaic allele calls.
 
 Example Commands
 ----------------
