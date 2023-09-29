@@ -4,6 +4,15 @@ import pytest
 
 import trtools.utils.utils as utils
 
+# LoadSingleReader
+def test_LoadSingleReader(monkeypatch, vcfdir):
+    file1 = utils.LoadSingleReader(os.path.join(vcfdir, "few_samples_few_loci.vcf.gz"))
+    assert file1 is not None
+    file2 = utils.LoadSingleReader(os.path.join(vcfdir, "test_gangstr.vcf"), checkgz=False)
+    assert file2 is not None
+    file3 = utils.LoadSingleReader(os.path.join(vcfdir, "nonexistent.vcf"), checkgz=False)
+    assert file3 is None
+
 # ValidateAlleleFreqs
 def test_ValidateAlleleFreqs():
     afreqs = {0:1}
