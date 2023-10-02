@@ -45,6 +45,7 @@ Other general parameters:
 * :code:`--vcftype <string>`: Specify the tool which generated the vcf call file for STRs. e.g. hipstr, gangstr etc.
 * :code:`--only-passing <action=store_true>`: Filters out the regions which don't have the FILTER column set to PASS.
 * :code:`--output-all <action=store_true>`: Force tool to output results for all loci.
+* :code:`--readfield <string>`: Specify which field to utilize for extracting read information.
 * :code:`--debug <action=store_true>`: Print helpful debug messages.
 * :code:`--quiet <action=store_true>`: Restrict printing of any messages.
 * :code:`--version`: Print the version of the tool
