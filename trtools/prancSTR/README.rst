@@ -8,7 +8,8 @@ prancSTR
 Population-level heterogeneity arises due to germline mutations that occur before the formation of the zygote and are inherited by all cells in the offspring.
 However, heterogeneity within an individual may also exist due to somatic mutations that occur post-zygotically in only a sub-population of cells.
 
-prancSTR is a tool for detecting somatic mosaicism at STRs using HipSTR calls. Note that prancSTR does not require a matched control sample as input, and only works with HipSTR input.
+prancSTR is a tool for detecting somatic mosaicism at STRs using HipSTR calls. Note that prancSTR does not require a matched control sample as input, and currently only works with HipSTR input.
+prancSTR also works downstream of LongSTR(https://github.com/gymrek-lab/LongSTR), which is a modified version of HipSTR that performs TR calling on long reads.
 
 prancSTR uses the following fields from HipSTR's output for detecting mosaicism:
 * estimated diploid repeat lengths
@@ -17,7 +18,7 @@ prancSTR uses the following fields from HipSTR's output for detecting mosaicism:
 * stutter params
 * observed allele length distributions (MALLREADS)
 
-Somatic mosaicism at STRs is known to play a key role in the pathogenicity of loci implicated in repeat expansion disorders, and is highly prevalent in cancers exhibiting microsatellite instability.
+Somatic mosaicism at STRs is known to play a key role in the pathogenicity of loci implicated in repeat expansion disorders and non-neoplastic syndromes.
 
 prancSTR is in *beta*.
 
@@ -56,7 +57,9 @@ See `Example Commands`_ for examples running prancSTR under different settings.
 
 Output files
 ------------
-The output is a tab-delimited file with 16 columns where each row is a candidate mosaic STR:
+
+prancSTR output file contains mosaicism predictions generated for each locus. It is up to the user's discretion to filter out for high confidence mosaic allele calls.
+The output generated is a tab-delimited file with 16 columns where each row represents predicted mosaicism at STR:
 
 * :code:`sample`: The ID of the sample whose locus is being analyzed.
 * :code:`chrom`: The chromosome on which the mosaic short tandem repeat (STR) lies.
@@ -92,7 +95,14 @@ Below is an example file which contains 5 STR loci
 | NA12347 | chr1  | 1002414 | Human_STR_295 |   T   | 5  | 5 | 4 | 0.262358 | 1.029537e-05 | 3|1;4|5;5|14;6|1 |       5        |        0.02         |        0.02        |         0.69         |      0.99      |     51     |
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 
-Currently prancSTR output file contains mosaicism predictions generated for each locus. It is upto the user's discretion to filter out for high confidence mosaic allele calls.
+We filter output on the following parameters to obtain what we consider to be high confidence mosaic sites.
+* :code:`pval`:of less than equal to 0.05
+* :code:`read depth`:of greater than equal to 10
+* :code:`quality factor` of greater than equal to 0.8
+* :code:`mosaic_support` of greater than equal to 3
+* :code:`f`: of less than equal to 0.3 or 30%
+
+NOTE:When running prancSTR downstream of LongSTR it is recommended to use ALLREADS field rather than MALLREADS field to extract observed allele length distributions.
 
 Example Commands
 ----------------
@@ -117,4 +127,4 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 
 Citations
 ----------------
-
+If you use prancSTR in your work, please cite: 
