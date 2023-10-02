@@ -8,8 +8,7 @@ prancSTR
 Population-level heterogeneity arises due to germline mutations that occur before the formation of the zygote and are inherited by all cells in the offspring.
 However, heterogeneity within an individual may also exist due to somatic mutations that occur post-zygotically in only a sub-population of cells.
 
-prancSTR is a tool for detecting somatic mosaicism at STRs using HipSTR calls. Note that prancSTR does not require a matched control sample as input, and currently only works with HipSTR input.
-prancSTR also works downstream of LongSTR(https://github.com/gymrek-lab/LongSTR), which is a modified version of HipSTR that performs TR calling on long reads.
+prancSTR is a tool for detecting somatic mosaicism at STRs using HipSTR calls. Note that prancSTR does not require a matched control sample as input, and currently only works with HipSTR input. 
 
 prancSTR uses the following fields from HipSTR's output for detecting mosaicism:
 * estimated diploid repeat lengths
@@ -104,7 +103,6 @@ We filter output on the following parameters to obtain what we consider to be hi
 * :code:`mosaic_support` of greater than equal to 3
 * :code:`f`: of less than equal to 0.3 or 30%
 
-NOTE:When running prancSTR downstream of LongSTR it is recommended to use ALLREADS field rather than MALLREADS field to extract observed allele length distributions.
 
 Example Commands
 ----------------
