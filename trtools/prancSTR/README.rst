@@ -95,7 +95,8 @@ Below is an example file which contains 5 STR loci
 | NA12347 | chr1  | 1002414 | Human_STR_295 |   T   | 5  | 5 | 4 | 0.262358 | 1.029537e-05 | 3|1;4|5;5|14;6|1 |       5        |        0.02         |        0.02        |         0.69         |      0.99      |     51     |
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 
-We filter output on the following parameters to obtain what we consider to be high confidence mosaic sites.
+We filter output on the following parameters to obtain what we consider to be high confidence mosaic sites:
+
 * :code:`pval`:of less than equal to 0.05
 * :code:`read depth`:of greater than equal to 10
 * :code:`quality factor` of greater than equal to 0.8
