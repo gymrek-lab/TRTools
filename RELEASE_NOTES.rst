@@ -3,7 +3,8 @@ Unreleased Changes
 
 New features:
 
-* Added prancSTR for mosaicim detection
+* Added prancSTR for mosaicism detection
+* Added simTR for simulating NGS reads with stutter errors at TRs
 
 5.0.2
 -----
