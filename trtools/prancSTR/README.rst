@@ -102,7 +102,7 @@ Below is an example file which contains 5 STR loci
 
 As a starting point, we suggest filtering output on the following parameters to obtain candidate mosaic sites:
 
-* :code:`pval`:of less than or equal to 0.05
+* :code:`pval`:of less than or equal to 0.05/(number of STRs tested). The number of STRs tested is equal to the number of data lines in the prancSTR output file.
 * :code:`read depth`: of greater than or equal to 10
 * :code:`quality factor` of greater than or equal to 0.8
 * :code:`mosaic_support` of greater than or equal to 3
