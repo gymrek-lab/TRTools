@@ -5,6 +5,10 @@
 prancSTR
 =========
 
+|prancSTR overview|
+
+Tool overview
+-------------
 Population-level heterogeneity arises due to germline mutations that occur before the formation of the zygote and are inherited by all cells in the offspring.
 However, heterogeneity within an individual may also exist due to somatic mutations that occur post-zygotically in only a sub-population of cells.
 
