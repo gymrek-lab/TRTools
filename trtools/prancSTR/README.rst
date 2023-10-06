@@ -62,7 +62,8 @@ See `Example Commands`_ for examples running prancSTR under different settings.
 Output files
 ------------
 
-prancSTR output file contains mosaicism predictions generated for each locus. It is up to the user's discretion to filter out for high confidence mosaic allele calls.
+The prancSTR output file contains mosaicism predictions generated for each locus. 
+Note, this file contains statistics for all tested loci and it is up to the user's discretion to filter out for high confidence mosaic allele calls.
 The output generated is a tab-delimited file with 16 columns where each row represents predicted mosaicism at STR:
 
 * :code:`sample`: The ID of the sample whose locus is being analyzed.
@@ -99,14 +100,13 @@ Below is an example file which contains 5 STR loci
 | NA12347 | chr1  | 1002414 | Human_STR_295 |   T   | 5  | 5 | 4 | 0.262358 | 1.029537e-05 | 3|1;4|5;5|14;6|1 |       5        |        0.02         |        0.02        |         0.69         |      0.99      |     51     |
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 
-We filter output on the following parameters to obtain what we consider to be high confidence mosaic sites:
+As a starting point, we suggest filtering output on the following parameters to obtain candidate mosaic sites:
 
-* :code:`pval`:of less than equal to 0.05
-* :code:`read depth`:of greater than equal to 10
-* :code:`quality factor` of greater than equal to 0.8
-* :code:`mosaic_support` of greater than equal to 3
-* :code:`f`: of less than equal to 0.3 or 30%
-
+* :code:`pval`:of less than or equal to 0.05
+* :code:`read depth`: of greater than or equal to 10
+* :code:`quality factor` of greater than or equal to 0.8
+* :code:`mosaic_support` of greater than or equal to 3
+* :code:`f`: of less than equal to 0.3
 
 Example Commands
 ----------------
