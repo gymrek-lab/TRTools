@@ -433,9 +433,9 @@ def main(args):
 
     checkgz = args.region is not None
     invcf = utils.LoadSingleReader(args.vcf, checkgz=checkgz)
-    samples = invcf.samples
     if invcf is None:
         return 1
+    samples = invcf.samples
     if args.vcftype != 'auto':
         vcftype = trh.VcfTypes[args.vcftype]
     else:
