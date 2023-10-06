@@ -476,7 +476,7 @@ def main(args):
             trrecord = trh.HarmonizeRecord(vcftype, record)
 
             if args.only_passing and not args.output_all and (record.FILTER is not None):
-                common.WARNING("Skipping non-passing record %s" %
+                common.WARNING("Skipping record %s with non-passing VCF FILTER field." %
                                str(trrecord))
                 continue
 
