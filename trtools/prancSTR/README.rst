@@ -127,4 +127,4 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 
 Citations
 ----------------
-If you use prancSTR in your work, please cite: 
+A preprint describing simTR and prancSTR is currently being prepared.

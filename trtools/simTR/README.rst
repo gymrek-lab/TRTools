@@ -83,3 +83,7 @@ Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at h
 	   --read_length 150 \
 	   --u 0.02 \
 	   --d 0.02
+
+Citations
+----------------
+A preprint describing simTR and prancSTR is currently being prepared.
