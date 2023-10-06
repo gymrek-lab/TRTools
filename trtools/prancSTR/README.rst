@@ -1,5 +1,5 @@
 .. overview_directive
-.. |prancSTR overview| replace:: prancSTR identifies STRs with evidence of somatic mosaicism. prancSTR only works with HipSTR VCFs.
+.. |prancSTR overview| replace:: prancSTR quantifies evidence of somatic mosaicism at STRs based on high-throughput sequencing data. prancSTR is designed to be run downstream of a germline TR genotyper. It currently only supports analysis of VCF files output by HipSTR.
 .. overview_directive_done
 
 prancSTR
