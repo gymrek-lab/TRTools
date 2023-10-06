@@ -16,13 +16,11 @@ prancSTR is a tool for detecting somatic mosaicism at STRs using high throughput
 It is designed to be run downstream of a germline TR genotyper.
 It currently only supports analysis of VCF files output by HipSTR.
 Note that prancSTR does not require a matched control sample as input.
-prancSTR uses the following fields from HipSTR's output for detecting mosaicism:
+prancSTR uses the following fields from HipSTR VCFs for detecting mosaicism:
 
-* estimated diploid repeat lengths
-* the observed distribution of copy numbers across all reads aligning to a locus
-* diploid genotype
-* stutter params
-* observed allele length distributions (MALLREADS)
+* `GT` is used to obtain estimated diploid repeat lengths
+* `MALLREADS` is used to obtain observed distribution of copy numbers across all reads aligning to a locus. 
+* Stutter parameters are obtained from `INFRAME_UP`, `INFRAME_DOWN`, and `INFRAME_PGEOM`.
 
 prancSTR is in *beta*.
 
