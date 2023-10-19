@@ -17,9 +17,9 @@ import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 from trtools import __version__
 
-READFIELD = "MALLREADS"
+#READFIELD = "MALLREADS"
 ZERO = 10e-200
-MAXSTUTTEROFFSET = 100
+MAXSTUTTEROFFSET = 200
 
 def StutterProb(delta, stutter_u, stutter_d, stutter_rho):
     r"""Compute P(r_i | genotype; error model)
@@ -399,6 +399,8 @@ def getargs():
     filter_group.add_argument("--region", help="Restrict to the region "
                               "chrom:start-end. Requires file to bgzipped and"
                               " tabix indexed.", type=str)
+    # filter_group.add_argument("--readfield", help="Select the field to extract reads from"
+    #                           " Options are between MALLREADS and ALLREADS.", type=str)
     filter_group.add_argument("--only-passing", help="Only process records "
                               " where FILTER==PASS", action="store_true")
     filter_group.add_argument("--output-all", help="Force output results for all loci", action="store_true")
@@ -453,126 +455,129 @@ def main(args):
 
     start_time = time.time()
     nrecords = 0
+    # READFIELD=args.readfield
 
-    try:
-        if args.out == "stdout":
-            outf = sys.stdout
+    if args.out == "stdout":
+        outf = sys.stdout
+    else:
+        outf = open(args.out + ".tab", "w")
+
+    # Header
+    header_cols = ["sample", "chrom", "pos", "locus", "motif",
+                    "A", "B", "C", "f", "pval", "reads",
+                    "mosaic_support", "stutter parameter u",
+                    "stutter paramter d", "stutter paramter rho",
+                    "quality factor", "read depth"]
+    outf.write("\t".join(header_cols)+"\n")
+
+    for record in region:
+        nrecords += 1
+        trrecord = trh.HarmonizeRecord(vcftype, record)
+
+        if args.only_passing and not args.output_all and (record.FILTER is not None):
+            common.WARNING("Skipping non-passing record %s" %
+                            str(trrecord))
+            continue
+
+        ########### Extract necessary info from the VCF file #######
+        # Stutter params for the locus. These are the same for all samples
+        # First check we have all the fields we need
+        if READFIELD not in trrecord.format.keys():
+            common.WARNING("Could not find MALLREADS for %s" %
+                            str(trrecord))
+            continue
+        if "INFRAME_UP" not in trrecord.info.keys() or \
+            "INFRAME_DOWN" not in trrecord.info.keys() or \
+                "INFRAME_PGEOM" not in trrecord.info.keys():
+            common.WARNING(
+                "Could not find stutter info for %s" % str(trrecord))
+            common.WARNING(
+                "Adding default stutter info for %s" % str(trrecord))
+            stutter_u = 0.05
+            stutter_d = 0.05
+            stutter_rho = 0.90
         else:
-            outf = open(args.out + ".tab", "w")
-
-        # Header
-        header_cols = ["sample", "chrom", "pos", "locus", "motif",
-                       "A", "B", "C", "f", "pval", "reads",
-                       "mosaic_support", "stutter parameter u",
-                       "stutter paramter d", "stutter paramter rho",
-                       "quality factor", "read depth"]
-        outf.write("\t".join(header_cols)+"\n")
-
-        for record in region:
-            nrecords += 1
-            trrecord = trh.HarmonizeRecord(vcftype, record)
-
-            if args.only_passing and not args.output_all and (record.FILTER is not None):
-                common.WARNING("Skipping non-passing record %s" %
-                               str(trrecord))
-                continue
-
-            ########### Extract necessary info from the VCF file #######
-            # Stutter params for the locus. These are the same for all samples
-            # First check we have all the fields we need
-            if READFIELD not in trrecord.format.keys():
-                common.WARNING("Could not find MALLREADS for %s" %
-                               str(trrecord))
-                continue
-            if "INFRAME_UP" not in trrecord.info.keys() or \
-                "INFRAME_DOWN" not in trrecord.info.keys() or \
-                    "INFRAME_PGEOM" not in trrecord.info.keys():
-                common.WARNING(
-                    "Could not find stutter info for %s" % str(trrecord))
-                common.WARNING(
-                    "Adding default stutter info for %s" % str(trrecord))
+            stutter_u = trrecord.info["INFRAME_UP"]
+            stutter_d = trrecord.info["INFRAME_DOWN"]
+            stutter_rho = trrecord.info["INFRAME_PGEOM"]
+            if stutter_u == 0.0:
                 stutter_u = 0.01
+            if stutter_d == 0.0:
                 stutter_d = 0.01
+            if stutter_rho == 1.0:
                 stutter_rho = 0.95
-            else:
-                stutter_u = trrecord.info["INFRAME_UP"]
-                stutter_d = trrecord.info["INFRAME_DOWN"]
-                stutter_rho = trrecord.info["INFRAME_PGEOM"]
-                if stutter_u == 0.0:
-                    stutter_u = 0.01
-                if stutter_d == 0.0:
-                    stutter_d = 0.01
-                if stutter_rho == 1.0:
-                    stutter_rho = 0.95
-            stutter_probs = [StutterProb(d, stutter_u, stutter_d, stutter_rho) \
-                for d in range(-MAXSTUTTEROFFSET, MAXSTUTTEROFFSET)]
-            period = len(trrecord.motif)
+        stutter_probs = [StutterProb(d, stutter_u, stutter_d, stutter_rho) \
+            for d in range(-MAXSTUTTEROFFSET, MAXSTUTTEROFFSET)]
+        period = len(trrecord.motif)
 
-            # Array of (A,B) for each sample
-            # given in bp diff from ref
-            # these get converted to repeat units below
-            genotypes = ExtractAB(trrecord)
+        # Array of (A,B) for each sample
+        # given in bp diff from ref
+        # these get converted to repeat units below
+        genotypes = ExtractAB(trrecord)
 
-            # Array of "reads" vectors for each sample
-            # given in repeat units diff from ref
-            mallreads = [ExtractReadVector(item, period)
-                         for item in trrecord.format[READFIELD]]
+        # Array of "reads" vectors for each sample
+        # given in repeat units diff from ref
+        mallreads = [ExtractReadVector(item, period)
+                        for item in trrecord.format[READFIELD]]
 
-            # Extracting quality parameter
-            Q = trrecord.format['Q']
+        # Extracting quality parameter
+        Q = trrecord.format['Q']
 
-            # Extracting depth parameter DP
-            DP = trrecord.format['DP']
+        # Extracting depth parameter DP
+        DP = trrecord.format['DP']
 
-            ########### Run detection on each sample #######
-            for i in range(len(samples)):
-                if args.samples is not None and samples[i] not in usesamples: continue
-                reads = mallreads[i]
-                A, B = genotypes[i]
-                q = Q[i][0]
-                dp = DP[i][0]
-                # for cases where there is no DP and it gets picked up as a random negative number
-                if dp < 0:
-                    dp = 0
-                if A is None or B is None or len(reads) == 0:
-                    continue  # skip locus if not called
-                A, B = A//period, B//period
-                if args.debug:
-                    common.WARNING("Checking mosaicism for sample %s at %s" % (
-                        samples[i], str(trrecord)))
-                    common.WARNING("A=%s B=%s reads=%s" % (A, B, str(reads)))
+        ########### Run detection on each sample #######
+        for i in range(len(samples)):
+            if args.samples is not None and samples[i] not in usesamples: continue
+            reads = mallreads[i]
+            A, B = genotypes[i]
+            q = Q[i][0]
+            dp = DP[i][0]
+            # for cases where there is no DP and it gets picked up as a random negative number
+            if dp < 0:
+                dp = 0
+            if A is None or B is None or len(reads) == 0:
+                continue  # skip locus if not called
+            A, B = A//period, B//period
+            if args.debug:
+                common.WARNING("Checking mosaicism for sample %s at %s" % (
+                    samples[i], str(trrecord)))
+                common.WARNING("A=%s B=%s reads=%s" % (A, B, str(reads)))
 
-                # Discard locus if: no evidence for caleld genotypes
-                if A not in reads or B not in reads and not args.output_all:
-                    continue
-                # Discard locus if: only a single allele seen in the reads
-                if len(set(reads)) == 1 and not args.output_all:
-                    continue
+            # Discard locus if: no evidence for called genotypes
+            if A not in reads or B not in reads and not args.output_all:
+                continue
+            # Discard locus if: only a single allele seen in the reads
+            if len(set(reads)) == 1 and not args.output_all:
+                continue
 
-                locname = "%s:%s" % (record.CHROM, record.POS)
-                best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
-                                                              locname=locname, quiet=args.quiet)
-                pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
+            locname = "%s:%s" % (record.CHROM, record.POS)
+            best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
+                                                            locname=locname, quiet=args.quiet)
+            pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
 
-                outf.write('\t'.join([samples[i], record.CHROM, str(record.POS),
-                                      str(record.ID), trrecord.motif, str(
-                                          A), str(B),
-                                      str(best_C), str(best_f), str(pval),
-                                      trrecord.format[READFIELD][i],
-                                      str(reads.count(best_C)),
-                                      str(stutter_u), str(
-                                          stutter_d), str(stutter_rho),
-                                      str(q), str(dp)]) + '\n')
-                if args.debug:
-                    common.WARNING("Inferred best_C=%s best_f=%s" %
-                                   (best_C, best_f))
-            #############################################################
-            if args.out == "stdout" and nrecords % 50 == 0:
-                common.MSG("Finished {} records, time/record={:.5}sec".format(nrecords,
-                      (time.time() - start_time)/nrecords), debug=True)
-    finally:
-        if outf is not None and args.out != "stdout":
-            outf.close()
+            outf.write('\t'.join([samples[i], record.CHROM, str(record.POS),
+                                    str(record.ID), trrecord.motif, str(
+                                        A), str(B),
+                                    str(best_C), str(best_f), str(pval),
+                                    trrecord.format[READFIELD][i],
+                                    str(reads.count(best_C)),
+                                    str(stutter_u), str(
+                                        stutter_d), str(stutter_rho),
+                                    str(q), str(dp)]) + '\n')
+            if args.debug:
+                common.WARNING("Inferred best_C=%s best_f=%s" %
+                                (best_C, best_f))
+        #############################################################
+        if args.out == "stdout" and nrecords % 50 == 0:
+            common.MSG("Finished {} records, time/record={:.5}sec".format(nrecords,
+                    (time.time() - start_time)/nrecords), debug=True)
+    
+    if args.out == "stdout":
+        common.MSG("Performed analysis on {} records".format(nrecords), debug=True)
+
+    if outf is not None and args.out != "stdout":
+        outf.close()
     return 0
 
 def run():  # pragma: no cover
