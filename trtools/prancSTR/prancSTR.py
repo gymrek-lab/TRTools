@@ -17,7 +17,7 @@ import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
 from trtools import __version__
 
-#READFIELD = "MALLREADS"
+READFIELD = "MALLREADS"
 ZERO = 10e-200
 MAXSTUTTEROFFSET = 200
 
