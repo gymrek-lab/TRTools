@@ -133,4 +133,4 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 
 Citations
 ----------------
-A preprint describing simTR and prancSTR is currently being prepared. The latest version of manuscript can be found in *paper_draft* folder of this tool.
+A preprint describing simTR and prancSTR is currently being prepared. The latest version of manuscript can be found in :code:`paper_draft`` folder of this tool.
