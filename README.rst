@@ -33,13 +33,13 @@ With conda
 
 ::
 
-        conda install -c bioconda trtools
+        conda install -c conda-forge -c bioconda trtools
 
 Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
 
 ::
 
-        conda install -c bioconda bcftools
+        conda install -c conda-forge -c bioconda bcftools
 
 Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
