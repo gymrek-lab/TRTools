@@ -18,3 +18,4 @@ dependencies:
   - sphinx-autodoc-typehints
   - cyvcf2
   - sphinx_rtd_theme
+  - statsmodels
