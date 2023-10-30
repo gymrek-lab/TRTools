@@ -29,7 +29,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
-from typing import List, Any, Callable, Tuple, Optional
+from typing import List, Any, Callable, Optional
 
 
 def GetFormatFields(format_fields, format_binsizes, format_fileoption, vcfreaders):
