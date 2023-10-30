@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import pathlib
 import random
 
 import cyvcf2
@@ -9,9 +10,11 @@ import subprocess as sp
 
 random.seed(11)
 
+SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
+
 # biallelic
 
-vcf = cyvcf2.VCF('many_samples_biallelic.vcf.gz')
+vcf = cyvcf2.VCF(str(SCRIPT_DIR / 'many_samples_biallelic.vcf.gz'))
 samples = vcf.samples
 
 with open('gp_dosages.tsv', 'w') as gp_out, open('ap1_dosages.tsv', 'w') as ap1_out, open('ap2_dosages.tsv', 'w') as ap2_out:
