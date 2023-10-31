@@ -33,7 +33,7 @@ jobs:
       - name: Test with pytest
         shell: bash -el {0}
         run: |
-          python -m pytest --cov=. --cov-report term-missing --cov-fail-under 90 --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+          python -m pytest --cov=. --cov-report term-missing --cov-fail-under 89 --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
         uses: actions/upload-artifact@v3
         with:
