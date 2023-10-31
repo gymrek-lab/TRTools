@@ -3,8 +3,8 @@ name: Test with pytest
 on: [pull_request, workflow_call]
 
 jobs:
-  build:
-
+  tests:
+    name: Test with py${{ matrix.python }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,11 +25,11 @@ jobs:
       - name: Install conda dependencies
         shell: bash -el {0}
         run: |
-          mamba install -c conda-forge -c bioconda bcftools pip
+          mamba install -c conda-forge -c bioconda bcftools pip pytest pytest-cov
       - name: Install pytest and trtools
         shell: bash -el {0}
         run: |
-          pip install pytest pytest-cov trtools
+          pip install -e .
       - name: Test with pytest
         shell: bash -el {0}
         run: |
