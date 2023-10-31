@@ -21,12 +21,17 @@ jobs:
           miniforge-version: latest
           miniforge-variant: Mambaforge
           use-mamba: true
+          mamba-version: "*"
       - name: Install conda dependencies
-        run: conda install -c conda-forge -c bioconda bcftools pip
+        shell: bash -el {0}
+        run: |
+          mamba install -c conda-forge -c bioconda bcftools pip
       - name: Install pytest and trtools
+        shell: bash -el {0}
         run: |
           pip install pytest pytest-cov trtools
       - name: Test with pytest
+        shell: bash -el {0}
         run: |
           bcftools --help
           python -m pytest --cov=. --cov-report term-missing --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
