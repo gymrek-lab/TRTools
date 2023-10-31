@@ -17,7 +17,7 @@ SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
 vcf = cyvcf2.VCF(str(SCRIPT_DIR / 'many_samples_biallelic.vcf.gz'))
 samples = vcf.samples
 
-with open('gp_dosages.tsv', 'w') as gp_out, open('ap1_dosages.tsv', 'w') as ap1_out, open('ap2_dosages.tsv', 'w') as ap2_out:
+with open(str(SCRIPT_DIR / 'gp_dosages.tsv'), 'w') as gp_out, open(str(SCRIPT_DIR / 'ap1_dosages.tsv'), 'w') as ap1_out, open(str(SCRIPT_DIR / 'ap2_dosages.tsv'), 'w') as ap2_out:
     for var in vcf:
         gp_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
         ap1_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
@@ -98,7 +98,7 @@ sp.run(cmd, shell = True, check=True, cwd=str(SCRIPT_DIR))
 vcf = cyvcf2.VCF(str(SCRIPT_DIR / 'many_samples_multiallelic.vcf.gz'))
 samples = vcf.samples
 
-with open('ap1_multi_dosages.tsv', 'w') as ap1_out, open('ap2_multi_dosages.tsv', 'w') as ap2_out:
+with open(str(SCRIPT_DIR / 'ap1_multi_dosages.tsv'), 'w') as ap1_out, open(str(SCRIPT_DIR / 'ap2_multi_dosages.tsv'), 'w') as ap2_out:
     for var in vcf:
         ap1_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
         ap2_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
