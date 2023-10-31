@@ -11,7 +11,6 @@ description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
 requires-python = ">=3.5"
 license = {text = "MIT"}
-license-files = ["LICENSE.txt"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3.5",
@@ -36,6 +35,7 @@ dynamic = ["version"]
 [tool.setuptools]
 packages = ["trtools"]
 script-files = ["trtools/testsupport/test_trtools.sh", "scripts/trtools_prep_beagle_vcf.sh"]
+license-files = ["LICENSE.txt"]
 
 [project.scripts]
 dumpSTR = "trtools.dumpSTR:run"
