@@ -45,9 +45,6 @@ compareSTR = "trtools.compareSTR:run"
 qcSTR = "trtools.qcSTR:run"
 associaTR = "trtools.associaTR:run"
 
-[tool.setuptools.dynamic]
-version = {attr = "trtools.version"}
-
 [project.urls]
 Homepage = "https://trtools.readthedocs.org"
 Documentation = "https://trtools.readthedocs.org"
