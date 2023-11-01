@@ -2,6 +2,10 @@ name: Test with pytest
 
 on: [pull_request, workflow_call]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     name: Test with py${{ matrix.python-version }}
