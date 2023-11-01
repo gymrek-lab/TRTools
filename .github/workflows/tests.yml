@@ -1,4 +1,4 @@
-name: Test with pytest
+name: Tests
 
 on: [pull_request, workflow_call]
 

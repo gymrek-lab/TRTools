@@ -2,8 +2,8 @@
 .. a location that the doc/index.rst uses for including this file
 .. before_header
 
-.. image:: https://travis-ci.org/gymreklab/TRTools.svg?branch=master
-    :target: https://travis-ci.org/gymreklab/TRTools
+.. image:: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
+    :target: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
 
 
 .. image:: https://codecov.io/gh/gymreklab/TRTools/branch/master/graph/badge.svg
