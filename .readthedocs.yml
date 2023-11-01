@@ -9,10 +9,8 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "mambaforge-22.9"
-  commands:
-    - pip install -e .
-    - (cd doc && make clean && make html)
-    - mv doc/_build $READTHEDOCS_OUTPUT
+  pre_install:
+    - SETUPTOOLS_SCM_PRETEND_VERSION="0.0.0+dirty"
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
