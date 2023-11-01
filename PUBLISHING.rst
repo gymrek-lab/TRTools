@@ -42,7 +42,6 @@ Once changes have been made to develop that are ready to be published, first cho
 
 Then go through the steps of merging the changes into the master branch:
 
-#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
 #. Submit a pull request from develop into master on the github webiste.
@@ -53,15 +52,9 @@ Then go through the steps of publishing the changed code to PyPI:
 
 1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
 2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-3. Run :code:`python setup.py sdist bdist_wheel` to build the package.
-
- This will create the warning::
-
-   UserWarning: Unknown distribution option: 'license_file'  warnings.warn(msg)
-
- You can ignore this warning: the 'license_file' option is necessary for creating the build artifacts
-
-4. Run :code:`twine upload dist/*` to upload the build to PyPI
+3. Run :code:`pip install build` to build the package.
+4. Run :code:`python -m build --wheel --sdist` to create the package distribution files.
+5. Run :code:`twine upload dist/*` to upload the distribution to PyPI
 
 Lastly, the change needs to be published to bioconda.
 
