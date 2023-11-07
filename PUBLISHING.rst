@@ -45,14 +45,14 @@ Then go through the steps of merging the changes into the master branch:
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
 #. Submit a pull request from develop into master on the github webiste.
-#. If the code review and travis checks pass, merge the pull request.
+#. If the code review checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
 
 Then go through the steps of publishing the changed code to PyPI:
 
 1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
 2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-3. Run :code:`pip install build` to build the package.
+3. Run :code:`pip install build` to build the package with the version number you just tagged.
 4. Run :code:`python -m build --wheel --sdist` to create the package distribution files.
 5. Run :code:`twine upload dist/*` to upload the distribution to PyPI
 
