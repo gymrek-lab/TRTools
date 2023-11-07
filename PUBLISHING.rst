@@ -53,8 +53,7 @@ Then go through the steps of publishing the changed code to PyPI:
 
 1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
 2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-3. Run :code:`pip install build` to build the package with the version number you just tagged.
-4. Run :code:`python -m build --wheel --sdist` to create the package distribution files.
+3. Run :code:`python -m build` to build the package with the version number you just tagged. (Note: you might need to run :code:`pip install build` to install ``build`` first.)
 5. Run :code:`twine upload dist/*` to upload the distribution to PyPI
 
 Lastly, the change needs to be published to bioconda.
