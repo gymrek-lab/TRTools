@@ -44,6 +44,7 @@ Then go through the steps of merging the changes into the master branch:
 
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
+#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Submit a pull request from develop into master on the github webiste.
 #. If the code review checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
