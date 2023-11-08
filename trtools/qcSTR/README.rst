@@ -149,7 +149,7 @@ These additional options can be used to customize reference bias plots.
 Example Commands
 ----------------
 
-Below are :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`qcSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   # AdVNTR
   qcSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --out test_qc_advntr
