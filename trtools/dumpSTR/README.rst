@@ -150,7 +150,7 @@ DumpSTR outputs the following files:
 Example Commands
 ----------------
 
-Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   # AdVNTR
   dumpSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz --advntr-min-call-DP 100 --out test_dumpstr_advntr

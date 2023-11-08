@@ -95,7 +95,7 @@ CompareSTR requires input files to be compressed and indexed. Use the following 
 Example Commands
 ----------------
 
-Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`compareSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   # AdVNTR (comparing a file against itself. Not very interesting. Just for demonstration)
   # Note, you first need to reheader files to add required contig lines to VCF headers
