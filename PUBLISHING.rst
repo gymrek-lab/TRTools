@@ -31,29 +31,29 @@ If you've added dependencies to trtools or its tests, those dependencies should 
 Publishing Steps
 ----------------
 
-Once changes have been made to develop that are ready to be published, first choose the new version number. Then set up the environment you're going to publish TRTools from:
+Once changes have been made to develop that are ready to be published, first choose the new version number according to `semantic versioning <https://semver.org>`_. Then set up the environment you're going to publish TRTools from:
 
 #. Create a clean environment.
 #. Install setuptools with version >= 40.8.0
-#. Additionally, install ``pytest``, ``wheel`` and ``twine``
-#. Clone the `trtools repo <https://github.com/gymreklab/TRTools>`_
+#. Additionally, install ``pytest``, ``wheel``, ``build``, and ``twine``
+#. Clone the `trtools repo <https://github.com/gymrek-lab/TRTools>`_
 #. Check out the develop branch
 #. Run :code:`pip install --upgrade pip && pip install -e .`
 
 Then go through the steps of merging the changes into the master branch:
 
+#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
-#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
 #. Submit a pull request from develop into master on the github webiste.
 #. If the code review checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
 
 Then go through the steps of publishing the changed code to PyPI:
 
-1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change.
+1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change. Note that the most recent commit *must* be tagged.
 2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-3. Run :code:`python -m build` to build the package with the version number you just tagged. (Note: you might need to run :code:`pip install build` to install ``build`` first.)
+3. Run :code:`python -m build` to build the package with the version number you just tagged. (Note: you might need to install ``build`` first.)
 5. Run :code:`twine upload dist/*` to upload the distribution to PyPI
 
 Lastly, the change needs to be published to bioconda.
