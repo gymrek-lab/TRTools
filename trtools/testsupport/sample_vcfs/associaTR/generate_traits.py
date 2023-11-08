@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+import pathlib
 import numpy as np
 import numpy.random
 
 seed = 2
 
-with open('samples.txt') as samples_file:
+SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
+
+with open(SCRIPT_DIR / 'samples.txt') as samples_file:
     samples = np.array([int(sample.strip()) for sample in samples_file.readlines() if 'IID' not in sample])
 n_samples = len(samples)
 
