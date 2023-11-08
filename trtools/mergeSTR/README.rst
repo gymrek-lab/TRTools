@@ -84,7 +84,7 @@ MergeSTR requires the input file to be compressed and indexed. Use the following
 Example Commands
 ----------------
 
-Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   # AdVNTR
   # Note, you first need to reheader files to add required contig lines to VCF headers

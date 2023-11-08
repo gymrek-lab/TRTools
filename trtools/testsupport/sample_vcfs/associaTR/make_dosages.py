@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+import pathlib
 
 import cyvcf2
 import numpy as np
@@ -9,12 +10,14 @@ import subprocess as sp
 
 random.seed(11)
 
+SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
+
 # biallelic
 
-vcf = cyvcf2.VCF('many_samples_biallelic.vcf.gz')
+vcf = cyvcf2.VCF(str(SCRIPT_DIR / 'many_samples_biallelic.vcf.gz'))
 samples = vcf.samples
 
-with open('gp_dosages.tsv', 'w') as gp_out, open('ap1_dosages.tsv', 'w') as ap1_out, open('ap2_dosages.tsv', 'w') as ap2_out:
+with open(str(SCRIPT_DIR / 'gp_dosages.tsv'), 'w') as gp_out, open(str(SCRIPT_DIR / 'ap1_dosages.tsv'), 'w') as ap1_out, open(str(SCRIPT_DIR / 'ap2_dosages.tsv'), 'w') as ap2_out:
     for var in vcf:
         gp_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
         ap1_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
@@ -88,14 +91,14 @@ cmd = (
     'tabix -f many_samples_biallelic_dosages.vcf.gz '
     '"'
 )
-sp.run(cmd, shell = True, check=True)
+sp.run(cmd, shell = True, check=True, cwd=str(SCRIPT_DIR))
 
 # multiallelic
 
-vcf = cyvcf2.VCF('many_samples_multiallelic.vcf.gz')
+vcf = cyvcf2.VCF(str(SCRIPT_DIR / 'many_samples_multiallelic.vcf.gz'))
 samples = vcf.samples
 
-with open('ap1_multi_dosages.tsv', 'w') as ap1_out, open('ap2_multi_dosages.tsv', 'w') as ap2_out:
+with open(str(SCRIPT_DIR / 'ap1_multi_dosages.tsv'), 'w') as ap1_out, open(str(SCRIPT_DIR / 'ap2_multi_dosages.tsv'), 'w') as ap2_out:
     for var in vcf:
         ap1_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
         ap2_out.write('{}\t{}\t{}'.format(var.CHROM, var.POS, var.POS))
@@ -139,5 +142,5 @@ cmd = (
     'tabix -f many_samples_multiallelic_dosages.vcf.gz '
     '"'
 )
-sp.run(cmd, shell = True, check=True)
+sp.run(cmd, shell = True, check=True, cwd=str(SCRIPT_DIR))
 
