@@ -1,3 +1,8 @@
+5.0.3
+-----
+
+Remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included.
+
 5.0.2
 -----
 

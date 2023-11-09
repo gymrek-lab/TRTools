@@ -58,7 +58,7 @@ where p_i is the frequency of allele i
 
 * :code:`--max-locus-het <float>`: Filters loci with high heterozygosity
 * :code:`--use-length`: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles)
-* :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed.
+* :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed. Note that regions are 0-based and inclusive of the start position, but exclusive of the end position.
 * :code:`--filter-regions-names <string[,string2,...]>`: Filter names for each BED file specified in :code:`--filter-regions`.
 * :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Filters pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
 * :code:`--drop-filtered`: Do not output loci that were filtered, or loci with no calls remaining after filtering.
