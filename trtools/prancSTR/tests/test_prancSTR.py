@@ -82,7 +82,7 @@ def test_MaximizeMosaicLikelihoodBoth1():
     reads = [10, 11, 10, 11, 10]
     A = 9
     B = 12
-    stutter_probs = [x * 0.001 for x in range(-100, 100)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     maxiter = 100
     locname = "None"
     quiet = True
@@ -94,7 +94,7 @@ def test_MaximizeMosaicLikelihoodBoth2():
     reads = [-3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
     A = -2
     B = -2
-    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     maxiter = 100
     locname = "None"
     quiet = True
@@ -106,7 +106,7 @@ def test_MaximizeMosaicLikelihoodBoth3():
     reads = [-5, -5, -4, -4, -3, -3, -2, -2, -1, -1]
     A = -5
     B = -1
-    stutter_probs = [x * 0.001 for x in range(-100, 100)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     maxiter = 100
     locname = "None"
     quiet = True
@@ -205,7 +205,7 @@ def test_Just_C_Pred1():
     A = 9
     B = 12
     f = 0.01
-    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     C = Just_C_Pred(reads, A, B, f, stutter_probs)
     assert C == 9
 
@@ -214,7 +214,7 @@ def test_Just_C_Pred2():
     A = -2
     B = -2
     f = 0.0362320
-    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     C = Just_C_Pred(reads, A, B, f, stutter_probs)
     assert C == -2
 
@@ -223,7 +223,7 @@ def test_Just_C_Pred3():
     A = -5
     B = -1
     f = 0.0167
-    stutter_probs = [x * 0.001 for x in range(-100, 101)]
+    stutter_probs = [x * 0.001 for x in range(-200, 201)]
     C = Just_C_Pred(reads, A, B, f, stutter_probs)
     assert C == -5
 
