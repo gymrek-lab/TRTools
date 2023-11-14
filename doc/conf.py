@@ -73,6 +73,10 @@ html_sidebars = {
         'searchbox.html'
     ]
 }
+html_theme_options = {
+    'fixed_sidebar' : True
+}
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
