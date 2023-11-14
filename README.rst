@@ -2,12 +2,12 @@
 .. a location that the doc/index.rst uses for including this file
 .. before_header
 
-.. image:: https://travis-ci.org/gymreklab/TRTools.svg?branch=master
-    :target: https://travis-ci.org/gymreklab/TRTools
+.. image:: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
+    :target: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
 
 
-.. image:: https://codecov.io/gh/gymreklab/TRTools/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/gymreklab/TRTools
+.. image:: https://codecov.io/gh/gymrek-lab/TRTools/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/gymrek-lab/TRTools
 
 
 .. a location that the doc/index.rst uses for including this file
@@ -33,13 +33,13 @@ With conda
 
 ::
 
-        conda install -c bioconda trtools
+        conda install -c conda-forge -c bioconda trtools
 
 Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
 
 ::
 
-        conda install -c bioconda bcftools
+        conda install -c conda-forge -c bioconda bcftools
 
 Note: Bioconda only supports python versions 3.6-3.8 currently,
 so that is all TRTools supports in conda.
@@ -64,10 +64,10 @@ Note: TRTools installation may fail for pip version 10.0.1, hence the need to up
 From source
 ^^^^^^^^^^^
 
-To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymreklab/TRTools/>`_,
+To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_,
 checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
 
-        git clone https://github.com/gymreklab/TRTools
+        git clone https://github.com/gymrek-lab/TRTools
         cd TRTools/
         pip install --upgrade pip
         pip install -e .
@@ -131,7 +131,7 @@ Development Notes
 
 Contact Us
 ----------
-Please submit an issue on the `trtools github <https://github.com/gymreklab/TRTools>`_
+Please submit an issue on the `trtools github <https://github.com/gymrek-lab/TRTools>`_
 
 .. _Contributing:
 
@@ -139,7 +139,7 @@ Contributing
 ------------
 We appreciate contributions to TRTools. If you would like to contribute a fix or new feature, follow these guidelines:
 
-1. Consider `discussing <https://github.com/gymreklab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
+1. Consider `discussing <https://github.com/gymrek-lab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
 #. Install TRTools from source `as above <From source_>`_.
 #. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_, :code:`sphinx>=3` and :code:`sphinx_rtd_theme`, in your environment.
 #. Fork the TRTools repository.

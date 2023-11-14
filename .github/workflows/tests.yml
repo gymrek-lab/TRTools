@@ -1,0 +1,52 @@
+name: Tests
+
+on: [pull_request, workflow_call]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Test with py${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up mamba
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test
+          auto-activate-base: false
+          python-version: ${{ matrix.python-version }}
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          use-mamba: true
+          mamba-version: "*"
+      - name: Install test dependencies
+        shell: bash -el {0}
+        run: |
+          mamba install -c conda-forge -c bioconda bcftools pip pytest pytest-cov
+      - name: Upgrade pip and install our package
+        shell: bash -el {0}
+        run: |
+          python -m pip install --upgrade pip setuptools wheel setuptools-scm
+          pip install -e .
+      - name: Test with pytest
+        shell: bash -el {0}
+        run: |
+          python -m pytest --cov=. --cov-report term-missing --cov-fail-under 89 --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+      - name: Test command line
+        shell: bash -el {0}
+        run: |
+          ./test/cmdline_tests.sh
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: pytest-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}

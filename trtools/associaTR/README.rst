@@ -127,7 +127,7 @@ Example Commands
 ----------------
 
 Below is an :code:`associaTR` example. For this example no TRs causally impact the simulated phenotype.
-Data files for this example can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Data files for this example can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   associaTR \
     association_results.tsv \

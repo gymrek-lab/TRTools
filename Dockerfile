@@ -41,7 +41,7 @@ RUN ldconfig
 WORKDIR ..
 
 # Download and install TRTools
-RUN git clone https://github.com/gymreklab/TRTools
+RUN git clone https://github.com/gymrek-lab/TRTools
 WORKDIR TRTools
 RUN python3 setup.py install
 WORKDIR ..

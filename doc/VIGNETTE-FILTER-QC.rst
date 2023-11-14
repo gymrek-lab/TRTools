@@ -3,7 +3,7 @@ Filtering and QC of VCFs
 
 Tools used: dumpSTR, qcSTR
 
-This vignette shows how to use :code:`dumpSTR` to filter a VCF and :code:`qcSTR` to visualize some basic QC metrics. For this example, we use the file :code:`trio_chr21_popstr.sorted.vcf.gz` available at https://github.com/gymreklab/TRTools/tree/master/example-files. This file was generated on samples NA12878, NA12891, and NA12892 using popSTR.
+This vignette shows how to use :code:`dumpSTR` to filter a VCF and :code:`qcSTR` to visualize some basic QC metrics. For this example, we use the file :code:`trio_chr21_popstr.sorted.vcf.gz` available at https://github.com/gymrek-lab/TRTools/tree/master/example-files. This file was generated on samples NA12878, NA12891, and NA12892 using popSTR.
 
 First, let's perform some filtering on the VCF::
 
