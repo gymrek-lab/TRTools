@@ -13,17 +13,12 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-import trtools.version
 
 # -- Project information -----------------------------------------------------
 
 project = 'TRTools'
 copyright = '2020, Gymreklab'
 author = 'Gymreklab'
-
-# The full version, including alpha/beta/rc tags
-version = trtools.version.version
-release = trtools.version.version
 
 master_doc = 'index'
 
@@ -73,6 +68,7 @@ html_sidebars = {
         'searchbox.html'
     ]
 }
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

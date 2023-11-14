@@ -87,7 +87,7 @@ Misc:
 
 Bug fixes:
 
-* https://github.com/gymreklab/TRTools/issues/146 fixed record positions being compared twice
+* https://github.com/gymrek-lab/TRTools/issues/146 fixed record positions being compared twice
 * CompareSTR: Decision on which records are comparable is now based on data from harmonized TRRecords,
   and not from the records directly from VCF readers. Thanks to this, HipSTR records which have different starting positions,
   but position of their repeat is at the same position are compared correctly (harmonization step removes this difference).
@@ -100,7 +100,7 @@ Bug fixes:
 
 Bug fixes:
 
-* https://github.com/gymreklab/TRTools/issues/143 Fix HipstrMinSuppReads filter when
+* https://github.com/gymrek-lab/TRTools/issues/143 Fix HipstrMinSuppReads filter when
   there are called samples but none have ALLREADS
 
 4.0.0

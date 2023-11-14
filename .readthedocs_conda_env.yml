@@ -2,7 +2,7 @@ name: trtools_3.6
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   - python=3.6
   - sphinx=3.0.4
@@ -17,4 +17,6 @@ dependencies:
   - scikit-learn
   - sphinx-autodoc-typehints
   - cyvcf2
-
+  - sphinx_rtd_theme
+  - statsmodels
+  - pyfaidx
