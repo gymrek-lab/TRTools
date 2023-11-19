@@ -7,25 +7,41 @@ from ..simTR import *
 
 # Set up base argparser
 @pytest.fixture
-def args(tmpdir):
+def args(tmpdir, simtrdir):
     args = argparse.ArgumentParser()
-    args.ref = None
+    args.ref = os.path.join(simtrdir, "CBL.fa")
     args.repeat_unit = None
-    args.outprefix = None
+    args.outprefix = str(tmpdir /  "test")
     args.tmpdir = None
-    args.u = None
-    args.d = None
-    args.rho = None
-    args.p_thresh = None
-    args.coverage = None
-    args.read_length = None
-    args.insert = None
-    args.sd = None
-    args.window = None
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.p_thresh = 1
+    args.coverage = 10
+    args.read_length = 100
+    args.insert = 100
+    args.sd = 100
+    args.window = 1000
     args.art = None
     args.single = False
     args.debug = False
+    args.seed = 12345
     return args
+
+# Test no such file or directory
+def test_WrongRefFile(args, simtrdir):
+    fname = os.path.join(simtrdir, "test_non_existent.bed")
+    if os.path.exists(fname):
+        os.remove(fname)
+    args.ref = fname
+    retcode = main(args)
+    assert retcode==1
+
+# Test wrong ART path
+def test_WrongARTPath(args, simtrdir):
+    args.art = "nonexistent_art"
+    retcode = main(args)
+    assert retcode==1
 
 #Test the Coordinates
 def test_ParseCoordinates1():

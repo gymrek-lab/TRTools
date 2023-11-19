@@ -232,17 +232,6 @@ def main(args):
 	if not os.path.exists(args.ref):
 		common.WARNING("Error: {} does not exist".format(args.ref))
 		return 1
-	art_path = None
-	if args.art is not None:
-		if not os.path.exists(args.art):
-			common.WARNING("Error: ART path {} does not exist".format(args.art))
-			return 1
-		else: art_path = args.art
-	else:
-		if shutil.which("art_illumina") is None:
-			common.WARNING("Error: Could not find art_illumina executable")
-			return 1
-		else: art_path = "art_illumina"
 	if args.u < 0 or args.u > 1:
 		common.WARNING("Error: --u u ({}) is not between 0 and 1".format(args.u))
 		return 1
@@ -278,6 +267,18 @@ def main(args):
 		common.WARNING("Ignoring --insert and --sd in single-end mode")
 	if args.seed is not None:
 		random.seed(args.seed)
+	art_path = None
+	if args.art is not None:
+		if not os.path.exists(args.art):
+			common.WARNING("Error: ART path {} does not exist".format(args.art))
+			return 1
+		else: art_path = args.art
+	else:
+		if shutil.which("art_illumina") is None:
+			common.WARNING("Error: Could not find art_illumina executable")
+			return 1
+		else: art_path = "art_illumina"
+
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
 

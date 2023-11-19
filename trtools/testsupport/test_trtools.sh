@@ -44,4 +44,9 @@ cd "$loc" || exit 1
 python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/trtools/testsupport
 # run command line tests
 $TMP/test/cmdline_tests.sh $TMP/example-files $TMP/trtools/testsupport/sample_vcfs/beagle
-
+# If art_illumina exists, run simTR tests
+if ! command -v art_illumina &> /dev/null ; then
+	echo "Skipping simTR tests, since art_illumina not found"
+else
+	$TMP/test/simtr_tests.sh $TMP/example-files
+fi
