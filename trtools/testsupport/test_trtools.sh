@@ -16,7 +16,7 @@ if [ ! -d "$TMP" ] ; then
 	mkdir $TMP
 	pushd $TMP
 	git init .
-	git remote add origin -f https://github.com/gymreklab/TRTools.git
+	git remote add origin -f https://github.com/gymrek-lab/TRTools.git
 	git pull origin master
 	popd
 	echo "Download done"

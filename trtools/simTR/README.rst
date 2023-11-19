@@ -1,5 +1,5 @@
 .. overview_directive
-.. |simTR overview| replace:: SimTR simulates NGS reads at a single TR region while modeling stutter errors common at TRs.
+.. |simTR overview| replace:: SimTR simulates next generation sequencing reads at a single TR region while modeling stutter errors common in such sequencing.
 .. overview_directive_done
 
 simTR
@@ -9,7 +9,7 @@ simTR
 
 Prerequisites
 -------------
-simTR is a wrapper on the `Illumina ART<https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
+simTR is a wrapper on the `Illumina ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
 
 Usage
 -----
@@ -34,7 +34,7 @@ By default, :code:`simTR` will simulate paired end reads and output reads to :co
 Stutter model
 -------------
 
-Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript<https://www.nature.com/articles/nmeth.4267>`_. The model can be specified using three optional parameters:
+Insertions or deletions of repeat units (commonly referred to as stutter errors) are simulated according to the model specified in the `HipSTR manuscript <https://www.nature.com/articles/nmeth.4267>`_. The model can be specified using three optional parameters:
 
 * :code:`--u <float>`: Probability a read contains stutter error that increases the total number of repeat units (Default: 0.05)
 * :code:`--d <float>`: Probability a read contains stutter error that decreases the total number of repeat units (Default: 0.05)
@@ -66,3 +66,24 @@ Known issues
 ------------
 
 * Currently requires repeat boundaries to be exact perfect copies. Could instead infer the rotation of the repeat unit to be more robust to this.
+
+
+Example Commands
+----------------
+
+Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files/str-ngs-data/::
+
+	# Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
+	simTR \
+	   --coords str-ngs-data/dummy_A_pos.bed \
+	   --ref str-ngs-data/CBL_dataset.fa \
+	   --art art_bin_MountRainier/art_illumina \
+	   --output_dir dummy_data_A \
+	   --coverage 10 \
+	   --read_length 150 \
+	   --u 0.02 \
+	   --d 0.02
+
+Citations
+----------------
+A preprint describing simTR and prancSTR is currently being prepared.

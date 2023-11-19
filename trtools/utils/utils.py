@@ -35,7 +35,8 @@ def LoadSingleReader(
     reader : Optional[cyvcf2.VCF]
         The cyvcf2.VCF instance, or None if the VCF is not present
     """
-    if not os.path.isfile(vcf_loc):
+    # check that vcf_loc is a file or file descriptor (ex: '/dev/stdin')
+    if not os.path.exists(vcf_loc) or os.path.isdir(vcf_loc):
         common.WARNING("Could not find VCF file %s"%vcf_loc)
         return None
     if checkgz:
@@ -186,7 +187,7 @@ def GetEntropy(allele_freqs: Dict[Any, float]) -> float:
     Examples
     --------
     >>> GetEntropy({0:0.5, 1:0.5})
-    1
+    1.0
     """
     if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
@@ -209,7 +210,7 @@ def GetMean(allele_freqs):
 
     Examples
     --------
-    >>> GetMean({0:0, 1:1})
+    >>> GetMean({0:0.5, 1:0.5})
     0.5
     """
     if not ValidateAlleleFreqs(allele_freqs):
@@ -356,7 +357,7 @@ def GetCanonicalMotif(repseq):
     Examples
     --------
     >>> GetCanonicalMotif("TG")
-    "AC"
+    'AC'
     """
     repseq = repseq.upper()
     # Get canonical sequence of each strand
@@ -389,7 +390,7 @@ def GetCanonicalOneStrand(repseq):
     Examples
     --------
     >>> GetCanonicalOneStrand("CAG")
-    "AGC"
+    'AGC'
     """
     repseq = repseq.upper()
     size = len(repseq)
@@ -421,7 +422,7 @@ def ReverseComplement(seq):
     Examples
     --------
     >>> ReverseComplement("AGGCT")
-    "AGCCT"
+    'AGCCT'
     """
     seq = seq.upper()
     newseq = ""

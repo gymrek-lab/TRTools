@@ -78,7 +78,7 @@ If multiple sample groups are specified, instead there is one additional column 
 Example Commands
 ----------------
 
-Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files::
+Below are :code:`statSTR` examples using VCFs from supported TR genotypers. Data files can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
 
   # AdVNTR
   statSTR --vcf NA12878_chr21_advntr.sorted.vcf.gz \

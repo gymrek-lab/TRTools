@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trtools"
+authors = [
+    {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
+    {name = "Gymrek Lab"},
+]
+description = "Toolkit for genome-wide analysis of STRs"
+readme = "README.rst"
+requires-python = ">=3.5"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3.5",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "cyvcf2",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pybedtools",
+    "pysam",
+    "scikit-learn",
+    "scipy",
+    "statsmodels",
+    "pyfaidx",
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["trtools"]
+script-files = ["trtools/testsupport/test_trtools.sh", "scripts/trtools_prep_beagle_vcf.sh"]
+license-files = ["LICENSE.txt"]
+
+[tool.setuptools_scm]
+# generated automatically by setuptools when running pip install -e or python -m build
+version_file = "trtools/version.py"
+
+[project.scripts]
+dumpSTR = "trtools.dumpSTR:run"
+mergeSTR = "trtools.mergeSTR:run"
+statSTR = "trtools.statSTR:run"
+compareSTR = "trtools.compareSTR:run"
+qcSTR = "trtools.qcSTR:run"
+associaTR = "trtools.associaTR:run"
+prancSTR = "trtools.prancSTR:run"
+simTR = "trtools.simTR:run"
+
+[project.urls]
+Homepage = "https://trtools.readthedocs.org"
+Documentation = "https://trtools.readthedocs.org"
+Repository = "https://github.com/gymrek-lab/trtools.git"
+Changelog = "https://github.com/gymrek-lab/trtools/blob/master/RELEASE_NOTES.rst"
