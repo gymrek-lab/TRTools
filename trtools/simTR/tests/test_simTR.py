@@ -70,6 +70,7 @@ def test_GetMaxDelta3():
 
 #
 def test_GetAlleleSeq1():
+    # Keep as is
     seq_preflank = "AGCT"
     seq_postflank = "CGTA"
     seq_repeat = "ATATAT"
@@ -78,6 +79,35 @@ def test_GetAlleleSeq1():
     newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, repeat_unit, delta)
     expected_seq = "AGCTATATATCGTA"
     assert newseq == expected_seq
+
+    # Add a copy
+    seq_preflank = "AGCT"
+    seq_postflank = "CGTA"
+    seq_repeat = "ATATAT"
+    repeat_unit = "AT"
+    delta = 1
+    newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, repeat_unit, delta)
+    expected_seq = "AGCTATATATATCGTA"
+    assert newseq == expected_seq
+
+    # Delete a copy
+    seq_preflank = "AGCT"
+    seq_postflank = "CGTA"
+    seq_repeat = "ATATAT"
+    repeat_unit = "AT"
+    delta = -1
+    newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, repeat_unit, delta)
+    expected_seq = "AGCTATATCGTA"
+    assert newseq == expected_seq
+
+    # Deletion resulting in a negative sequence length
+    seq_preflank = "AGCT"
+    seq_postflank = "CGTA"
+    seq_repeat = "ATATAT"
+    repeat_unit = "AT"
+    delta = -5
+    newseq = GetAlleleSeq(seq_preflank, seq_postflank, seq_repeat, repeat_unit, delta)
+    assert (newseq is None)
 
 def test_GetAlleleSeq2():
     seq_preflank = "AGCT"
