@@ -9,6 +9,7 @@ import numpy as np
 import os
 import pyfaidx
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -37,10 +38,20 @@ def ParseCoordinates(coords):
 	   start coordinate
 	end : int
 	   end coordinate
+
+	If we encounter an error parsing, then
+	chrom, start, end are None
 	"""
+	if type(coords) != str:
+		return None, None, None
+	if re.match(r"[A-za-z\d+]*:\d+-\d+", coords) is None:
+		return None, None, None
 	chrom = coords.split(":")[0]
 	start = int(coords.split(":")[1].split("-")[0])
 	end = int(coords.split(":")[1].split("-")[1])
+	if start >= end:
+		common.WARNING("Problem parsing coordinates {}. start>=end".format(coords))
+		return None, None, None
 	return chrom, start, end
 
 def GetMaxDelta(sprob, rho, pthresh):
@@ -63,8 +74,11 @@ def GetMaxDelta(sprob, rho, pthresh):
 	-------
 	delta : int
 	   Highest delta for which freq>prob
+	   Return 0 if no such delta exists, which
+	   can happen e.g. with low rho
 	"""
 	delta = np.ceil(np.log(pthresh/(sprob*rho))/np.log(1-rho)+1)
+	if delta < 1: return 0
 	return int(delta)
 
 def GetTempDir(debug=False, dir=None):
@@ -243,6 +257,9 @@ def main(args):
 	if args.d < 0 or args.d > 1:
 		common.WARNING("Error: --d ({}) is not between 0 and 1".format(args.d))
 		return 1
+	if (args.d + args.u) > 1:
+		common.WARNING("Error: --d ({}) and --u ({}) can't add to more than 1".format(args.d, args.u))
+		return 1
 	if args.rho < 0 or args.rho > 1:
 		common.WARNING("Error: --rho ({}) is not between 0 and 1".format(args.rho))
 		return 1
@@ -255,6 +272,9 @@ def main(args):
 	if args.read_length < 0:
 		common.WARNING("Error: --read_length ({}) cannot be less than 0".format(args.read_length))
 		return 1
+	if args.read_length > args.insert:
+		common.WARNING("Error: --read_length ({}) must be shorter than"
+			" --insert ({})".format(args.read_length, args.insert))
 	if args.insert < 0:
 		common.WARNING("Error: --insert ({}) cannot be less than 0".format(args.insert))
 		return 1
@@ -267,9 +287,6 @@ def main(args):
 	if not os.path.exists(os.path.dirname(os.path.abspath(args.outprefix))):
 		common.WARNING("Error: The directory which contains the output location {} does"
 			" not exist".format(args.outprefix))
-		return 1
-	if args.single and (args.insert is not None or args.sd is not None):
-		common.WARNING("Error: --insert and --sd irrelevant in single-end mode")
 		return 1
 	if args.seed is not None:
 		random.seed(args.seed)
@@ -287,6 +304,9 @@ def main(args):
 
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
+	if chrom is None:
+		common.WARNING("Error: could not extract coordinates")
+		return 1
 
 	# Determine range of deltas to consider
 	highdelta = GetMaxDelta(args.u, args.rho, args.p_thresh)
@@ -316,6 +336,7 @@ def main(args):
 	# Simulate reads from each potential allele
 	fq1files = []
 	fq2files = []
+
 	for delta in range(-1*lowdelta, highdelta+1):
 		sprob = ms.StutterProb(delta, args.u, args.d, args.rho)
 		cov = np.random.binomial(args.coverage, sprob)

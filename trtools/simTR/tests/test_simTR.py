@@ -20,13 +20,15 @@ def args(tmpdir):
     args.p_thresh = 1
     args.coverage = 10
     args.read_length = 100
-    args.insert = 100
+    args.insert = 300
     args.sd = 100
     args.window = 1000
     args.art = "art_illumina"
     args.single = False
     args.debug = False
     args.seed = 12345
+    args.coords = "chr11_CBL:1-2"
+    args.repeat_unit = "CGG"
     return args
 
 # Test art_illumina
@@ -57,6 +59,28 @@ def test_WrongOutdir(args, simtrdir):
 def test_WrongARTPath(args, simtrdir):
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.art = "nonexistent_art"
+    retcode = main(args)
+    assert retcode==1
+
+# Test wrong ART path
+def test_WrongARTPath2(args, tmpdir, simtrdir):
+    args.art = "ls" # this tool will be found, but it is not ART
+    os.mkdir(str(tmpdir /  "test-CBLbad-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBLbad")
+    args.tmpdir = str(tmpdir /  "test-CBLbad-tmpdir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.p_thresh = 0.01
+    args.read_length = 150
+    args.insert = 300
+    args.sd = 50
+    args.coverage = 1000
+    args.seed = 12345
     retcode = main(args)
     assert retcode==1
 
@@ -133,6 +157,19 @@ def test_BadParams(args, simtrdir):
     assert retcode == 1
     args.window = 1000
 
+    args.read_length = 100
+    args.insert = 100
+    retcode = main(args)
+    assert retcode == 1
+    args.insert = 300
+
+    args.u = 0.9
+    args.d = 0.9
+    retcode = main(args)
+    assert retcode == 1
+    args.u = 0.01
+    args.d = 0.01
+
 def test_BadTmpDir(args, tmpdir, simtrdir):
     check_art()
     args.ref = os.path.join(simtrdir, "CBL.fa")
@@ -162,11 +199,112 @@ def test_GoodExampleRun1(args, tmpdir, simtrdir):
     args.u = 0.01
     args.d = 0.01
     args.rho = 0.9
+    args.p_thresh = 0.01
     args.read_length = 150
-    args.coverage = 100
+    args.insert = 300
+    args.sd = 50
+    args.coverage = 1000
     args.seed = 12345
     retcode = main(args)
     assert retcode == 0
+
+def test_GoodExampleRun2(args, tmpdir, simtrdir):
+    check_art()
+    os.mkdir(str(tmpdir /  "test-CBL2-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL2")
+    args.tmpdir = str(tmpdir /  "test-CBL2-tmpdir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.p_thresh = 0.01
+    args.read_length = 150
+    args.coverage = 1000
+    args.seed = 12345
+    args.single = True
+    retcode = main(args)
+    assert retcode == 0
+
+def test_GoodExampleRun3(args, tmpdir, simtrdir):
+    check_art()
+    args.art = None # make it find ART
+    os.mkdir(str(tmpdir /  "test-CBL3-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL3")
+    args.tmpdir = str(tmpdir /  "test-CBL3-tmpdir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.p_thresh = 0.01
+    args.read_length = 150
+    args.insert = 300
+    args.sd = 50
+    args.coverage = 1000
+    args.seed = 12345
+    retcode = main(args)
+    assert retcode == 0
+
+def test_BadCoords(args, tmpdir, simtrdir):
+    check_art()
+    args.art = None # make it find ART
+    os.mkdir(str(tmpdir /  "test-CBL3-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:XXXXXX"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL3")
+    args.tmpdir = str(tmpdir /  "test-CBL3-tmpdir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.p_thresh = 0.01
+    args.read_length = 150
+    args.insert = 300
+    args.sd = 50
+    args.coverage = 1000
+    args.seed = 12345
+    retcode = main(args)
+    assert retcode == 1
+
+    args.coords = "chr11_CBL:XXXXXX-YYYY"
+    retcode = main(args)
+    assert retcode == 1
+
+    args.coords = "chr11_CBL:200-100"
+    retcode = main(args)
+    assert retcode == 1
+
+    args.coords = "chr11_CBL:5033-5001"
+    retcode = main(args)
+    assert retcode == 1
+
+def test_TooMuchStutter(args, tmpdir, simtrdir):
+    check_art()
+    args.art = None # make it find ART
+    os.mkdir(str(tmpdir /  "test-CBL4-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5010"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL4")
+    args.tmpdir = str(tmpdir /  "test-CBL4-tmpdir")
+    args.u = 0.4
+    args.d = 0.4
+    args.rho = 0.5
+    args.p_thresh = 0.01
+    args.read_length = 150
+    args.insert = 300
+    args.sd = 50
+    args.coverage = 1000
+    args.seed = 12345
+    retcode = main(args)
+    assert retcode == 1
 
 #Test the Coordinates
 def test_ParseCoordinates1():
@@ -186,6 +324,12 @@ def test_ParseCoordinates3():
     assert chrom == "chrY"
     assert start == 300
     assert end == 600
+
+def test_ParseCoordinates4():
+    chrom, start, end = ParseCoordinates(0)
+    assert chrom is None
+    
+
 
 #Test the Max Delta
 def test_GetMaxDelta1():
@@ -208,6 +352,14 @@ def test_GetMaxDelta3():
     pthresh = 0.00001
     delta = GetMaxDelta(sprob, rho, pthresh)
     assert delta == 4
+
+def test_GetMaxDelta4():
+    # Rho way too low, delta should be 0
+    sprob = 0.02
+    rho = 0.01
+    pthresh = 0.01
+    delta = GetMaxDelta(sprob, rho, pthresh)
+    assert delta == 0
 
 def test_GetAlleleSeq1():
     # Keep as is
