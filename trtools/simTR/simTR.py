@@ -309,7 +309,7 @@ def main(args):
 			common.WARNING("Error: Could not find art_illumina executable")
 			return 1
 		else: art_path = "art_illumina"
-
+	common.MSG("Using this command for ART: {}".format(art_path), debug=args.debug)
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
 	if chrom is None:
