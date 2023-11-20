@@ -16,8 +16,9 @@ def args(tmpdir):
     args.debug = False
     args.vcftype = "hipstr"
     args.samples = None
-    args.quiet = False
+    args.quiet = True
     args.output_all = False
+    args.readfield = "MALLREADS"
     return args
 
 # Test no such file or directory
@@ -29,12 +30,98 @@ def test_WrongFile(args, vcfdir):
     retcode = main(args)
     assert retcode==1
 
-# Test the right file or directory
+    # real path but not VCF
+    fname = os.path.join(vcfdir, "CEU_test.vcf.gz.tbi")
+    args.vcf = fname
+    retcode = main(args)
+    assert retcode==1
+
+# Test bad output directory
+def test_BadOutdir(args, vcfdir, tmpdir):
+    fname = os.path.join(vcfdir, "test_hipstr.vcf")
+    args.vcf = fname
+    args.out = str(tmpdir / "bad/test")
+    retcode = main(args)
+    assert retcode==1
+
+    args.out = str(tmpdir)+os.sep
+    print(args.out)
+    retcode = main(args)
+    assert retcode==1
+
+# Test a good VCF file
 def test_RightFile(args, vcfdir):
     fname = os.path.join(vcfdir, "test_hipstr.vcf")
+    args.vcftype = "auto"
     args.vcf = fname
     retcode = main(args)
     assert retcode==0
+
+    args.quiet = False
+    retcode = main(args)
+    assert retcode==0    
+
+    # Wrong VCF type
+    args.vcftype = "advntr"
+    retcode = main(args)
+    assert retcode==1
+
+# Test a multi-sample VCF file
+def test_MosaicCase(args, vcfdir):
+    fname = os.path.join(vcfdir, "CEU_test.vcf.gz")
+    args.vcf = fname
+    args.quiet = True
+    retcode = main(args)
+    assert retcode==0
+
+    args.quiet = False
+    retcode = main(args)
+    assert retcode==0
+
+    # Specific region
+    # Note: cyvcf2 handles region parsing and will
+    # output a warning if no intervals found
+    args.quiet = True
+    args.region = "chr1:987287-987288"
+    retcode = main(args)
+    assert retcode==0
+
+    # Samples list
+    args.samples = "NA12878"
+    retcode = main(args)
+    assert retcode==0
+
+    # Bad samples list should just give no output
+    args.samples = "XYZ"
+    retcode = main(args)
+    assert retcode==0
+
+    # With only passing
+    args.samples = "NA12878"
+    args.only_passing = True
+    args.region = None
+    retcode = main(args)
+    assert retcode==0
+
+    # With only passing - debug mode
+    args.only_passing = True
+    args.region = None
+    args.debug = True
+    retcode = main(args)
+    assert retcode==0
+
+    # Write to stdout
+    args.samples = "NA12878"
+    args.out = "stdout"
+    retcode == main(args)
+    assert retcode==0
+
+    # With bad readfield
+    args.readfield = "badreadfield"
+    retcode = main(args)
+    assert retcode==1
+
+
 
 # Test the probability of observing a certain repeat length
 def test_StutterProb1():

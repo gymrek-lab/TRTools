@@ -34,6 +34,7 @@ def LoadSingleReader(
     -------
     reader : Optional[cyvcf2.VCF]
         The cyvcf2.VCF instance, or None if the VCF is not present
+        or could not be opened
     """
     # check that vcf_loc is a file or file descriptor (ex: '/dev/stdin')
     if not os.path.exists(vcf_loc) or os.path.isdir(vcf_loc):
@@ -46,7 +47,11 @@ def LoadSingleReader(
         if not os.path.isfile(vcf_loc+".tbi"):
             common.WARNING("Could not find VCF index %s.tbi"%vcf_loc)
             return None
-    return cyvcf2.VCF(vcf_loc)
+    try:
+        return cyvcf2.VCF(vcf_loc)
+    except OSError:
+        common.WARNING("Could not open VCF file %s. Is it really VCF?"%vcf_loc)
+        return None
 
 def LoadReaders(
         vcf_locs: List[str],
