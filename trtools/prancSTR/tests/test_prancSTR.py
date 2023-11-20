@@ -58,6 +58,7 @@ def test_RightFile(args, vcfdir):
     assert retcode==0
 
     args.quiet = False
+    args.debug = True
     retcode = main(args)
     assert retcode==0    
 

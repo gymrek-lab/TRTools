@@ -460,8 +460,6 @@ def main(args):
     if args.samples is not None:
         usesamples = args.samples.split(",")
 
-    start_time = time.time()
-    nrecords = 0
 
     if args.out == "stdout":
         outf = sys.stdout
@@ -476,22 +474,27 @@ def main(args):
                     "quality factor", "read depth"]
     outf.write("\t".join(header_cols)+"\n")
 
+    start_time = time.time()
+    nrecords = 0 # Number STRs processed
+    ntests = 0 # Number total tests
     for record in region:
-        nrecords += 1
         trrecord = trh.HarmonizeRecord(vcftype, record)
 
         if args.only_passing and not args.output_all and (record.FILTER is not None):
-            common.WARNING("Skipping record %s with non-passing VCF FILTER field." %
+            if args.debug:
+                common.WARNING("Skipping record %s with non-passing VCF FILTER field." %
                                str(trrecord))
             continue
 
-        ########### Extract necessary info from the VCF file #######
-        # Stutter params for the locus. These are the same for all samples
         # First check we have all the fields we need
         if args.readfield not in trrecord.format.keys():
             common.WARNING("Could not find read field %s for %s" %
                                (args.readfield, str(trrecord)))
             continue
+
+        ########### Extract necessary info from the VCF file #######
+        nrecords += 1 # only increment if we're actually testing it
+        # Stutter params for the locus. These are the same for all samples
         if "INFRAME_UP" not in trrecord.info.keys() or \
             "INFRAME_DOWN" not in trrecord.info.keys() or \
                 "INFRAME_PGEOM" not in trrecord.info.keys():
@@ -556,10 +559,10 @@ def main(args):
             # Discard locus if: only a single allele seen in the reads
             if len(set(reads)) == 1 and not args.output_all:
                 continue
-
+            ntests += 1
             locname = "%s:%s" % (record.CHROM, record.POS)
             best_C, best_f = MaximizeMosaicLikelihoodBoth(reads, A, B, stutter_probs,
-                                                            locname=locname, quiet=args.quiet)
+                                                            locname=locname, quiet=not(args.debug))
             pval = ComputePvalue(reads, A, B, best_C, best_f, stutter_probs)
 
             outf.write('\t'.join([samples[i], record.CHROM, str(record.POS),
@@ -574,12 +577,14 @@ def main(args):
             if args.debug:
                 common.WARNING("Inferred best_C=%s best_f=%s" %
                                 (best_C, best_f))
-            #############################################################
-        if nrecords % 50 == 0 and not args.quiet:
-            common.MSG("Finished {} records, time/record={:.5}sec".format(nrecords,
+        
+        if nrecords > 0 and nrecords % 50 == 0 and not args.quiet:
+            common.MSG("Finished {} records, {} total tests. "
+                " time/record={:.5}sec".format(nrecords, ntests,
                 (time.time() - start_time)/nrecords), debug=True)
     
-    if not args.quiet: common.MSG("Performed analysis on {} records".format(nrecords), debug=True)
+    if not args.quiet:
+        common.MSG("Performed analysis on {} records, {} total tests".format(nrecords, ntests), debug=True)
 
     if outf is not None and args.out != "stdout":
         outf.close()
