@@ -44,7 +44,7 @@ def ParseCoordinates(coords):
 	"""
 	if type(coords) != str:
 		return None, None, None
-	if re.match(r"[A-za-z\d+]*:\d+-\d+", coords) is None:
+	if re.match(r"[A-za-z\d+]+:\d+-\d+", coords) is None:
 		return None, None, None
 	chrom = coords.split(":")[0]
 	start = int(coords.split(":")[1].split("-")[0])
@@ -314,10 +314,20 @@ def main(args):
 
 	# Extract ref sequences
 	refgenome = pyfaidx.Fasta(args.ref)
+	if chrom not in refgenome.records:
+		common.WARNING("Could not find {} in {}".format(chrom, args.ref))
+		return 1
 	seq_repeat = str(refgenome[chrom][start-1:end]).upper()
 	seq_preflank = str(refgenome[chrom][start-args.window-1:start-1]).upper()
 	seq_postflank = str(refgenome[chrom][end:end+args.window]).upper()
-	check_rpt = utils.LongestPerfectRepeat(seq_repeat, args.repeat_unit)
+
+	# Require the whole region to be at least as long as window
+	seq_len = len(seq_preflank + seq_repeat + seq_postflank)
+	if seq_len <= args.window:
+		common.WARNING("Extracted sequence length shorter {} than window {}".format(seq_len, args.window))
+		return 1
+
+	check_rpt = utils.LongestPerfectRepeat(seq_repeat, args.repeat_unit, check_reverse=False)
 	if check_rpt <= len(args.repeat_unit)*2:
 		common.WARNING("Did not find the unit {} a sufficient "
 			"number of times in the repeat region {}".format(args.repeat_unit, seq_repeat))

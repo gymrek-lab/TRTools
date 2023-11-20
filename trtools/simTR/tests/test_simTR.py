@@ -284,6 +284,28 @@ def test_BadCoords(args, tmpdir, simtrdir):
     retcode = main(args)
     assert retcode == 1
 
+    # Bad chrom
+    args.coords = "chr11:5000-5033"
+    retcode = main(args)
+    assert retcode == 1
+
+    # Bad coords
+    args.coords = "chr11_CBL:50001-50033"
+    retcode = main(args)
+    assert retcode == 1
+
+    # Bad repeat unit
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "AT"
+    retcode = main(args)
+    assert retcode == 1
+
+    # Bad repeat unit
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CCG"
+    retcode = main(args)
+    assert retcode == 1
+
 def test_TooMuchStutter(args, tmpdir, simtrdir):
     check_art()
     args.art = None # make it find ART
@@ -328,8 +350,15 @@ def test_ParseCoordinates3():
 def test_ParseCoordinates4():
     chrom, start, end = ParseCoordinates(0)
     assert chrom is None
-    
 
+    chrom, start, end = ParseCoordinates(":1-100")
+    assert chrom is None
+
+    chrom, start, end = ParseCoordinates("xx:-100")
+    assert chrom is None
+
+    chrom, start, end = ParseCoordinates("xx:-")
+    assert chrom is None    
 
 #Test the Max Delta
 def test_GetMaxDelta1():

@@ -485,7 +485,7 @@ def InferRepeatSequence(seq, period):
                 best_copies = current_best_copies
     return GetCanonicalOneStrand(best_kmer)
 
-def LongestPerfectRepeat(seq, motif):
+def LongestPerfectRepeat(seq, motif, check_reverse=True):
     r"""
     Determine the length (bp) of the longest 
     perfect repeat stretch
@@ -499,6 +499,8 @@ def LongestPerfectRepeat(seq, motif):
        Repeat region sequence
     motif : str
        Repeat unit sequence
+    check_reverse : bool (optional)
+       If False, don't check reverse complement
 
     Returns
     -------
@@ -507,8 +509,11 @@ def LongestPerfectRepeat(seq, motif):
     """
     max_matches = []
     seq = seq.upper()
-    strand_seq = ReverseComplement(seq)   
-    for ref_ in [seq, strand_seq]:
+    checkseqs = [seq]
+    if check_reverse:
+        strand_seq = ReverseComplement(seq)
+        checkseqs.append(strand_seq)
+    for ref_ in checkseqs:
         for mot in [motif, motif[::-1]]:
                 i = 0
                 match = 0
