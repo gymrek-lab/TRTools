@@ -71,18 +71,23 @@ Known issues
 Example Commands
 ----------------
 
-Below are :code:`simTR` examples using HipSTR VCFs. Data files can be found at https://github.com/gymreklab/TRTools/tree/master/example-files/str-ngs-data/::
+Below is a :code:`simTR` example using an example fasta file, which can be found in the directory :code:`trtools/testsupport/sample_simtrdata`. Example command::
 
 	# Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
+	mkdir test-simtr
 	simTR \
-	   --coords str-ngs-data/dummy_A_pos.bed \
-	   --ref str-ngs-data/CBL_dataset.fa \
-	   --art art_bin_MountRainier/art_illumina \
-	   --output_dir dummy_data_A \
-	   --coverage 10 \
-	   --read_length 150 \
-	   --u 0.02 \
-	   --d 0.02
+	   --coords chr11_CBL:5001-5033 \
+	   --ref trtools/testsupport/sample_simtrdata/CBL.fa \
+	   --tmpdir test-simtr \
+	   --repeat-unit CGG \
+	   --art art_illumina \
+	   --outprefix test-simtr \
+	   --coverage 1000 \
+	   --read-length 150 \
+	   --seed 12345 \
+	   --u 0.02 --d 0.02 --rho 0.9
+
+This command should output the files :code:`test-simtr_1.fq` and :code`test-simtr_2.fq`.
 
 Citations
 ----------------
