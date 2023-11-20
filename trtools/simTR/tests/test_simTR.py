@@ -35,11 +35,11 @@ def args(tmpdir):
 def check_art():
     if shutil.which("art_illumina") is None:
         common.WARNING("Skipping simTR test. art_illumina not installed")
-        return
+        return False
+    return True
 
 # Test no such file or directory
 def test_WrongRefFile(args, simtrdir):
-    check_art()
     fname = os.path.join(simtrdir, "test_non_existent.bed")
     if os.path.exists(fname):
         os.remove(fname)
@@ -49,7 +49,6 @@ def test_WrongRefFile(args, simtrdir):
 
 # Test bad output directory
 def test_WrongOutdir(args, simtrdir):
-    check_art()
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.outprefix = "bad//x/y/z"
     retcode = main(args)
@@ -86,15 +85,13 @@ def test_WrongARTPath2(args, tmpdir, simtrdir):
 
 # Test wrong ART path
 def test_BadParamCombinations(args, simtrdir):
-    check_art()
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.single = True
     retcode = main(args)
     assert retcode==1
 
-# Test u/d/rho
+# Test params
 def test_BadParams(args, simtrdir):
-    check_art()
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.u = -1
     retcode = main(args)
@@ -171,7 +168,6 @@ def test_BadParams(args, simtrdir):
     args.d = 0.01
 
 def test_BadTmpDir(args, tmpdir, simtrdir):
-    check_art()
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.coverage = 100
     args.coords = "chr11_CBL:5001-5033"
@@ -188,7 +184,7 @@ def test_BadTmpDir(args, tmpdir, simtrdir):
     assert retcode == 1
 
 def test_GoodExampleRun1(args, tmpdir, simtrdir):
-    check_art()
+    if not check_art(): return
     os.mkdir(str(tmpdir /  "test-CBL1-tmpdir"))
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.coverage = 100
@@ -209,7 +205,7 @@ def test_GoodExampleRun1(args, tmpdir, simtrdir):
     assert retcode == 0
 
 def test_GoodExampleRun2(args, tmpdir, simtrdir):
-    check_art()
+    if not check_art(): return
     os.mkdir(str(tmpdir /  "test-CBL2-tmpdir"))
     args.ref = os.path.join(simtrdir, "CBL.fa")
     args.coverage = 100
@@ -229,7 +225,7 @@ def test_GoodExampleRun2(args, tmpdir, simtrdir):
     assert retcode == 0
 
 def test_GoodExampleRun3(args, tmpdir, simtrdir):
-    check_art()
+    if not check_art(): return
     args.art = None # make it find ART
     os.mkdir(str(tmpdir /  "test-CBL3-tmpdir"))
     args.ref = os.path.join(simtrdir, "CBL.fa")
@@ -251,7 +247,6 @@ def test_GoodExampleRun3(args, tmpdir, simtrdir):
     assert retcode == 0
 
 def test_BadCoords(args, tmpdir, simtrdir):
-    check_art()
     args.art = None # make it find ART
     os.mkdir(str(tmpdir /  "test-CBL3-tmpdir"))
     args.ref = os.path.join(simtrdir, "CBL.fa")
@@ -318,7 +313,6 @@ def test_BadCoords(args, tmpdir, simtrdir):
     assert retcode == 1
 
 def test_TooMuchStutter(args, tmpdir, simtrdir):
-    check_art()
     args.art = None # make it find ART
     os.mkdir(str(tmpdir /  "test-CBL4-tmpdir"))
     args.ref = os.path.join(simtrdir, "CBL.fa")
