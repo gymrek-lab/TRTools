@@ -87,7 +87,7 @@ Below is a :code:`simTR` example using an example fasta file, which can be found
 	   --seed 12345 \
 	   --u 0.02 --d 0.02 --rho 0.9
 
-This command should output the files :code:`test-simtr_1.fq` and :code`test-simtr_2.fq`.
+This command should output the files :code:`test-simtr_1.fq` and :code:`test-simtr_2.fq`.
 
 Citations
 ----------------
