@@ -306,6 +306,17 @@ def test_BadCoords(args, tmpdir, simtrdir):
     retcode = main(args)
     assert retcode == 1
 
+    # Bad window
+    args.window = 10000000
+    retcode = main(args)
+    assert retcode == 1
+
+    # Bad window
+    args.window = 10
+    args.insert = 350
+    retcode = main(args)
+    assert retcode == 1
+
 def test_TooMuchStutter(args, tmpdir, simtrdir):
     check_art()
     args.art = None # make it find ART

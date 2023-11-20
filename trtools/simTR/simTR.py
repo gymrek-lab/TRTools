@@ -19,6 +19,8 @@ import trtools.prancSTR as ms
 import trtools.utils.utils as utils
 from trtools import __version__
 
+_MAXWINDOW = 1000000
+
 def ParseCoordinates(coords):
 	r"""
 	Extract chrom, start, end from
@@ -44,7 +46,7 @@ def ParseCoordinates(coords):
 	"""
 	if type(coords) != str:
 		return None, None, None
-	if re.match(r"[A-za-z\d+]+:\d+-\d+", coords) is None:
+	if re.match(r"\w+:\d+-\d+", coords) is None:
 		return None, None, None
 	chrom = coords.split(":")[0]
 	start = int(coords.split(":")[1].split("-")[0])
@@ -283,6 +285,12 @@ def main(args):
 		return 1
 	if args.window < 0:
 		common.WARNING("Error: --window ({}) cannot be less than 0".format(args.window))
+		return 1
+	if args.window > _MAXWINDOW:
+		common.WARNING("Error: --window ({}) must be <= {}".format(args.window, _MAXWINDOW))
+		return 1
+	if args.window < args.insert:
+		common.WARNING("Error: --window ({}) must be greater than the fragment length".format(args.window))
 		return 1
 	if not os.path.exists(os.path.dirname(os.path.abspath(args.outprefix))):
 		common.WARNING("Error: The directory which contains the output location {} does"
