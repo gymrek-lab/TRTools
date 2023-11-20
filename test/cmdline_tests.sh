@@ -39,7 +39,7 @@ TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 echo "Saving tmp files in ${TMPDIR}"
 
 # Check version
-for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR
+for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR prancSTR simTR
 do
     runcmd_pass "${tool} --version"
 done

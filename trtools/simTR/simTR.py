@@ -83,7 +83,12 @@ def GetTempDir(debug=False, dir=None):
 	-------
 	dirname : str
 	   Path to the temporary directory
+	   Return None if there was a problem creating the directory
 	"""
+	if not os.path.isdir(dir):
+		common.WARNING("Error: The specified tmpdir {} does"
+			" not exist".format(dir))
+		return None
 	dirname = tempfile.mkdtemp(dir=dir)
 	return dirname
 
@@ -239,13 +244,13 @@ def main(args):
 		common.WARNING("Error: --d ({}) is not between 0 and 1".format(args.d))
 		return 1
 	if args.rho < 0 or args.rho > 1:
-		common.WARNING("Error: --rho ({}}) is not between 0 and 1".format(args.rho))
+		common.WARNING("Error: --rho ({}) is not between 0 and 1".format(args.rho))
 		return 1
 	if args.p_thresh < 0 or args.p_thresh > 1:
 		common.WARNING("Error: --p_thresh ({}) is not between 0 and 1".format(args.p_thresh))
 		return 1
 	if args.coverage < 0:
-		common.WARNING("Error: --coverage ({}}) cannot be less than 0".format(args.coverage))
+		common.WARNING("Error: --coverage ({}) cannot be less than 0".format(args.coverage))
 		return 1
 	if args.read_length < 0:
 		common.WARNING("Error: --read_length ({}) cannot be less than 0".format(args.read_length))
@@ -264,12 +269,13 @@ def main(args):
 			" not exist".format(args.outprefix))
 		return 1
 	if args.single and (args.insert is not None or args.sd is not None):
-		common.WARNING("Ignoring --insert and --sd in single-end mode")
+		common.WARNING("Error: --insert and --sd irrelevant in single-end mode")
+		return 1
 	if args.seed is not None:
 		random.seed(args.seed)
 	art_path = None
 	if args.art is not None:
-		if not os.path.exists(args.art):
+		if not os.path.exists(args.art) and not shutil.which(args.art):
 			common.WARNING("Error: ART path {} does not exist".format(args.art))
 			return 1
 		else: art_path = args.art
@@ -302,6 +308,9 @@ def main(args):
 
 	# Create folder structure
 	tmpdir = GetTempDir(debug=args.debug, dir=args.tmpdir)
+	if tmpdir is None:
+		common.WARNING("ERROR: could not create temoporary directory")
+		return 1
 	common.MSG("Created temporary directory at {}".format(tmpdir), debug=args.debug)
 
 	# Simulate reads from each potential allele
@@ -335,7 +344,9 @@ def main(args):
 		WriteCombinedFastqs(fq2files, args.outprefix+"_2.fq")
 		common.MSG("Output fastq file {}".format(args.outprefix+"_2.fq", debug=args.debug))
 
-def getargs():
+	return 0
+
+def getargs(): # pragma: no cover
 	parser = argparse.ArgumentParser(
 		__doc__,
 		formatter_class=utils.ArgumentDefaultsHelpFormatter
@@ -374,7 +385,7 @@ def getargs():
 	args = parser.parse_args()
 	return args
 
-def run():  # pragma: no cover
+def run(): # pragma: no cover
     args = getargs()
     if args == None:
         sys.exit(1)
@@ -382,5 +393,5 @@ def run():  # pragma: no cover
         retcode = main(args)
         sys.exit(retcode)
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     run()

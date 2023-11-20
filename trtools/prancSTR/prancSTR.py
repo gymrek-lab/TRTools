@@ -385,7 +385,7 @@ def ComputePvalue(reads, A, B, best_C, best_f, stutter_probs):
 	#pval = 1 - scipy.stats.chi2.cdf(test_stat, 1)
 	return pval
 
-def getargs():
+def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
         __doc__,
         formatter_class=utils.ArgumentDefaultsHelpFormatter
@@ -620,7 +620,7 @@ def main(args):
         outf.close()
     return 0
 
-def run():  # pragma: no cover
+def run(): # pragma: no cover
     args = getargs()
     if args == None:
         sys.exit(1)

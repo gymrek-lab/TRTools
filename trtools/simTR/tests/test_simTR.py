@@ -7,12 +7,13 @@ from ..simTR import *
 
 # Set up base argparser
 @pytest.fixture
-def args(tmpdir, simtrdir):
+def args(tmpdir):
     args = argparse.ArgumentParser()
-    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.ref = None
     args.repeat_unit = None
     args.outprefix = str(tmpdir /  "test")
     args.tmpdir = None
+    args.coords = None
     args.u = 0.01
     args.d = 0.01
     args.rho = 0.9
@@ -22,14 +23,21 @@ def args(tmpdir, simtrdir):
     args.insert = 100
     args.sd = 100
     args.window = 1000
-    args.art = None
+    args.art = "art_illumina"
     args.single = False
     args.debug = False
     args.seed = 12345
     return args
 
+# Test art_illumina
+def check_art():
+    if shutil.which("art_illumina") is None:
+        common.WARNING("Skipping simTR test. art_illumina not installed")
+        return
+
 # Test no such file or directory
 def test_WrongRefFile(args, simtrdir):
+    check_art()
     fname = os.path.join(simtrdir, "test_non_existent.bed")
     if os.path.exists(fname):
         os.remove(fname)
@@ -37,11 +45,128 @@ def test_WrongRefFile(args, simtrdir):
     retcode = main(args)
     assert retcode==1
 
+# Test bad output directory
+def test_WrongOutdir(args, simtrdir):
+    check_art()
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.outprefix = "bad//x/y/z"
+    retcode = main(args)
+    assert retcode==1
+
 # Test wrong ART path
 def test_WrongARTPath(args, simtrdir):
+    args.ref = os.path.join(simtrdir, "CBL.fa")
     args.art = "nonexistent_art"
     retcode = main(args)
     assert retcode==1
+
+# Test wrong ART path
+def test_BadParamCombinations(args, simtrdir):
+    check_art()
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.single = True
+    retcode = main(args)
+    assert retcode==1
+
+# Test u/d/rho
+def test_BadParams(args, simtrdir):
+    check_art()
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.u = -1
+    retcode = main(args)
+    assert retcode == 1
+
+    args.u = 100
+    retcode = main(args)
+    assert retcode == 1
+    args.u = 0.01
+
+    args.d = -5
+    retcode = main(args)
+    assert retcode == 1
+
+    args.d = 5
+    retcode = main(args)
+    assert retcode == 1
+    args.d = 0.01
+
+    args.rho = -5
+    retcode = main(args)
+    assert retcode == 1
+
+    args.rho = 5
+    retcode = main(args)
+    assert retcode == 1
+    args.rho = 0.9
+
+    args.p_thresh = -5
+    retcode = main(args)
+    assert retcode == 1
+
+    args.p_thresh = 5
+    retcode = main(args)
+    assert retcode == 1
+    args.p_thresh = 1
+
+    args.coverage = -1
+    retcode = main(args)
+    assert retcode == 1
+    args.coverage = 100
+
+    args.read_length = -1
+    retcode = main(args)
+    assert retcode == 1
+    args.read_length = 100
+
+    args.insert = -1
+    retcode = main(args)
+    assert retcode == 1
+    args.insert = 100
+
+    args.sd = -1
+    retcode = main(args)
+    assert retcode == 1
+    args.sd = 100
+
+    args.window = -1
+    retcode = main(args)
+    assert retcode == 1
+    args.window = 1000
+
+def test_BadTmpDir(args, tmpdir, simtrdir):
+    check_art()
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL1")
+    args.tmpdir = str(tmpdir /  "bad-tmp-dir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.read_length = 150
+    args.coverage = 100
+    args.seed = 12345
+    retcode = main(args)
+    assert retcode == 1
+
+def test_GoodExampleRun1(args, tmpdir, simtrdir):
+    check_art()
+    os.mkdir(str(tmpdir /  "test-CBL1-tmpdir"))
+    args.ref = os.path.join(simtrdir, "CBL.fa")
+    args.coverage = 100
+    args.coords = "chr11_CBL:5001-5033"
+    args.repeat_unit = "CGG"
+    args.outprefix = str(tmpdir /  "test-CBL1")
+    args.tmpdir = str(tmpdir /  "test-CBL1-tmpdir")
+    args.u = 0.01
+    args.d = 0.01
+    args.rho = 0.9
+    args.read_length = 150
+    args.coverage = 100
+    args.seed = 12345
+    retcode = main(args)
+    assert retcode == 0
 
 #Test the Coordinates
 def test_ParseCoordinates1():
@@ -84,7 +209,6 @@ def test_GetMaxDelta3():
     delta = GetMaxDelta(sprob, rho, pthresh)
     assert delta == 4
 
-#
 def test_GetAlleleSeq1():
     # Keep as is
     seq_preflank = "AGCT"
