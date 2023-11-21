@@ -140,3 +140,11 @@ def test_InferRepeatSequence():
     assert(utils.InferRepeatSequence("ATATATACATA", 2)=="AT")
     assert(utils.InferRepeatSequence("ATATATACATAAAAAAAAAAAAAAA", 1)=="A")
     assert(utils.InferRepeatSequence("ATATAT", 10)=="NNNNNNNNNN")
+
+# LongestPerfectRepeat
+def test_LongestPerfectRepeat():
+    assert(utils.LongestPerfectRepeat("ACACAC", "AC") == 6)
+    assert(utils.LongestPerfectRepeat("ACACACA", "AC") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "CA") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "TG") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "TG", check_reverse=False) == 0)

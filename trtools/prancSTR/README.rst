@@ -45,11 +45,11 @@ Other general parameters:
 * :code:`--region <string>`: Restrict to the region chr:start-end. VCF file must be bgzipped and indexed to use this option.
 * :code:`--samples <string>`: Restrict to the given list of samples. Samples are comma separated.
 * :code:`--vcftype <string>`: Specify the tool which generated the vcf call file for STRs. Currently this will fail if using anything other than :code:`hipstr` VCFs.
-* :code:`--only-passing <action=store_true>`: Filters out the VCF records with non-passing FILTER column
-* :code:`--output-all <action=store_true>`: Force tool to output results for all loci.
-* :code:`--readfield <string>`: Specify which field to utilize for extracting read information.
-* :code:`--debug <action=store_true>`: Print helpful debug messages.
-* :code:`--quiet <action=store_true>`: Restrict printing of any messages.
+* :code:`--only-passing`: Filters out the VCF records with non-passing FILTER column
+* :code:`--output-all`: Force tool to output results for all loci.
+* :code:`--readfield <string>`: Specify which VCF format field output by HipSTR to utilize for extracting read information. We recommend setting this to "MALLREADS". "ALLREADS" is also accepted but we have found produces unreliable results.
+* :code:`--debug`: Print helpful debug messages.
+* :code:`--quiet`: Restrict printing of any messages.
 * :code:`--version`: Print the version of the tool
 
 Notes:
@@ -64,27 +64,26 @@ Output files
 
 The prancSTR output file contains mosaicism predictions generated for each locus. 
 Note, this file contains statistics for all tested loci and it is up to the user's discretion to filter out for high confidence mosaic allele calls.
-The output generated is a tab-delimited file with 16 columns where each row represents predicted mosaicism at STR:
+The output generated is a tab-delimited file with one row summarizing evidence of mosaicism for each call analyzed, with the following columns:
 
-* :code:`sample`: The ID of the sample whose locus is being analyzed.
-* :code:`chrom`: The chromosome on which the mosaic short tandem repeat (STR) lies.
+* :code:`sample`: The ID of the sample being considered.
+* :code:`chrom`: Chromsome of the STR being considered
 * :code:`locus`: Reference ID for the short tandem repeat.
-* :code:`motif`: The nucleotide sequence that the repeat is comprised of.
-* :code:`A`: Represents the first genotype allele for the given STR in repeat units relative to the reference.
-* :code:`B`: Represents the second genotype allele for the given STR in repeat units relative to the reference.
-* :code:`C`: This is the mosaic allele inferred by prancSTR in repeat units relative to the reference.
-* :code:`f`: This represents the mosaic allele fraction. 
-* :code:`pval`: Gives the p-value metric for how significant our findings are.
-* :code:`reads`: Gives representation for how many reads support each allele.
+* :code:`motif`: The nucleotide sequence of the repeat unit.
+* :code:`A`: The first germline allele for the given STR in repeat units relative to the reference (copied from HipSTR).
+* :code:`B`: The second germline allele for the given STR in repeat units relative to the reference (copied from HipSTR)
+* :code:`C`: Candidate mosaic allele inferred by prancSTR in repeat units relative to the reference (inferred by prancSTR).
+* :code:`f`: Estimated mosaic allele fraction (inferred by prancSTR. 
+* :code:`pval`: Gives the p-value testing the null hypothesis that f=0.
+* :code:`reads`: Gives representation for how many reads support each allele (copied from HipSTR VCF field corresponding to the specified :code:`--readfield`).
 * :code:`mosaic_support`: The number of reads that support the mosaic allele. 
-* :code:`stutter parameter u`: Gives the probability that stutter error causes an increase in obs. STR size.
-* :code:`stutter parameter d`: Gives the probability that stutter error causes a decrease in obs. STR size.
-* :code:`stutter parameter rho`: Parameter for geometric step size distribution.
-* :code:`quality factor`: Reports the posterior probability of the genotype as a mesaure of quality of individual sample's genotype.
-* :code:`read depth`: Reports the total depth/number of informative reads for all samples at the locus.
+* :code:`stutter parameter u`: The probability that stutter error causes an increase in obs. STR size (copied from HipSTR INFRAME_UP field).
+* :code:`stutter parameter d`: The probability that stutter error causes a decrease in obs. STR size (copied from HipSTR INFRAME_DOWN field).
+* :code:`stutter parameter rho`: Parameter for geometric step size distribution of stutter errors (copied from HipSTR INFRAME_PGEOM field).
+* :code:`quality factor`: Quality score of the germline genotype (copied from HipSTR Q field).
+* :code:`read depth`: Reports the total depth/number of informative reads for all samples at the locus (copied from HipSTR DP field).
 
-Stutter parameter u, stutter parameter d, stutter parameter rho, quality factor and read depth are the parameters that have been imported from what HipSTR outputs.
-Below is an example file which contains 5 STR loci 
+Below shows several example output lines from running prancSTR:
 
 +---------+-------+---------+---------------+-------+----+---+---+----------+--------------+------------------+----------------+---------------------+--------------------+----------------------+----------------+------------+
 | sample  | chrom |   pos   |     locus     | motif | A  | B | C |    f     |     pval     |      reads       | mosaic_support | stutter parameter u | stutter paramter d | stutter paramter rho | quality factor | read depth |
@@ -106,7 +105,7 @@ As a starting point, we suggest filtering output on the following parameters to 
 * :code:`read depth`: of greater than or equal to 10
 * :code:`quality factor` of greater than or equal to 0.8
 * :code:`mosaic_support` of greater than or equal to 3
-* :code:`f`: of less than equal to 0.3
+* :code:`f`: of less than equal to 0.3. Higher f values are often indicative of a heterozygous genotype miscalled as homozygous.
 
 Example Commands
 ----------------
@@ -116,7 +115,7 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 	# Example command running prancSTR for only one chromosome with hipstr output file
 	# --only-passing skips VCF records with non-passing filters
 	prancSTR \
-	   --vcf CEU_subset.vcf.gz \
+	   --vcf example-files/CEU_subset.vcf.gz \
 	   --out CEU_chr1  \
 	   --vcftype hipstr \
 	   --only-passing \
@@ -125,9 +124,9 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 	# Example command running prancSTR for only one sample
 	# --only-passing skips VCF records with non-passing filters
 	prancSTR \
-	   --vcf CEU_subset.vcf.gz \
+	   --vcf example-files/CEU_subset.vcf.gz \
 	   --only-passing \
-	   --out NA12878_mosaicSTR \
+	   --out NA12878_chr1 \
 	   --samples NA12878
 
 

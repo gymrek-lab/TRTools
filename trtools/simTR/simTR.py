@@ -9,6 +9,7 @@ import numpy as np
 import os
 import pyfaidx
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,8 @@ import trtools.utils.common as common
 import trtools.prancSTR as ms
 import trtools.utils.utils as utils
 from trtools import __version__
+
+_MAXWINDOW = 1000000
 
 def ParseCoordinates(coords):
 	r"""
@@ -37,10 +40,20 @@ def ParseCoordinates(coords):
 	   start coordinate
 	end : int
 	   end coordinate
+
+	If we encounter an error parsing, then
+	chrom, start, end are None
 	"""
+	if type(coords) != str:
+		return None, None, None
+	if re.match(r"\w+:\d+-\d+", coords) is None:
+		return None, None, None
 	chrom = coords.split(":")[0]
 	start = int(coords.split(":")[1].split("-")[0])
 	end = int(coords.split(":")[1].split("-")[1])
+	if start >= end:
+		common.WARNING("Problem parsing coordinates {}. start>=end".format(coords))
+		return None, None, None
 	return chrom, start, end
 
 def GetMaxDelta(sprob, rho, pthresh):
@@ -63,8 +76,11 @@ def GetMaxDelta(sprob, rho, pthresh):
 	-------
 	delta : int
 	   Highest delta for which freq>prob
+	   Return 0 if no such delta exists, which
+	   can happen e.g. with low rho
 	"""
 	delta = np.ceil(np.log(pthresh/(sprob*rho))/np.log(1-rho)+1)
+	if delta < 1: return 0
 	return int(delta)
 
 def GetTempDir(debug=False, dir=None):
@@ -83,7 +99,12 @@ def GetTempDir(debug=False, dir=None):
 	-------
 	dirname : str
 	   Path to the temporary directory
+	   Return None if there was a problem creating the directory
 	"""
+	if not os.path.isdir(dir):
+		common.WARNING("Error: The specified tmpdir {} does"
+			" not exist".format(dir))
+		return None
 	dirname = tempfile.mkdtemp(dir=dir)
 	return dirname
 
@@ -232,35 +253,30 @@ def main(args):
 	if not os.path.exists(args.ref):
 		common.WARNING("Error: {} does not exist".format(args.ref))
 		return 1
-	art_path = None
-	if args.art is not None:
-		if not os.path.exists(args.art):
-			common.WARNING("Error: ART path {} does not exist".format(args.art))
-			return 1
-		else: art_path = args.art
-	else:
-		if shutil.which("art_illumina") is None:
-			common.WARNING("Error: Could not find art_illumina executable")
-			return 1
-		else: art_path = "art_illumina"
 	if args.u < 0 or args.u > 1:
 		common.WARNING("Error: --u u ({}) is not between 0 and 1".format(args.u))
 		return 1
 	if args.d < 0 or args.d > 1:
 		common.WARNING("Error: --d ({}) is not between 0 and 1".format(args.d))
 		return 1
+	if (args.d + args.u) > 1:
+		common.WARNING("Error: --d ({}) and --u ({}) can't add to more than 1".format(args.d, args.u))
+		return 1
 	if args.rho < 0 or args.rho > 1:
-		common.WARNING("Error: --rho ({}}) is not between 0 and 1".format(args.rho))
+		common.WARNING("Error: --rho ({}) is not between 0 and 1".format(args.rho))
 		return 1
 	if args.p_thresh < 0 or args.p_thresh > 1:
 		common.WARNING("Error: --p_thresh ({}) is not between 0 and 1".format(args.p_thresh))
 		return 1
 	if args.coverage < 0:
-		common.WARNING("Error: --coverage ({}}) cannot be less than 0".format(args.coverage))
+		common.WARNING("Error: --coverage ({}) cannot be less than 0".format(args.coverage))
 		return 1
 	if args.read_length < 0:
 		common.WARNING("Error: --read_length ({}) cannot be less than 0".format(args.read_length))
 		return 1
+	if args.read_length > args.insert:
+		common.WARNING("Error: --read_length ({}) must be shorter than"
+			" --insert ({})".format(args.read_length, args.insert))
 	if args.insert < 0:
 		common.WARNING("Error: --insert ({}) cannot be less than 0".format(args.insert))
 		return 1
@@ -270,16 +286,35 @@ def main(args):
 	if args.window < 0:
 		common.WARNING("Error: --window ({}) cannot be less than 0".format(args.window))
 		return 1
+	if args.window > _MAXWINDOW:
+		common.WARNING("Error: --window ({}) must be <= {}".format(args.window, _MAXWINDOW))
+		return 1
+	if args.window < args.insert:
+		common.WARNING("Error: --window ({}) must be greater than the fragment length".format(args.window))
+		return 1
 	if not os.path.exists(os.path.dirname(os.path.abspath(args.outprefix))):
 		common.WARNING("Error: The directory which contains the output location {} does"
 			" not exist".format(args.outprefix))
 		return 1
-	if args.single and (args.insert is not None or args.sd is not None):
-		common.WARNING("Ignoring --insert and --sd in single-end mode")
 	if args.seed is not None:
 		random.seed(args.seed)
+	art_path = None
+	if args.art is not None:
+		if not os.path.exists(args.art) and not shutil.which(args.art):
+			common.WARNING("Error: ART path {} does not exist".format(args.art))
+			return 1
+		else: art_path = args.art
+	else:
+		if shutil.which("art_illumina") is None:
+			common.WARNING("Error: Could not find art_illumina executable")
+			return 1
+		else: art_path = "art_illumina"
+	common.MSG("Using this command for ART: {}".format(art_path), debug=args.debug)
 	# Parse coordinates
 	chrom, start, end = ParseCoordinates(args.coords)
+	if chrom is None:
+		common.WARNING("Error: could not extract coordinates")
+		return 1
 
 	# Determine range of deltas to consider
 	highdelta = GetMaxDelta(args.u, args.rho, args.p_thresh)
@@ -287,10 +322,20 @@ def main(args):
 
 	# Extract ref sequences
 	refgenome = pyfaidx.Fasta(args.ref)
+	if chrom not in refgenome.records:
+		common.WARNING("Could not find {} in {}".format(chrom, args.ref))
+		return 1
 	seq_repeat = str(refgenome[chrom][start-1:end]).upper()
 	seq_preflank = str(refgenome[chrom][start-args.window-1:start-1]).upper()
 	seq_postflank = str(refgenome[chrom][end:end+args.window]).upper()
-	check_rpt = utils.LongestPerfectRepeat(seq_repeat, args.repeat_unit)
+
+	# Require the whole region to be at least as long as window
+	seq_len = len(seq_preflank + seq_repeat + seq_postflank)
+	if seq_len <= args.window:
+		common.WARNING("Extracted sequence length shorter {} than window {}".format(seq_len, args.window))
+		return 1
+
+	check_rpt = utils.LongestPerfectRepeat(seq_repeat, args.repeat_unit, check_reverse=False)
 	if check_rpt <= len(args.repeat_unit)*2:
 		common.WARNING("Did not find the unit {} a sufficient "
 			"number of times in the repeat region {}".format(args.repeat_unit, seq_repeat))
@@ -301,11 +346,15 @@ def main(args):
 
 	# Create folder structure
 	tmpdir = GetTempDir(debug=args.debug, dir=args.tmpdir)
+	if tmpdir is None:
+		common.WARNING("ERROR: could not create temoporary directory")
+		return 1
 	common.MSG("Created temporary directory at {}".format(tmpdir), debug=args.debug)
 
 	# Simulate reads from each potential allele
 	fq1files = []
 	fq2files = []
+
 	for delta in range(-1*lowdelta, highdelta+1):
 		sprob = ms.StutterProb(delta, args.u, args.d, args.rho)
 		cov = np.random.binomial(args.coverage, sprob)
@@ -334,7 +383,9 @@ def main(args):
 		WriteCombinedFastqs(fq2files, args.outprefix+"_2.fq")
 		common.MSG("Output fastq file {}".format(args.outprefix+"_2.fq", debug=args.debug))
 
-def getargs():
+	return 0
+
+def getargs(): # pragma: no cover
 	parser = argparse.ArgumentParser(
 		__doc__,
 		formatter_class=utils.ArgumentDefaultsHelpFormatter
@@ -373,7 +424,7 @@ def getargs():
 	args = parser.parse_args()
 	return args
 
-def run():  # pragma: no cover
+def run(): # pragma: no cover
     args = getargs()
     if args == None:
         sys.exit(1)
@@ -381,5 +432,5 @@ def run():  # pragma: no cover
         retcode = main(args)
         sys.exit(retcode)
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     run()
