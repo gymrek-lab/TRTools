@@ -2,7 +2,7 @@
 .. |simTR overview| replace:: SimTR simulates next generation sequencing reads at a single TR region while modeling stutter errors common in such sequencing.
 .. overview_directive_done
 
-simTR
+SimTR
 =========
 
 |simTR overview|
