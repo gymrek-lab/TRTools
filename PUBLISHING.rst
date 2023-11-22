@@ -16,7 +16,6 @@ We use a simplified version of
 to maintain and publish trtools.
 We use the master branch as the default branch with the latest stable codebase.
 The builds from this branch are distributed to PyPI and conda.
-The develop branch contains new features that have yet to make their way into master.
 
 New Dependencies
 ----------------
@@ -27,36 +26,14 @@ If you've added dependencies to trtools or its tests, those dependencies should 
     TRTool's Read The Docs webpage.
   * the appropriate section of the bioconda recipe (see below)
 
-
 Publishing Steps
 ----------------
 
-Once changes have been made to develop that are ready to be published, first choose the new version number according to `semantic versioning <https://semver.org>`_. Then set up the environment you're going to publish TRTools from:
+To publish a new version of trtools:
 
-#. Create a clean environment.
-#. Install setuptools with version >= 40.8.0
-#. Additionally, install ``pytest``, ``wheel``, ``build``, and ``twine``
-#. Clone the `trtools repo <https://github.com/gymrek-lab/TRTools>`_
-#. Check out the develop branch
-#. Run :code:`pip install --upgrade pip && pip install -e .`
-
-Then go through the steps of merging the changes into the master branch:
-
-#. Run :code:`pytest` and make sure all the tests pass. Then run :code:`./test/cmdline_tests.sh` and make sure those tests pass.
-#. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
-#. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
-#. Submit a pull request from develop into master on the github webiste.
-#. If the code review checks pass, merge the pull request.
-#. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
-
-Then go through the steps of publishing the changed code to PyPI:
-
-1. :code:`cd` into the root of your clone of the trtools repo, checkout master and pull the latest change. Note that the most recent commit *must* be tagged.
-2. Run :code:`rm -rf build dist *.egg-info` to make sure all previous build artifacts are removed
-3. Run :code:`python -m build` to build the package with the version number you just tagged. (Note: you might need to install ``build`` first.)
-5. Run :code:`twine upload dist/*` to upload the distribution to PyPI
-
-Lastly, the change needs to be published to bioconda.
+1. First, locate the most recent PR prefixed "chore(main)" created by our Github actions bot
+2. List an admin on our repository (currently: @aryarm) as a reviewer of the PR and ask them to merge it
+3. The bot will automatically create a new version on PyPI and tag a release on Github
 
 A bioconda bot will automatically open a pull request (within a day?) updating the version number
 and the PyPI reference. If there are no new dependencies, no changes to the build,
@@ -98,19 +75,3 @@ Possible Issues:
 * bioconda packages should not include large test data files. If the dist/trtools-<version>.tar.gz file contains such files, you'll need to modify the MANIFEST.in file to exclude them,
   fix the test_trtools.sh script to download them manually and point pytest to them, confirm the tests run in a :code:`conda build` and then restart the publishing process.
   (This should not happen if new test files are just put in :code:`trtools/testsupport/sample_vcfs` or :code:`trtools/testsupport/sample_regions`)
-
-Git Tagging
------------
-
-Git tags are used to mark specific commits with certain names (i.e. v1.2.0).
-Please note that tags are assigned to commits, not branches.
-You can tag a commit in two different ways.
-
-#. Command line:
-
-.. code-block:: bash
-
-  git tag -a vX.Y.Z -m vX.Y.Z
-  git push --tags
-
-2. Web interface: you can go to the releases page of the repository and create a new release.
