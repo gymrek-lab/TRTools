@@ -29,7 +29,7 @@ jobs:
       - name: Install test dependencies
         shell: bash -el {0}
         run: |
-          mamba install -c conda-forge -c bioconda bcftools pip pytest pytest-cov
+          mamba install -c conda-forge -c bioconda bcftools pip pytest pytest-cov art
       - name: Upgrade pip and install our package
         shell: bash -el {0}
         run: |

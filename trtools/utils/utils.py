@@ -34,8 +34,10 @@ def LoadSingleReader(
     -------
     reader : Optional[cyvcf2.VCF]
         The cyvcf2.VCF instance, or None if the VCF is not present
+        or could not be opened
     """
-    if not os.path.isfile(vcf_loc):
+    # check that vcf_loc is a file or file descriptor (ex: '/dev/stdin')
+    if not os.path.exists(vcf_loc) or os.path.isdir(vcf_loc):
         common.WARNING("Could not find VCF file %s"%vcf_loc)
         return None
     if checkgz:
@@ -45,7 +47,11 @@ def LoadSingleReader(
         if not os.path.isfile(vcf_loc+".tbi"):
             common.WARNING("Could not find VCF index %s.tbi"%vcf_loc)
             return None
-    return cyvcf2.VCF(vcf_loc)
+    try:
+        return cyvcf2.VCF(vcf_loc)
+    except OSError:
+        common.WARNING("Could not open VCF file %s. Is it really VCF?"%vcf_loc)
+        return None
 
 def LoadReaders(
         vcf_locs: List[str],
@@ -483,6 +489,62 @@ def InferRepeatSequence(seq, period):
                 best_kmer = current_best_kmer
                 best_copies = current_best_copies
     return GetCanonicalOneStrand(best_kmer)
+
+def LongestPerfectRepeat(seq, motif, check_reverse=True):
+    r"""
+    Determine the length (bp) of the longest 
+    perfect repeat stretch
+
+    Credit: function originally written by
+    Helyaneh Ziaei-Jam
+
+    Parameters
+    ----------
+    seq : str
+       Repeat region sequence
+    motif : str
+       Repeat unit sequence
+    check_reverse : bool (optional)
+       If False, don't check reverse complement
+
+    Returns
+    -------
+    max_match : int
+       Number of bp of longest perfect stretch
+    """
+    max_matches = []
+    seq = seq.upper()
+    checkseqs = [seq]
+    if check_reverse:
+        strand_seq = ReverseComplement(seq)
+        checkseqs.append(strand_seq)
+    for ref_ in checkseqs:
+        for mot in [motif, motif[::-1]]:
+                i = 0
+                match = 0
+                max_match = 0  
+                while True:
+                    if i >= len(ref_):
+                        break
+                    for j in range(0,len(motif)):
+                        k = i
+                        while True:
+                            while j < len(mot) and k < len(ref_) and ref_[k] == mot[j]:
+                                k += 1
+                                j += 1
+                                match += 1
+                            max_match = max(max_match, match)
+                            if j == len(motif):
+                                j = 0
+                                i = k
+                            else:
+                                if j == len(motif) - 1:
+                                    i += 1
+                                match = 0
+                                break
+                        j = 0
+                max_matches.append(max_match)
+    return max(max_matches)
 
 def FabricateAllele(motif, length):
     """

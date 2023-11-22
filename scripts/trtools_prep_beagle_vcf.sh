@@ -70,14 +70,14 @@ while read -r line ; do
 	# this assumes the output meta line ordering of Beagle 5.4 VCFs
 	if (( line_num == 3 )) ; then
 		for meta_line in '##source' '##command' ; do
-			zcat "$ref_panel" | awk '/^'"$meta_line"'/ {print $0} /^#CHROM/ {exit}' | sed -e 's/##/##preimuptation_/' >> "$temp_file"
+			zcat < "$ref_panel" | awk '/^'"$meta_line"'/ {print $0} /^#CHROM/ {exit}' | sed -e 's/##/##preimuptation_/' >> "$temp_file"
 		done
 		for meta_line in '##contig' '##ALT' '##INFO=<ID=END' ; do
-			zcat "$ref_panel" | awk '/^'"$meta_line"'/ {print $0} /^#CHROM/ {exit}' >> "$temp_file"
+			zcat < "$ref_panel" | awk '/^'"$meta_line"'/ {print $0} /^#CHROM/ {exit}' >> "$temp_file"
 		done
 	fi
 	line_num=$(( line_num+1 ))
-done < <(zcat "$imputed")
+done < <(zcat < "$imputed")
 
 
 echo "bgzipping and tabix indexing"
