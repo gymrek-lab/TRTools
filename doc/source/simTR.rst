@@ -1,0 +1,1 @@
+.. include:: ../../trtools/simTR/README.rst

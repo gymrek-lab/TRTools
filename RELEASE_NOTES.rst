@@ -1,7 +1,17 @@
-5.0.3
+5.1.1
 -----
 
-Remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included.
+Refactors:
+
+* Remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included.
+
+5.1.0
+-----
+
+New features:
+
+* Added prancSTR for mosaicism detection
+* Added simTR for simulating NGS reads with stutter errors at TRs
 
 5.0.2
 -----

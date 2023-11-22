@@ -4,6 +4,15 @@ import pytest
 
 import trtools.utils.utils as utils
 
+# LoadSingleReader
+def test_LoadSingleReader(monkeypatch, vcfdir):
+    file1 = utils.LoadSingleReader(os.path.join(vcfdir, "few_samples_few_loci.vcf.gz"))
+    assert file1 is not None
+    file2 = utils.LoadSingleReader(os.path.join(vcfdir, "test_gangstr.vcf"), checkgz=False)
+    assert file2 is not None
+    file3 = utils.LoadSingleReader(os.path.join(vcfdir, "nonexistent.vcf"), checkgz=False)
+    assert file3 is None
+
 # ValidateAlleleFreqs
 def test_ValidateAlleleFreqs():
     afreqs = {0:1}
@@ -131,3 +140,11 @@ def test_InferRepeatSequence():
     assert(utils.InferRepeatSequence("ATATATACATA", 2)=="AT")
     assert(utils.InferRepeatSequence("ATATATACATAAAAAAAAAAAAAAA", 1)=="A")
     assert(utils.InferRepeatSequence("ATATAT", 10)=="NNNNNNNNNN")
+
+# LongestPerfectRepeat
+def test_LongestPerfectRepeat():
+    assert(utils.LongestPerfectRepeat("ACACAC", "AC") == 6)
+    assert(utils.LongestPerfectRepeat("ACACACA", "AC") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "CA") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "TG") == 7)
+    assert(utils.LongestPerfectRepeat("ACACACA", "TG", check_reverse=False) == 0)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script contains command line tests for TRTools utilities
 
@@ -12,13 +12,13 @@ die()
 runcmd_pass()
 {
     echo "[runcmd_pass]: $1"
-    sh -c "$1" >/dev/null 2>&1 || die "Error running: $1"
+    bash -c "$1" >/dev/null 2>&1 || die "Error running: $1"
 }
 
 runcmd_fail()
 {
     echo "[runcmd_fail]: $1"
-    sh -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
+    bash -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
 }
 
 if [ $# -eq 0 ]; then
@@ -39,7 +39,7 @@ TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 echo "Saving tmp files in ${TMPDIR}"
 
 # Check version
-for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR
+for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR prancSTR simTR
 do
     runcmd_pass "${tool} --version"
 done
@@ -47,6 +47,20 @@ done
 runcmd_pass "python -c 'import trtools; print(trtools.__version__)'"
 
 # Check for valid/invalid output locations
+
+# Example command running prancSTR for only one chromosome with hipstr output file
+# --only-passing skips VCF records with non-passing filters
+runcmd_pass "prancSTR --vcf ${EXDATADIR}/CEU_subset.vcf.gz --out ${TMPDIR}/CEU_chr1 --vcftype hipstr --only-passing --region chr1"
+# Example command running prancSTR for only one sample
+runcmd_pass "prancSTR --vcf ${EXDATADIR}/CEU_subset.vcf.gz --only-passing --out ${TMPDIR}/NA12878_chr1 --samples NA12878"
+
+if ! command -v art_illumina &> /dev/null; then
+    echo "Skipping simTR tests. art_illumina not found"
+else
+    # Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
+    mkdir ${TMPDIR}/test-simtr
+    runcmd_pass "simTR --coords chr11_CBL:5001-5033 --ref ${EXDATADIR}/CBL.fa --outprefix ${TMPDIR}/test-simtr --tmpdir ${TMPDIR}/test-simtr --repeat-unit CGG --art art_illumina --coverage 1000 --read-length 150 --seed 12345 --u 0.02 --d 0.02 --rho 0.9"
+fi
 
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx --mean"
@@ -211,14 +225,14 @@ if ! [[ -f "$prep_beagle_out".tbi ]] ; then
     exit 1
 fi
 
-if (( 1172 != $(zcat "$prep_beagle_out" | grep -vc '#') )) ; then
+if (( 1172 != $(zcat < "$prep_beagle_out" | grep -vc '#') )) ; then
     echo "prep_beagle_vcf outputted a file that didn't have the expected number of lines (1172)"
     exit 1
 fi
 
-if (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
-    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
-    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
+if (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
+    (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
+    (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
 then
     echo "prep_beagle_vcf outputted a file that didn't have the expected number of INFO annotations"
     exit 1
