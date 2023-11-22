@@ -12,7 +12,7 @@ import os
 import sys
 import time
 
-from scipy.optimize import minimize
+import scipy.optimize
 from scipy.stats.distributions import chi2
 
 import trtools.utils.utils as utils
@@ -183,15 +183,15 @@ def Just_F_Pred(reads, A, B, C, stutter_probs):
 
     f_initial = np.array([0.01])
     bound_var = ((0, 0.5),) ##changed the bounds to be more accurate of what it could be in data. 0.5 makes the most sense so far
-    result = minimize(Likelihood_mosaic_f, f_initial,
+    result = scipy.optimize.minimize(Likelihood_mosaic_f, f_initial,
                       method="SLSQP", options={}, bounds=bound_var)
     f_final = result.x
     return f_final[0]
 
 
 def ExtractAB(trrecord):
-    r"""
-    Extract list of <A,B> for each sample
+    r"""Extract list of <A,B> for each sample
+
     Parameters
     ----------
     trrecord: trh.TRRecord
@@ -218,9 +218,9 @@ def ExtractAB(trrecord):
 
 
 def ExtractReadVector(mallreads, period):
-    r"""
-    Extract reads vector from MALLREADS
+    r"""Extract reads vector from MALLREADS.
     MALLREADS has format: allele1|readcount1;allele2|readcount2...
+
     Paramters
     ---------
     mallreads : str
@@ -356,27 +356,27 @@ def SF(x):
 	return sf
 
 def ComputePvalue(reads, A, B, best_C, best_f, stutter_probs):
-	r"""Compute pvalue testing H0: f=0
+	r"""Compute pvalue testing H0:f=0
 
 	Parameters
 	----------
-    reads : list of int
-       list of repeat lengths seen in each read
-    A : int
-       First allele of the genotype
-    B : int
-       Second allele of the genotype
-    best_C : integer
-       Estimated mosaic allele
-    best_f : float
-       mosaic fraction
-    stutter_probs : list of floats
-       stutter probs for each delta
+	reads : list of int
+		list of repeat lengths seen in each read
+	A : int
+		First allele of the genotype
+	B : int
+		Second allele of the genotype
+	best_C : integer
+		Estimated mosaic allele
+	best_f : float
+		mosaic fraction
+	stutter_probs : list of floats
+		stutter probs for each delta
 
-    Returns
-    -------
-    pval : float
-       P-value testing H0: f=0
+	Returns
+	-------
+	pval : float
+		P-value testing H0: f=0
 	"""
 	log_obs = Likelihood_mosaic(A, B, best_C, best_f, reads, stutter_probs)
 	log_exp = Likelihood_mosaic(A, B, best_C, 0, reads, stutter_probs)
