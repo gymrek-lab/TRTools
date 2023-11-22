@@ -218,8 +218,7 @@ def ExtractAB(trrecord):
 
 
 def ExtractReadVector(mallreads, period):
-    r"""Extract reads vector from MALLREADS.
-    MALLREADS has format: allele1|readcount1;allele2|readcount2...
+    r"""Extract reads vector from MALLREADS.MALLREADS has format: allele1|readcount1;allele2|readcount2...
 
     Paramters
     ---------
