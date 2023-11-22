@@ -25,7 +25,7 @@ if [ $# -eq 0 ]; then
     # use default example location
     EXDATADIR="example-files"
     BEAGLEDIR="trtools/testsupport/sample_vcfs/beagle"
-    SIMTRDIR="trtools/testsupport/simtrdata"
+    SIMTRDIR="trtools/testsupport/sample_simtrdata"
 elif (( $# != 2 )) ; then
     echo "usage: cmdline_tests.sh {example_dir} {beagle_dir}" 2>&1
     echo "Expected 2 arguments but recieved $#" 2>&1
