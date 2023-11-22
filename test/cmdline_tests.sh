@@ -25,7 +25,6 @@ if [ $# -eq 0 ]; then
     # use default example location
     EXDATADIR="example-files"
     BEAGLEDIR="trtools/testsupport/sample_vcfs/beagle"
-    SIMTRDIR="trtools/testsupport/sample_simtrdata"
 elif (( $# != 2 )) ; then
     echo "usage: cmdline_tests.sh {example_dir} {beagle_dir}" 2>&1
     echo "Expected 2 arguments but recieved $#" 2>&1
@@ -55,9 +54,13 @@ runcmd_pass "prancSTR --vcf ${EXDATADIR}/CEU_subset.vcf.gz --out ${TMPDIR}/CEU_c
 # Example command running prancSTR for only one sample
 runcmd_pass "prancSTR --vcf ${EXDATADIR}/CEU_subset.vcf.gz --only-passing --out ${TMPDIR}/NA12878_chr1 --samples NA12878"
 
-# Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
-mkdir ${TMPDIR}/test-simtr
-runcmd_pass "simTR --coords chr11_CBL:5001-5033 --ref ${SIMTRDIR}/CBL.fa --outprefix ${TMPDIR}/test-simtr --tmpdir ${TMPDIR}/test-simtr --repeat-unit CGG --art art_illumina --coverage 1000 --read-length 150 --seed 12345 --u 0.02 --d 0.02 --rho 0.9"
+if ! command -v art_illumina &> /dev/null; then
+    echo "Skipping simTR tests. art_illumina not found"
+else
+    # Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
+    mkdir ${TMPDIR}/test-simtr
+    runcmd_pass "simTR --coords chr11_CBL:5001-5033 --ref ${EXDATADIR}/CBL.fa --outprefix ${TMPDIR}/test-simtr --tmpdir ${TMPDIR}/test-simtr --repeat-unit CGG --art art_illumina --coverage 1000 --read-length 150 --seed 12345 --u 0.02 --d 0.02 --rho 0.9"
+fi
 
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx --mean"

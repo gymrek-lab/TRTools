@@ -71,13 +71,13 @@ Known issues
 Example Commands
 ----------------
 
-Below is a :code:`simTR` example using an example fasta file, which can be found in the directory :code:`trtools/testsupport/sample_simtrdata`. Example command::
+Below is a :code:`simTR` example using an example fasta file, which can be found in the directory :code:`example-files`. Example command::
 
 	# Example command running simTR for a dummy dataset with dummy allele bed file and other input parameters
 	mkdir test-simtr
 	simTR \
 	   --coords chr11_CBL:5001-5033 \
-	   --ref trtools/testsupport/sample_simtrdata/CBL.fa \
+	   --ref example-files/CBL.fa \
 	   --tmpdir test-simtr \
 	   --repeat-unit CGG \
 	   --art art_illumina \
