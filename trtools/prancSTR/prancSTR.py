@@ -458,7 +458,9 @@ def main(args):
     usesamples = []
     if args.samples is not None:
         usesamples = args.samples.split(",")
-
+        for s in usesamples:
+            if s not in samples:
+                common.WARNING("WARNING: sample {} not found in the VCF".format(s))
 
     if args.out == "stdout":
         outf = sys.stdout

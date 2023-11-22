@@ -93,6 +93,8 @@ def test_MosaicCase(args, vcfdir):
     assert retcode==0
 
     # Bad samples list should just give no output
+    # Note, we do output a warning if we can't 
+    # find a sample
     args.samples = "XYZ"
     retcode = main(args)
     assert retcode==0
