@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script contains command line tests for TRTools utilities
 
@@ -12,13 +12,13 @@ die()
 runcmd_pass()
 {
     echo "[runcmd_pass]: $1"
-    sh -c "$1" >/dev/null 2>&1 || die "Error running: $1"
+    bash -c "$1" >/dev/null 2>&1 || die "Error running: $1"
 }
 
 runcmd_fail()
 {
     echo "[runcmd_fail]: $1"
-    sh -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
+    bash -c "$1" >/dev/null 2>&1 && die "Command should have failed: $1"
 }
 
 if [ $# -eq 0 ]; then
