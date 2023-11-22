@@ -19,7 +19,7 @@ Note that prancSTR does not require a matched control sample as input.
 prancSTR uses the following fields from HipSTR VCFs for detecting mosaicism:
 
 * :code:`GT` is used to obtain estimated diploid repeat lengths
-* :code:`MALLREADS` is used to obtain observed distribution of copy numbers across all reads aligning to a locus. 
+* :code:`MALLREADS` is used to obtain the observed distribution of copy numbers across all reads aligning to a locus.
 * Stutter parameters are obtained from :code:`INFRAME_UP`, :code:`INFRAME_DOWN`, and :code:`INFRAME_PGEOM`.
 
 prancSTR is in *beta*.
