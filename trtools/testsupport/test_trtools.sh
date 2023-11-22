@@ -44,4 +44,3 @@ cd "$loc" || exit 1
 python -m pytest . -p trtools.testsupport.dataloader --datadir "$TMP"/trtools/testsupport
 # run command line tests
 $TMP/test/cmdline_tests.sh $TMP/example-files $TMP/trtools/testsupport/sample_vcfs/beagle
-

@@ -29,6 +29,7 @@ dependencies = [
     "scikit-learn",
     "scipy",
     "statsmodels",
+    "pyfaidx",
 ]
 dynamic = ["version"]
 
@@ -48,6 +49,8 @@ statSTR = "trtools.statSTR:run"
 compareSTR = "trtools.compareSTR:run"
 qcSTR = "trtools.qcSTR:run"
 associaTR = "trtools.associaTR:run"
+prancSTR = "trtools.prancSTR:run"
+simTR = "trtools.simTR:run"
 
 [project.urls]
 Homepage = "https://trtools.readthedocs.org"

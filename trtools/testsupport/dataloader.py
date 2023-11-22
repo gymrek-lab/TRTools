@@ -12,14 +12,16 @@ def pytest_addoption(parser):
 	parser.addoption(
 			"--datadir",
 			default=default,
-			help="Directory containing sample_vcfs and sample_regions"
+			help="Directory containing sample data files"
 	)
-
 
 @pytest.fixture()
 def vcfdir(request):
 	return os.path.join(request.config.getoption("--datadir"), "sample_vcfs")
 
+@pytest.fixture()
+def simtrdir(request):
+	return os.path.join(request.config.getoption("--datadir"), "sample_simtrdata")
 
 @pytest.fixture()
 def regiondir(request):
