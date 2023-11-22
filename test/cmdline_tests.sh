@@ -225,14 +225,14 @@ if ! [[ -f "$prep_beagle_out".tbi ]] ; then
     exit 1
 fi
 
-if (( 1172 != $(zcat "$prep_beagle_out" | grep -vc '#') )) ; then
+if (( 1172 != $(zcat < "$prep_beagle_out" | grep -vc '#') )) ; then
     echo "prep_beagle_vcf outputted a file that didn't have the expected number of lines (1172)"
     exit 1
 fi
 
-if (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
-    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
-    (( 1172 != $(zcat "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
+if (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'START') )) ||
+    (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'END') )) ||
+    (( 1172 != $(zcat < "$prep_beagle_out" | grep -v '#' | grep -c 'PERIOD') ))
 then
     echo "prep_beagle_vcf outputted a file that didn't have the expected number of INFO annotations"
     exit 1
