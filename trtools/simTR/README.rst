@@ -9,7 +9,7 @@ SimTR
 
 Prerequisites
 -------------
-simTR is a wrapper on the `Illumina ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option.
+simTR is a wrapper on the `Illumina ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_ tool. To run simTR, either the command :code:`art_illumina` must be in a directory on your :code:`PATH`, or alternatively you can specify the path to the ART executable using the :code:`--art` option. If you installed simTR via conda, ART should be installed already.
 
 Usage
 -----
