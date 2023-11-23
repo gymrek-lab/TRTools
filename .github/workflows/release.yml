@@ -31,6 +31,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         run: |
           pip install --upgrade pip
+          pip install build
           pip --version
 
       - name: Build package
