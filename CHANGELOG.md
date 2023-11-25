@@ -126,7 +126,7 @@ Current limitations:
 * StatSTR now can calculate the entropy of the allele distribution at
     each locus with the \--entropy flag
 * The [TRTools documentation
-    website](https://trtools.readthedocs.io/en/latest/) now displays the
+    website](https://trtools.readthedocs.io/en/stable/) now displays the
     release notes.
 
 ### Command line interface changes

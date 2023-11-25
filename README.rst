@@ -24,7 +24,7 @@ TRTools
 
 TRTools includes a variety of utilities for filtering, quality control and analysis of tandem repeats downstream of genotyping them from next-generation sequencing. It supports multiple recent genotyping tools (see below).
 
-See full documentation and examples at https://trtools.readthedocs.io/en/latest/.
+See full documentation and examples at https://trtools.readthedocs.io/en/stable/.
 
 If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash, Neha Pusarla, Shubham Saini, Richard Yanicky, Melissa Gymrek. (2020) TRTools: a toolkit for genome-wide analysis of tandem repeats. Bioinformatics. (https://doi.org/10.1093/bioinformatics/btaa736)
 
@@ -89,14 +89,14 @@ Tools
 -----
 TRTools includes the following tools.
 
-* `mergeSTR <https://trtools.readthedocs.io/en/latest/source/mergeSTR.html>`_: a tool to merge VCF files across multiple samples genotyped using the same tool
-* `dumpSTR <https://trtools.readthedocs.io/en/latest/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
-* `qcSTR <https://trtools.readthedocs.io/en/latest/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
-* `statSTR <https://trtools.readthedocs.io/en/latest/source/statSTR.html>`_: a tool for computing various statistics on VCF files
-* `compareSTR <https://trtools.readthedocs.io/en/latest/source/compareSTR.html>`_: a tool for comparing TR callsets
-* `associaTR <https://trtools.readthedocs.io/en/latest/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
-* `prancSTR <https://trtools.readthedocs.io/en/latest/source/prancSTR.html>`_: a tool for identifying somatic mosacisim at TRs. Currently only compatible with HipSTR VCF files. (*beta mode*)
-* `simTR <https://trtools.readthedocs.io/en/latest/source/simTR.html>`_: a tool for simulating next-generation sequencing reads from TR regions. (*beta mode*)
+* `mergeSTR <https://trtools.readthedocs.io/en/stable/source/mergeSTR.html>`_: a tool to merge VCF files across multiple samples genotyped using the same tool
+* `dumpSTR <https://trtools.readthedocs.io/en/stable/source/dumpSTR.html>`_: a tool for filtering VCF files with TR genotypes
+* `qcSTR <https://trtools.readthedocs.io/en/stable/source/qcSTR.html>`_: a tool for generating various quality control plots for a TR callset
+* `statSTR <https://trtools.readthedocs.io/en/stable/source/statSTR.html>`_: a tool for computing various statistics on VCF files
+* `compareSTR <https://trtools.readthedocs.io/en/stable/source/compareSTR.html>`_: a tool for comparing TR callsets
+* `associaTR <https://trtools.readthedocs.io/en/stable/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
+* `prancSTR <https://trtools.readthedocs.io/en/stable/source/prancSTR.html>`_: a tool for identifying somatic mosacisim at TRs. Currently only compatible with HipSTR VCF files. (*beta mode*)
+* `simTR <https://trtools.readthedocs.io/en/stable/source/simTR.html>`_: a tool for simulating next-generation sequencing reads from TR regions. (*beta mode*)
 
 Type :code:`<command> --help` to see a full set of options.
 
@@ -109,8 +109,8 @@ It additionally includes a python library, :code:`trtools`, which can be accesse
 Usage
 -----
 
-We recommend new users start with the example commands described in the `command-line interface for each tool <https://trtools.readthedocs.io/en/latest/UTILITIES.html>`_.
-We also suggest going through our `vignettes <https://trtools.readthedocs.io/en/latest/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
+We recommend new users start with the example commands described in the `command-line interface for each tool <https://trtools.readthedocs.io/en/stable/UTILITIES.html>`_.
+We also suggest going through our `vignettes <https://trtools.readthedocs.io/en/stable/VIGNETTES.html>`_ that walk through some example workflows using TRTools.
 
 Supported TR Callers
 --------------------
@@ -122,7 +122,7 @@ TRTools supports VCFs from the following TR genotyping tools:
 * HipSTR_
 * PopSTR_ version 2 or higher
 
-See our description of the `features and example use-cases <https://trtools.readthedocs.io/en/latest/CALLERS.html>`_ of each of these tools.
+See our description of the `features and example use-cases <https://trtools.readthedocs.io/en/stable/CALLERS.html>`_ of each of these tools.
 
 ..
     please ensure this list of links remains the same as the one in the main README
@@ -156,12 +156,11 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Make your changes. 
 #. Document your changes.
 
-   * Add bullet point(s) to the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` describing all the user facing changes you've made (if that section doesn't exist, create it at the top of the file). See prior releases in that file for examples.
    * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 
     If applicable, update the REAMDEs in the directories of the files you changed with new usage information.
 
-   * New doc pages for `the website <https://trtools.readthedocs.io/en/latest/>`_ can be created under :code:`<project-root>/doc` and linked to as appropriate.
+   * New doc pages for `the website <https://trtools.readthedocs.io/en/stable/>`_ can be created under :code:`<project-root>/doc` and linked to as appropriate.
    * If you have added significant amounts of documentation in any of these ways, build the documentation locally to ensure it looks good.
 
     :code:`cd` to the :code:`doc` directory and run :code:`make clean && make html`, then view :code:`doc/_build/html/index.html` and navigate from there
@@ -170,13 +169,10 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
    * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
-#. Submit a pull request to the master branch of the central repository with a description of what changes you have made.
+#. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Title the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
 ----------
-If you are a TRTools maintainer and wish to publish changes from the develop branch into master and distribute them to PyPI and bioconda,
-please see PUBLISHING.rst in the root of the git repo.
+If you are a TRTools maintainer and wish to publish changes and distribute them to PyPI and bioconda, please see PUBLISHING.rst in the root of the git repo.
 If you are a community member and would like that to happen, contact us (see above).
-
-
