@@ -1,3 +1,10 @@
+5.1.1
+-----
+
+Bug fixes:
+
+* Remove stray files from source distribution
+
 5.1.0
 -----
 
