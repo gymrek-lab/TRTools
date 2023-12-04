@@ -1,9 +1,16 @@
-5.1.1
+5.1.2
 -----
 
 Refactors:
 
 * Remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included.
+
+5.1.1
+-----
+
+Bug fixes:
+
+* Remove stray files from source distribution
 
 5.1.0
 -----

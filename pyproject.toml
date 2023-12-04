@@ -1,9 +1,10 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "trtools"
+version = "5.1.1"
 authors = [
     {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
     {name = "Gymrek Lab"},
@@ -20,6 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
+    "importlib-metadata", # required as long as we support py<3.8
     "cyvcf2",
     "matplotlib",
     "numpy",
@@ -30,16 +32,13 @@ dependencies = [
     "statsmodels",
     "pyfaidx",
 ]
-dynamic = ["version"]
 
 [tool.setuptools]
-packages = ["trtools"]
 script-files = ["trtools/testsupport/test_trtools.sh", "scripts/trtools_prep_beagle_vcf.sh"]
 license-files = ["LICENSE.txt"]
 
-[tool.setuptools_scm]
-# generated automatically by setuptools when running pip install -e or python -m build
-version_file = "trtools/version.py"
+[tool.setuptools.packages.find]
+exclude = ["trtools.testsupport.*", "doc"]
 
 [project.scripts]
 dumpSTR = "trtools.dumpSTR:run"

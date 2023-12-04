@@ -8,6 +8,7 @@ dependencies:
   - sphinx=3.0.4
   - pytest
   - pytest-cov
+  - importlib-metadata
   - numpy
   - matplotlib-base
   - pysam
