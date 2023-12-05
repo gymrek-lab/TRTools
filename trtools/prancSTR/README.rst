@@ -132,4 +132,4 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 
 Citations
 ----------------
-That latest manuscript for citation of the tool can be found at https://doi.org/10.1101/2023.11.22.568371
+The latest manuscript for citation of the tool can be found at https://doi.org/10.1101/2023.11.22.568371
