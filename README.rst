@@ -145,7 +145,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Install TRTools from source `as above <From source_>`_.
 #. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_, :code:`sphinx>=3` and :code:`sphinx_rtd_theme`, in your environment.
 #. Fork the TRTools repository.
-#. The :code:`develop` branch contains the latest pre-release codebase. Create a branch off of :code:`develop` titled with the name of your feature.
+#. Create a branch off of :code:`master` titled with the name of your feature.
 #. Make your changes. 
 #. Document your changes.
 
@@ -163,7 +163,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
    * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
-#. Submit a pull request **to the develop branch** of the central repository with a description of what changes you have made.
+#. Submit a pull request to the master branch of the central repository with a description of what changes you have made.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
