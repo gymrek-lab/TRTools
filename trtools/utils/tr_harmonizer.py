@@ -829,7 +829,7 @@ class TRRecord:
         """
         if self.vcfrecord.genotype is None:
             return None
-        return self.vcfrecord.genotype.array()
+        return self.vcfrecord.genotype.array().astype(int)
 
     def GetCalledSamples(self, strict: bool = True) -> Optional[np.ndarray]:
         """
@@ -1091,8 +1091,6 @@ class TRRecord:
         idx_gts = self.GetGenotypeIndicies()
         if idx_gts is None:
             return None
-        else:
-            idx_gts = idx_gts.astype(int)
 
         # store allele lengths in a numpy array
         # and add fake alleles for -2 and -1 missing values
