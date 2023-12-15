@@ -1,0 +1,15 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - bioconda::bcftools
+  - conda-forge::pip
+  - conda-forge::pytest
+  - conda-forge::pytest-cov
+  - bioconda::art
+  - conda-forge::sphinx=3.0.4
+  - conda-forge::sphinx_rtd_theme
+  - conda-forge::sphinx-autodoc-typehints
+  - conda-forge::python=3.8
+  
