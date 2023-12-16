@@ -32,7 +32,7 @@ Publishing Steps
 To publish a new version of trtools:
 
 1. First, locate the most recent PR prefixed "chore(main)" created by our Github actions bot
-2. List an admin on our repository (currently: @aryarm) as a reviewer of the PR and ask them to merge it
+2. List a maintainer of our repository as a reviewer of the PR and ask them to merge it
 3. The bot will automatically create a new version on PyPI and tag a release on Github
 
 A bioconda bot will automatically open a pull request (within a day?) updating the version number
