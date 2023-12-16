@@ -2,15 +2,15 @@
 .. a location that the doc/index.rst uses for including this file
 .. before_header
 
+.. image:: https://github.com/codespaces/badge.svg
+  :width: 150
+  :target: https://codespaces.new/gymrek-lab/TRTools
+
 .. image:: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
     :target: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
 
 .. image:: https://codecov.io/gh/gymrek-lab/TRTools/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/gymrek-lab/TRTools
-
-|
-.. image:: https://github.com/codespaces/badge.svg
-  :target: https://codespaces.new/gymrek-lab/TRTools
 
 
 .. a location that the doc/index.rst uses for including this file
