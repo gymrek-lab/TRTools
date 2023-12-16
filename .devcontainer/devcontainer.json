@@ -29,7 +29,8 @@
 				"python.defaultInterpreterPath": "/opt/conda/envs/trtools/bin/python",
 				"python.terminal.activateEnvironment": true,
 				"python.terminal.activateEnvInCurrentTerminal": true,
-				"python.venvFolders": ["/opt/conda/envs"]
+				"python.venvFolders": ["/opt/conda/envs"],
+				"terminal.integrated.hideOnStartup": "always"
 			}
 		}
 	}
