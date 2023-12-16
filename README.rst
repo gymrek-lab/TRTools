@@ -3,7 +3,7 @@
 .. before_header
 
 .. image:: https://github.com/codespaces/badge.svg
-  :width: 150
+  :width: 160
   :target: https://codespaces.new/gymrek-lab/TRTools
 
 .. image:: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg

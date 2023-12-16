@@ -30,6 +30,7 @@
 				"python.terminal.activateEnvironment": true,
 				"python.terminal.activateEnvInCurrentTerminal": true,
 				"python.venvFolders": ["/opt/conda/envs"],
+				"terminal.integrated.environmentChangesRelaunch": true,
 				"terminal.integrated.hideOnStartup": "always"
 			}
 		}
