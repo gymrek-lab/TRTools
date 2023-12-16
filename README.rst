@@ -81,7 +81,7 @@ Note: if you will run or test :code:`simTR`, you will also need to install `ART 
 With Docker
 ^^^^^^^^^^^
 
-Please refer to `the biocontainers registry for TRTools <https://biocontainers.pro/tools/trtools>`_::
+Please refer to `the biocontainers registry for TRTools <https://biocontainers.pro/tools/trtools>`_ for all of our images. To use the most recent release, run the following command::
 
         docker pull quay.io/biocontainers/trtools:latest
 
