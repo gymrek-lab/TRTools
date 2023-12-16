@@ -8,8 +8,8 @@
 .. image:: https://codecov.io/gh/gymrek-lab/TRTools/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/gymrek-lab/TRTools
 
-.. image:: https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode
-  :target: https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/gymrek-lab/TRTools
+.. image:: https://github.com/codespaces/badge.svg
+  :target: https://codespaces.new/gymrek-lab/TRTools
 
 
 .. a location that the doc/index.rst uses for including this file
