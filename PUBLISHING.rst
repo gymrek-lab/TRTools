@@ -1,7 +1,7 @@
 Publishing
 ----------
 
-Only maintainers of the trtools repository may publish changes to the package.
+Only maintainers of the trtools repository (see @gymrek-lab/trtools) may publish changes to the package.
 If you are a community member and want to contribute new code, see the contributing section in the README.
 If you are a community member and have already contributed new code and want us to publish it
 now, please contact us (our contact info is in the README)
@@ -32,7 +32,7 @@ Publishing Steps
 To publish a new version of trtools:
 
 1. First, locate the most recent PR prefixed "chore(main)" created by our Github actions bot
-2. List a maintainer of our repository as a reviewer of the PR and ask them to merge it
+2. List a maintainer of our repository (@gymrek-lab/trtools) as a reviewer of the PR and ask them to merge it
 3. The bot will automatically create a new version on PyPI and tag a release on Github
 
 A bioconda bot will automatically open a pull request (within a day?) updating the version number
