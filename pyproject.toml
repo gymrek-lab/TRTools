@@ -1,47 +1,42 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "trtools"
-version = "5.1.1"
+version = "6.0.0"
 authors = [
-    {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
-    {name = "Gymrek Lab"},
+    "Melissa Gymrek <mgymrek@ucsd.edu>",
+    "Gymrek Lab",
 ]
 description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
-requires-python = ">=3.6"
-license = {text = "MIT"}
+license = "MIT"
 classifiers = [
-    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.8",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-dependencies = [
-    "importlib-metadata>=3.0.0", # required as long as we support py<3.8
-    "cyvcf2>=0.20.5",
-    "matplotlib>=3.0.3",
-    "numpy>=1.17.3",
-    "pandas>=0.25.3",
-    "pybedtools>=0.8.0",
-    "pysam>=0.15.3",
-    "scikit-learn>=0.23.1",
-    "scipy>=1.3.3",
-    "statsmodels>=0.10.2",
-    "pyfaidx>=0.5.3",
-]
-
-[tool.setuptools]
-script-files = ["trtools/testsupport/test_trtools.sh", "scripts/trtools_prep_beagle_vcf.sh"]
-license-files = ["LICENSE.txt"]
-
-[tool.setuptools.packages.find]
 exclude = ["trtools.testsupport.*", "doc"]
 
-[project.scripts]
+[tool.poetry.dependencies]
+python = ">=3.6"
+cyvcf2 = ">=0.20.5"
+importlib-metadata = ">=3.0.0"
+matplotlib = ">=3.0.3"
+numpy = ">=1.17.3"
+pandas = ">=0.25.3"
+pysam = ">=0.15.3"
+scikit-learn = ">=0.23.1"
+scipy = ">=1.3.3"
+statsmodels = ">=0.10.2"
+pyfaidx = ">=0.5.3"
+
+[tool.poetry.scripts]
+"test_trtools.sh" = {reference = "trtools/testsupport/test_trtools.sh", type = "file"}
+"trtools_prep_beagle_vcf.sh" = {reference = "scripts/trtools_prep_beagle_vcf.sh", type = "file"}
 dumpSTR = "trtools.dumpSTR:run"
 mergeSTR = "trtools.mergeSTR:run"
 statSTR = "trtools.statSTR:run"
