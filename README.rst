@@ -2,9 +2,12 @@
 .. a location that the doc/index.rst uses for including this file
 .. before_header
 
+.. image:: https://github.com/codespaces/badge.svg
+  :width: 160
+  :target: https://codespaces.new/gymrek-lab/TRTools
+
 .. image:: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
     :target: https://github.com/gymrek-lab/trtools/workflows/Tests/badge.svg
-
 
 .. image:: https://codecov.io/gh/gymrek-lab/TRTools/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/gymrek-lab/TRTools
@@ -28,6 +31,8 @@ If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash,
 Install
 -------
 
+Note: TRTools supports Python versions 3.8 and up. We do not officially support python versions 3.6 and 3.7 as they are `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
+
 With conda
 ^^^^^^^^^^
 
@@ -35,16 +40,11 @@ With conda
 
         conda install -c conda-forge -c bioconda trtools
 
-Optionally install :code:`bcftools` which is used to prepare input files for TRTools by running:
+Optionally install :code:`bcftools` which is used to prepare input files for TRTools (and :code:`ART` which is used by simTR) by running:
 
 ::
 
-        conda install -c conda-forge -c bioconda bcftools
-
-Note: Bioconda only supports python versions 3.6-3.8 currently,
-so that is all TRTools supports in conda.
-If you are using a different version of python we support (3.5 or >= 3.9),
-install TRTools using pip.
+        conda install -c conda-forge -c bioconda bcftools art
 
 With pip
 ^^^^^^^^
@@ -77,6 +77,13 @@ Note: required package :code:`pybedtools` requires zlib. If you receive an error
 Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing.
 
 Note: if you will run or test :code:`simTR`, you will also need to install `ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_. The simTR tests will only run if the executable :code:`art_illumina` is found on your :code:`PATH`. If it has been installed, :code:`which art_illumina` should return a path.
+
+With Docker
+^^^^^^^^^^^
+
+Please refer to `the biocontainers registry for TRTools <https://biocontainers.pro/tools/trtools>`_ for all of our images. To use the most recent release, run the following command::
+
+        docker pull quay.io/biocontainers/trtools:latest
 
 Tools
 -----

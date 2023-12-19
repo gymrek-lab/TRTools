@@ -11,7 +11,7 @@ authors = [
 ]
 description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
-requires-python = ">=3.5"
+requires-python = ">=3.6"
 license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python :: 3.5",
