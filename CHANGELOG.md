@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.1.1](https://github.com/gymrek-lab/TRTools/compare/v5.1.0...v5.1.1) (2023-11-27)
+
+### Bug fixes
+
+* Remove stray files from source distribution
+
 ## [5.1.0](https://github.com/gymrek-lab/TRTools/compare/v5.0.2...v5.1.0) (2023-11-22)
 
 ### Features

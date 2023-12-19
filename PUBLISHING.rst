@@ -2,6 +2,7 @@ Publishing
 ----------
 
 Only maintainers of the trtools repository (see @gymrek-lab/trtools) may publish changes to the package.
+Only maintainers of the trtools repository (see @gymrek-lab/trtools) may publish changes to the package.
 If you are a community member and want to contribute new code, see the contributing section in the README.
 If you are a community member and have already contributed new code and want us to publish it
 now, please contact us (our contact info is in the README)
