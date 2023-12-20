@@ -23,17 +23,17 @@ exclude = ["trtools.testsupport.*", "doc"]
 
 [tool.poetry.dependencies]
 python = ">=3.6"
-importlib-metadata = ">=3.0.0"
-cyvcf2 = ">=0.20.5"
-matplotlib = ">=3.0.3"
-numpy = ">=1.17.3"
-pandas = ">=0.25.3"
-pybedtools = ">=0.8.0"
-pysam = ">=0.15.4"
-scikit-learn = ">=0.23.1"
-scipy = ">=1.3.3"
-statsmodels = ">=0.10.2"
-pyfaidx = ">=0.5.3"
+importlib-metadata = "3.0.0"
+cyvcf2 = "0.30.4"
+matplotlib = "3.1.2"
+numpy = "1.17.3"
+pandas = "0.25.3"
+pybedtools = "0.8.0"
+pysam = "0.15.4"
+scikit-learn = "0.23.1"
+scipy = "1.3.3"
+statsmodels = "0.10.2"
+pyfaidx = "0.5.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6.2.0"
