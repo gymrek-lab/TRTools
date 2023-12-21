@@ -11,12 +11,9 @@ Maintainers should reach consensus before going ahead with publishing changes.
 Note that the publishing to PyPI step below will require credentials
 that are only made available to core maintainers of TRTools.
 
-We use a simplified version of
-`git flow <http://web.archive.org/web/20200520162709/https://nvie.com/posts/a-successful-git-branching-model/>`_
-to maintain and publish trtools.
-We use the master branch as the default branch with the latest stable codebase.
+Note that we use the master branch as the default branch with the latest stable codebase.
 The builds from this branch are distributed to PyPI and conda.
-The develop branch contains new features that have yet to make their way into master.
+Other branches are used for development.
 
 New Dependencies
 ----------------
@@ -31,13 +28,14 @@ If you've added dependencies to trtools or its tests, those dependencies should 
 Publishing Steps
 ----------------
 
-Once changes have been made to develop that are ready to be published, first choose the new version number according to `semantic versioning <https://semver.org>`_. Then set up the environment you're going to publish TRTools from:
+Once changes have been made to a branch that are ready to be published, first choose the new version number according to `semantic versioning <https://semver.org>`_.
+Then set up the environment you're going to publish TRTools from:
 
 #. Create a clean environment.
 #. Install setuptools with version >= 40.8.0
 #. Additionally, install ``pytest``, ``wheel``, ``build``, and ``twine``
 #. Clone the `trtools repo <https://github.com/gymrek-lab/TRTools>`_
-#. Check out the develop branch
+#. Check out the branch with the new work
 #. Run :code:`pip install --upgrade pip && pip install -e .`
 
 Then go through the steps of merging the changes into the master branch:
@@ -46,7 +44,7 @@ Then go through the steps of merging the changes into the master branch:
 #. Update the version number listed in the :code:`pyproject.toml` file.
 #. Change the 'Unreleased Changes' section of :code:`RELEASE_NOTES.rst` to the new version number.
 #. Check if any changes have been made that have not yet been documented in the release notes. If so, document them.
-#. Submit a pull request from develop into master on the github website.
+#. Submit a pull request from this branch into master on the github website.
 #. If the code review checks pass, merge the pull request.
 #. Tag the merge commit with the package version in vX.Y.Z format. (For more details on tagging, see `below`)
 
