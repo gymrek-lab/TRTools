@@ -829,7 +829,7 @@ class TRRecord:
         """
         if self.vcfrecord.genotype is None:
             return None
-        return self.vcfrecord.genotype.array()
+        return self.vcfrecord.genotype.array().astype(int)
 
     def GetCalledSamples(self, strict: bool = True) -> Optional[np.ndarray]:
         """
@@ -1092,18 +1092,13 @@ class TRRecord:
         if idx_gts is None:
             return None
 
-        len_gts = np.empty(idx_gts.shape)
+        # store allele lengths in a numpy array
+        # and add fake alleles for -2 and -1 missing values
+        allele_lens = np.array([self.ref_allele_length, *self.alt_allele_lengths, -2, -1])
+
+        # copy repeats lengths and phasing for each sample
+        len_gts = allele_lens[idx_gts]
         len_gts[:, -1] = idx_gts[:, -1]
-
-        allele_lens = []
-        allele_lens.append(self.ref_allele_length)
-        allele_lens.extend(self.alt_allele_lengths)
-
-        for idx, allele_len in enumerate(allele_lens):
-            len_gts[:, :-1][idx_gts[:, :-1] == idx] = allele_len
-
-        len_gts[idx_gts == -1] = -1
-        len_gts[idx_gts == -2] = -2
 
         return len_gts
 
