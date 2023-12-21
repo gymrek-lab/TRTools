@@ -4,6 +4,7 @@
 Refactors:
 
 * Remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included.
+* Speed up for ``TRRecord.GetLengthGenotypes``. Also ``TRRecord.GetGenotypeIndicies`` now casts it output to an int dtype.
 
 5.1.1
 -----
