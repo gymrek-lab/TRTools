@@ -6,9 +6,7 @@ dependencies:
   - bioconda::art
   - conda-forge::pip
   - bioconda::bcftools
-  - conda-forge::pytest
-  - conda-forge::pytest-cov
   - conda-forge::python=3.8 # the lowest version of python that we formally support
-  - conda-forge::sphinx=3.0.4
-  - conda-forge::sphinx_rtd_theme
-  - conda-forge::sphinx-autodoc-typehints
+  - conda-forge::poetry==1.7.1
+  - pip:
+    - poetry-conda>=0.1.1

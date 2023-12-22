@@ -18,7 +18,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "mamba env create -y -n trtools --file .devcontainer/environment.yml && conda run -n trtools pip install --user -e .",
+	"postCreateCommand": "mamba env create -y -n trtools --file dev-env.yml && conda run -n trtools poetry install --with tests,docs",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -29,7 +29,7 @@
 				"python.defaultInterpreterPath": "/opt/conda/envs/trtools/bin/python",
 				"python.terminal.activateEnvironment": true,
 				"python.terminal.activateEnvInCurrentTerminal": true,
-				"python.venvFolders": ["/opt/conda/envs"],
+				"python.venvFolders": ["/home/vscode/.cache/pypoetry/virtualenvs"],
 				"terminal.integrated.environmentChangesRelaunch": true,
 				"terminal.integrated.hideOnStartup": "always"
 			}

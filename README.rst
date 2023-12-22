@@ -31,7 +31,7 @@ If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash,
 Install
 -------
 
-Note: TRTools supports Python versions 3.8 and up. We do not officially support python versions 3.6 and 3.7 as they are `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
+Note: TRTools supports Python versions 3.8 and up. We do not officially support python version 3.7 as it is `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
 
 With conda
 ^^^^^^^^^^
@@ -69,8 +69,11 @@ checkout the branch you're interested in, and run the following command from the
 
         git clone https://github.com/gymrek-lab/TRTools
         cd TRTools/
-        pip install --upgrade pip
-        pip install -e .
+        conda env create -y -n trtools --file dev-env.yml
+        conda activate trtools
+        poetry install --with tests,docs
+
+Now, whenever you want to run pytest or the TRTools code, you will need to run ``conda run -n trtools --no-capture-output poetry shell`` first
 
 Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
 
@@ -150,7 +153,6 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 1. Consider `discussing <https://github.com/gymrek-lab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
 #. Install TRTools from source `as above <From source_>`_.
-#. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_, :code:`sphinx>=3` and :code:`sphinx_rtd_theme`, in your environment.
 #. Fork the TRTools repository.
 #. Create a branch off of :code:`master` titled with the name of your feature.
 #. Make your changes. 
@@ -167,7 +169,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 #. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
-   * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+   * :code:`cd` to the root of the project and run :code:`poetry run pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
 
 #. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Title the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
