@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - bioconda::art
-  - conda-forge::pip
+  - conda-forge::pip>=23.0
   - bioconda::bcftools
   - conda-forge::python=3.8 # the lowest version of python that we formally support
   - conda-forge::poetry==1.7.1
