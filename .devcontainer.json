@@ -18,7 +18,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "mamba env create -y -n trtools --file dev-env.yml && conda run -n trtools poetry install --with tests,docs",
+	"postCreateCommand": "mamba env create -n trtools -f dev-env.yml && conda run -n trtools poetry install --with tests,docs",
 
 	// Configure tool-specific properties.
 	"customizations": {

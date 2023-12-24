@@ -69,11 +69,13 @@ checkout the branch you're interested in, and run the following command from the
 
         git clone https://github.com/gymrek-lab/TRTools
         cd TRTools/
-        conda env create -y -n trtools --file dev-env.yml
-        conda activate trtools
-        poetry install --with tests,docs
+        conda env create -n trtools-dev -f dev-env.yml
+        conda run -n trtools-dev poetry install --with tests,docs
 
-Now, whenever you want to run pytest or the TRTools code, you will need to run ``conda run -n trtools --no-capture-output poetry shell`` first
+Now, whenever you want to run pytest or the TRTools code, you will first need to run::
+
+        conda activate trtools-dev
+        poetry shell
 
 Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
 
