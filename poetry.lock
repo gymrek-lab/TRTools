@@ -12,6 +12,23 @@ files = [
 ]
 
 [[package]]
+name = "argcomplete"
+version = "3.1.2"
+description = "Bash tab completion for argparse"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "argcomplete-3.1.2-py3-none-any.whl", hash = "sha256:d97c036d12a752d1079f190bc1521c545b941fda89ad85d15afa909b4d1b9a99"},
+    {file = "argcomplete-3.1.2.tar.gz", hash = "sha256:d5d1e5efd41435260b8f85673b74ea2e883affcbec9f4230c582689e8e78251b"},
+]
+
+[package.dependencies]
+importlib-metadata = {version = ">=0.23,<7", markers = "python_version < \"3.8\""}
+
+[package.extras]
+test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
+
+[[package]]
 name = "babel"
 version = "2.14.0"
 description = "Internationalization utilities"
@@ -182,6 +199,23 @@ humanfriendly = ">=9.1"
 cron = ["capturer (>=2.4)"]
 
 [[package]]
+name = "colorlog"
+version = "6.8.0"
+description = "Add colours to the output of Python's logging module."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "colorlog-6.8.0-py3-none-any.whl", hash = "sha256:4ed23b05a1154294ac99f511fabe8c1d6d4364ec1f7fc989c7fb515ccc29d375"},
+    {file = "colorlog-6.8.0.tar.gz", hash = "sha256:fbb6fdf9d5685f2517f388fb29bb27d54e8654dd31f58bc2a3b217e967a95ca6"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+development = ["black", "flake8", "mypy", "pytest", "types-colorama"]
+
+[[package]]
 name = "coverage"
 version = "7.2.7"
 description = "Code coverage measurement for Python"
@@ -293,6 +327,17 @@ coloredlogs = "*"
 numpy = "*"
 
 [[package]]
+name = "distlib"
+version = "0.3.8"
+description = "Distribution utilities"
+optional = false
+python-versions = "*"
+files = [
+    {file = "distlib-0.3.8-py2.py3-none-any.whl", hash = "sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784"},
+    {file = "distlib-0.3.8.tar.gz", hash = "sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64"},
+]
+
+[[package]]
 name = "docutils"
 version = "0.17.1"
 description = "Docutils -- Python Documentation Utilities"
@@ -316,6 +361,21 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "filelock"
+version = "3.12.2"
+description = "A platform independent file lock."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
+    {file = "filelock-3.12.2.tar.gz", hash = "sha256:002740518d8aa59a26b0c76e10fb8c6e15eae825d34b6fdf670333fd7b938d81"},
+]
+
+[package.extras]
+docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "humanfriendly"
@@ -628,6 +688,44 @@ pyparsing = ">=2.0.1,<2.0.4 || >2.0.4,<2.1.2 || >2.1.2,<2.1.6 || >2.1.6"
 python-dateutil = ">=2.1"
 
 [[package]]
+name = "nox"
+version = "2023.4.22"
+description = "Flexible test automation."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "nox-2023.4.22-py3-none-any.whl", hash = "sha256:0b1adc619c58ab4fa57d6ab2e7823fe47a32e70202f287d78474adcc7bda1891"},
+    {file = "nox-2023.4.22.tar.gz", hash = "sha256:46c0560b0dc609d7d967dc99e22cb463d3c4caf54a5fda735d6c11b5177e3a9f"},
+]
+
+[package.dependencies]
+argcomplete = ">=1.9.4,<4.0"
+colorlog = ">=2.6.1,<7.0.0"
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
+packaging = ">=20.9"
+typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
+virtualenv = ">=14"
+
+[package.extras]
+tox-to-nox = ["jinja2", "tox (<4)"]
+
+[[package]]
+name = "nox-poetry"
+version = "1.0.3"
+description = "nox-poetry"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "nox_poetry-1.0.3-py3-none-any.whl", hash = "sha256:a2fffeb70ae81840479e68287afe1c772bf376f70f1e92f99832a20b3c64d064"},
+    {file = "nox_poetry-1.0.3.tar.gz", hash = "sha256:dc7ecbbd812a333a0c0b558f57e5b37f7c12926cddbcecaf2264957fd373824e"},
+]
+
+[package.dependencies]
+nox = ">=2020.8.22"
+packaging = ">=20.9"
+tomlkit = ">=0.7"
+
+[[package]]
 name = "numpy"
 version = "1.17.3"
 description = "NumPy is the fundamental package for array computing with Python."
@@ -719,6 +817,24 @@ six = "*"
 
 [package.extras]
 test = ["pytest", "pytest-cov", "scipy"]
+
+[[package]]
+name = "platformdirs"
+version = "4.0.0"
+description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "platformdirs-4.0.0-py3-none-any.whl", hash = "sha256:118c954d7e949b35437270383a3f2531e99dd93cf7ce4dc8340d3356d30f173b"},
+    {file = "platformdirs-4.0.0.tar.gz", hash = "sha256:cb633b2bcf10c51af60beb0ab06d2f1d69064b43abf4c185ca6b28865f3f9731"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.7.1", markers = "python_version < \"3.8\""}
+
+[package.extras]
+docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.1)", "sphinx-autodoc-typehints (>=1.24)"]
+test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)"]
 
 [[package]]
 name = "pluggy"
@@ -1277,6 +1393,17 @@ files = [
 ]
 
 [[package]]
+name = "tomlkit"
+version = "0.12.3"
+description = "Style preserving TOML library"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tomlkit-0.12.3-py3-none-any.whl", hash = "sha256:b0a645a9156dc7cb5d3a1f0d4bab66db287fcb8e0430bdd4664a095ea16414ba"},
+    {file = "tomlkit-0.12.3.tar.gz", hash = "sha256:75baf5012d06501f07bee5bf8e801b9f343e7aac5a92581f20f80ce632e6b5a4"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1305,6 +1432,27 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "virtualenv"
+version = "20.25.0"
+description = "Virtual Python Environment builder"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "virtualenv-20.25.0-py3-none-any.whl", hash = "sha256:4238949c5ffe6876362d9c0180fc6c3a824a7b12b80604eeb8085f2ed7460de3"},
+    {file = "virtualenv-20.25.0.tar.gz", hash = "sha256:bf51c0d9c7dd63ea8e44086fa1e4fb1093a31e963b86959257378aef020e1f1b"},
+]
+
+[package.dependencies]
+distlib = ">=0.3.7,<1"
+filelock = ">=3.12.2,<4"
+importlib-metadata = {version = ">=6.6", markers = "python_version < \"3.8\""}
+platformdirs = ">=3.9.1,<5"
+
+[package.extras]
+docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
+test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
+
+[[package]]
 name = "zipp"
 version = "3.15.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -1321,5 +1469,5 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.7.1"
-content-hash = "c5165780229a5e9efda3338a5b4e64dc56165f1696f41584879ac09c946073ec"
+python-versions = ">=3.7.1,<4.0"
+content-hash = "49df2084d032774a11b78a8ae91e0b564e48f882967802f9acbc20a39fe6705b"
