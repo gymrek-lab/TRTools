@@ -63,8 +63,12 @@ Repository = "https://github.com/gymrek-lab/trtools.git"
 Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
-addopts = "-p trtools.testsupport.dataloader"
-python_files = "test_*.py"
+addopts = """
+--ignore noxfile.py
+-p trtools.testsupport.dataloader
+--cov=. --cov-report term-missing --cov-fail-under 90
+--doctest-modules
+"""
 
 [tool.pylint.BASIC]
 function-naming-style = "PascalCase"

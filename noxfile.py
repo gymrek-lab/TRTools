@@ -1,6 +1,5 @@
 """Nox sessions."""
 import os
-import shutil
 from pathlib import Path
 
 import nox
@@ -40,6 +39,7 @@ if os.getenv("CONDA_EXE"):
         session.conda_install(
             "numpy",
             "pytest",
+            "pytest-cov",
             channel="conda-forge",
         )
         session.conda_install(
@@ -49,7 +49,7 @@ if os.getenv("CONDA_EXE"):
         )
         install_handle_python_numpy(session)
         session.run(
-           "pytest", "--doctest-modules", *session.posargs
+           "pytest", *session.posargs
         )
         session.run("./test/cmdline_tests.sh")
 
@@ -58,9 +58,9 @@ else:
     @session(python=python_versions)
     def tests(session: Session) -> None:
         """Run the test suite."""
-        session.install("pytest")
+        session.install("pytest", "pytest-cov")
         install_handle_python_numpy(session)
         session.run(
-            "pytest", "--doctest-modules", *session.posargs
+            "pytest", *session.posargs
         )
         session.run("./test/cmdline_tests.sh")

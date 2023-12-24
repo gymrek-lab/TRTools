@@ -1,5 +1,7 @@
 [run]
-omit = *test*
+omit = 
+    *test*
+    noxfile.py
 
 [report]
 exclude_lines =
