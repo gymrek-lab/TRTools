@@ -30,6 +30,7 @@ coverage.xml
 xx-*
 test-*
 c57*
+.nox/
 
 # Build files
 *egg-info*

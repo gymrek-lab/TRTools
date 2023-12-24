@@ -23,7 +23,7 @@ exclude = ["trtools.testsupport.*", "doc"]
 
 [tool.poetry.dependencies]
 python = ">=3.7.1,<4.0"
-importlib-metadata = {version = ">=3.0.0", python = "<=3.7"}
+importlib-metadata = {version = ">=3.0.0", python = "3.7"}
 cyvcf2 = ">=0.30.4"
 matplotlib = ">=3.1.2"
 numpy = ">=1.17.3"
@@ -64,6 +64,7 @@ Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
 addopts = "-p trtools.testsupport.dataloader"
+python_files = "test_*.py"
 
 [tool.pylint.BASIC]
 function-naming-style = "PascalCase"
