@@ -15,12 +15,7 @@ Other branches are used for development.
 
 New Dependencies
 ----------------
-If you've added dependencies to trtools or its tests, those dependencies should be listed in
-
-  * pyproject.toml
-  * the .readthedocs_conda_env.yml file in the root of the repository that's used for building
-    TRTool's Read The Docs webpage.
-  * the appropriate section of the bioconda recipe (see below)
+If you've added dependencies to trtools or its tests, those dependencies should be listed in our pyproject.toml file and the appropriate section of the bioconda recipe (see below).
 
 Publishing Steps
 ----------------
