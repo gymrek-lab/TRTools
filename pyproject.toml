@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -38,8 +38,6 @@ pyfaidx = ">=0.5.6"
 [tool.poetry.group.tests.dependencies]
 pytest = ">=6.2.0"
 pytest-cov = ">=3.0.0"
-nox = ">=2023.04.22"
-nox-poetry = ">=1.0.3"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = ">=3.0.4"
