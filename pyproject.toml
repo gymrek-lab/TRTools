@@ -64,6 +64,7 @@ Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
 addopts = """
+--ignore noxfile.py
 -p trtools.testsupport.dataloader
 --doctest-modules
 """
