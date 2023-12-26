@@ -67,7 +67,7 @@ From source
 To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_,
 checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
 
-        git clone https://github.com/gymrek-lab/TRTools
+        git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
         conda env create -n trtools-dev -f dev-env.yml
         conda run -n trtools-dev poetry install --with tests,docs
@@ -172,8 +172,9 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
    * :code:`cd` to the root of the project and run :code:`poetry run pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+   * :code:`cd` to the root of the project and run :code:`nox` to make sure that the tests pass on all versions of python that we support.
 
-#. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Title the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
+#. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Prefix the title of the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
 Publishing
