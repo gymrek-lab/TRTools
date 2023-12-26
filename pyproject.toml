@@ -70,6 +70,17 @@ addopts = """
 --doctest-modules
 """
 
+[tool.coverage.run]
+omit = [
+    ".nox/*",
+    "noxfile.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+]
+
 [tool.pylint.BASIC]
 function-naming-style = "PascalCase"
 method-naming-style = "PascalCase"
