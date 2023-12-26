@@ -14,6 +14,18 @@ nox.options.sessions = (
     "tests",
 )
 
+# what percentage of the code must be covered?
+# set to None to disable coverage testing
+COVERAGE_REQUIREMENT = 94
+
+cov_cli_args = []
+if COVERAGE_REQUIREMENT is not None:
+    cov_cli_args = [
+        "--cov=.",
+        "--cov-report=term-missing",
+        "--cov-fail-under=" + str(COVERAGE_REQUIREMENT),
+    ]
+
 
 def install_handle_python_numpy(session):
     """
@@ -49,9 +61,9 @@ if os.getenv("CONDA_EXE"):
         )
         install_handle_python_numpy(session)
         session.run(
-           "pytest", *session.posargs
+           "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
-        session.run("./test/cmdline_tests.sh")
+        session.run("./test/cmdline_tests.sh", external=True)
 
 else:
 
@@ -61,6 +73,6 @@ else:
         session.install("pytest", "pytest-cov")
         install_handle_python_numpy(session)
         session.run(
-            "pytest", *session.posargs
+            "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
-        session.run("./test/cmdline_tests.sh")
+        session.run("./test/cmdline_tests.sh", external=True)
