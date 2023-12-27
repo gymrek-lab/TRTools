@@ -27,12 +27,15 @@ if COVERAGE_REQUIREMENT is not None:
     ]
 
 
-def install_handle_python_numpy(session):
+def install_handle_python(session):
     """
-    handle incompatibilities with python and numpy versions
+    handle incompatibilities between python and other packages
     see https://github.com/cjolowicz/nox-poetry/issues/1116
     """
-    if session._session.python == "3.11":
+    # install the latest versions of all dependencies for py3.9+
+    # but install the locked versions for < py3.9 to ensure some stability in the CI and
+    # help us understand when we need to bump our version constraints
+    if session._session.python in ("3.9", "3.10", "3.11"):
         session._session.install(".")
     else:
         session.install(".")
@@ -59,7 +62,7 @@ if os.getenv("CONDA_EXE"):
             "bcftools",
             channel="bioconda",
         )
-        install_handle_python_numpy(session)
+        install_handle_python(session)
         session.run(
            "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
