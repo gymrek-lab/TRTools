@@ -29,37 +29,45 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v3
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: ${{ matrix.python }}
+          activate-environment: trtools
+          miniforge-variant: Mambaforge
+          auto-activate-base: false
+          miniforge-version: latest
+          channel-priority: strict
+          use-mamba: true
 
-      - name: Upgrade pip
+      - name: Get Date
+        id: get-date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Cache Conda env
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CONDA }}/envs
+          key:
+            conda-${{ runner.os }}--${{ runner.arch }}--${{ steps.get-date.outputs.today }}-${{ hashFiles('dev-env.yml') }}-${{ env.CACHE_NUMBER }}
+        env:
+          # Increase this value to reset cache if dev-env.yml has not changed
+          CACHE_NUMBER: 0
+        id: cache
+
+      - name: Install dev environment
+        run:
+          mamba env update -n trtools -f dev-env.yml
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Try to build trtools
+        shell: bash -el {0}
         run: |
-          pip install --constraint=.github/workflows/constraints.txt pip
-          pip --version
-      - name: Upgrade pip in virtual environments
-        shell: python
+          poetry build --format=wheel --no-ansi
+
+      - name: Run tests with nox
+        shell: bash -el {0}
         run: |
-          import os
-          import pip
-          with open(os.environ["GITHUB_ENV"], mode="a") as io:
-              print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
-      - name: Install Poetry
-        run: |
-          if [ "${{ matrix.python }}" = "3.7" ]; then
-            pipx install --python python${{ matrix.python }} poetry
-          else
-            pipx install --python python${{ matrix.python }} --pip-args=--constraint=.github/workflows/constraints.txt poetry
-          fi
-          poetry --version
-      - name: Install Nox
-        run: |
-          pipx install --python python${{ matrix.python }} --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
-          nox --version
-      - name: Run Nox
-        run: |
-          nox --python=${{ matrix.python }}
+          nox --verbose --python=${{ matrix.python }}

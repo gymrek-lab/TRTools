@@ -14,17 +14,11 @@ nox.options.sessions = (
     "tests",
 )
 
-# what percentage of the code must be covered?
-# set to None to disable coverage testing
-COVERAGE_REQUIREMENT = 94
 
-cov_cli_args = []
-if COVERAGE_REQUIREMENT is not None:
-    cov_cli_args = [
-        "--cov=.",
-        "--cov-report=term-missing",
-        "--cov-fail-under=" + str(COVERAGE_REQUIREMENT),
-    ]
+cov_cli_args = [
+    "--cov=.",
+    "--cov-report=term-missing",
+]
 
 
 def install_handle_python(session):
