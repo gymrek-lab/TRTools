@@ -19,7 +19,15 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-exclude = ["trtools.testsupport.*", "doc"]
+exclude = [
+    "trtools/testsupport/*",
+    "doc",
+    "example-files",
+    "trtools/*/*.rst",
+    "trtools/*/Example_Files",
+    "trtools/dumpSTR/filter_files",
+    "trtools/qcSTR/images",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.7.1,<4.0"
