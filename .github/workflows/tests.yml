@@ -80,6 +80,7 @@ jobs:
         if: matrix.session == 'coverage'
         shell: bash -el {0}
         run: |
+          export NOXSESSION=tests
           # check that code coverage is not lower than specific percent
           nox --verbose --python=${{ matrix.python }} -- --cov=. --cov-report=term-missing --cov-fail-under=94
 
