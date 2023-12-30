@@ -13,8 +13,6 @@ description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
 license = "MIT"
 classifiers = [
-    "Programming Language :: Python :: 3.8",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
