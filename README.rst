@@ -61,6 +61,8 @@ Then run:
 
 Note: TRTools installation may fail for pip version 10.0.1, hence the need to upgrade pip first
 
+Note: if you will run or test :code:`simTR`, you will also need to install `ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_. The simTR tests will only run if the executable :code:`art_illumina` is found on your :code:`PATH`. If it has been installed, :code:`which art_illumina` should return a path.
+
 From source
 ^^^^^^^^^^^
 
@@ -69,19 +71,17 @@ checkout the branch you're interested in, and run the following command from the
 
         git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
-        conda env create -n trtools-dev -f dev-env.yml
-        conda run -n trtools-dev poetry install --with tests,docs
+        conda env create -n trtools -f dev-env.yml
+        conda run -n trtools poetry install
 
-Now, whenever you want to run pytest or the TRTools code, you will first need to run::
+Now, whenever you'd like to run/import pytest or TRTools, you will first need to activate both environments::
 
-        conda activate trtools-dev
+        conda activate trtools
         poetry shell
 
 Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
 
 Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing.
-
-Note: if you will run or test :code:`simTR`, you will also need to install `ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_. The simTR tests will only run if the executable :code:`art_illumina` is found on your :code:`PATH`. If it has been installed, :code:`which art_illumina` should return a path.
 
 With Docker
 ^^^^^^^^^^^
