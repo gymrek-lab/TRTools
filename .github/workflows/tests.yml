@@ -8,22 +8,24 @@ concurrency:
 
 jobs:
   tests:
-    name: Test with py${{ matrix.python }} / ${{ matrix.os }}
+    name: ${{ matrix.session }} / ${{ matrix.python }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { python: "3.7", os: "ubuntu-latest" }
-          - { python: "3.8", os: "ubuntu-latest" }
-          - { python: "3.9", os: "ubuntu-latest" }
-          - { python: "3.10", os: "ubuntu-latest" }
-          - { python: "3.11", os: "ubuntu-latest" }
-          # - { python: "3.11", os: "windows-latest" }
-          - { python: "3.9", os: "macos-latest" }
+          - { python: "3.7", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.8", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.9", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.10", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.11", os: "ubuntu-latest", session: "tests" }
+          # - { python: "3.11", os: "windows-latest", session: "tests" }
+          - { python: "3.8", os: "macos-latest", session: "tests" }
+          - { python: "3.8", os: "ubuntu-latest", session: "dist-size" }
+          - { python: "3.8", os: "ubuntu-latest", session: "coverage" }
 
     env:
-      NOXSESSION: tests
+      NOXSESSION: ${{ matrix.session }}
       FORCE_COLOR: "1"
       PRE_COMMIT_COLOR: "always"
 
@@ -65,57 +67,24 @@ jobs:
       - name: Try to build trtools
         shell: bash -el {0}
         run: |
-          poetry build --format=wheel --no-ansi
+          poetry build --no-ansi
+
+      - name: Check distribution size
+        if: matrix.session == 'dist-size'
+        run: |
+          du -csh dist/*
+          # check that the generated dist/ directory does not exceed 0.3 MB
+          [ $(du -b dist | cut -f1) -lt 300000 ]
+
+      - name: Check code coverage
+        if: matrix.session == 'coverage'
+        shell: bash -el {0}
+        run: |
+          # check that code coverage is not lower than specific percent
+          poetry run pytest --cov=. --cov-report=term-missing --cov-fail-under=94
 
       - name: Run tests with nox
+        if: matrix.session == 'tests'
         shell: bash -el {0}
         run: |
           nox --verbose --python=${{ matrix.python }}
-
-  coverage:
-    name: Code coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: trtools
-          miniforge-variant: Mambaforge
-          auto-activate-base: false
-          miniforge-version: latest
-          channel-priority: strict
-          use-mamba: true
-
-      - name: Get Date
-        id: get-date
-        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Cache Conda env
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CONDA }}/envs
-          key:
-            conda-${{ runner.os }}--${{ runner.arch }}--${{ steps.get-date.outputs.today }}-${{ hashFiles('dev-env.yml') }}-${{ env.CACHE_NUMBER }}
-        env:
-          # Increase this value to reset cache if dev-env.yml has not changed
-          CACHE_NUMBER: 0
-        id: cache
-
-      - name: Install dev environment
-        run:
-          mamba env update -n trtools -f dev-env.yml
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: Install package with poetry
-        shell: bash -el {0}
-        run: |
-          poetry install --with docs,tests
-
-      - name: Run pytest with coverage requirements this time
-        shell: bash -el {0)
-        run: |
-          poetry run pytest --cov=. --cov-report=term-missing --cov-fail-under=94
