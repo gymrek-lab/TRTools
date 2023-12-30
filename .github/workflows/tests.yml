@@ -81,7 +81,7 @@ jobs:
         shell: bash -el {0}
         run: |
           # check that code coverage is not lower than specific percent
-          poetry run pytest --cov=. --cov-report=term-missing --cov-fail-under=94
+          nox --verbose --python=${{ matrix.python }} -- --cov=. --cov-report=term-missing --cov-fail-under=94
 
       - name: Run tests with nox
         if: matrix.session == 'tests'
