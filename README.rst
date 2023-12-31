@@ -31,7 +31,7 @@ If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash,
 Install
 -------
 
-Note: TRTools supports Python versions 3.8 and up. We do not officially support python version 3.7 as it is `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
+Note: TRTools supports Python versions 3.8 and up. We do not officially support python version 3.7 as it is `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with it from previous testing results.
 
 With conda
 ^^^^^^^^^^
@@ -66,11 +66,13 @@ Note: if you will run or test :code:`simTR`, you will also need to install `ART 
 From source
 ^^^^^^^^^^^
 
-To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_,
-checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
+To install from source (only recommended for development) clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
 
         git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
+
+Now, create 1) a conda environment with our development tools and 2) a virtual environment with our dependencies and an editable install of TRTools::
+
         conda env create -n trtools -f dev-env.yml
         conda run -n trtools poetry install
 
