@@ -40,7 +40,6 @@ jobs:
           miniforge-variant: Mambaforge
           auto-activate-base: false
           miniforge-version: latest
-          channel-priority: strict
           use-mamba: true
 
       - name: Get Date
