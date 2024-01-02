@@ -46,15 +46,15 @@ if os.getenv("CONDA_EXE"):
     def tests(session: Session) -> None:
         """Run the test suite."""
         session.conda_install(
+            "art",
+            "bcftools==1.19",
+            channel="bioconda",
+        )
+        session.conda_install(
             "numpy",
             "pytest",
             "pytest-cov",
             channel="conda-forge",
-        )
-        session.conda_install(
-            "art",
-            "bcftools==1.19",
-            channel="bioconda",
         )
         install_handle_python(session)
         session.run("bcftools", "--version")
