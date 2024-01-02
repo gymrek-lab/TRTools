@@ -53,7 +53,7 @@ if os.getenv("CONDA_EXE"):
         )
         session.conda_install(
             "art",
-            "bcftools",
+            "bcftools==1.19",
             channel="bioconda",
         )
         install_handle_python(session)
