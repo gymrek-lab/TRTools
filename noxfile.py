@@ -57,7 +57,6 @@ if os.getenv("CONDA_EXE"):
             channel="conda-forge",
         )
         install_handle_python(session)
-        session.run("bcftools", "--version")
         session.run(
            "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
