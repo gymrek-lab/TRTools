@@ -179,6 +179,7 @@ echo ${FILE1} > ${TMPDIR}/vcf.list
 echo ${FILE2} >> ${TMPDIR}/vcf.list
 echo ${FILE3} >> ${TMPDIR}/vcf.list
 runcmd_pass "mergeSTR --vcfs-list ${TMPDIR}/vcf.list --out ${TMPDIR}/test_merge_hipstr_list --vcftype hipstr"
+runcmd_fail "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --vcfs-list ${TMPDIR}/vcf.list --out ${TMPDIR}/test_merge_hipstr_list --vcftype hipstr"
 
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq"
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12891_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/stats_eh --numcalled"

@@ -586,6 +586,10 @@ def main(args: Any) -> int:
         common.WARNING("Error: you must specify either --vcfs or --vcfs-list")
         return 1
 
+    if args.vcfs is not None and args.vcfs_list is not None:
+        common.WARNING("Error: you cannot specify both --vcfs and --vcfs-list")
+        return 1
+
     if args.vcfs is not None:
         filenames = args.vcfs.split(",")
     else:
