@@ -537,7 +537,10 @@ def getargs() -> Any:  # pragma: no cover
     req_group = parser.add_argument_group("Required arguments")
     req_group.add_argument("--vcfs",
                            help="Comma-separated list of VCF files to merge (must be sorted, bgzipped and indexed)",
-                           type=str, required=True)
+                           type=str, required=False)
+    req_group.add_argument("--vcfs-list",
+                           help="File containing list of VCF files to merge. Must specify either --vcfs or --vcfs-list",
+                           type=str, required=False)
     req_group.add_argument("--out", help="Prefix to name output files", type=str, required=True)
     req_group.add_argument("--vcftype", help="Options=%s" % [str(item) for item in trh.VcfTypes.__members__], type=str,
                            default="auto")
@@ -579,7 +582,15 @@ def main(args: Any) -> int:
                        "directory".format(args.out))
         return 1
 
-    filenames = args.vcfs.split(",")
+    if args.vcfs is None and args.vcfs_list is None:
+        common.WARNING("Error: you must specify either --vcfs or --vcfs-list")
+        return 1
+
+    if args.vcfs is not None:
+        filenames = args.vcfs.split(",")
+    else:
+        filenames = [item.strip() for item in open(args.vcfs_list, "r").readlines()]
+        
     ### Check and Load VCF files ###
     vcfreaders = utils.LoadReaders(filenames, checkgz=True)
     if vcfreaders is None:

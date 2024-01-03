@@ -171,6 +171,15 @@ FILE2=${EXDATADIR}/NA12891_chr21_popstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_popstr.sorted.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_popstr --vcftype popstr"
 
+# Test mergeSTR on a file with list of VCFs
+FILE1=${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz
+FILE2=${EXDATADIR}/NA12891_chr21_hipstr.sorted.vcf.gz
+FILE3=${EXDATADIR}/NA12892_chr21_hipstr.sorted.vcf.gz
+echo ${FILE1} > ${TMPDIR}/vcf.list
+echo ${FILE2} >> ${TMPDIR}/vcf.list
+echo ${FILE3} >> ${TMPDIR}/vcf.list
+runcmd_pass "mergeSTR --vcfs-list ${TMPDIR}/vcf.list --out ${TMPDIR}/test_merge_hipstr_list --vcftype hipstr"
+
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --afreq"
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12891_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/stats_eh --numcalled"
 runcmd_pass "statSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/stats_gangstr --numcalled --mean"
