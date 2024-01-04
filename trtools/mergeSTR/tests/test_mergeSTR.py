@@ -52,6 +52,17 @@ def test_FileList(args, mrgvcfdir, tmpdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
     args.vcftype = "gangstr"
+
+    # Run with files input to vcfs
+    nolist_outfile = str(tmpdir / "test-gangstr")
+    args.out = nolist_outfile
+    args.vcfs = fname1 + "," + fname2
+    args.vcfs_list = None
+    assert main(args)==0
+
+    # Run with files input as list
+    list_outfile = str(tmpdir / "test-gangstr-list")
+    args.out = list_outfile
     listfile = str(tmpdir / "test.list")
     f = open(listfile, "w")
     f.write(fname1+"\n")
@@ -60,6 +71,7 @@ def test_FileList(args, mrgvcfdir, tmpdir):
     args.vcfs_list = listfile
     args.vcfs = None
     assert main(args)==0
+    assert_same_vcf(nolist_outfile + ".vcf", list_outfile + ".vcf")
 
 # Test right files or directory - GangSTR
 def test_GangSTRRightFile(args, mrgvcfdir):
