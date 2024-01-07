@@ -27,9 +27,10 @@ Publishing Steps
 
 To publish a new version of trtools:
 
-1. First, locate the most recent PR prefixed "chore(main)" created by our Github actions bot
-2. List a maintainer of our repository (@gymrek-lab/trtools) as a reviewer of the PR and ask them to merge it
-3. The bot will automatically create a new version on PyPI and tag a release on Github
+1. First, locate the most recent *release PR* prefixed "chore(main)" created by our Github actions bot
+2. List a maintainer of our repository (@gymrek-lab/trtools) as a reviewer of the PR
+3. The maintainer may edit the auto-generated text-body of the PR release to incorporate additional details from the underlying PRs, if needed
+4. Once merged, the bot will automatically create a new version on PyPI and tag a release on Github
 
 Lastly, the change needs to be published to bioconda.
 
