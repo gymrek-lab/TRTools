@@ -184,6 +184,8 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Prefix the title of the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
+   * If you are reviewing a pull request, please double-check that the PR addresses each item in `our PR checklist <https://github.com/gymrek-lab/TRTools/blob/master/.github/pull_request_template.md>`_
+
 Publishing
 ----------
 If you are a TRTools maintainer and wish to publish changes and distribute them to PyPI and bioconda, please see PUBLISHING.rst in the root of the git repo.

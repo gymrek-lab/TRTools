@@ -26,7 +26,8 @@ To run mergeSTR use the following command::
 
 Required Parameters:
 
-* :code:`--vcf <VCF>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. (See `Instructions on Compressing and Indexing VCF files`_ below)
+* :code:`--vcfs <VCFs>`: Comma-separated list of VCF files to merge. All must have been created by the same TR genotyper. Must be bgzipped, sorted, and indexed. (See `Instructions on Compressing and Indexing VCF files`_ below)
+* :code:`--vcfs-list <FILE>`: As an alternative to :code:`--vcfs`, you can provide a file with a list of bgzipped/sorted/indexed VCF files (one filename per line) to merge. 
 * :code:`--vcftype <string>`: Type of VCF files being merged. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--out <string>`: prefix to name output files
 
