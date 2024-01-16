@@ -1,5 +1,5 @@
 [run]
-omit = *test*,setup.py
+omit = *test*
 
 [report]
 exclude_lines =
