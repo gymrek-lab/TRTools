@@ -54,4 +54,14 @@ simTR = "trtools.simTR:run"
 Homepage = "https://trtools.readthedocs.org"
 Documentation = "https://trtools.readthedocs.org"
 Repository = "https://github.com/gymrek-lab/trtools.git"
-Changelog = "https://github.com/gymrek-lab/trtools/blob/master/RELEASE_NOTES.rst"
+Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
+
+[tool.pytest.ini_options]
+addopts = "-p trtools.testsupport.dataloader"
+
+[tool.pylint.BASIC]
+function-naming-style = "PascalCase"
+method-naming-style = "PascalCase"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "invalid-name" # not interested in module naming conventions

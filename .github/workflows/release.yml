@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v3
+        id: release
+        with:
+          release-type: python
+          package-name: trtools
+
+      - uses: actions/checkout@v3
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Upgrade pip
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          pip install --upgrade pip
+          pip install build
+          pip --version
+
+      - name: Build package
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          python -m build
+
+      - name: Publish package on PyPI
+        if: ${{ steps.release.outputs.release_created }}
+        uses: pypa/gh-action-pypi-publish@v1.5.0
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
