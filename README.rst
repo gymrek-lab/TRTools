@@ -161,9 +161,9 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Create a branch off of :code:`master` titled with the name of your feature.
 #. Make your changes. 
 #. If you need to add a dependency or update the version of a dependency, you can use the :code:`poetry add` command.
-    You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. Don't worry if you're not sure at first, since you can (and should!) always update it later. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
 
-    Afterwards, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`.
+    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. Don't worry if you're not sure at first, since you can (and should!) always update it later. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
+    * Afterwards, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`.
 
 #. Document your changes.
 
@@ -183,6 +183,8 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 #. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Prefix the title of the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
+
+   * If you are reviewing a pull request, please double-check that the PR addresses each item in `our PR checklist <https://github.com/gymrek-lab/TRTools/blob/master/.github/pull_request_template.md>`_
 
 Publishing
 ----------

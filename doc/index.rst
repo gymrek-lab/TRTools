@@ -23,5 +23,6 @@ Table of Contents
    UTILITIES
    CALLERS
    LIBRARY
+   Release Notes <https://github.com/gymrek-lab/TRTools/blob/master/CHANGELOG.md>
    site_indices
 

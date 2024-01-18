@@ -21,7 +21,7 @@ jobs:
           - { python: "3.11", os: "ubuntu-latest", session: "tests" }
           # - { python: "3.11", os: "windows-latest", session: "tests" }
           - { python: "3.8", os: "macos-latest", session: "tests" }
-          - { python: "3.8", os: "ubuntu-latest", session: "dist-size" }
+          - { python: "3.8", os: "ubuntu-latest", session: "size" }
           - { python: "3.8", os: "ubuntu-latest", session: "coverage" }
 
     env:
@@ -69,10 +69,12 @@ jobs:
           poetry build --no-ansi
 
       - name: Check distribution size
-        if: matrix.session == 'dist-size'
+        if: matrix.session == 'size'
         run: |
           du -csh dist/*
           # check that the generated dist/ directory does not exceed 0.3 MB
+          # if this check fails, it's because you forgot to list large files in the "exclude" section of our pyproject.toml
+          # https://python-poetry.org/docs/pyproject/#include-and-exclude
           [ $(du -b dist | cut -f1) -lt 300000 ]
 
       - name: Check code coverage
