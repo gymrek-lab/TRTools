@@ -1544,6 +1544,7 @@ class TRRecordHarmonizer:
     def __init__(self, vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto"):
         self.vcffile = vcffile
         self.vcftype = InferVCFType(vcffile, vcftype)
+        self._record_idx = None
 
     def MayHaveImpureRepeats(self) -> bool:
         """
@@ -1619,6 +1620,16 @@ class TRRecordHarmonizer:
 
     def __next__(self) -> TRRecord:
         """Iterate over TRRecord produced from the underlying vcf."""
-        return HarmonizeRecord(self.vcftype, next(self.vcffile))
+        if self._record_idx is None:
+            self._record_idx = 1
+        self._record_idx += 1
+        try:
+            record = next(self.vcffile)
+        except Exception:
+            raise ValueError(
+                f"Encountered error when parsing the {self._record_idx}th tandem "
+                "repeat in the provided VCF. Check that it is properly formatted."
+            )
+        return HarmonizeRecord(self.vcftype, record)
 
 # TODO check all users of this class for new options
