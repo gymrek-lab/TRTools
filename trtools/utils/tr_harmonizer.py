@@ -1629,7 +1629,7 @@ class TRRecordHarmonizer:
             raise
         except Exception:
             raise ValueError(
-                f"Unable to parse the {self._record_idx}th tandem "
+                "Unable to parse the "+str(self._record_idx)+"th tandem "
                 "repeat in the provided VCF. Check that it is properly formatted."
             )
         return HarmonizeRecord(self.vcftype, record)
