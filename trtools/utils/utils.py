@@ -318,7 +318,11 @@ def GetHardyWeinbergBinomialTest(allele_freqs, genotype_counts):
         if gt[1] not in allele_freqs.keys():
             return np.nan
         if gt[0] == gt[1]: num_hom += genotype_counts[gt]
-    return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
+    try:
+        return scipy.stats.binom_test(num_hom, n=total_samples, p=exp_hom_frac)
+    except AttributeError:
+        # binom_test was deprecated in favor of binomtest in scipy 1.12.0
+        return scipy.stats.binomtest(num_hom, n=total_samples, p=exp_hom_frac).pvalue
 
 def GetHomopolymerRun(seq):
     r"""Compute the maximum homopolymer run length in a sequence
