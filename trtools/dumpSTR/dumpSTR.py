@@ -1201,6 +1201,13 @@ def main(args):
                 return 1
             else:
                 raise te
+        except ValueError as ve:
+            message = ve.args[0]
+            if 'properly formatted' in message:
+                common.WARNING("Could not parse VCF.\n" + message)
+                return 1
+            else:
+                raise ve
         if args.verbose:
             common.MSG("Processing %s:%s"%(record.chrom, record.pos))
         record_counter += 1
