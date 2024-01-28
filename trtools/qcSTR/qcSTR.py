@@ -501,7 +501,24 @@ def main(args):
 
     # read the vcf
     numrecords = 0
-    for trrecord in harmonizer:
+    while True:
+        try:
+            trrecord = next(harmonizer)
+        except StopIteration: break
+        except TypeError as te:
+            message = te.args[0]
+            if 'missing' in message and 'mandatory' in message:
+                common.WARNING("Could not parse VCF.\n" + message)
+                return 1
+            else:
+                raise te
+        except ValueError as ve:
+            message = ve.args[0]
+            if 'properly formatted' in message:
+                common.WARNING("Could not parse VCF.\n" + message)
+                return 1
+            else:
+                raise ve
         if args.numrecords is not None and numrecords >= args.numrecords: break
         if args.period is not None and len(trrecord.motif) != args.period: continue
 
