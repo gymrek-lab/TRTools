@@ -6,7 +6,7 @@ import ast
 import os
 
 import numpy as np
-from pybedtools import BedTool
+from pysam import TabixFile, asBed
 
 import trtools.utils.common as common
 import trtools.utils.tr_harmonizer as trh
@@ -263,7 +263,7 @@ def create_region_filter(name, filename):
                 common.WARNING("Could not find tabix index %s.tbi"%filename)
                 self.pass_checks = False
                 return
-            self.regions = BedTool(filename)
+            self.regions = TabixFile(filename, parser=asBed())
         def __call__(self, record: trh.TRRecord):
             interval = "%s:%s-%s"%(record.chrom, record.pos,
                                    record.pos + record.ref_allele_length)
@@ -272,10 +272,24 @@ def create_region_filter(name, filename):
                 interval2 = interval.replace("chr","")
             else: interval2 = "chr"+interval
             # Try with and without chr
-            tb1 = self.regions.tabix_intervals(interval)
-            if tb1.count() > 0: return self.name
-            tb2 = self.regions.tabix_intervals(interval2)
-            if tb2.count() > 0: return self.name
+            # A ValueError or StopIteration indicates that there weren't any matching
+            # regions within the given interval
+            try:
+                next(self.regions.fetch(region=interval, multiple_iterators=True))
+            except ValueError:
+                pass
+            except StopIteration:
+                pass
+            else:
+                return self.name
+            try:
+                next(self.regions.fetch(region=interval2, multiple_iterators=True))
+            except ValueError:
+                pass
+            except StopIteration:
+                pass
+            else:
+                return self.name
             return None
         def filter_name(self):
             return self.name
