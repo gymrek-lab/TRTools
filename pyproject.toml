@@ -1,57 +1,47 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "trtools"
 version = "5.1.1"
 authors = [
-    "Melissa Gymrek <mgymrek@ucsd.edu>",
-    "Gymrek Lab",
+    {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
+    {name = "Gymrek Lab"},
 ]
 description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
-license = "MIT"
+requires-python = ">=3.6"
+license = {text = "MIT"}
 classifiers = [
+    "Programming Language :: Python :: 3.5",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-exclude = [
-    "trtools/testsupport/*",
-    "doc",
-    "example-files",
-    "trtools/*/*.rst",
-    "trtools/*/Example_Files",
-    "trtools/dumpSTR/filter_files",
-    "trtools/qcSTR/images",
+dependencies = [
+    "importlib-metadata", # required as long as we support py<3.8
+    "cyvcf2",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pybedtools",
+    "pysam",
+    "scikit-learn",
+    "scipy",
+    "statsmodels",
+    "pyfaidx",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.7.1"
-importlib-metadata = {version = ">=3.0.0", python = "<3.8"}
-cyvcf2 = "*"
-matplotlib = "*"
-numpy = "*"
-pandas = "*"
-pysam = "*"
-scikit-learn = "*"
-scipy = "*"
-statsmodels = "*"
-pyfaidx = "*"
+[tool.setuptools]
+script-files = ["trtools/testsupport/test_trtools.sh", "scripts/trtools_prep_beagle_vcf.sh"]
+license-files = ["LICENSE.txt"]
 
-[tool.poetry.group.tests.dependencies]
-pytest = ">=6.2.0"
-pytest-cov = ">=3.0.0"
+[tool.setuptools.packages.find]
+exclude = ["trtools.testsupport.*", "doc"]
 
-[tool.poetry.group.docs.dependencies]
-sphinx = ">=3.0.4"
-sphinx-rtd-theme = ">=1.0.0"
-sphinx-autodoc-typehints = ">=1.12.0"
-
-[tool.poetry.scripts]
-"test_trtools.sh" = {reference = "trtools/testsupport/test_trtools.sh", type = "file"}
-"trtools_prep_beagle_vcf.sh" = {reference = "scripts/trtools_prep_beagle_vcf.sh", type = "file"}
+[project.scripts]
 dumpSTR = "trtools.dumpSTR:run"
 mergeSTR = "trtools.mergeSTR:run"
 statSTR = "trtools.statSTR:run"
@@ -68,22 +58,7 @@ Repository = "https://github.com/gymrek-lab/trtools.git"
 Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
-addopts = """
---ignore noxfile.py
--p trtools.testsupport.dataloader
---doctest-modules
-"""
-
-[tool.coverage.run]
-omit = [
-    ".nox/*",
-    "noxfile.py",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-]
+addopts = "-p trtools.testsupport.dataloader"
 
 [tool.pylint.BASIC]
 function-naming-style = "PascalCase"
