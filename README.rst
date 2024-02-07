@@ -81,8 +81,6 @@ Now, whenever you'd like to run/import pytest or TRTools, you will first need to
         conda activate trtools
         poetry shell
 
-Note: required package :code:`pybedtools` requires zlib. If you receive an error about a missing file :code:`zlib.h`, you can install on Ubuntu using :code:`sudo apt-get install zlib1g-dev` or CentOS using :code:`sudo yum install zlib-devel`.
-
 Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing.
 
 With Docker

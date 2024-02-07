@@ -10,7 +10,6 @@ dependencies:
   - pytest-cov
   - importlib-metadata
   - numpy
-  - pybedtools
   - matplotlib-base
   - pysam
   - scipy
