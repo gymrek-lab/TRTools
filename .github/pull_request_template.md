@@ -5,7 +5,7 @@
 * [ ] At the top of the PR, I've [listed any open issues that this PR will resolve](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword). For example, "resolves #0" if this PR resolves issue #0
 - [ ] I've explained my changes in a manner that will make it possible for both users and maintainers of TRTools to understand them
 * [ ] I've added tests for any new functionality. Or, if this PR fixes a bug, I've added test(s) that replicate it
-* [ ] All directories with large test files are listed in [the "exclude" section](https://python-poetry.org/docs/pyproject/#include-and-exclude) of our pyproject.toml so that they do not appear in our PyPI distribution
+* [ ] All directories with large test files are listed in [the "exclude" section](https://python-poetry.org/docs/pyproject/#include-and-exclude) of our pyproject.toml so that they do not appear in our PyPI distribution. All new files are also smaller than 0.5 MB.
 * [ ] I've updated the relevant REAMDEs with any new usage information and checked that the newly built documentation is formatted properly
 * [ ] All functions, modules, classes etc. still conform to [numpy docstring standards](https://numpydoc.readthedocs.io/en/latest/format.html)
 * [ ] (if applicable) I've updated the pyproject.toml file with any changes I've made to TRTools's dependencies, and I've run `poetry lock --no-update` to ensure the lock file stays up to date and that our dependencies are locked to their minimum versions
