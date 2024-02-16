@@ -136,6 +136,12 @@ See our description of the `features and example use-cases <https://trtools.read
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
+Testing
+-------
+After you've installed TRTools, we recommend running our tests to confirm that TRTools works properly on your system. Just execute the following::
+
+        test_trtools.sh
+
 Development Notes
 -----------------
 

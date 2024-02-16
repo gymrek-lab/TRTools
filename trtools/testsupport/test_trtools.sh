@@ -15,9 +15,7 @@ if [ ! -d "$TMP" ] ; then
 	echo "Downloading test data ..."
 	mkdir $TMP
 	pushd $TMP
-	git init .
-	git remote add origin -f https://github.com/gymrek-lab/TRTools.git
-	git pull origin master
+	git clone -b v$(dumpSTR --version) https://github.com/gymrek-lab/TRTools.git
 	popd
 	echo "Download done"
 else
