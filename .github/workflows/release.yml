@@ -14,7 +14,6 @@ jobs:
         id: release
         with:
           release-type: python
-          package-name: trtools
 
       - uses: actions/checkout@v3
         if: ${{ steps.release.outputs.release_created }}
