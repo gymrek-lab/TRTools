@@ -28,17 +28,17 @@ exclude = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7.1"
+python = ">=3.7.1,<4.0"
 importlib-metadata = {version = ">=3.0.0", python = "<3.8"}
-cyvcf2 = "*"
-matplotlib = "*"
-numpy = "*"
-pandas = "*"
-pysam = "*"
-scikit-learn = "*"
-scipy = "*"
-statsmodels = "*"
-pyfaidx = "*"
+cyvcf2 = ">=0.30.4"
+matplotlib = ">=3.1.2"
+numpy = ">=1.17.3,<2.0"
+pandas = ">=1.2.0"
+pysam = ">=0.15.4"
+scikit-learn = ">=0.23.1"
+scipy = ">=1.3.3"
+statsmodels = ">=0.10.2"
+pyfaidx = ">=0.5.6"
 
 [tool.poetry.group.tests.dependencies]
 pytest = ">=6.2.0"
