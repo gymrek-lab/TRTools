@@ -739,20 +739,6 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
-name = "pybedtools"
-version = "0.8.0"
-description = "Wrapper around BEDTools for bioinformatics work"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pybedtools-0.8.0.tar.gz", hash = "sha256:4eebd2cd1764ee1c604fd881703c3e329195485350b987b7fb8db42d232984f6"},
-]
-
-[package.dependencies]
-pysam = "*"
-six = "*"
-
-[[package]]
 name = "pyfaidx"
 version = "0.5.6"
 description = "pyfaidx: efficient pythonic random access to fasta subsequences"
@@ -1322,4 +1308,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7.1,<4.0"
-content-hash = "5ad0ab4eed29179fc4ba3caec67d3ff9e8086e17d062d49fd37d34ffeb4cf646"
+content-hash = "3a18ce16bf6212f78f29a5280d8a96c6454a46a9b09a8faefef32fbc26476259"
