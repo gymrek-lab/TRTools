@@ -73,6 +73,7 @@ jobs:
         if: matrix.session == 'size'
         run: |
           du -csh dist/*
+          tar -ztvf dist/*.tar.gz
           # check that the generated dist/ directory does not exceed 0.3 MB
           # if this check fails, it's because you forgot to list large files in the "exclude" section of our pyproject.toml
           # https://python-poetry.org/docs/pyproject/#include-and-exclude

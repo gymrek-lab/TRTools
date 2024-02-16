@@ -81,8 +81,6 @@ Now, whenever you'd like to run/import pytest or TRTools, you will first need to
         conda activate trtools
         poetry shell
 
-Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing.
-
 With Docker
 ^^^^^^^^^^^
 
