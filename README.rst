@@ -31,7 +31,7 @@ If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash,
 Install
 -------
 
-Note: TRTools supports Python versions 3.8 and up. We do not officially support python versions 3.6 and 3.7 as they are `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
+Note: TRTools supports Python versions 3.8 and up. We do not officially support python version 3.7 as it is `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with it from previous testing results.
 
 With conda
 ^^^^^^^^^^
@@ -61,20 +61,25 @@ Then run:
 
 Note: TRTools installation may fail for pip version 10.0.1, hence the need to upgrade pip first
 
+Note: if you will run or test :code:`simTR`, you will also need to install `ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_. The simTR tests will only run if the executable :code:`art_illumina` is found on your :code:`PATH`. If it has been installed, :code:`which art_illumina` should return a path.
+
 From source
 ^^^^^^^^^^^
 
-To install from source (only recommended for development) download the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_,
-checkout the branch you're interested in, and run the following command from the base directory of the repo. e.g.::
+To install from source (only recommended for development) clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
 
-        git clone https://github.com/gymrek-lab/TRTools
+        git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
-        pip install --upgrade pip
-        pip install -e .
 
-Note: make sure TRTools is not installed in the environment via a different method before installing from source. :code:`which dumpSTR` should return nothing.
+Now, create 1) a conda environment with our development tools and 2) a virtual environment with our dependencies and an editable install of TRTools::
 
-Note: if you will run or test :code:`simTR`, you will also need to install `ART <https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm>`_. The simTR tests will only run if the executable :code:`art_illumina` is found on your :code:`PATH`. If it has been installed, :code:`which art_illumina` should return a path.
+        conda env create -n trtools -f dev-env.yml
+        conda run -n trtools poetry install
+
+Now, whenever you'd like to run/import pytest or TRTools, you will first need to activate both environments::
+
+        conda activate trtools
+        poetry shell
 
 With Docker
 ^^^^^^^^^^^
@@ -131,6 +136,12 @@ See our description of the `features and example use-cases <https://trtools.read
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
 
+Testing
+-------
+After you've installed TRTools, we recommend running our tests to confirm that TRTools works properly on your system. Just execute the following::
+
+        test_trtools.sh
+
 Development Notes
 -----------------
 
@@ -148,10 +159,14 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 1. Consider `discussing <https://github.com/gymrek-lab/TRTools/issues>`_ your solution with us first so we can provide help or feedback if necessary.
 #. Install TRTools from source `as above <From source_>`_.
-#. Additionally, install :code:`pytest`, `pytest-cov <https://anaconda.org/conda-forge/pytest-cov>`_, :code:`sphinx>=3` and :code:`sphinx_rtd_theme`, in your environment.
 #. Fork the TRTools repository.
 #. Create a branch off of :code:`master` titled with the name of your feature.
 #. Make your changes. 
+#. If you need to add a dependency or update the version of a dependency, you can use the :code:`poetry add` command.
+
+    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. Don't worry if you're not sure at first, since you can (and should!) always update it later. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
+    * Afterwards, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`.
+
 #. Document your changes.
 
    * Ensure all functions, modules, classes etc. conform to `numpy docstring standards <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
@@ -165,9 +180,10 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
 #. Add tests to test any new functionality. Add them to the :code:`tests/` folder in the directory of the code you modified.
 
-   * :code:`cd` to the root of the project and run :code:`python -m pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+   * :code:`cd` to the root of the project and run :code:`poetry run pytest --cov=. --cov-report term-missing` to make sure that (1) all tests pass and (2) any code you have added is covered by tests. (Code coverage may **not** go down).
+   * :code:`cd` to the root of the project and run :code:`nox` to make sure that the tests pass on all versions of python that we support.
 
-#. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Title the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
+#. Submit a pull request (PR) **to the master branch** of the central repository with a description of what changes you have made. Prefix the title of the PR according to the `conventional commits spec <https://www.conventionalcommits.org>`_.
    A member of the TRTools team will reply and continue the contribution process from there, possibly asking for additional information/effort on your part.
 
    * If you are reviewing a pull request, please double-check that the PR addresses each item in `our PR checklist <https://github.com/gymrek-lab/TRTools/blob/master/.github/pull_request_template.md>`_

@@ -31,13 +31,18 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         run: |
           pip install --upgrade pip
-          pip install build
           pip --version
+
+      - name: Install Poetry
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          pip install 'poetry==1.7.1'
+          poetry --version
 
       - name: Build package
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          python -m build
+          poetry build --ansi -n
 
       - name: Publish package on PyPI
         if: ${{ steps.release.outputs.release_created }}
