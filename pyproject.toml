@@ -12,6 +12,9 @@ authors = [
 description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
 license = "MIT"
+repository = "https://github.com/gymrek-lab/trtools"
+homepage = "https://trtools.readthedocs.org"
+documentation = "https://trtools.readthedocs.org"
 classifiers = [
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
@@ -60,12 +63,6 @@ qcSTR = "trtools.qcSTR:run"
 associaTR = "trtools.associaTR:run"
 prancSTR = "trtools.prancSTR:run"
 simTR = "trtools.simTR:run"
-
-[project.urls]
-Homepage = "https://trtools.readthedocs.org"
-Documentation = "https://trtools.readthedocs.org"
-Repository = "https://github.com/gymrek-lab/trtools.git"
-Changelog = "https://github.com/gymrek-lab/trtools/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
 addopts = """
