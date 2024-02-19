@@ -15,7 +15,7 @@ if [ ! -d "$TMP" ] ; then
 	echo "Downloading test data ..."
 	mkdir $TMP
 	pushd $TMP
-	git clone -b v$(dumpSTR --version) https://github.com/gymrek-lab/TRTools.git
+	git clone -b v$(dumpSTR --version) https://github.com/gymrek-lab/TRTools.git .
 	popd
 	echo "Download done"
 else
