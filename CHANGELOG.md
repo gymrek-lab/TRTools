@@ -1,5 +1,32 @@
 # Changelog
 
+## [6.0.0](https://github.com/gymrek-lab/TRTools/compare/v5.1.1...v6.0.0) (2024-02-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included. ([#184](https://github.com/gymrek-lab/TRTools/issues/184))
+
+### Features
+
+* add version constraints, poetry, and `poetry.lock` file, and use `nox-poetry` and py3.12 in CI ([#202](https://github.com/gymrek-lab/TRTools/issues/202)) ([ed9c961](https://github.com/gymrek-lab/TRTools/commit/ed9c9610d0a6d0503efb07ad38a995a1957826ba))
+
+
+### Bug Fixes
+
+* deprecation of binom_test in scipy 1.12.0 and cryptic error occurring with incorrect VCFs in cyvcf2 0.30.26 ([#208](https://github.com/gymrek-lab/TRTools/issues/208)) ([78ec86a](https://github.com/gymrek-lab/TRTools/commit/78ec86a92dd7bdd8fffc1a88e416681af1b54234))
+
+
+### Documentation
+
+* reviewer and maintainer responsibilities with automated releases and PRs ([7762d87](https://github.com/gymrek-lab/TRTools/commit/7762d8796144597c4bdb5f68f51436bf14420ef2))
+* specify conda install via biocontainers ([2807421](https://github.com/gymrek-lab/TRTools/commit/2807421568ad0a477a42346017820de808d2e5dd))
+
+
+### Code Refactoring
+
+* remove pybedtools as a dependency. This slightly changes the interpretation of BED files. From now on, the end position of each region will not be included. ([#184](https://github.com/gymrek-lab/TRTools/issues/184)) ([89c1dd3](https://github.com/gymrek-lab/TRTools/commit/89c1dd315a1cb96edb2d3479f7eb36990044a01c))
+
 ## [5.1.1](https://github.com/gymrek-lab/TRTools/compare/v5.1.0...v5.1.1) (2023-11-27)
 
 ### Bug fixes
