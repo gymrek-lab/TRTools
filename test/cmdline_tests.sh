@@ -25,13 +25,15 @@ if [ $# -eq 0 ]; then
     # use default example location
     EXDATADIR="example-files"
     BEAGLEDIR="trtools/testsupport/sample_vcfs/beagle"
-elif (( $# != 2 )) ; then
-    echo "usage: cmdline_tests.sh {example_dir} {beagle_dir}" 2>&1
-    echo "Expected 2 arguments but recieved $#" 2>&1
+    BEAGLESCRIPT="scripts/trtools_prep_beagle_vcf.sh"
+elif (( $# != 3 )) ; then
+    echo "usage: cmdline_tests.sh {example_dir} {beagle_dir} {beagle_script}" 2>&1
+    echo "Expected 3 arguments but recieved $#" 2>&1
     exit 1
 else
     EXDATADIR=$1
     BEAGLEDIR=$2
+    BEAGLESCRIPT=$3
 fi
 
 TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
@@ -220,10 +222,10 @@ prep_beagle_out="$TMPDIR"/test_prep_beagle_vcf.vcf.gz
 ref_panel="$BEAGLEDIR"/1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz
 imputed_vcf="$BEAGLEDIR"/1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz
 
-runcmd_fail "trtools_prep_beagle_vcf.sh hipstr nonexistent.vcf.gz $imputed_vcf $prep_beagle_out"
-runcmd_fail "trtools_prep_beagle_vcf.sh hipstr $ref_panel nonexistent.vcf.gz $prep_beagle_out"
+runcmd_fail "$BEAGLESCRIPT hipstr nonexistent.vcf.gz $imputed_vcf $prep_beagle_out"
+runcmd_fail "$BEAGLESCRIPT hipstr $ref_panel nonexistent.vcf.gz $prep_beagle_out"
 
-trtools_prep_beagle_vcf.sh hipstr "$ref_panel" "$imputed_vcf" "$prep_beagle_out"
+$BEAGLESCRIPT hipstr "$ref_panel" "$imputed_vcf" "$prep_beagle_out"
 
 if ! [[ -f "$prep_beagle_out" ]] ; then
     echo "prep_beagle_vcf test didn't produce output file" >&2
