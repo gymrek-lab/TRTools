@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/gymrek-lab/TRTools/compare/v6.0.0...v6.0.1) (2024-02-21)
+
+
+### Bug Fixes
+
+* clone command in `test_trtools.sh` testing script ([#214](https://github.com/gymrek-lab/TRTools/issues/214)) ([756a516](https://github.com/gymrek-lab/TRTools/commit/756a5169a352c23d0681d70e46d78599a79017a2))
+
 ## [6.0.0](https://github.com/gymrek-lab/TRTools/compare/v5.1.1...v6.0.0) (2024-02-19)
 
 
