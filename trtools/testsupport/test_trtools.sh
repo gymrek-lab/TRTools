@@ -3,7 +3,7 @@
 # Run the tests for an installed copy of trtools
 # If not already present, megabytes of test data will be downloaded before test running
 # Please note that this script tests TRTools against
-# test files committed to the repo and will miss any local changes to those files
+# test files from a published release and will miss any local changes to those files
 
 # If TRTools was installed normally, this script can be executed by simply running
 # 'test_trtools.sh' on the command line.
