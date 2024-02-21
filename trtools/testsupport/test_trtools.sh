@@ -2,13 +2,13 @@
 
 # Run the tests for an installed copy of trtools
 # If not already present, megabytes of test data will be downloaded before test running
+# Please note that this script tests TRTools against
+# test files committed to the repo and will miss any local changes to those files
 
 # If TRTools was installed normally, this script can be executed by simply running
 # 'test_trtools.sh' on the command line.
 # Otherwise, if TRTools was installed via poetry, you should run the command
-# 'poetry run trtools/testsupport/test_trtools.sh'. However, please note that this
-# script should not be used to test TRTools against any recent/unpublished changes.
-
+# 'poetry run trtools/testsupport/test_trtools.sh'.
 echo "Running test_trtools.sh"
 
 command -v git >/dev/null 2>&1 || { echo >&2 "git is not available, but is required for downloading the test data. Aborting."; exit 1; }
