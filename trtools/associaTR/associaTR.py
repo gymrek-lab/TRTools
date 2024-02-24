@@ -137,7 +137,7 @@ def perform_gwas_helper(
     print('{} samples in the VCF'.format(len(all_samples)), flush=True)
 
     if not same_samples:
-        covars = np.load(trait_fnames[0])
+        covars = np.load(trait_fnames[0], allow_pickle=True)
         if np.sum(np.isin(np.array(all_samples, dtype=float), covars[:, 0])) < 3:
             print(all_samples, covars[:, 0])
             print(
@@ -147,7 +147,7 @@ def perform_gwas_helper(
             )
             exit(1)
         for trait_fname in trait_fnames[1:]:
-            new_covars = np.load(trait_fname)
+            new_covars = np.load(trait_fname, allow_pickle=True)
             covars = _merge_arrays(covars, new_covars)
         covars = _merge_arrays(np.array(all_samples, dtype=float).reshape(-1, 1), covars)
     else:
