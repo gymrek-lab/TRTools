@@ -389,7 +389,6 @@ def ReadStutter(stutter_file):
     stutter_dict = {}
     with open(stutter_file, 'r', newline='') as csvfile:
         csv_reader = csv.reader(csvfile)
-        next(csv_reader)
         for row in csv_reader:
             if row[4] not in stutter_dict:
                 key = row[4]
@@ -521,16 +520,17 @@ def main(args):
         # Extract it from HipSTR vcf when a separate stutter file is not given
         # Else take the parameters from stutter file for calculation
         if args.stutter_file is not None:
+            period = str(period)
             if period in stutter_dict:
                 stutter_params = stutter_dict[period]
-                stutter_u = stutter_params[0]
-                stutter_d = stutter_params[1]
-                stutter_rho = stutter_params[2]
+                stutter_u = float(stutter_params[0])
+                stutter_d = float(stutter_params[1])
+                stutter_rho = float(stutter_params[2])
             elif period > 3:
-                stutter_params = stutter_dict[4]
-                stutter_u = stutter_params[0]
-                stutter_d = stutter_params[1]
-                stutter_rho = stutter_params[2]
+                stutter_params = stutter_dict['4']
+                stutter_u = float(stutter_params[0])
+                stutter_d = float(stutter_params[1])
+                stutter_rho = float(stutter_params[2])
         else:
             if "INFRAME_UP" not in trrecord.info.keys() or \
                 "INFRAME_DOWN" not in trrecord.info.keys() or \
