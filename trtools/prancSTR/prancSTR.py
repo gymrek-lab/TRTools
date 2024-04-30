@@ -11,6 +11,7 @@ import numpy as np
 import os
 import sys
 import time
+import csv
 
 import scipy.optimize
 from scipy.stats.distributions import chi2
@@ -384,6 +385,19 @@ def ComputePvalue(reads, A, B, best_C, best_f, stutter_probs):
 	#pval = 1 - scipy.stats.chi2.cdf(test_stat, 1)
 	return pval
 
+def ReadStutter(stutter_file):
+    stutter_dict = {}
+    with open(stutter_file, 'r', newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        next(csv_reader)
+        for row in csv_reader:
+            if row[4] not in stutter_dict:
+                key = row[4]
+                stutter_dict[key] = [row[0], row[1], row[2]]
+
+    return stutter_dict
+
+
 def getargs(): # pragma: no cover
     parser = argparse.ArgumentParser(
         __doc__,
@@ -394,6 +408,8 @@ def getargs(): # pragma: no cover
         "--vcf", help="Input STR VCF file", type=str, required=True)
     inout_group.add_argument(
         "--out", help=("Output file prefix. Use stdout to print file to standard output"), type=str, required=True)
+    inout_group.add_argument(
+        "--stutter_file", help=("Input CSV file containing stutter params"), type=str, required=True)
     inout_group.add_argument("--vcftype", help="Options=%s" %
                              [str(item) for item in trh.VcfTypes.__members__], type=str, default="auto")
     inout_group.add_argument("--samples", help="Comma-separated list of samples to process."
@@ -462,6 +478,10 @@ def main(args):
             if s not in samples:
                 common.WARNING("WARNING: sample {} not found in the VCF".format(s))
 
+    stutter_dict = {}
+    if args.stutter_file is not None:
+            stutter_dict = ReadStutter(args.stutter_file)
+
     if args.out == "stdout":
         outf = sys.stdout
     else:
@@ -495,30 +515,45 @@ def main(args):
 
         ########### Extract necessary info from the VCF file #######
         nrecords += 1 # only increment if we're actually testing it
-        # Stutter params for the locus. These are the same for all samples
-        if "INFRAME_UP" not in trrecord.info.keys() or \
-            "INFRAME_DOWN" not in trrecord.info.keys() or \
-                "INFRAME_PGEOM" not in trrecord.info.keys():
-            common.WARNING(
-                "Could not find stutter info for %s" % str(trrecord))
-            common.WARNING(
-                "Adding default stutter info for %s" % str(trrecord))
-            stutter_u = 0.05
-            stutter_d = 0.05
-            stutter_rho = 0.90
+        period = len(trrecord.motif)
+
+        # Stutter params for the locus. These are the same for all samples. 
+        # Extract it from HipSTR vcf when a separate stutter file is not given
+        # Else take the parameters from stutter file for calculation
+        if args.stutter_file is not None:
+            if period in stutter_dict:
+                stutter_params = stutter_dict[period]
+                stutter_u = stutter_params[0]
+                stutter_d = stutter_params[1]
+                stutter_rho = stutter_params[2]
+            elif period > 3:
+                stutter_params = stutter_dict[4]
+                stutter_u = stutter_params[0]
+                stutter_d = stutter_params[1]
+                stutter_rho = stutter_params[2]
         else:
-            stutter_u = trrecord.info["INFRAME_UP"]
-            stutter_d = trrecord.info["INFRAME_DOWN"]
-            stutter_rho = trrecord.info["INFRAME_PGEOM"]
-            if stutter_u == 0.0:
-                stutter_u = 0.01
-            if stutter_d == 0.0:
-                stutter_d = 0.01
-            if stutter_rho == 1.0:
-                stutter_rho = 0.95
+            if "INFRAME_UP" not in trrecord.info.keys() or \
+                "INFRAME_DOWN" not in trrecord.info.keys() or \
+                    "INFRAME_PGEOM" not in trrecord.info.keys():
+                common.WARNING(
+                    "Could not find stutter info for %s" % str(trrecord))
+                common.WARNING(
+                    "Adding default stutter info for %s" % str(trrecord))
+                stutter_u = 0.05
+                stutter_d = 0.05
+                stutter_rho = 0.90
+            else:
+                stutter_u = trrecord.info["INFRAME_UP"]
+                stutter_d = trrecord.info["INFRAME_DOWN"]
+                stutter_rho = trrecord.info["INFRAME_PGEOM"]
+                if stutter_u == 0.0:
+                    stutter_u = 0.01
+                if stutter_d == 0.0:
+                    stutter_d = 0.01
+                if stutter_rho == 1.0:
+                    stutter_rho = 0.95
         stutter_probs = [StutterProb(d, stutter_u, stutter_d, stutter_rho) \
             for d in range(-MAXSTUTTEROFFSET, MAXSTUTTEROFFSET)]
-        period = len(trrecord.motif)
 
         # Array of (A,B) for each sample
         # given in bp diff from ref
