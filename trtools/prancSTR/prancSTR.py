@@ -520,9 +520,9 @@ def main(args):
         # Extract it from HipSTR vcf when a separate stutter file is not given
         # Else take the parameters from stutter file for calculation
         if args.stutter_file is not None:
-            period = str(period)
-            if period in stutter_dict:
-                stutter_params = stutter_dict[period]
+            period_str = str(period)
+            if period_str in stutter_dict:
+                stutter_params = stutter_dict[period_str]
                 stutter_u = float(stutter_params[0])
                 stutter_d = float(stutter_params[1])
                 stutter_rho = float(stutter_params[2])
