@@ -9,6 +9,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v4.0.2
         id: release
@@ -24,7 +28,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.8'  # keep in sync with dev-env.yml
 
       - name: Upgrade pip
         if: ${{ steps.release.outputs.release_created }}
@@ -35,7 +39,7 @@ jobs:
       - name: Install Poetry
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          pip install 'poetry==1.7.1'
+          pip install 'poetry==1.8.3' # keep version in sync with dev-env.yml
           poetry --version
 
       - name: Build package
@@ -45,7 +49,4 @@ jobs:
 
       - name: Publish package on PyPI
         if: ${{ steps.release.outputs.release_created }}
-        uses: pypa/gh-action-pypi-publish@v1.5.0
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@v1.8.14
