@@ -196,7 +196,7 @@ def GetEntropy(allele_freqs: Dict[Any, float]) -> float:
     """
     if not ValidateAlleleFreqs(allele_freqs):
         return np.nan
-    return scipy.stats.entropy(list(x for x in allele_freqs.values()), base=2)
+    return float(scipy.stats.entropy(list(x for x in allele_freqs.values()), base=2))
 
 
 def GetMean(allele_freqs):
