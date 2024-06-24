@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.0.2](https://github.com/gymrek-lab/TRTools/compare/v6.0.1...v6.0.2) (2024-06-24)
+
+
+### Bug Fixes
+
+* support for numpy 2.0 ([#220](https://github.com/gymrek-lab/TRTools/issues/220)) ([8661226](https://github.com/gymrek-lab/TRTools/commit/86612265fc0302ad86ebed48787530d0b4b95550))
+
+
+### Documentation
+
+* update hipstr link ([#217](https://github.com/gymrek-lab/TRTools/issues/217)) ([e1f8511](https://github.com/gymrek-lab/TRTools/commit/e1f8511ff070bc74b40318e95f7fe7a7bda57bb8))
+
 ## [6.0.1](https://github.com/gymrek-lab/TRTools/compare/v6.0.0...v6.0.1) (2024-02-21)
 
 
