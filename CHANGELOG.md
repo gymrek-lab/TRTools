@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.3](https://github.com/gymrek-lab/TRTools/compare/v6.0.2...v6.0.3) (2024-06-26)
+
+
+### Documentation
+
+* warn about scipy deprecation in dumpSTR ([#221](https://github.com/gymrek-lab/TRTools/issues/221)) ([a1a3a39](https://github.com/gymrek-lab/TRTools/commit/a1a3a39b7b7fd2d2f694d3a41bfe7bcf72ff72c3))
+
 ## [6.0.2](https://github.com/gymrek-lab/TRTools/compare/v6.0.1...v6.0.2) (2024-06-24)
 
 
