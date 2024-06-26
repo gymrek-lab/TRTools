@@ -37,6 +37,9 @@ The available filters are described below.
 
 See `Example Commands`_ for running dumpSTR on different supported TR genotypers using example VCFs in this repository.
 
+.. warning::
+  :code:`dumpSTR<6.0.0` and :code:`scipy>=1.12.0` are incompatible. You should update to a newer version of TRTools if you encounter an error indicating that :code:`scipy.stats.binom_test` has been deprecated.
+
 Filter options
 --------------
 
