@@ -115,6 +115,20 @@ def test_hipSTRRightFile(args, mrgvcfdir):
     args.verbose = True
     assert main(args)==0
 
+# Test right files or directory - hipstr with FORMAT field
+def test_hipSTRRightFile_AP(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = True
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
 # Test right files or directory - ExpansionHunter
 def test_ExpansionHunterRightFile(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")

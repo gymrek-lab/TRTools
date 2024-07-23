@@ -45,7 +45,7 @@ INFOFIELDS = {
 FORMATFIELDS = {
     trh.VcfTypes.gangstr: ["DP", "Q", "REPCN", "REPCI", "RC", "ENCLREADS", "FLNKREADS", "ML", "INS", "STDERR", "QEXP"],
     trh.VcfTypes.hipstr: ["GB", "Q", "PQ", "DP", "DSNP", "PSNP", "PDP", "GLDIFF", "DSTUTTER", "DFLANKINDEL", "AB", "FS",
-                          "DAB", "ALLREADS", "MALLREADS","AP1","AP2"],
+                          "DAB", "ALLREADS", "MALLREADS","AP1","AP2","DS"],
     trh.VcfTypes.eh: ["ADFL", "ADIR", "ADSP", "LC", "REPCI", "REPCN", "SO"],
     trh.VcfTypes.popstr: ["AD", "DP", "PL"],
     trh.VcfTypes.advntr: ["DP", "SR", "FR", "ML"]
