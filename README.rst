@@ -66,7 +66,11 @@ Note: if you will run or test :code:`simTR`, you will also need to install `ART 
 From source
 ^^^^^^^^^^^
 
-To install from source (only recommended for development) clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
+If you would like to develop or edit the TRTools source code, you will need to perform a "dev install" directly from the source.
+
+**Note:** Instead of performing the following steps, you can also just open `a GitHub codespace <https://docs.github.com/en/codespaces/overview>`_. Simply type a comma "," when viewing a branch on `our GitHub <https://github.com/gymrek-lab/TRTools>`_ to open an editor with our development setup pre-installed. You can then run :code:`conda activate trtools` and :code:`poetry shell` in the terminal there.
+
+You can clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
 
         git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
