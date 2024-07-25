@@ -7,6 +7,7 @@ import pytest
 
 from ..mergeSTR import *
 from trtools.testsupport.utils import assert_same_vcf
+import gzip, shutil
 
 
 
@@ -374,8 +375,12 @@ def test_hipstr_output_AP(args, mrgvcfdir):
     args.vcftype = "hipstr"
     args.vcfs = fname1 + "," + fname2
     
+
+    with gzip.open(mrgvcfdir+"/hipstr_imputed_merged.vcf.gz", 'r') as f_in, open("hipstr_imputed_merged.vcf", 'wb') as f_out:
+        shutil.copyfileobj(f_in, f_out)
     assert main(args) == 0
-    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_imputed_merged.vcf")
+    assert_same_vcf(args.out + '.vcf', "hipstr_imputed_merged.vcf")
+    os.remove("hipstr_imputed_merged.vcf")
 
 def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")
