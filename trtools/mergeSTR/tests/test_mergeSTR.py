@@ -9,6 +9,7 @@ from ..mergeSTR import *
 from trtools.testsupport.utils import assert_same_vcf
 
 
+
 # Set up base argparser
 @pytest.fixture
 def args(tmpdir):
@@ -115,7 +116,7 @@ def test_hipSTRRightFile(args, mrgvcfdir):
     args.verbose = True
     assert main(args)==0
 
-# Test right files or directory - hipstr with FORMAT field
+# Test right files or directory - hipstr with FORMAT AP field
 def test_hipSTRRightFile_AP(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
@@ -128,6 +129,7 @@ def test_hipSTRRightFile_AP(args, mrgvcfdir):
     assert main(args)==0
     args.verbose = True
     assert main(args)==0
+
 
 # Test right files or directory - ExpansionHunter
 def test_ExpansionHunterRightFile(args, mrgvcfdir):
@@ -364,6 +366,16 @@ def test_hipstr_output(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
+
+#test if AP field exist
+def test_hipstr_output_AP(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_imputed_merged.vcf")
 
 def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")
