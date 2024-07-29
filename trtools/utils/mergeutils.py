@@ -138,6 +138,35 @@ def GetAndCheckVCFType(vcfs: List[CYVCF_READER], vcftype: str) -> str:
     else:
         raise ValueError("VCF files are of mixed types.")
 
+def GetAndCheckBeagle(vcfs: List[CYVCF_READER]) -> bool:
+    """Check if merged files are Beagle generated
+
+    If all are from Beagle, return True
+    If all are not from Beagle, return False
+    If mixed, return ValueError since in that case we will not merge
+
+    Parameters
+    ----------
+    vcfs: list of cyvcf2.VCF
+      Multiple VCFs
+
+    Returns
+    -------
+    isbeagle : bool
+      Indicates if all files are/are not Beagle generated
+
+    Raises
+    ------
+    TypeError
+      If input files are a mix of Beagle/non-Beagle
+    """
+    is_beagle = []
+    for vcf in vcfs:
+        is_beagle.append(trh.IsBeagleVCF(vcf))
+    if len(set(is_beagle)) == 1:
+        return is_beagle[0]
+    else:
+        raise ValueError("Mix of Beagle/non-Beagle VCFs identified.")    
 
 def GetChromOrder(r: CYVCF_RECORD, chroms: List[str]) -> Union[int, float]:
     r"""Get the chromosome order of a record
