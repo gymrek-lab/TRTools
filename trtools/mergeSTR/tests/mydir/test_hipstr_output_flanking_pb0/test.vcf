@@ -1,7 +1,7 @@
 ##fileformat=VCFv4.1
 ##command=HipSTR-v0.5 --bams /storage/gtex-data/wgs/SRR2163846.bam --fasta /storage/resources/Homo_sapiens_assembly19.fasta --regions /storage/resources/GRCh37.hipstr_reference.bed --min-reads 5 --str-vcf /storage/vcfs/SRR2163846.vcf.gz --def-stutter-model --log /storage/vcfs/SRR2163846.log.txt
 ##command=HipSTR-v0.5 --bams /storage/gtex-data/wgs/SRR2163846.bam --fasta /storage/resources/Homo_sapiens_assembly19.fasta --regions /storage/resources/GRCh37.hipstr_reference.bed --min-reads 5 --str-vcf /storage/vcfs/SRR2163846.vcf.gz --def-stutter-model --log /storage/vcfs/SRR2163846.log.txt
-##command=/Users/yang/Desktop/TRTools/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_hipstr1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_hipstr2.vcf.gz --vcftype hipstr --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/hipstr_merged
+##command=/home/vscode/.cache/pypoetry/virtualenvs/trtools-6-29ywz1-py3.8/bin/pytest --basetemp=mydir
 ##contig=<ID=1,length=249250621>
 ##contig=<ID=2,length=243199373>
 ##contig=<ID=3,length=198022430>
@@ -122,5 +122,7 @@
 ##FORMAT=<ID=DAB,Number=1,Type=Integer,Description="Number of reads used in the AB and FS calculations">
 ##FORMAT=<ID=ALLREADS,Number=1,Type=String,Description="Base pair difference observed in each read's Needleman-Wunsch alignment">
 ##FORMAT=<ID=MALLREADS,Number=1,Type=String,Description="Maximum likelihood bp diff in each read based on haplotype alignments for reads that span the repeat region by at least 5 base pairs">
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	GTEX-R55C-0003	GTEX-R55C-0004
-1	16717	STR_2	GGTGGTGGTGGGGGCGGTGGGGGTGGTG	GGTGGTGGTGGGGGCGGTGGTGGTGCTG	.	.	START=16717;END=16744;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|0:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	GTEX-R55C-0004	GTEX-R55C-0003
+1	16717	STR_2	GGTGGTGGTGGGGGCGGTGGGGGTGGTG	GGTGGTGGTGGGGGCGGTGGTGGTGCTG	.	.	START=16717;END=16744;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2
+1	16914	STR_3	CTTCTT	CTTCTTCTT	.	.	START=16914;END=16919;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2
+1	19924	STR_4	ATATAT	ATATATAT,ATATATGTAT	.	.	START=19924;END=19929;PERIOD=2	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|2:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2

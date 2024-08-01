@@ -39,7 +39,7 @@ INFOFIELDS = {
     trh.VcfTypes.advntr: [("END", True), ("VID", True), ("RU", True), ("RC", True)]
 }
 
-BEAGLEINFOFIELDS = ["IMP"]
+#BEAGLEINFOFIELDS = ["IMP"]
 # Tool-specific format fields to merge
 # Not all fields currently handled
 # If not listed here, it is ignored
@@ -125,9 +125,9 @@ def WriteMergedHeader(vcfw: TextIO, args: Any, readers: List[cyvcf2.VCF], cmd: s
     # Write INFO fields, different for each tool
     useinfo: List[Tuple[str, bool]] = []
     infos = get_header_lines('info', readers[0])
-    attempt_info_fields = INFOFIELDS[vcftype].copy() # copy since we will modify
-    if isbeagle:
-        attempt_info_fields.extend(BEAGLEINFOFIELDS)
+    #attempt_info_fields = INFOFIELDS[vcftype].copy() # copy since we will modify
+    #if isbeagle:
+    #    attempt_info_fields.extend(BEAGLEINFOFIELDS)
     for (field, reqd) in INFOFIELDS[vcftype]:
         this_info = [line for line in infos if 'ID=' + field + ',' in line]
         if len(this_info) == 0:
