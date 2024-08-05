@@ -287,7 +287,13 @@ def test_DifferentAltAllele(args, mrgvcfdir,capsys):
     assert main(args) == 0
     assert ("Conflicting alt alleles found at" in capsys.readouterr().err)
     
-
+#check if identical allele order
+def test_CheckIdenticalAlleleOrder(args,mrgvcfdir,capsys):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_difforder.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert ("Conflicting alt alleles found at" in capsys.readouterr().err)
 
 def test_GetInfoItem(capsys):
     # Set up dummy records
@@ -394,8 +400,6 @@ def test_hipstr_output_Beagle(args, mrgvcfdir):
     fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
     args.vcftype = "hipstr"
     args.vcfs = fname1 + "," + fname2
-    
-
     with gzip.open(mrgvcfdir+"/hipstr_imputed_merged.vcf.gz", 'r') as f_in, open("hipstr_imputed_merged.vcf", 'wb') as f_out:
         shutil.copyfileobj(f_in, f_out)
     assert main(args) == 0
