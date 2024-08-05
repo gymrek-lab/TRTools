@@ -1,0 +1,126 @@
+##fileformat=VCFv4.1
+##command=HipSTR-v0.5 --bams /storage/gtex-data/wgs/SRR2163846.bam --fasta /storage/resources/Homo_sapiens_assembly19.fasta --regions /storage/resources/GRCh37.hipstr_reference.bed --min-reads 5 --str-vcf /storage/vcfs/SRR2163846.vcf.gz --def-stutter-model --log /storage/vcfs/SRR2163846.log.txt
+##command=HipSTR-v0.5 --bams /storage/gtex-data/wgs/SRR2163846.bam --fasta /storage/resources/Homo_sapiens_assembly19.fasta --regions /storage/resources/GRCh37.hipstr_reference.bed --min-reads 5 --str-vcf /storage/vcfs/SRR2163846.vcf.gz --def-stutter-model --log /storage/vcfs/SRR2163846.log.txt
+##command=/Users/yang/Desktop/TRTools/trtools/mergeSTR/mergeSTR.py --vcfs trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_hipstr1.vcf.gz,trtools/testsupport/sample_vcfs/mergeSTR_vcfs/test_file_hipstr2.vcf.gz --vcftype hipstr --out trtools/testsupport/sample_vcfs/mergeSTR_vcfs/hipstr_merged
+##contig=<ID=1,length=249250621>
+##contig=<ID=2,length=243199373>
+##contig=<ID=3,length=198022430>
+##contig=<ID=4,length=191154276>
+##contig=<ID=5,length=180915260>
+##contig=<ID=6,length=171115067>
+##contig=<ID=7,length=159138663>
+##contig=<ID=8,length=146364022>
+##contig=<ID=9,length=141213431>
+##contig=<ID=10,length=135534747>
+##contig=<ID=11,length=135006516>
+##contig=<ID=12,length=133851895>
+##contig=<ID=13,length=115169878>
+##contig=<ID=14,length=107349540>
+##contig=<ID=15,length=102531392>
+##contig=<ID=16,length=90354753>
+##contig=<ID=17,length=81195210>
+##contig=<ID=18,length=78077248>
+##contig=<ID=19,length=59128983>
+##contig=<ID=20,length=63025520>
+##contig=<ID=21,length=48129895>
+##contig=<ID=22,length=51304566>
+##contig=<ID=X,length=155270560>
+##contig=<ID=Y,length=59373566>
+##contig=<ID=MT,length=16569>
+##contig=<ID=GL000207.1,length=4262>
+##contig=<ID=GL000226.1,length=15008>
+##contig=<ID=GL000229.1,length=19913>
+##contig=<ID=GL000231.1,length=27386>
+##contig=<ID=GL000210.1,length=27682>
+##contig=<ID=GL000239.1,length=33824>
+##contig=<ID=GL000235.1,length=34474>
+##contig=<ID=GL000201.1,length=36148>
+##contig=<ID=GL000247.1,length=36422>
+##contig=<ID=GL000245.1,length=36651>
+##contig=<ID=GL000197.1,length=37175>
+##contig=<ID=GL000203.1,length=37498>
+##contig=<ID=GL000246.1,length=38154>
+##contig=<ID=GL000249.1,length=38502>
+##contig=<ID=GL000196.1,length=38914>
+##contig=<ID=GL000248.1,length=39786>
+##contig=<ID=GL000244.1,length=39929>
+##contig=<ID=GL000238.1,length=39939>
+##contig=<ID=GL000202.1,length=40103>
+##contig=<ID=GL000234.1,length=40531>
+##contig=<ID=GL000232.1,length=40652>
+##contig=<ID=GL000206.1,length=41001>
+##contig=<ID=GL000240.1,length=41933>
+##contig=<ID=GL000236.1,length=41934>
+##contig=<ID=GL000241.1,length=42152>
+##contig=<ID=GL000243.1,length=43341>
+##contig=<ID=GL000242.1,length=43523>
+##contig=<ID=GL000230.1,length=43691>
+##contig=<ID=GL000237.1,length=45867>
+##contig=<ID=GL000233.1,length=45941>
+##contig=<ID=GL000204.1,length=81310>
+##contig=<ID=GL000198.1,length=90085>
+##contig=<ID=GL000208.1,length=92689>
+##contig=<ID=GL000191.1,length=106433>
+##contig=<ID=GL000227.1,length=128374>
+##contig=<ID=GL000228.1,length=129120>
+##contig=<ID=GL000214.1,length=137718>
+##contig=<ID=GL000221.1,length=155397>
+##contig=<ID=GL000209.1,length=159169>
+##contig=<ID=GL000218.1,length=161147>
+##contig=<ID=GL000220.1,length=161802>
+##contig=<ID=GL000213.1,length=164239>
+##contig=<ID=GL000211.1,length=166566>
+##contig=<ID=GL000199.1,length=169874>
+##contig=<ID=GL000217.1,length=172149>
+##contig=<ID=GL000216.1,length=172294>
+##contig=<ID=GL000215.1,length=172545>
+##contig=<ID=GL000205.1,length=174588>
+##contig=<ID=GL000219.1,length=179198>
+##contig=<ID=GL000224.1,length=179693>
+##contig=<ID=GL000223.1,length=180455>
+##contig=<ID=GL000195.1,length=182896>
+##contig=<ID=GL000212.1,length=186858>
+##contig=<ID=GL000222.1,length=186861>
+##contig=<ID=GL000200.1,length=187035>
+##contig=<ID=GL000193.1,length=189789>
+##contig=<ID=GL000194.1,length=191469>
+##contig=<ID=GL000225.1,length=211173>
+##contig=<ID=GL000192.1,length=547496>
+##contig=<ID=NC_007605,length=171823>
+##INFO=<ID=INFRAME_PGEOM,Number=1,Type=Float,Description="Parameter for in-frame geometric step size distribution">
+##INFO=<ID=INFRAME_UP,Number=1,Type=Float,Description="Probability that stutter causes an in-frame increase in obs. STR size">
+##INFO=<ID=INFRAME_DOWN,Number=1,Type=Float,Description="Probability that stutter causes an in-frame decrease in obs. STR size">
+##INFO=<ID=OUTFRAME_PGEOM,Number=1,Type=Float,Description="Parameter for out-of-frame geometric step size distribution">
+##INFO=<ID=OUTFRAME_UP,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame increase in read's STR size">
+##INFO=<ID=OUTFRAME_DOWN,Number=1,Type=Float,Description="Probability that stutter causes an out-of-frame decrease in read's STR size">
+##INFO=<ID=BPDIFFS,Number=A,Type=Integer,Description="Base pair difference of each alternate allele from the reference allele">
+##INFO=<ID=START,Number=1,Type=Integer,Description="Inclusive start coodinate for the repetitive portion of the reference allele">
+##INFO=<ID=END,Number=1,Type=Integer,Description="Inclusive end coordinate for the repetitive portion of the reference allele">
+##INFO=<ID=PERIOD,Number=1,Type=Integer,Description="Length of STR motif">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=REFAC,Number=1,Type=Integer,Description="Reference allele count">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Alternate allele counts">
+##INFO=<ID=NSKIP,Number=1,Type=Integer,Description="Number of samples not genotyped due to various issues">
+##INFO=<ID=NFILT,Number=1,Type=Integer,Description="Number of samples whose genotypes were filtered due to various issues">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total number of valid reads used to genotype all samples">
+##INFO=<ID=DSNP,Number=1,Type=Integer,Description="Total number of reads with SNP phasing information">
+##INFO=<ID=DSTUTTER,Number=1,Type=Integer,Description="Total number of reads with a stutter indel in the STR region">
+##INFO=<ID=DFLANKINDEL,Number=1,Type=Integer,Description="Total number of reads with an indel in the regions flanking the STR">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GB,Number=1,Type=String,Description="Base pair differences of genotype from reference">
+##FORMAT=<ID=Q,Number=1,Type=Float,Description="Posterior probability of unphased genotype">
+##FORMAT=<ID=PQ,Number=1,Type=Float,Description="Posterior probability of phased genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Number of valid reads used for sample's genotype">
+##FORMAT=<ID=DSNP,Number=1,Type=Integer,Description="Number of reads with SNP phasing information">
+##FORMAT=<ID=PSNP,Number=1,Type=String,Description="Number of reads with SNPs supporting each haploid genotype">
+##FORMAT=<ID=PDP,Number=1,Type=String,Description="Fractional reads supporting each haploid genotype">
+##FORMAT=<ID=GLDIFF,Number=1,Type=Float,Description="Difference in likelihood between the reported and next best genotypes">
+##FORMAT=<ID=DSTUTTER,Number=1,Type=Integer,Description="Number of reads with a stutter indel in the STR region">
+##FORMAT=<ID=DFLANKINDEL,Number=1,Type=Integer,Description="Number of reads with an indel in the regions flanking the STR">
+##FORMAT=<ID=AB,Number=1,Type=Float,Description="log10 of the allele bias pvalue, where 0 is no bias and more negative values are increasingly biased. 0 for all homozygous genotypes">
+##FORMAT=<ID=FS,Number=1,Type=Float,Description="log10 of the strand bias pvalue from Fisher's exact test, where 0 is no bias and more negative values are increasingly biased. 0 for all homozygous genotypes">
+##FORMAT=<ID=DAB,Number=1,Type=Integer,Description="Number of reads used in the AB and FS calculations">
+##FORMAT=<ID=ALLREADS,Number=1,Type=String,Description="Base pair difference observed in each read's Needleman-Wunsch alignment">
+##FORMAT=<ID=MALLREADS,Number=1,Type=String,Description="Maximum likelihood bp diff in each read based on haplotype alignments for reads that span the repeat region by at least 5 base pairs">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	GTEX-R55C-0003	GTEX-R55C-0004
+1	16717	STR_2	GGTGGTGGTGGGGGCGGTGGGGGTGGTG	GGTGGTGGTGGGGGCGGTGGTGGTGCTG	.	.	START=16717;END=16744;PERIOD=3	GT:GB:Q:PQ:DP:DSNP:PSNP:PDP:GLDIFF:DSTUTTER:DFLANKINDEL:AB:FS:DAB:ALLREADS:MALLREADS	0|1:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2	0|0:0|0:1.0:0.5:121:0:0|0:96.95|24.05:29.31:3:15:-15.66:0.0:93:-23|1;0|64;1|2;9|5:0|52;9|2
