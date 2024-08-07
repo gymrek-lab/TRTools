@@ -2,13 +2,11 @@
 Tool for annotating TR VCF files
 
 TODO:
-* make sure to store min/max len used for each in pvar
-  or VCF INFO field. how to add header/fields?
-* Ask Tara why we had to skip loci with no period?
+* add min/max len to pgen output (ask Tara about header)
+* Ask Tara why we had to skip loci with no period? probably bc not STRs?
 * Add documentation to functions
 * Add tests
 * Add README and link to other docs
-* Add appropriate headers to VCF (e.g. dosage field)
 * Add beagle annotation
 """
 

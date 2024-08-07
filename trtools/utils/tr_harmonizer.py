@@ -1073,38 +1073,74 @@ class TRRecord:
         """
         return set(self.UniqueStringGenotypeMapping().values())
 
-    # TODO update documentation of types
     def GetDosages(self, 
-            dosagetype: Union[str, TRDosageTypes] = "bestguess") -> Optional[np.ndarray]:
+            dosagetype: Union[str, TRDosageTypes] = "bestguess") -> Tuple[np.ndarray, float, float]:
         """
         Get an array of genotype dosages for each sample.
 
         Multiple strategies are used to compute dosages:
 
-        * bestguess - TODO
-        * beagleap - TODO
-        * bestguess_norm - TODO
-        * beagleap_norm - TODO
+        * bestguess - Sum of the length (in num. rpt units) of alleles
+        * beagleap - For each haplotype, dosage is computed as:
+            sum_a len(a)*p(a) where len(a) is the length (in rpt. units)
+            of each allele a, and p(a) is the allele probability (from Beagle AP1/AP2 fields)
+            The total dosage is this value summed across the two haplotypes
+        * bestguess_norm - Same as bestguess but scaled to be between 0 and 1
+        * beagleap_norm - Same as beagleap but scaled to be between 0 and 1
 
         Returns
         -------
-        Optional[np.ndarray]
+        dosages : np.ndarray
             A numpy array of dosages, of type float
-            If there are no samples in the vcf this record comes from
-            then return None instead
-        float minlen
+        minlen : float
             Minimum length, used when normalization applied
-        float maxlen
+        maxlen : float
             Maximum length, used when normalization applied
         """
-        if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm] and \
-            (self.vcfrecord.INFO.get('AP1') is None or self.vcfrecord.INFO.get('AP2')) is None:
+        if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
+            (self.vcfrecord.INFO.get('AP1') is None or self.vcfrecord.INFO.get('AP2') is None):
                 raise ValueError(
-                "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.CHROM, self.POS)
+                "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
                 )
-        minlen = None
-        maxlen = None
-        dosages = np.array([0]*len(self.GetGenotypeIndicies())) # TODO!!!
+        unnorm_dosages = np.array([0]*self.GetNumSamples())
+
+        # Get min/max
+        minlen = min(min(self.alt_allele_lengths), self.ref_allele_length)
+        maxlen = max(max(self.alt_allele_lengths), self.ref_allele_length)
+
+        if dosagetype in [TRDosageTypes.bestguess, TRDosageTypes.bestguess_norm]:
+            unnorm_dosages = np.array([sum(item[:-1]) for item in self.GetLengthGenotypes()])
+        if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
+            # Extract allele probabilities
+            ap1 = self.vcfrecord.INFO.get('AP1')
+            ref1 = np.clip(1-np.sum(ap1, axis=1), 0, 1) # If neg due to rounding, cutoff at 0
+            ap2 = self.vcfrecord.INFO.get('AP2')
+            ref2 = np.clip(1-np.sum(ap2, axis=1), 0, 1)
+
+            # Get haplotype dosages
+            lens = np.array(self.alt_allele_lengths)
+            ref_len = self.vcfrecord.ref_allele_length
+            h1_dos = np.clip(np.dot(ap1, lens), 0, max(lens))
+            h2_dos = np.clip(np.dot(ap2, lens), 0, max(lens))
+            ref1_dos = ref1*ref_len
+            ref2_dos = ref2*ref_len
+            ref1_dos = ref1_dos.reshape(ref1_dos.shape[0], 1)
+            ref2_dos = ref2_dos.reshape(ref2_dos.shape[0], 1)
+
+            # Add together for final dosage
+            unnorm_dosages = h1_dos + h2_dos + ref1_dos + ref2_dos
+
+        if dosagetype in [TRDosageTypes.bestguess_norm, TRDosageTypes.beagleap_norm]:
+            if minlen == maxlen:
+                # Can't normalize, just set all to 0
+                dosages = np.array([0]*self.GetNumSamples())
+            else:
+                # Normalize to be between 0 and 1
+                dosages = (unnorm_dosages-2*minlen)/(2*maxlen-2*minlen)
+                assert not (np.any(dosages>=1.1) or np.any(dosages<=-0.1))
+                dosages = np.clip(dosages, 0, 1)
+        else:
+            dosages = unnorm_dosages
         return dosages, minlen, maxlen
 
     def GetLengthGenotypes(self) -> Optional[np.ndarray]:
