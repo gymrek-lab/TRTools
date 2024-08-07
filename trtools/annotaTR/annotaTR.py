@@ -38,8 +38,21 @@ class OutputFileTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
-def GetVCFWriter(reader, fname, command):
+def GetVCFWriter(reader, fname, command, dosage_type=None):
     reader.add_to_header("##command-AnnotaTR=" + command)
+    if dosage_type is not None:
+        reader.add_format_to_header({
+            'ID': 'TRDS',
+            'Description': 'TR genotype dosage, method={method}'.format(method=str(dosage_type)),
+            'Type': 'Float',
+            'Number': 1
+        })
+        reader.add_info_to_header({
+            'ID': 'DSLEN',
+            'Description': 'Minimum and maximum dosages, used if normalization was applied',
+            'Type': 'Float',
+            'Number': '2'
+        })
     writer = cyvcf2.Writer(fname, reader)
     return writer
 
@@ -138,7 +151,8 @@ def main(args):
         common.WARNING("Invalid output type")
         return 1
     if outtype == OutputFileTypes.vcf:
-        vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv))
+        vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv),
+                                    dosage_type=dosage_type)
     elif outtype == OutputFileTypes.pgen:
         pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out)
     elif outtype == OutputFileTypes.tensorqtl:
@@ -155,9 +169,10 @@ def main(args):
     for record in reader:
         trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         if dosage_type is not None:
-            dosages = trrecord.GetDosages(dosage_type) # TODO change to dosages!!!
-            print(dosages)
-            # Update record - TODO
+            dosages, minlen, maxlen = trrecord.GetDosages(dosage_type)
+            # Update record
+            record.INFO["DSLEN"] = "{minlen},{maxlen}".format(minlen=minlen, maxlen=maxlen)
+            record.set_format("TRDS", np.array(dosages))
             # Update batch
             dosages_batch[num_variants_processed_batch] = dosages
 

@@ -1073,6 +1073,7 @@ class TRRecord:
         """
         return set(self.UniqueStringGenotypeMapping().values())
 
+    # TODO update documentation of types
     def GetDosages(self, 
             dosagetype: Union[str, TRDosageTypes] = "bestguess") -> Optional[np.ndarray]:
         """
@@ -1091,14 +1092,20 @@ class TRRecord:
             A numpy array of dosages, of type float
             If there are no samples in the vcf this record comes from
             then return None instead
+        float minlen
+            Minimum length, used when normalization applied
+        float maxlen
+            Maximum length, used when normalization applied
         """
         if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm] and \
             (self.vcfrecord.INFO.get('AP1') is None or self.vcfrecord.INFO.get('AP2')) is None:
                 raise ValueError(
                 "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.CHROM, self.POS)
                 )
+        minlen = None
+        maxlen = None
         dosages = np.array([0]*len(self.GetGenotypeIndicies())) # TODO!!!
-        return dosages
+        return dosages, minlen, maxlen
 
     def GetLengthGenotypes(self) -> Optional[np.ndarray]:
         """
