@@ -36,6 +36,14 @@ class VcfTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
+class TRDosageTypes(enum.Enum):
+    """Ways to compute TR dosages."""
+    bestguess = "bestguess"
+    beagleap = "beagleap"
+    bestguess_norm = "bestguess_norm"
+    beagleap_norm = "beagleap_norm"
+    def __repr__(self):
+        return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
 def _ToVCFType(vcftype: Union[str, VcfTypes]):
     # Convert the input to a VcfTypes enum.
@@ -1064,6 +1072,33 @@ class TRRecord:
             The indicies of the unique string alleles
         """
         return set(self.UniqueStringGenotypeMapping().values())
+
+    def GetDosages(self, 
+            dosagetype: Union[str, TRDosageTypes] = "bestguess") -> Optional[np.ndarray]:
+        """
+        Get an array of genotype dosages for each sample.
+
+        Multiple strategies are used to compute dosages:
+
+        * bestguess - TODO
+        * beagleap - TODO
+        * bestguess_norm - TODO
+        * beagleap_norm - TODO
+
+        Returns
+        -------
+        Optional[np.ndarray]
+            A numpy array of dosages, of type float
+            If there are no samples in the vcf this record comes from
+            then return None instead
+        """
+        if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm] and \
+            (self.vcfrecord.INFO.get('AP1') is None or self.vcfrecord.INFO.get('AP2')) is None:
+                raise ValueError(
+                "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.CHROM, self.POS)
+                )
+        dosages = np.array([0]*len(self.GetGenotypeIndicies())) # TODO!!!
+        return dosages
 
     def GetLengthGenotypes(self) -> Optional[np.ndarray]:
         """
