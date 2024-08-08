@@ -2,18 +2,39 @@
 Tool for annotating TR VCF files
 
 TODO:
+
 * add min/max len to pgen output (ask Tara about header)
+* Is beagle annotation relevant for pgen output? add to the pvar file?
 * Ask Tara why we had to skip loci with no period? probably bc not STRs?
 * Add documentation to functions
 * Add tests
 * Add README and link to other docs
 * Add beagle annotation
+* Does input contain both SNPs and TRs for Beagle output? if so skip SNPs. 
+this will change variant_ct for pgen writer so might need to do beagle pass first
+to count
+
+
+Beagle annotation steps:
+1. Modify header of "imputed""
+- change source/command header lines from ref panel to "preimputation_source" and "preimputation_command"
+- copy contig, ALT, INFO/END lines from ref panel
+
+2. Add relevant info fields from refpanel
+advntr: RU VID
+eh: RU VARID RL
+gangstr: RU
+hipstr: START END PERIOD
+
+For beagle annotation can we re-use mergeSTR code to walk through in sorted order?
+or if not too slow can build a big dictionary of chr:pos:ref->info
+this will help precompute variant count for pgen
+
 """
 
 import argparse
 import cyvcf2
 import enum
-import math
 import numpy as np
 import os
 from pgenlib import PgenWriter
@@ -62,14 +83,16 @@ def GetPGenPvarWriter(reader, outprefix):
             f.write("{sample}\t0\n")
     # Get pvar writer
     pvar_writer = open(outprefix+".pvar", "w")
-    pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT"])+"\n")
+    pvar_writer.write("##INFO=<ID=DSLEN,Number=2,Type=Float,Description=\"Minimum and maximum dosages, used if normalization was applied\">\n")
+    pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT", "INFO"])+"\n")
     # Get pgen writer we will continue writing to
     pgen_writer = PgenWriter(bytes(outprefix+".pgen", "utf8"),
         len(reader.samples), variant_ct=reader.num_records, dosage_present=True)
     return pgen_writer, pvar_writer
 
-def WritePvarVariant(pvar_writer, record):
-    out_items = [record.CHROM, str(record.POS), record.ID, DUMMY_REF, DUMMY_ALT]
+def WritePvarVariant(pvar_writer, record, minlen, maxlen):
+    out_items = [record.CHROM, str(record.POS), record.ID, DUMMY_REF, DUMMY_ALT,
+        "%.2f,%.2f"%(minlen, maxlen)]
     pvar_writer.write("\t".join(out_items)+"\n")
 
 def getargs(): # pragma: no cover
@@ -83,7 +106,7 @@ def getargs(): # pragma: no cover
         type=str, default="auto")
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
-        type=str, default="vcf")
+        type=str, nargs="+", default="vcf")
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -117,6 +140,15 @@ def main(args):
         common.WARNING("Error: %s does not exist"%args.annotate_beagle)
         return 1
 
+    outtypes = []
+    for outtype in args.outtype:
+        try:
+            ot = OutputFileTypes[outtype]
+            outtypes.append(ot)
+        except KeyError:
+            common.WARNING("Invalid output type")
+            return 1
+
     ###### Load reader #######
     reader = utils.LoadSingleReader(args.vcf)
     if reader is None:
@@ -137,27 +169,19 @@ def main(args):
     if dosage_type == trh.TRDosageTypes.beagleap and not trh.IsBeagleVCF(reader):
         common.WARNING("Error: can only compute beagleap dosages on Beagle VCFs")
         return 1
-    if dosage_type is None and args.outtype in ["pgen","tensorqtl"]:
+    if dosage_type is None and np.all([ot in [OutputFileTypes.pgen, OutputFileTypes.tensorqtl] for ot in outtypes]):
         common.WARNING("Output types pgen and tensorflow only supported "
                        "if using option --dosages")
         return 1
 
     ###### Set up writers #######
-    try:
-        outtype = OutputFileTypes[args.outtype]
-    except KeyError:
-        common.WARNING("Invalid output type")
-        return 1
-    if outtype == OutputFileTypes.vcf:
+    if OutputFileTypes.vcf in outtypes:
         vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv),
                                     dosage_type=dosage_type)
-    elif outtype == OutputFileTypes.pgen:
+    if OutputFileTypes.pgen in outtypes:
         pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out)
-    elif outtype == OutputFileTypes.tensorqtl:
+    if OutputFileTypes.tensorqtl in outtypes:
         common.WARNING("TensorQTL output not yet implemented")
-        return 1
-    else:
-        common.WARNING("Invalid output type specified")
         return 1
 
     ###### Process each record #######
@@ -166,6 +190,8 @@ def main(args):
     dosages_batch = np.empty((DEFAULT_PGEN_BATCHSIZE, len(reader.samples)), dtype=np.float32)
     for record in reader:
         trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+        minlen = None
+        maxlen = None
         if dosage_type is not None:
             dosages, minlen, maxlen = trrecord.GetDosages(dosage_type)
             # Update record
@@ -175,12 +201,12 @@ def main(args):
             dosages_batch[num_variants_processed_batch] = dosages
 
         # Write to VCF if using vcf output
-        if outtype == OutputFileTypes.vcf:
+        if OutputFileTypes.vcf in outtypes:
             vcf_writer.write_record(record)
 
         # Write pvar if using pgen output
-        if outtype == OutputFileTypes.pgen:
-            WritePvarVariant(pvar_writer, record)
+        if OutputFileTypes.pgen in outtypes:
+            WritePvarVariant(pvar_writer, record, minlen, maxlen)
 
         num_variants_processed += 1
         num_variants_processed_batch += 1
@@ -190,17 +216,17 @@ def main(args):
             or (num_variants_processed==reader.num_records)):
             # Write batch
             common.MSG("Processed {numvars} variants".format(numvars=num_variants_processed))
-            if outtype == OutputFileTypes.pgen:
+            if OutputFileTypes.pgen in outtypes:
                 pgen_writer.append_dosages_batch(dosages_batch[:num_variants_processed_batch])
             # Reset
             dosages_batch = np.empty((DEFAULT_PGEN_BATCHSIZE, len(reader.samples)), dtype=np.float32)
             num_variants_processed_batch = 0
 
     ###### Cleanup #######
-    if outtype == OutputFileTypes.pgen:
+    if OutputFileTypes.pgen in outtypes:
         pgen_writer.close()
         pvar_writer.close()
-    if outtype == OutputFileTypes.vcf:
+    if OutputFileTypes.vcf in outtypes:
         vcf_writer.close()
 
 def run(): # pragma: no cover
