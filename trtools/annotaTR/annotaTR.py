@@ -3,33 +3,10 @@ Tool for annotating TR VCF files
 
 TODO:
 
-* add min/max len to pgen output (ask Tara about header)
-* Is beagle annotation relevant for pgen output? add to the pvar file?
-* Ask Tara why we had to skip loci with no period? probably bc not STRs?
+* Add beagle annotation to pvar output?
 * Add documentation to functions
 * Add tests
 * Add README and link to other docs
-* Add beagle annotation
-* Does input contain both SNPs and TRs for Beagle output? if so skip SNPs. 
-this will change variant_ct for pgen writer so might need to do beagle pass first
-to count
-
-
-Beagle annotation steps:
-1. Modify header of "imputed""
-- change source/command header lines from ref panel to "preimputation_source" and "preimputation_command"
-- copy contig, ALT, INFO/END lines from ref panel
-
-2. Add relevant info fields from refpanel
-advntr: RU VID
-eh: RU VARID RL
-gangstr: RU
-hipstr: START END PERIOD
-
-For beagle annotation can we re-use mergeSTR code to walk through in sorted order?
-or if not too slow can build a big dictionary of chr:pos:ref->info
-this will help precompute variant count for pgen
-
 """
 
 import argparse
@@ -49,6 +26,14 @@ DEFAULT_PGEN_BATCHSIZE = 1000
 DUMMY_REF = "A"
 DUMMY_ALT = "T"
 
+# Info fields copied from reference panel for each tool
+INFOFIELDS = {
+    trh.VcfTypes.hipstr: ["START","END","PERIOD"],
+    trh.VcfTypes.advntr: ["RU", "VID"],
+    trh.VcfTypes.gangstr: ["RU"],
+    trh.VcfTypes.eh: ["RU","VARID","RL"]
+}
+
 class OutputFileTypes(enum.Enum):
     """Different supported output file types."""
     vcf = "vcf"
@@ -57,8 +42,9 @@ class OutputFileTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
-def GetVCFWriter(reader, fname, command, dosage_type=None):
+def GetVCFWriter(reader, fname, command, vcftype, dosage_type=None, refreader=None):
     reader.add_to_header("##command-AnnotaTR=" + command)
+    # Add dosage lines to header
     if dosage_type is not None:
         reader.add_format_to_header({
             'ID': 'TRDS',
@@ -72,10 +58,59 @@ def GetVCFWriter(reader, fname, command, dosage_type=None):
             'Type': 'Float',
             'Number': '2'
         })
+    # Copy over relevant header lines from refpanel
+    if refreader is not None:
+        refheader = refreader.raw_header.split("\n")
+        for item in refheader:
+            if item.startswith("##source"):
+                reader.add_to_header("##preimputation_source" + item.strip()[8:])
+            if item.startswith("##command"):
+                reader.add_to_header("##preimputation_command" + item.strip()[9:])
+            if item.startswith("##contig") or item.startswith("##ALT"):
+                reader.add_to_header(item.strip())
+    for infofield in INFOFIELDS[vcftype]:
+        if refreader.contains(infofield):
+            # Note can't pass headerinfo directly because extra
+            # quotes in Description need to be removed...
+            headerinfo = refreader.get_header_type(infofield)
+            reader.add_info_to_header({
+                'ID': headerinfo["ID"],
+                'Description': headerinfo["Description"].replace('"',''),
+                'Type': headerinfo["Type"],
+                "Number": headerinfo["Number"]
+                })
+        else:
+            common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
+            return None
     writer = cyvcf2.Writer(fname, reader)
     return writer
 
-def GetPGenPvarWriter(reader, outprefix):
+def LoadMetadataFromRefPanel(refreader, vcftype):
+    metadata = {} # chr:pos:ref->info
+    for record in refreader:
+        locdata = {}
+        for infofield in INFOFIELDS[vcftype]:
+            infodata = record.INFO.get(infofield, None)
+            if infodata is not None:
+                locdata[infofield] = infodata
+        # Check if we have all required INFO fields
+        # Otherwise assume it is not a TR
+        if len(locdata.keys())!=len(INFOFIELDS[vcftype]):
+            continue
+        # Add to metadata
+        locuskey = "{chrom}:{pos}:{ref}".format(
+            chrom=record.CHROM,
+            pos=record.POS, 
+            ref=record.REF
+        )
+        # Quit if we found a duplicate TR locus
+        if locuskey in metadata.keys():
+            common.WARNING("Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey))
+            return {}
+        metadata[locuskey] = locdata
+    return metadata
+
+def GetPGenPvarWriter(reader, outprefix, variant_ct):
     # Write .psam 
     with open(outprefix+".psam", "w") as f:
         f.write("#IID\tSEX\n")
@@ -87,7 +122,7 @@ def GetPGenPvarWriter(reader, outprefix):
     pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT", "INFO"])+"\n")
     # Get pgen writer we will continue writing to
     pgen_writer = PgenWriter(bytes(outprefix+".pgen", "utf8"),
-        len(reader.samples), variant_ct=reader.num_records, dosage_present=True)
+        len(reader.samples), variant_ct=variant_ct, dosage_present=True)
     return pgen_writer, pvar_writer
 
 def WritePvarVariant(pvar_writer, record, minlen, maxlen):
@@ -114,8 +149,9 @@ def getargs(): # pragma: no cover
              "Optionally specify how. Options=%s"%[str(item) for item in trh.TRDosageTypes.__members__],
         type=str)
     annot_group.add_argument(
-        "--annotate-beagle", 
-        help="Annotate Beagle-imputed VCF with TR metadata from the reference panel",
+        "--ref-panel", 
+        help="Annotate Beagle-imputed VCF with TR metadata from the reference panel. "
+             "The reference must be the same VCF used for imputation. ", 
         type=str)
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
@@ -136,7 +172,7 @@ def main(args):
         common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
-    if args.annotate_beagle is not None and not os.path.exists(args.annotate_beagle):
+    if args.ref_panel is not None and not os.path.exists(args.ref_panel):
         common.WARNING("Error: %s does not exist"%args.annotate_beagle)
         return 1
 
@@ -149,11 +185,41 @@ def main(args):
             common.WARNING("Invalid output type")
             return 1
 
+    if args.vcftype != 'auto':
+        try:
+            checktype = trh.VcfTypes[args.vcftype]
+        except:
+            raise ValueError("Error: invalid vcftype specified")
+
+    ###### Load reference panel info (optional) #######
+    refpanel_metadata = None
+    refreader = None
+    if args.ref_panel is not None:
+        refreader = utils.LoadSingleReader(args.ref_panel)
+        if refreader is None:
+            return 1
+        if args.vcftype != 'auto':
+            refpanel_vcftype = trh.VcfTypes[args.vcftype]
+        else:
+            refpanel_vcftype = trh.InferVCFType(refreader)
+        if refpanel_vcftype == trh.VcfTypes.popstr:
+            common.WARNING("Error: reference panel annotation not "
+                           "currently supported for popSTR")
+            return 1
+        refpanel_metadata = LoadMetadataFromRefPanel(refreader, refpanel_vcftype)
+        if len(refpanel_metadata.keys()) == 0:
+            common.WARNING("Error: No TRs detected in reference panel. Quitting")
+            return 1
+        common.MSG("Loaded " + str(len(refpanel_metadata.keys())) + " TR loci from ref panel",
+            debug=True)
+
     ###### Load reader #######
     reader = utils.LoadSingleReader(args.vcf)
     if reader is None:
         return 1
-    if args.vcftype != 'auto':
+    if args.ref_panel is not None:
+        vcftype = refpanel_vcftype # should be same as refpanel
+    elif args.vcftype != 'auto':
         vcftype = trh.VcfTypes[args.vcftype]
     else:
         vcftype = trh.InferVCFType(reader)
@@ -170,16 +236,26 @@ def main(args):
         common.WARNING("Error: can only compute beagleap dosages on Beagle VCFs")
         return 1
     if dosage_type is None and np.all([ot in [OutputFileTypes.pgen, OutputFileTypes.tensorqtl] for ot in outtypes]):
-        common.WARNING("Output types pgen and tensorflow only supported "
+        common.WARNING("Error: Output types pgen and tensorflow only supported "
                        "if using option --dosages")
         return 1
 
     ###### Set up writers #######
     if OutputFileTypes.vcf in outtypes:
-        vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv),
-                                    dosage_type=dosage_type)
+        vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv), vcftype,
+                                    dosage_type=dosage_type, refreader=refreader)
+        if vcf_writer is None:
+            common.WARNING("Error: problem initializing vcf writer.")
+            return 1
     if OutputFileTypes.pgen in outtypes:
-        pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out)
+        # If using a ref panel, assume we have same number
+        # of TRs as the panel
+        # Otherwise, assume our file is all TRs and use record count
+        if refpanel_metadata is not None:
+            variant_ct = len(refpanel_metadata.keys())
+        else:
+            variant_ct = reader.num_records
+        pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out, variant_ct)
     if OutputFileTypes.tensorqtl in outtypes:
         common.WARNING("TensorQTL output not yet implemented")
         return 1
@@ -189,6 +265,19 @@ def main(args):
     num_variants_processed = 0
     dosages_batch = np.empty((DEFAULT_PGEN_BATCHSIZE, len(reader.samples)), dtype=np.float32)
     for record in reader:
+        # If using refpanel, first add required fields
+        # In that case, only process records in the refpanel
+        # Otherwise, process all records in the input VCF
+        if refpanel_metadata is not None:
+            locuskey = "{chrom}:{pos}:{ref}".format(
+                chrom=record.CHROM,
+                pos=record.POS,
+                ref=record.REF
+            )
+            if locuskey not in refpanel_metadata.keys():
+                continue
+            for infofield in INFOFIELDS[vcftype]:
+                record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
         trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         minlen = None
         maxlen = None
@@ -213,7 +302,7 @@ def main(args):
 
         # Reset batch, and write to pgen if using that
         if ((num_variants_processed_batch == DEFAULT_PGEN_BATCHSIZE) \
-            or (num_variants_processed==reader.num_records)):
+            or (num_variants_processed==variant_ct)):
             # Write batch
             common.MSG("Processed {numvars} variants".format(numvars=num_variants_processed))
             if OutputFileTypes.pgen in outtypes:
