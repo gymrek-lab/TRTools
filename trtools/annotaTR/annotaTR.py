@@ -3,10 +3,11 @@ Tool for annotating TR VCF files
 
 TODO:
 
-* Add beagle annotation to pvar output?
 * Add documentation to functions
-* Add tests
+* Add unit tests
+* Add command line tests
 * Add README and link to other docs
+* Add tensorqtl dosage output
 """
 
 import argparse
@@ -22,6 +23,7 @@ import trtools.utils.tr_harmonizer as trh
 import trtools.utils.utils as utils
 from trtools import __version__
 
+# Variables for PGEN output
 DEFAULT_PGEN_BATCHSIZE = 1000
 DUMMY_REF = "A"
 DUMMY_ALT = "T"
@@ -38,7 +40,6 @@ class OutputFileTypes(enum.Enum):
     """Different supported output file types."""
     vcf = "vcf"
     pgen = "pgen"
-    tensorqtl = "tensorqtl"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
@@ -235,8 +236,8 @@ def main(args):
     if dosage_type == trh.TRDosageTypes.beagleap and not trh.IsBeagleVCF(reader):
         common.WARNING("Error: can only compute beagleap dosages on Beagle VCFs")
         return 1
-    if dosage_type is None and np.all([ot in [OutputFileTypes.pgen, OutputFileTypes.tensorqtl] for ot in outtypes]):
-        common.WARNING("Error: Output types pgen and tensorflow only supported "
+    if dosage_type is None and np.all([ot in [OutputFileTypes.pgen] for ot in outtypes]):
+        common.WARNING("Error: Output type pgen only supported "
                        "if using option --dosages")
         return 1
 
@@ -256,9 +257,6 @@ def main(args):
         else:
             variant_ct = reader.num_records
         pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out, variant_ct)
-    if OutputFileTypes.tensorqtl in outtypes:
-        common.WARNING("TensorQTL output not yet implemented")
-        return 1
 
     ###### Process each record #######
     num_variants_processed_batch = 0
