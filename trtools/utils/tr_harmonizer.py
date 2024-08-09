@@ -660,6 +660,10 @@ class TRRecord:
     ref_allele_length :
         like alt_allele_lengths, but for the reference allele.
         If this is passed, alt_allele_lengths must also be passed
+    min_allele_length :
+        Minimum allele length from the reference and alternate alleles
+    max_allele_length :
+        Maximum allele length from the reference and alternate alleles
     quality_score_transform :
         A function which turns the quality_field value into a float
         score. When None, the quality_field values are assumed
@@ -742,7 +746,13 @@ class TRRecord:
                 len(allele) / len(motif) for allele in self.alt_alleles
             ]
 
-
+        # Update min/max length
+        if len(self.alt_alleles) > 0:
+            self.min_allele_length = min(self.ref_allele_length, min(self.alt_allele_lengths))
+            self.max_allele_length = max(self.ref_allele_length, max(self.alt_allele_lengths))
+        else:
+            self.min_allele_length = self.ref_allele_length
+            self.max_allele_length = self.ref_allele_length
 
         try:
             self._CheckRecord()
@@ -1074,7 +1084,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: Union[str, TRDosageTypes] = "bestguess") -> Tuple[np.ndarray, float, float]:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> np.ndarray:
         """
         Get an array of genotype dosages for each sample.
 
@@ -1088,14 +1098,18 @@ class TRRecord:
         * bestguess_norm - Same as bestguess but scaled to be between 0 and 1
         * beagleap_norm - Same as beagleap but scaled to be between 0 and 1
 
+        Note: normalized dosages currently not supported for haploid calls
+        Those are set to np.nan in the output dosages if using a "*_norm" option
+
+        Parameters
+        ----------
+        dosagetype : Enum
+            Which TRDosageType to compute. Default bestguess
+ 
         Returns
         -------
         dosages : np.ndarray
             A numpy array of dosages, of type float
-        minlen : float
-            Minimum length, used when normalization applied
-        maxlen : float
-            Maximum length, used when normalization applied
         """
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
             (self.vcfrecord.INFO.get('AP1') is None or self.vcfrecord.INFO.get('AP2') is None):
@@ -1104,12 +1118,19 @@ class TRRecord:
                 )
         unnorm_dosages = np.array([0]*self.GetNumSamples())
 
-        # Get min/max
-        minlen = min(min(self.alt_allele_lengths), self.ref_allele_length)
-        maxlen = max(max(self.alt_allele_lengths), self.ref_allele_length)
-
         if dosagetype in [TRDosageTypes.bestguess, TRDosageTypes.bestguess_norm]:
-            unnorm_dosages = np.array([sum(item[:-1]) for item in self.GetLengthGenotypes()])
+            # Get length gts and replace -1 (missing) and -2 (low ploidy) with 0
+            # But if normalizing set those to np.nan since unclear
+            # how to normalize haploid dosages which end up negative
+            # under the current method...
+            lengts = self.GetLengthGenotypes()
+            if dosagetype == TRDosageTypes.bestguess_norm:
+                lengts[lengts==-1] = np.nan
+                lengts[lengts==-2] = np.nan
+            else:
+                lengts[lengts==-1] = 0
+                lengts[lengts==-2] = 0
+            unnorm_dosages = np.array([sum(item[0:-1]) for item in lengts])
         if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
             # Extract allele probabilities
             ap1 = self.vcfrecord.INFO.get('AP1')
@@ -1131,17 +1152,17 @@ class TRRecord:
             unnorm_dosages = h1_dos + h2_dos + ref1_dos + ref2_dos
 
         if dosagetype in [TRDosageTypes.bestguess_norm, TRDosageTypes.beagleap_norm]:
-            if minlen == maxlen:
+            if self.min_allele_length == self.max_allele_length:
                 # Can't normalize, just set all to 0
                 dosages = np.array([0]*self.GetNumSamples())
             else:
                 # Normalize to be between 0 and 1
-                dosages = (unnorm_dosages-2*minlen)/(2*maxlen-2*minlen)
+                dosages = (unnorm_dosages-2*self.min_allele_length)/(2*self.max_allele_length-2*self.min_allele_length)
                 assert not (np.any(dosages>=1.1) or np.any(dosages<=-0.1))
                 dosages = np.clip(dosages, 0, 1)
         else:
             dosages = unnorm_dosages
-        return dosages, minlen, maxlen
+        return dosages
 
     def GetLengthGenotypes(self) -> Optional[np.ndarray]:
         """

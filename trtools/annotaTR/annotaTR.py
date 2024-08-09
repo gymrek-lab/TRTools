@@ -8,6 +8,7 @@ TODO:
 * Add command line tests
 * Add README and link to other docs
 * Add tensorqtl dosage output
+* Check if pgen has assumptions on dosage ranges. if so force normalize for pgen output
 """
 
 import argparse
@@ -277,10 +278,10 @@ def main(args):
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
         trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
-        minlen = None
-        maxlen = None
+        minlen = trrecord.min_allele_length
+        maxlen = trrecord.max_allele_length
         if dosage_type is not None:
-            dosages, minlen, maxlen = trrecord.GetDosages(dosage_type)
+            dosages = trrecord.GetDosages(dosage_type)
             # Update record
             record.INFO["DSLEN"] = "{minlen},{maxlen}".format(minlen=minlen, maxlen=maxlen)
             record.set_format("TRDS", np.array(dosages))

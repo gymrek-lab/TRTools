@@ -41,6 +41,7 @@ class DummyCyvcf2Record:
                 axis=1
             ) # add the phasing axis, we're not testing that here
             self.genotype.array = lambda: self._gts
+            self.genotype.n_samples = len(gts)
         else:
             self.genotype = None
 
@@ -260,8 +261,7 @@ def test_TRRecord_full_alleles():
         5: 5
     }
 
-
-def test_TRRecord_GetGenotypes():
+def test_TRRecord_GetGenotypes_Dosages():
     dummy_record = get_dummy_record()
     # Test good example
     ref_allele = dummy_record.REF
@@ -275,12 +275,17 @@ def test_TRRecord_GetGenotypes():
                 [ref_allele, '.']]
     true_gts = np.array(true_gts)
     true_len_gts = np.array([[3, 4], [4, 4], [4, 4], [4, 6], [6, 6], [3, -1]])
+    true_bestguess_dosages = np.array([7, 8, 8, 10, 12, 3])
+    true_bestguess_norm_dosages = np.array([1/6, 1/3, 1/3, 2/3, 1, np.nan])
     assert np.all(rec.GetGenotypeIndicies()[:, :-1] ==
                   np.array(dummy_record_gts))
     assert np.all(rec.GetLengthGenotypes()[:, :-1] == true_len_gts)
     assert np.all(rec.GetStringGenotypes()[:, :-1] == true_gts)
+    assert np.all(rec.GetDosages() == true_bestguess_dosages)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) == 
+        true_bestguess_dosages)
 
-    # Test example where alt=[]
+    # Test triploid example where alt=[]
     triploid_record = get_triploid_record()
     rec = trh.TRRecord(triploid_record, ref_allele, [], "CAG", "", None)
     true_len_gts = [[3, 3, -2],
@@ -298,10 +303,16 @@ def test_TRRecord_GetGenotypes():
                 [ref_allele, ref_allele, ','],
                 [ref_allele, ref_allele, ref_allele]]
     true_gts = np.array(true_gts)
-
+    true_bestguess_dosages = np.array([6, 6, 6, 9])
     assert np.all(rec.GetGenotypeIndicies()[:, :-1] == true_idx_gts)
     assert np.all(rec.GetLengthGenotypes()[:, :-1] == true_len_gts)
     assert np.all(rec.GetStringGenotypes()[:, :-1] == true_gts)
+    assert np.all(rec.GetDosages() == true_bestguess_dosages)
+    # Try to get beagle-based dosages when missing AP1/AP2 fields
+    with pytest.raises(ValueError):
+        rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    with pytest.raises(ValueError):
+        rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm)
 
     # Test example with fewer alt_alleles than the max genotype index
     with pytest.raises(ValueError):
