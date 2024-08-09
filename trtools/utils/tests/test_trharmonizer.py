@@ -61,6 +61,18 @@ def get_dummy_record():
         alt=("CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG")
     )
 
+dummy_record_gts_allsamelen = [
+    [0, 0],
+    [0, 0],
+    [0, 1],
+    [1, 1]]
+def get_dummy_record_gts_allsamelen():
+    return DummyCyvcf2Record(
+        gts=dummy_record_gts_allsamelen,
+        ref="CAGCAGCAG",
+        alt=["CAGCAACAG"]
+    )
+
 triploid_gts = np.array([
     [0, 0, -2],
     [0, 0, -2],
@@ -284,6 +296,21 @@ def test_TRRecord_GetGenotypes_Dosages():
     assert np.all(rec.GetDosages() == true_bestguess_dosages)
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) == 
         true_bestguess_dosages)
+
+    # Test all ref
+    allsamelen_record = get_dummy_record_gts_allsamelen()
+    rec = trh.TRRecord(allsamelen_record, allsamelen_record.REF, allsamelen_record.ALT, "CAG", "", None)
+    true_bestguess_norm_dosages = np.array([0, 0, 0, 0])
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
+        true_bestguess_norm_dosages)
+    true_bestguess_dosages = np.array([6, 6, 6, 6])
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) ==
+        true_bestguess_dosages)
+    allsamelen_record.FORMAT["AP1"] = np.array([[0], [0], [0], [0]])
+    allsamelen_record.FORMAT["AP2"] = np.array([[0], [0], [0], [0]])
+    true_beagle_norm_dosages = np.array([0, 0, 0, 0])
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm) ==
+        true_beagle_norm_dosages)
 
     # Test triploid example where alt=[]
     triploid_record = get_triploid_record()
