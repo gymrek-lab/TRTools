@@ -8,7 +8,10 @@ TODO:
 * Add command line tests
 * Add README and link to other docs
 * Add tensorqtl dosage output
-* Check if pgen has assumptions on dosage ranges. if so force normalize for pgen output
+* force normalize for pgen output
+* Update docs for CALLERS about Beagle
+* test we give error if no annotation options specified
+
 """
 
 import argparse

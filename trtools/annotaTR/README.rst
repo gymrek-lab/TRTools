@@ -1,4 +1,4 @@
-# .. overview_directive
+.. overview_directive
 .. |annotaTR overview| replace:: AnnotaTR takes in a TR genotype VCF file and outputs an new file (VCF or other formats) with additional INFO/FORMAT fields
 .. overview_directive_done
 
@@ -32,7 +32,7 @@ Required parameters:
 Other general parameters:
 
 * :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`.
-* :code:`--outtype <string>`: Which output format to generate. Supported arguments are :code:`vcf` or :code:`pgen`. If a comma-separated listed of types is specified (e.g. :code:`vcf,pgen`), all specified output formats are generated.
+* :code:`--outtype <string>`: Which output format to generate. Supported arguments are :code:`vcf` or :code:`pgen`. If a comma-separated listed of types is specified (e.g. :code:`vcf,pgen`), all specified output formats are generated. By default, only VCF output is generated at :code:`$outprefix.vcf`. If PGEN output is specified, the files :code:`$outprefix.pgen`, :code:`$outprefix.pvar`, and :code:`$outprefix.psam` are generated. See more on the `pgen format here <https://www.cog-genomics.org/plink/2.0/formats#pgen>`_
 
 In addition to specifying input and output options above, you must specify at least one annotation operation to perform. These are described below.
 
@@ -44,9 +44,19 @@ annotaTR offers several annotation options:
 Computing dosages
 ^^^^^^^^^^^^^^^^^
 
-Dosages are quantitative representations of individual-level genotypes. Use cases and advantages/disadvantages of this representation are described below. The following option computes dosages:
+Dosages are quantitative representations of individual-level genotypes. A major use case for dosages is to perform association testing between TR genotypes and a phenotype of interest. Major advantages of using dosages are:
 
-:code:`--dosages <string>`: The string argument to this option specifies the method to compute dosages. It must be one of: 
+* They can be used as input to downstream tools that support association testing with dosage values, even if those tools do not explicitly support TRs or multi-allelic sites. This has currently been tested using PGEN files output by associaTR as input to plink.
+* This enables testing TRs alongside other variant types using the same pipelines, streamlining workflows that include multiple variant types.
+
+The following command computes dosages::
+
+	annotaTR \
+  	  --vcf <vcf file> \
+  	  --out <string> \
+  	  --dosages <string>
+
+where the argument to the :code:`--dosages` option specifies the method to compute dosages. It must be one of: 
 
 * :code:`bestguess`: dosages are computed by summing the length of alleles (given in number of repeat units) for each call. e.g. for a genotype heterozygous for 3 and 4 copies of a repeat, the best guess dosage will be 7.
 * :code:`bestguess_norm`: same as above, but scaled to be between 0 and 2. This is required if generating pgen output, since pgen only supports dosage values in this range.
@@ -65,18 +75,44 @@ Dosages may also be output to PGEN format. Because dosages are not explicitly su
 
 Annotating imputed TR VCFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-TODO
+
+Note this functionality replaces the script :code:`trtools_prep_beagle_vcf.sh` which is being deprecated.
+
+When TRs cannot be directly genotyped from sequencing data, an alternative is to impute them using `Beagle <https://faculty.washington.edu/browning/beagle/beagle.html>`_ with a phased reference panel of SNPs+TRs (e.g. see our latest `reference panel from EnsembleTR <https://github.com/gymrek-lab/ensembleTR>`_). 
+
+Using Beagle to impute TRs will output a VCF with both SNPs+TRs, and strips the TR-specific fields required by TRTools (see the `callers page <https://trtools.readthedocs.io/en/stable/CALLERS.html>`_ for more details). annotaTR can be used to add back these fields::
+
+	annotaTR \
+  	  --vcf <imputed vcf file> \
+  	  --out <string> \
+  	  --ref-panel <refpanel vcf file> \
+  	  [--outtype <string>]
+
+where:
+* :code:`--vcf` gives the imputed VCF file, which can be the file directly output by Beagle.
+* :code:`--ref-panel` gives the VCF file of the reference panel used for imputation with Beagle.
+
+annotaTR requires the reference panel VCF is the same as the one used for Beagle imputation. This is because it is important that the set of ref/alt alleles is the same in the imputed vcf vs. the reference panel.
+
+If generating a VCF output file, this command will output a new file containing only STRs, with the following fields added back depending on the genotyper used to generate the reference panel:
+
+* For HipSTR-based reference panels: INFO fields START, END, PERIOD and added
+* For adVNTR: INFO fields RU, VID are added
+* For GangSTR: INFO field RU is added
+* For ExpansionHunter: INFO fields RU, VARID, RL
+
+If generating PGEN output, these fields will not be explicitly output but will be added during processing of the input VCF to enable computing dosages to output to the PGEN file. Note the PGEN output will only contain TRs.
 
 Notes on output files
-^^^^^^^^^^^^^^^^^^^^^
-TODO
+---------------------
 
-Use cases
-^^^^^^^^^
+* VCF output files are supported for all operations (currently: annotation of Beagle output and computing dosages)
+* PGEN output is only supported when computing normalized dosages. 
 
-# TODO below under construction
-A major use case for dosages is to perform association testing between TR genotypes and a phenotype of interest. Major advantages of using dosages are:
 
-* They can be used as input to downstream tools that support association testing with dosage values, even if those tools do not explicitly support TRs or multi-allelic sites. Below we discuss how to use annotaTR-generated pgen files with dosages as input to plink.
-* This enables testing TRs alongside other variant types using the same pipelines, streamlining workflows that include multiple variant types.
+Example commands
+----------------
 
+Below are :code:`annotaTR` examples using data files that can be found at https://github.com/gymrek-lab/TRTools/tree/master/example-files::
+
+TODO example commands with data files
