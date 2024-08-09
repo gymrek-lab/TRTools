@@ -276,7 +276,7 @@ def test_TRRecord_GetGenotypes_Dosages():
     true_gts = np.array(true_gts)
     true_len_gts = np.array([[3, 4], [4, 4], [4, 4], [4, 6], [6, 6], [3, -1]])
     true_bestguess_dosages = np.array([7, 8, 8, 10, 12, 3])
-    true_bestguess_norm_dosages = np.array([1/6, 1/3, 1/3, 2/3, 1, np.nan])
+    true_bestguess_norm_dosages = 2*np.array([1/6, 1/3, 1/3, 2/3, 1, np.nan])
     assert np.all(rec.GetGenotypeIndicies()[:, :-1] ==
                   np.array(dummy_record_gts))
     assert np.all(rec.GetLengthGenotypes()[:, :-1] == true_len_gts)

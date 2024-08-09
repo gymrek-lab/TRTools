@@ -1095,8 +1095,8 @@ class TRRecord:
             sum_a len(a)*p(a) where len(a) is the length (in rpt. units)
             of each allele a, and p(a) is the allele probability (from Beagle AP1/AP2 fields)
             The total dosage is this value summed across the two haplotypes
-        * bestguess_norm - Same as bestguess but scaled to be between 0 and 1
-        * beagleap_norm - Same as beagleap but scaled to be between 0 and 1
+        * bestguess_norm - Same as bestguess but scaled to be between 0 and 2
+        * beagleap_norm - Same as beagleap but scaled to be between 0 and 2
 
         Note: normalized dosages currently not supported for haploid calls
         Those are set to np.nan in the output dosages if using a "*_norm" option
@@ -1156,10 +1156,10 @@ class TRRecord:
                 # Can't normalize, just set all to 0
                 dosages = np.array([0]*self.GetNumSamples())
             else:
-                # Normalize to be between 0 and 1
-                dosages = (unnorm_dosages-2*self.min_allele_length)/(2*self.max_allele_length-2*self.min_allele_length)
-                assert not (np.any(dosages>=1.1) or np.any(dosages<=-0.1))
-                dosages = np.clip(dosages, 0, 1)
+                # Normalize to be between 0 and 2
+                dosages = 2*(unnorm_dosages-2*self.min_allele_length)/(2*self.max_allele_length-2*self.min_allele_length)
+                assert not (np.any(dosages>=2.1) or np.any(dosages<=-0.1))
+                dosages = np.clip(dosages, 0, 2)
         else:
             dosages = unnorm_dosages
         return dosages
