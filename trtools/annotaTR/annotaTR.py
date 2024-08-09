@@ -73,20 +73,20 @@ def GetVCFWriter(reader, fname, command, vcftype, dosage_type=None, refreader=No
                 reader.add_to_header("##preimputation_command" + item.strip()[9:])
             if item.startswith("##contig") or item.startswith("##ALT"):
                 reader.add_to_header(item.strip())
-    for infofield in INFOFIELDS[vcftype]:
-        if refreader.contains(infofield):
-            # Note can't pass headerinfo directly because extra
-            # quotes in Description need to be removed...
-            headerinfo = refreader.get_header_type(infofield)
-            reader.add_info_to_header({
-                'ID': headerinfo["ID"],
-                'Description': headerinfo["Description"].replace('"',''),
-                'Type': headerinfo["Type"],
-                "Number": headerinfo["Number"]
-                })
-        else:
-            common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
-            return None
+        for infofield in INFOFIELDS[vcftype]:
+            if refreader.contains(infofield):
+                # Note can't pass headerinfo directly because extra
+                # quotes in Description need to be removed...
+                headerinfo = refreader.get_header_type(infofield)
+                reader.add_info_to_header({
+                    'ID': headerinfo["ID"],
+                    'Description': headerinfo["Description"].replace('"',''),
+                    'Type': headerinfo["Type"],
+                    "Number": headerinfo["Number"]
+                    })
+            else:
+                common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
+                return None
     writer = cyvcf2.Writer(fname, reader)
     return writer
 
@@ -146,7 +146,7 @@ def getargs(): # pragma: no cover
         type=str, default="auto")
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
-        type=str, nargs="+", default="vcf")
+        type=str, nargs="+", default=["vcf"])
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -244,6 +244,10 @@ def main(args):
         common.WARNING("Error: Output type pgen only supported "
                        "if using option --dosages")
         return 1
+    if dosage_type not in [trh.TRDosageTypes.beagleap_norm, trh.TRDosageTypes.bestguess_norm] and \
+        OutputFileTypes.pgen in outtypes:
+        common.WARNING("Only normalized dosages are supported for PGEN output.")
+        return 1
 
     ###### Set up writers #######
     if OutputFileTypes.vcf in outtypes:
@@ -252,14 +256,15 @@ def main(args):
         if vcf_writer is None:
             common.WARNING("Error: problem initializing vcf writer.")
             return 1
+    # variant_ct needed for pgen
+    # If using a ref panel, assume we have same number
+    # of TRs as the panel
+    # Otherwise, assume our file is all TRs and use record count
+    if refpanel_metadata is not None:
+        variant_ct = len(refpanel_metadata.keys())
+    else:
+        variant_ct = reader.num_records
     if OutputFileTypes.pgen in outtypes:
-        # If using a ref panel, assume we have same number
-        # of TRs as the panel
-        # Otherwise, assume our file is all TRs and use record count
-        if refpanel_metadata is not None:
-            variant_ct = len(refpanel_metadata.keys())
-        else:
-            variant_ct = reader.num_records
         pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out, variant_ct)
 
     ###### Process each record #######

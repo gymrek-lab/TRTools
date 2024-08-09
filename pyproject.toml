@@ -64,6 +64,7 @@ qcSTR = "trtools.qcSTR:run"
 associaTR = "trtools.associaTR:run"
 prancSTR = "trtools.prancSTR:run"
 simTR = "trtools.simTR:run"
+annotaTR = "trtools.annotaTR:run"
 
 [tool.pytest.ini_options]
 addopts = """
