@@ -164,7 +164,6 @@ def getargs(): # pragma: no cover
     return args
 
 def main(args):
-    print(args.out)
     ###### Check input options #######
     if not os.path.exists(args.vcf):
         common.WARNING("Error: %s does not exist"%args.vcf)
@@ -181,11 +180,11 @@ def main(args):
         common.WARNING("Error: %s does not exist"%args.ref_panel)
         return 1
 
-    outtypes = []
+    outtypes = set()
     for outtype in args.outtype:
         try:
             ot = OutputFileTypes[outtype]
-            outtypes.append(ot)
+            outtypes.add(ot)
         except KeyError:
             common.WARNING("Invalid output type")
             return 1

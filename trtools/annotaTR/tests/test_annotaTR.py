@@ -48,3 +48,27 @@ def test_WrongOutDir(args, vcfdir):
     retcode = main(args)
     assert retcode==1
    
+def test_OutTypes(args, vcfdir):
+    fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "gangstr"
+    args.outtype = ["vcf", "pgen"]
+    args.dosages = "bestguess_norm"
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["pgen", "vcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["pgen"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["vcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["vcf", "vcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["dummy"]
+    with pytest.raises(ValueError):
+        main(args)
+   
