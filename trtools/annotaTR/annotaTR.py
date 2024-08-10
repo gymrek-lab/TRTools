@@ -164,6 +164,7 @@ def getargs(): # pragma: no cover
     return args
 
 def main(args):
+    print(args.out)
     ###### Check input options #######
     if not os.path.exists(args.vcf):
         common.WARNING("Error: %s does not exist"%args.vcf)
@@ -172,13 +173,12 @@ def main(args):
         common.WARNING("Error: The directory which contains the output location {} does"
                        " not exist".format(args.out))
         return 1
-
     if os.path.isdir(args.out) and args.out.endswith(os.sep):
         common.WARNING("Error: The output location {} is a "
                        "directory".format(args.out))
         return 1
     if args.ref_panel is not None and not os.path.exists(args.ref_panel):
-        common.WARNING("Error: %s does not exist"%args.annotate_beagle)
+        common.WARNING("Error: %s does not exist"%args.ref_panel)
         return 1
 
     outtypes = []
