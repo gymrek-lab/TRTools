@@ -61,6 +61,20 @@ def get_dummy_record():
         alt=("CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG")
     )
 
+dummy_record_diploid = [
+    [0, 1],
+    [1, 1],
+    [1, 1],
+    [1, 2],
+    [2, 2],
+    [0, 0]]
+def get_dummy_record_diploid():
+    return DummyCyvcf2Record(
+        gts=dummy_record_diploid, #last sample is haploid
+        ref="CAGCAGCAG",
+        alt=("CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG")
+    )
+
 dummy_record_gts_allsamelen = [
     [0, 0],
     [0, 0],
@@ -299,6 +313,8 @@ def test_TRRecord_GetGenotypes_Dosages():
 
     # Test all ref
     allsamelen_record = get_dummy_record_gts_allsamelen()
+    allsamelen_record.FORMAT["AP1"] = np.array([[0], [0], [0], [0]])
+    allsamelen_record.FORMAT["AP2"] = np.array([[0], [0], [0], [0]])
     rec = trh.TRRecord(allsamelen_record, allsamelen_record.REF, allsamelen_record.ALT, "CAG", "", None)
     true_bestguess_norm_dosages = np.array([0, 0, 0, 0])
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
@@ -306,11 +322,38 @@ def test_TRRecord_GetGenotypes_Dosages():
     true_bestguess_dosages = np.array([6, 6, 6, 6])
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) ==
         true_bestguess_dosages)
-    allsamelen_record.FORMAT["AP1"] = np.array([[0], [0], [0], [0]])
-    allsamelen_record.FORMAT["AP2"] = np.array([[0], [0], [0], [0]])
     true_beagle_norm_dosages = np.array([0, 0, 0, 0])
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm) ==
         true_beagle_norm_dosages)
+
+    # Test regular diploid record - Example with bestguess same as AP-based dosage
+    diploid_record = get_dummy_record_diploid()
+    diploid_record.FORMAT["AP1"] = np.array([[0, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
+    diploid_record.FORMAT["AP2"] = np.array([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 0]])
+    rec = trh.TRRecord(diploid_record, diploid_record.REF, diploid_record.ALT, "CAG", "", None)
+    true_bestguess_dosages = np.array([7, 8, 8, 10, 12, 6])
+    true_bestguess_dosages_norm = 2*np.array([1/6, 1/3, 1/3, 2/3, 1, 0])
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) ==
+        true_bestguess_dosages)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap) ==
+        true_bestguess_dosages)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
+        true_bestguess_dosages_norm)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm) ==
+        true_bestguess_dosages_norm)
+    # Test if bestguess doesn't match AP
+    diploid_record.FORMAT["AP1"] = np.array([[0.5, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
+    diploid_record.FORMAT["AP2"] = np.array([[1, 0], [1, 0], [1, 0], [0.25, 0.75], [0, 1], [0, 0]])
+    true_beagleap_dosages = np.array([9, 8, 8, 9.5, 12, 6])
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap) ==
+        true_beagleap_dosages)
+    # Test if beagle APs add up to more than 1 or are negative
+    diploid_record.FORMAT["AP1"] = np.array([[10, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
+    with pytest.raises(ValueError):
+        rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    diploid_record.FORMAT["AP1"] = np.array([[-0.5, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
+    with pytest.raises(ValueError):
+        rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
 
     # Test triploid example where alt=[]
     triploid_record = get_triploid_record()

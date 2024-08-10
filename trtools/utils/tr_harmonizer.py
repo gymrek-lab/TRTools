@@ -1138,8 +1138,15 @@ class TRRecord:
             ap2 = self.vcfrecord.FORMAT.get('AP2')
             ref2 = np.clip(1-np.sum(ap2, axis=1), 0, 1)
 
+            # Check AP field. allow wiggle room for rounding
+            if np.any(np.sum(ap1, axis=1) > 1.1) or np.any(np.sum(ap2, axis=1) > 1.1):
+                raise ValueError("AP1 or AP2 field summing to more than 1 detected")
+            if np.any(ap1 < 0) or np.any(ap2 < 0):
+                raise ValueError("Negative AP1 or AP2 fields detected")
+
             # Get haplotype dosages
             lens = np.array(self.alt_allele_lengths)
+            lens = lens.reshape((lens.shape[0],1))
             ref_len = self.ref_allele_length
             h1_dos = np.clip(np.dot(ap1, lens), 0, max(lens))
             h2_dos = np.clip(np.dot(ap2, lens), 0, max(lens))
@@ -1149,8 +1156,7 @@ class TRRecord:
             ref2_dos = ref2_dos.reshape(ref2_dos.shape[0], 1)
 
             # Add together for final dosage
-            unnorm_dosages = h1_dos + h2_dos + ref1_dos + ref2_dos
-
+            unnorm_dosages = (h1_dos + h2_dos + ref1_dos + ref2_dos).flatten()
         if dosagetype in [TRDosageTypes.bestguess_norm, TRDosageTypes.beagleap_norm]:
             if self.min_allele_length == self.max_allele_length:
                 # Can't normalize, just set all to 0
