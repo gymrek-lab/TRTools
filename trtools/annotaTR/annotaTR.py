@@ -88,10 +88,6 @@ def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
                 return False
     return True
 
-def GetVCFWriter(reader, fname):
-    writer = cyvcf2.Writer(fname, reader)
-    return writer
-
 def LoadMetadataFromRefPanel(refreader, vcftype):
     metadata = {} # chr:pos:ref->info
     for record in refreader:
@@ -263,7 +259,7 @@ def main(args):
         common.WARNING("Error: problem initializing vcf header.")
         return 1
     if OutputFileTypes.vcf in outtypes:
-        vcf_writer = GetVCFWriter(reader, args.out+".vcf")
+        vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
 
     # variant_ct needed for pgen
     # If using a ref panel, assume we have same number
