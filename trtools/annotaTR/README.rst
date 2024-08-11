@@ -74,7 +74,7 @@ Dosages may also be output to PGEN format. Because dosages are not explicitly su
 Annotating imputed TR VCFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Note this functionality replaces the script :code:`trtools_prep_beagle_vcf.sh` which is being deprecated.
+Note this functionality replaces the script :code:`trtools_prep_beagle_vcf.sh`.
 
 When TRs cannot be directly genotyped from sequencing data, an alternative is to impute them using `Beagle <https://faculty.washington.edu/browning/beagle/beagle.html>`_ with a phased reference panel of SNPs+TRs (e.g. see our latest `reference panel from EnsembleTR <https://github.com/gymrek-lab/ensembleTR>`_). 
 
@@ -87,19 +87,18 @@ Using Beagle to impute TRs will output a VCF with both SNPs+TRs, and strips the 
   	  [--outtype <string>]
 
 where:
+
 * :code:`--vcf` gives the imputed VCF file, which can be the file directly output by Beagle.
 * :code:`--ref-panel` gives the VCF file of the reference panel used for imputation with Beagle.
 
-annotaTR requires the reference panel VCF is the same as the one used for Beagle imputation. This is because it is important that the set of ref/alt alleles is the same in the imputed vcf vs. the reference panel.
-
 If generating a VCF output file, this command will output a new file containing only STRs, with the following fields added back depending on the genotyper used to generate the reference panel:
 
-* For HipSTR-based reference panels: INFO fields START, END, PERIOD and added
+* For HipSTR-based reference panels: INFO fields START, END, PERIOD are added
 * For adVNTR: INFO fields RU, VID are added
 * For GangSTR: INFO field RU is added
-* For ExpansionHunter: INFO fields RU, VARID, RL
+* For ExpansionHunter: INFO fields RU, VARID, RL are added
 
-If generating PGEN output, these fields will not be explicitly output but will be added during processing of the input VCF to enable computing dosages to output to the PGEN file. Note the PGEN output will only contain TRs.
+If generating PGEN output, these fields will not be explicitly output but will be added during processing of the input VCF to enable computing dosages to output to the PGEN file. In all cases only TRs (and not SNPs or other variants in the reference panel) are included in the final output file.
 
 Notes on output files
 ---------------------
