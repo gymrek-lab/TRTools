@@ -1,18 +1,13 @@
 """
 Tool for annotating TR VCF files
-
-TODO:
-
-* Add documentation to functions
-* Add unit tests
-* Add command line tests
-* Add README and link to other docs
-* Add tensorqtl dosage output
-* force normalize for pgen output
-* Update docs for CALLERS about Beagle
-* test we give error if no annotation options specified
-
 """
+
+#TODO:
+# * Add documentation to functions
+# * Add command line tests
+# * Add README and link to other docs
+# * Update docs for CALLERS about Beagle
+# * Add tensorqtl dosage output
 
 import argparse
 import cyvcf2
@@ -254,6 +249,9 @@ def main(args):
     if dosage_type not in [trh.TRDosageTypes.beagleap_norm, trh.TRDosageTypes.bestguess_norm] and \
         OutputFileTypes.pgen in outtypes:
         common.WARNING("Only normalized dosages are supported for PGEN output.")
+        return 1
+    if args.dosages is None and args.ref_panel is None:
+        common.WARNING("No operation specified")
         return 1
 
     ###### Set up writers #######

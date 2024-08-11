@@ -76,10 +76,19 @@ def test_OutTypes(args, vcfdir):
     retcode = main(args)
     assert retcode==1
 
+def test_NoOperation(args, vcfdir):
+    fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "gangstr"
+    args.outtype = ["vcf"]
+    retcode = main(args)
+    assert retcode==1
+
 def test_VCFType(args, vcfdir):
     fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
     args.vcf = fname
     args.vcftype = "badtype"
+    args.dosages = "bestguess"
     retcode = main(args)
     assert retcode==1
     args.vcftype = "auto"
