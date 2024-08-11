@@ -47,7 +47,7 @@ class OutputFileTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
-def GetVCFWriter(reader, fname, command, vcftype, dosage_type=None, refreader=None):
+def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
     reader.add_to_header("##command-AnnotaTR=" + command)
     # Add dosage lines to header
     if dosage_type is not None:
@@ -87,6 +87,8 @@ def GetVCFWriter(reader, fname, command, vcftype, dosage_type=None, refreader=No
             else:
                 common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
                 return None
+
+def GetVCFWriter(reader, fname):
     writer = cyvcf2.Writer(fname, reader)
     return writer
 
@@ -131,7 +133,7 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     return pgen_writer, pvar_writer
 
 def WritePvarVariant(pvar_writer, record, minlen, maxlen):
-    out_items = [record.CHROM, str(record.POS), record.ID, DUMMY_REF, DUMMY_ALT,
+    out_items = [record.CHROM, str(record.POS), str(record.ID), DUMMY_REF, DUMMY_ALT,
         "%.2f,%.2f"%(minlen, maxlen)]
     pvar_writer.write("\t".join(out_items)+"\n")
 
@@ -249,9 +251,13 @@ def main(args):
         return 1
 
     ###### Set up writers #######
+    # Update reader header, even if not writing VCF output
+    # This is because we might add VCF fields for parsing
+    # with TRHarmonizer along the way
+    UpdateVCFHeader(reader, " ".join(sys.argv), vcftype,
+                        dosage_type=dosage_type, refreader=refreader)
     if OutputFileTypes.vcf in outtypes:
-        vcf_writer = GetVCFWriter(reader, args.out+".vcf", " ".join(sys.argv), vcftype,
-                                    dosage_type=dosage_type, refreader=refreader)
+        vcf_writer = GetVCFWriter(reader, args.out+".vcf")
         if vcf_writer is None:
             common.WARNING("Error: problem initializing vcf writer.")
             return 1
@@ -323,6 +329,7 @@ def main(args):
         pvar_writer.close()
     if OutputFileTypes.vcf in outtypes:
         vcf_writer.close()
+    return 0
 
 def run(): # pragma: no cover
     args = getargs()

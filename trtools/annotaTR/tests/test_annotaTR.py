@@ -69,6 +69,7 @@ def test_OutTypes(args, vcfdir):
     retcode = main(args)
     assert retcode==0
     args.outtype = ["dummy"]
-    with pytest.raises(ValueError):
-        main(args)
+    retcode = main(args)
+    assert retcode==1
+    
    
