@@ -161,8 +161,8 @@ def test_LoadRefpanel(args, vcfdir):
     # Error if duplicate TR in ref panel
     args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel_duplocus.vcf.gz")
     args.vcftype = "hipstr"
-    retcode = main(args)
-    assert retcode == 1
+    with pytest.raises(ValueError):
+        main(args)
     # Fail if missing a required info header
     args.vcf = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
     args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel_missinginfoheader.vcf.gz")

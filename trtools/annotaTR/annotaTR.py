@@ -43,6 +43,38 @@ class OutputFileTypes(enum.Enum):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
 def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
+    """
+    Update the VCF header of the reader to include:
+    - The annotatTR command used
+    - new INFO and FORMAT fields we will add if annotating dosages
+    (INFO/DSLEN and FORMAT/TRDS)
+    - new INFO fields we will add if using refpanel annotation. The fields added
+    depend on the vcftype and are listed in INFOFIELDS
+
+    Note this function gets called even if we are not producing VCF output
+    since in some cases we still might need to add these fields to the record
+    during processing, and cyvcf2 will throw an error if the proper headers
+    are not there
+
+    Parameters
+    ----------
+    reader : cyvcf2.VCF
+        Reader for the input VCF file
+    command : str
+        The annotaTR command used
+    vcftype : trh.VcfTypes
+        Which type of TR VCF file the reader/refreader are
+    dosage_type : trh.TRDosageType
+        The type of dosages to be annotated. None if not computing dosages
+    refreader : cyvcf2.VCF
+        Reader for the reference panel
+
+    Returns
+    -------
+    success : bool
+       True if adding header fields was successful, otherwise False
+
+    """
     reader.add_to_header("##command-AnnotaTR=" + command)
     # Add dosage lines to header
     if dosage_type is not None:
@@ -89,6 +121,30 @@ def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
     return True
 
 def LoadMetadataFromRefPanel(refreader, vcftype):
+    """
+    Load required INFO fields from the ref panel we will use to
+    annotate the target VCF. The specific INFO fields loaded
+    depends on the vcftype and are specified in INFOFIELDS
+
+    Parameters
+    ----------
+    refreader : cyvcf2.VCF
+        Reader for the reference panel
+    vcftype : trh.VcfTypes
+        Based on the TR genotyper used to generate the reference panel
+
+    Returns
+    -------
+    metadata : Dict[str, str]
+        The key is chrom:pos:ref
+        Values is a Dict[str, str] with key=infofield and
+        value=value of that info field in the reference panel
+
+    Raises
+    ------
+    ValueError
+        If a duplicate locus is found in the reference panel
+    """
     metadata = {} # chr:pos:ref->info
     for record in refreader:
         locdata = {}
@@ -108,12 +164,41 @@ def LoadMetadataFromRefPanel(refreader, vcftype):
         )
         # Quit if we found a duplicate TR locus
         if locuskey in metadata.keys():
-            common.WARNING("Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey))
-            return {}
+            raise ValueError(
+                "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
+                )
         metadata[locuskey] = locdata
     return metadata
 
 def GetPGenPvarWriter(reader, outprefix, variant_ct):
+    """
+    Generate a PGEN and corresponding PVAR writer.
+    For PGEN, we return a pgenlib.PgenWriter instance
+    For PVAR, we create a file object to which we will write
+      info for each variant as we go. When initialized here we 
+      add the DSLEN INFO header and also the header columns:
+      #CHROM", "POS", "ID", "REF", "ALT", "INFO"
+
+    In addition to the PGEN/PVAR writers, this function writes
+    $outprefix.psam wtih sample information.
+
+    Parameters
+    ----------
+    reader : cyvcf2.VCF
+        Reader for the input VCF file
+    outprefix : str
+        Prefix to name output files
+        Will generate $outprefix.pgen and $outprefix.pvar
+    variant_ct : int
+        Number of variants to be written to the PGEN output
+
+    Returns
+    -------
+    pgen_writer : pgenlib.PgenWriter
+        PGEN writer object
+    pvar_writer : file object
+        Writer for the PVAR file
+    """
     # Write .psam 
     with open(outprefix+".psam", "w") as f:
         f.write("#IID\tSEX\n")
@@ -129,6 +214,24 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     return pgen_writer, pvar_writer
 
 def WritePvarVariant(pvar_writer, record, minlen, maxlen):
+    """
+    Write variant metadata to a PVAR file
+    Outputs CHROM, POS, ID, REF, ALT, INFO
+    REF and ALT are set to dummy values (DUMMY_REF and DUMMY_ALT)
+    INFO contains the DSLEN field with the min/max allele lengths
+    observed
+
+    Parameters
+    ----------
+    pvar_writer : file object
+        Writer for the PVAR file
+    record : cyvcf2.Variant
+        Record object for the variant
+    minlen : float
+        Minimum TR allele length at this locus (in rpt. units)
+    maxlen : float
+        Maximum TR allele length at this locus (in rpt. units)
+    """
     out_items = [record.CHROM, str(record.POS), str(record.ID), DUMMY_REF, DUMMY_ALT,
         "%.2f,%.2f"%(minlen, maxlen)]
     pvar_writer.write("\t".join(out_items)+"\n")
