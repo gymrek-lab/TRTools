@@ -78,6 +78,10 @@ def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
                 # Note can't pass headerinfo directly because extra
                 # quotes in Description need to be removed...
                 headerinfo = refreader.get_header_type(infofield)
+                # cyvcf2 might add a dummy header
+                if headerinfo["Description"].replace('"','') == "Dummy":
+                    common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
+                    return False
                 reader.add_info_to_header({
                     'ID': headerinfo["ID"],
                     'Description': headerinfo["Description"].replace('"',''),
@@ -86,7 +90,8 @@ def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
                     })
             else:
                 common.WARNING("Could not find required header field {field} in refpanel".format(field=infofield))
-                return None
+                return False
+    return True
 
 def GetVCFWriter(reader, fname):
     writer = cyvcf2.Writer(fname, reader)
@@ -190,12 +195,12 @@ def main(args):
         except KeyError:
             common.WARNING("Invalid output type")
             return 1
-
     if args.vcftype != 'auto':
         try:
             checktype = trh.VcfTypes[args.vcftype]
-        except:
-            raise ValueError("Error: invalid vcftype specified")
+        except KeyError:
+            common.WARNING("Invalid vcftype")
+            return 1
 
     ###### Load reference panel info (optional) #######
     refpanel_metadata = None
@@ -214,7 +219,7 @@ def main(args):
             return 1
         refpanel_metadata = LoadMetadataFromRefPanel(refreader, refpanel_vcftype)
         if len(refpanel_metadata.keys()) == 0:
-            common.WARNING("Error: No TRs detected in reference panel. Quitting")
+            common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
             return 1
         common.MSG("Loaded " + str(len(refpanel_metadata.keys())) + " TR loci from ref panel",
             debug=True)
@@ -238,7 +243,8 @@ def main(args):
         except KeyError:
             common.WARNING("Error: invalid dosages argument")
             return 1
-    if dosage_type == trh.TRDosageTypes.beagleap and not trh.IsBeagleVCF(reader):
+    if dosage_type in [trh.TRDosageTypes.beagleap, trh.TRDosageTypes.beagleap_norm] \
+        and not trh.IsBeagleVCF(reader):
         common.WARNING("Error: can only compute beagleap dosages on Beagle VCFs")
         return 1
     if dosage_type is None and np.all([ot in [OutputFileTypes.pgen] for ot in outtypes]):
@@ -254,13 +260,13 @@ def main(args):
     # Update reader header, even if not writing VCF output
     # This is because we might add VCF fields for parsing
     # with TRHarmonizer along the way
-    UpdateVCFHeader(reader, " ".join(sys.argv), vcftype,
-                        dosage_type=dosage_type, refreader=refreader)
+    if not UpdateVCFHeader(reader, " ".join(sys.argv), vcftype,
+                        dosage_type=dosage_type, refreader=refreader):
+        common.WARNING("Error: problem initializing vcf header.")
+        return 1
     if OutputFileTypes.vcf in outtypes:
         vcf_writer = GetVCFWriter(reader, args.out+".vcf")
-        if vcf_writer is None:
-            common.WARNING("Error: problem initializing vcf writer.")
-            return 1
+
     # variant_ct needed for pgen
     # If using a ref panel, assume we have same number
     # of TRs as the panel
@@ -287,6 +293,14 @@ def main(args):
                 ref=record.REF
             )
             if locuskey not in refpanel_metadata.keys():
+                # If this looks like a TR, but not in our panel
+                # give up since that is suspicous
+                try:
+                    checkrec = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+                    common.WARNING("Error: Detected a TR {chrom}:{pos} not in refpanel".format(chrom=record.CHROM, pos=record.POS))
+                    return 1
+                except:
+                    pass
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]

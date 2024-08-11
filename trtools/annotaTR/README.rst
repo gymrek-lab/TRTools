@@ -31,7 +31,7 @@ Required parameters:
 
 Other general parameters:
 
-* :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`.
+* :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr.
 * :code:`--outtype <string>`: Which output format to generate. Supported arguments are :code:`vcf` or :code:`pgen`. If multiple types are listed (e.g. :code:`--outtype vcf pgen`), all specified output formats are generated. By default, only VCF output is generated at :code:`$outprefix.vcf`. If PGEN output is specified, the files :code:`$outprefix.pgen`, :code:`$outprefix.pvar`, and :code:`$outprefix.psam` are generated. See more on the `pgen format here <https://www.cog-genomics.org/plink/2.0/formats#pgen>`_
 
 In addition to specifying input and output options above, you must specify at least one annotation operation to perform. These are described below.
@@ -124,7 +124,9 @@ Below are :code:`annotaTR` examples using data files that can be found at https:
 	# Add normalized dosages to a TR-containing VCF file output by HipSTR and output to PGEN
 	annotaTR --vcf trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --dosages bestguess_norm --out test_hipstr_dosage --outtype pgen
 
-	# Add normalized dosages and annotate a VCF file with TR genotypes (and SNPs) imputed by Beagle and output to both VCF and PGEN
+	# Add normalized dosages and annotate a VCF file with TR genotypes (and SNPs) imputed by 
+	# Beagle and output to both VCF and PGEN
 	annotaTR --vcf 1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz --vcftype hipstr --ref-panel 1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz --outtype vcf pgen --dosages bestguess_norm --out test_beagle 
 
-	# TODO - add beagleap
+	# Compute dosages based on Beagle AP field
+	annotaTR --vcf beagle/beagle_imputed_withap.vcf.gz --vcftype hipstr --ref-panel beagle_refpanel.vcf.gz --dosages beagleap --out test_beagleap
