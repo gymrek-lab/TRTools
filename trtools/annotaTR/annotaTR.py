@@ -3,7 +3,6 @@ Tool for annotating TR VCF files
 """
 
 #TODO:
-# * Add documentation to functions
 # * Add command line tests
 # * Add README and link to other docs
 # * Update docs for CALLERS about Beagle
