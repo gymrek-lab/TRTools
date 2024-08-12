@@ -7,7 +7,7 @@ dependencies:
   - conda-forge::pip==23.3.2
   - bioconda::bcftools==1.19
   - bioconda::art==2016.06.05
-  - bioconda::pgenlib==0.90.0
+  - bioconda::pgenlib==0.90.1-0
   - conda-forge::poetry==1.8.3 # keep in sync with release.yml
   - conda-forge::nox==2023.04.22
   - conda-forge::poetry-plugin-export==1.6.0
