@@ -2,10 +2,10 @@
 Tool for annotating TR VCF files
 """
 
-#TODO:
+# TODO:
+# * remove some samples from beagle example files so they are not so big
+# trtools/testsupport/sample_vcfs/beagle/beagle_refpanel.vcf.gz, trtools/testsupport/sample_vcfs/beagle/beagle_refpanel_duplocus.vcf.gz, trtools/testsupport/sample_vcfs/beagle/beagle_refpanel_missinginfoheader.vcf.gz, trtools/testsupport/sample_vcfs/beagle/beagle_refpanel_nostrs.vcf.gz
 # * Add command line tests
-# * Add README and link to other docs
-# * Update docs for CALLERS about Beagle
 # * Add tensorqtl dosage output
 
 import argparse

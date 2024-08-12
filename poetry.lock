@@ -750,37 +750,22 @@ test = ["pytest", "pytest-cov", "scipy"]
 
 [[package]]
 name = "pgenlib"
-version = "0.91.0"
+version = "0.90.1"
 description = "Python wrapper for pgenlib's basic reader and writer."
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "Pgenlib-0.91.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:61c7004e75731e27a7666952a323f8b811ee836b44ac4647320ec013b6e277bb"},
-    {file = "Pgenlib-0.91.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2f4c821468d94c09c3cb5980b47e557fa206a90117291ca22dcb5013ffbc3651"},
-    {file = "Pgenlib-0.91.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5f37461bd647635dad78b79ff0c5407e5b226fbbd7461f5014e990f7bc8fd2c3"},
-    {file = "Pgenlib-0.91.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:21199ebfb0901ae0addf4f067c60f3c961ca24b3442f26c9ed112e7b18d1c79a"},
-    {file = "Pgenlib-0.91.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5fa6cd143745d252f13c078595d7f00efc1ce35d5bf37f0be52593438b98abb3"},
-    {file = "Pgenlib-0.91.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:adec110c8326cabfe6dce10cee1d13a8ac20790680ef14a037b3ee49065d81f8"},
-    {file = "Pgenlib-0.91.0-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:287dd919bf7a1c3cdc934767b274b2fbeb8b01e6edf56f563b648e072d6107fc"},
-    {file = "Pgenlib-0.91.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dd5649bc69726681c0fd2989a9594832b3684bf33e8df5ec0b61f6d6040209dd"},
-    {file = "Pgenlib-0.91.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0a16650b5043ae37757b1b31bd9cd09a6e819e6b2cd9b89bd770ac39d6e6ecf9"},
-    {file = "Pgenlib-0.91.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:eba44c04edabb63080b98309e3f25fe3eb7e699e62836a9c086e37f9486d691f"},
-    {file = "Pgenlib-0.91.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:94809c6f379ce95139c74919a4984d131f17dd27ff1e908272694272fded1a11"},
-    {file = "Pgenlib-0.91.0-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:d42c7298fe6c3556b21e17d6f4d5f21fa2a0002cc640e526961c9fb63dd703fd"},
-    {file = "Pgenlib-0.91.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7ba95923f0f24a877dff892bd085046ab7efdda5dd74c704176f8ec7e4952bc2"},
-    {file = "Pgenlib-0.91.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bbdd6a569dd735d79556dbbdf10fce4b5632bf931613b72857a1a02824769594"},
-    {file = "Pgenlib-0.91.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:1f6f913ba2eb0c029704723da00045fe9e22f3ce5f0acc8ff038938a5f88aba6"},
-    {file = "Pgenlib-0.91.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8e593e986ab77e6ad52b4a19fb9f96b9639ccf569cb5ae57685716e37c3d3f21"},
-    {file = "Pgenlib-0.91.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a31c04775da32a25550f5cb034134a8fe34124d80a0d0a5a8e58625d4d6fad9a"},
-    {file = "Pgenlib-0.91.0-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1c71b2e4cc90973975627ade60a2d57385341840471e708e0f3ec69b8b92c635"},
-    {file = "Pgenlib-0.91.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:53a02ede11262058055b3736c25352c94a1f107b64b21f40f47c30975638af38"},
-    {file = "Pgenlib-0.91.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3245f4bceb8d7d0a26729091fa1cbc28e343d71224c1ad45ba5d1e2b37c45ea8"},
-    {file = "Pgenlib-0.91.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:aa6febf7420b8d36560cfcd52bc2b128a62ad97d4ac428df050b11fe7cb35a09"},
-    {file = "pgenlib-0.91.0.tar.gz", hash = "sha256:32992274214d2e6735b721544abfd0ae0c76906c4193120f7091065b88f68dfa"},
+    {file = "Pgenlib-0.90.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0c5823a8f3bb558c2d60243eb19ca6220cc2d5c759fc50139e5c09b179353b68"},
+    {file = "Pgenlib-0.90.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:758b3927228029bb10758a28a8ded86a71844da973d6196b44913c4765cdf23d"},
+    {file = "Pgenlib-0.90.1-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:72427c7e92993859be40e7ad326a5d86025d2218c0109ac3b3fa1620fd37bec2"},
+    {file = "Pgenlib-0.90.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:85fb2bd56d12a338ec3605149c3f0782b04c861588ad7e4afb41f3ff13f90c00"},
+    {file = "Pgenlib-0.90.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8283d5b6cb1196dc859f7c489b36d3cd2673174a19e507fa52a869ef25333127"},
+    {file = "Pgenlib-0.90.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:89d5baf59cb19f1f53ae1ec48fb33775e3bd84c0c4ed3d8582a6b45051f26e1a"},
+    {file = "Pgenlib-0.90.1-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f06160710bfbf69655bb30ba8231e1329d4903f0a71f5dcb52df9d04c2f94282"},
+    {file = "Pgenlib-0.90.1-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:af42bb7fc0812a562e3c17218019650174d4bd3598f0a031b2604ea534c2e361"},
+    {file = "Pgenlib-0.90.1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:72072417b51b9dc0189594c0b705968898b22e43f8a81e9e2a2e4ad19df9ba50"},
+    {file = "Pgenlib-0.90.1.tar.gz", hash = "sha256:069db673c1cc5baffcb9b20c2e6e26cc9fdaadd0095f55a188b41502d0511cb9"},
 ]
-
-[package.dependencies]
-numpy = ">=1.19.0"
 
 [[package]]
 name = "pluggy"
@@ -1370,4 +1355,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7.1,<4.0"
-content-hash = "5ee2d0c59236738dad3e42f6e14b728887f910c3eed19f2c5a40e6be6486f20a"
+content-hash = "d4987ce50488f6915d53a71a9589765a88437b3473997f276b54929f5637ba8e"
