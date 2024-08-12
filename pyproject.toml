@@ -33,7 +33,7 @@ exclude = [
 [tool.poetry.dependencies]
 python = ">=3.7.1,<4.0"
 importlib-metadata = {version = ">=3.0.0", python = "<3.8"}
-cyvcf2 = ">=0.30.4"
+cyvcf2 = ">=0.31.1"
 matplotlib = ">=3.1.2"
 numpy = ">=1.17.3"
 pandas = ">=1.2.0"
