@@ -1090,16 +1090,16 @@ class TRRecord:
 
         Multiple strategies are used to compute dosages:
 
-        * bestguess - Sum of the length (in num. rpt units) of alleles
-        * beagleap - For each haplotype, dosage is computed as:
-            sum_a len(a)*p(a) where len(a) is the length (in rpt. units)
+        - bestguess - Sum of the length (in num. rpt units) of alleles
+        - beagleap - For each haplotype, dosage is computed as:
+            sum_a len(a) x p(a) where len(a) is the length (in rpt. units)
             of each allele a, and p(a) is the allele probability (from Beagle AP1/AP2 fields)
             The total dosage is this value summed across the two haplotypes
-        * bestguess_norm - Same as bestguess but scaled to be between 0 and 2
-        * beagleap_norm - Same as beagleap but scaled to be between 0 and 2
+        - bestguess_norm - Same as bestguess but scaled to be between 0 and 2
+        - beagleap_norm - Same as beagleap but scaled to be between 0 and 2
 
         Note: normalized dosages currently not supported for haploid calls
-        Those are set to np.nan in the output dosages if using a "*_norm" option
+        Those are set to np.nan in the output dosages if using a *_norm option
 
         Parameters
         ----------
