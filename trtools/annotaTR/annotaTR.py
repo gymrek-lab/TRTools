@@ -3,6 +3,7 @@ Tool for annotating TR VCF files
 """
 
 # TODO:
+# too big: trtools/testsupport/sample_vcfs/associaTR/many_samples_biallelic_dosages.vcf.gz
 # * Add command line tests
 # * Add tensorqtl dosage output
 
@@ -154,10 +155,11 @@ def LoadMetadataFromRefPanel(refreader, vcftype):
         if len(locdata.keys())!=len(INFOFIELDS[vcftype]):
             continue
         # Add to metadata
-        locuskey = "{chrom}:{pos}:{ref}".format(
+        locuskey = "{chrom}:{pos}:{ref}:{alt}".format(
             chrom=record.CHROM,
             pos=record.POS, 
-            ref=record.REF
+            ref=record.REF,
+            alt=record.ALT
         )
         # Quit if we found a duplicate TR locus
         if locuskey in metadata.keys():
@@ -381,10 +383,11 @@ def main(args):
         # In that case, only process records in the refpanel
         # Otherwise, process all records in the input VCF
         if refpanel_metadata is not None:
-            locuskey = "{chrom}:{pos}:{ref}".format(
+            locuskey = "{chrom}:{pos}:{ref}:{alt}".format(
                 chrom=record.CHROM,
                 pos=record.POS,
-                ref=record.REF
+                ref=record.REF,
+                alt=record.ALT
             )
             if locuskey not in refpanel_metadata.keys():
                 # If this looks like a TR, but not in our panel
