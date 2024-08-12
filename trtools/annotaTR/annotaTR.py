@@ -134,7 +134,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype):
     Returns
     -------
     metadata : Dict[str, str]
-        The key is chrom:pos:ref
+        The key is chrom:pos:ref:alt
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
 
@@ -174,9 +174,9 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     Generate a PGEN and corresponding PVAR writer.
     For PGEN, we return a pgenlib.PgenWriter instance
     For PVAR, we create a file object to which we will write
-      info for each variant as we go. When initialized here we 
-      add the DSLEN INFO header and also the header columns:
-      #CHROM", "POS", "ID", "REF", "ALT", "INFO"
+    info for each variant as we go. When initialized here we 
+    add the DSLEN INFO header and also the header columns:
+    #CHROM", "POS", "ID", "REF", "ALT", "INFO"
 
     In addition to the PGEN/PVAR writers, this function writes
     $outprefix.psam wtih sample information.
