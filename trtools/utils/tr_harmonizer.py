@@ -264,7 +264,7 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
 
     Returns
     -------
-    TRRecord
+    trrecord : TRRecord
         A TRRecord object built out of the input record
     """
     vcftype = _ToVCFType(vcftype)
