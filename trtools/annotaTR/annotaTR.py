@@ -392,6 +392,7 @@ def main(args):
             if locuskey not in refpanel_metadata.keys():
                 # If this looks like a TR, but not in our panel
                 # give up since that is suspicous
+                # Otherwise it is probably a SNP and we will skip
                 try:
                     checkrec = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
                     common.WARNING("Error: Detected a TR {chrom}:{pos} not in refpanel".format(chrom=record.CHROM, pos=record.POS))

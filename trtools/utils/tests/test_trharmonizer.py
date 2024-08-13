@@ -45,6 +45,8 @@ class DummyCyvcf2Record:
         else:
             self.genotype = None
 
+    def format(self, key):
+        return self.FORMAT.get(key, None)
 
 # Set up dummy VCF records which are just lists of genotypes
 dummy_record_gts = [

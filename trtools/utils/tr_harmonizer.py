@@ -1111,8 +1111,9 @@ class TRRecord:
         dosages : np.ndarray
             A numpy array of dosages, of type float
         """
+        print(self.vcfrecord.FORMAT)
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
-            (self.vcfrecord.FORMAT.get("AP1", None) is None or self.vcfrecord.FORMAT.get("AP2", None) is None):
+            (self.vcfrecord.format("AP1") is None or self.vcfrecord.format("AP2") is None):
                 raise ValueError(
                 "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
                 )
@@ -1133,9 +1134,9 @@ class TRRecord:
             unnorm_dosages = np.array([sum(item[0:-1]) for item in lengts])
         if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
             # Extract allele probabilities
-            ap1 = self.vcfrecord.FORMAT.get("AP1", None)
+            ap1 = self.vcfrecord.format("AP1")
             ref1 = np.clip(1-np.sum(ap1, axis=1), 0, 1) # If neg due to rounding, cutoff at 0
-            ap2 = self.vcfrecord.FORMAT.get("AP2", None)
+            ap2 = self.vcfrecord.format("AP2")
             ref2 = np.clip(1-np.sum(ap2, axis=1), 0, 1)
 
             # Check AP field. allow wiggle room for rounding
