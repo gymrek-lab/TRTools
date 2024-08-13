@@ -170,6 +170,7 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 
     * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. Don't worry if you're not sure at first, since you can (and should!) always update it later. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
     * Afterwards, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`.
+    * The :code:`dev-env.yml` file lists dependencies of TRTools that are only available on conda. So you shouldn't need to add a new dependency to our :code:`dev-env.yml` unless it cannot be added to our :code:`pyproject.toml`.
 
 #. Document your changes.
 
