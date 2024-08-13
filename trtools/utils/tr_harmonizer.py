@@ -1099,7 +1099,7 @@ class TRRecord:
         - beagleap_norm - Same as beagleap but scaled to be between 0 and 2
 
         Note: normalized dosages currently not supported for haploid calls
-        Those are set to np.nan in the output dosages if using a *_norm option
+        Those are set to np.nan in the output dosages if using a _norm option
 
         Parameters
         ----------
