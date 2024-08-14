@@ -415,6 +415,26 @@ def main(args):
             common.WARNING("Invalid vcftype")
             return 1
 
+    dosage_type = None
+    if args.dosages is not None:
+        try:
+            dosage_type = trh.TRDosageTypes[args.dosages]
+        except KeyError:
+            common.WARNING("Error: invalid dosages argument")
+            return 1
+    if dosage_type is None and np.all([ot in [OutputFileTypes.pgen] for ot in outtypes]):
+        common.WARNING("Error: Output type pgen only supported "
+                       "if using option --dosages")
+        return 1
+    if dosage_type not in [trh.TRDosageTypes.beagleap_norm, trh.TRDosageTypes.bestguess_norm] and \
+        OutputFileTypes.pgen in outtypes:
+        common.WARNING("Only normalized dosages are supported for PGEN output.")
+        return 1
+    if args.dosages is None and args.ref_panel is None:
+        common.WARNING("No operation specified")
+        return 1
+
+
     ###### Load reference panel info (optional) #######
     refpanel_metadata = None
     refreader = None
@@ -454,28 +474,12 @@ def main(args):
     else:
         vcftype = trh.InferVCFType(reader)
 
-    ##### Additional checks on input #####
-    dosage_type = None
-    if args.dosages is not None:
-        try:
-            dosage_type = trh.TRDosageTypes[args.dosages]
-        except KeyError:
-            common.WARNING("Error: invalid dosages argument")
-            return 1
+    ##### More checks on input #####
+    # This check waits until here sicne need to have loaded reader
+    # and need to wait til refpanel loading to confirm vcf type
     if dosage_type in [trh.TRDosageTypes.beagleap, trh.TRDosageTypes.beagleap_norm] \
         and not trh.IsBeagleVCF(reader):
         common.WARNING("Error: can only compute beagleap dosages on Beagle VCFs")
-        return 1
-    if dosage_type is None and np.all([ot in [OutputFileTypes.pgen] for ot in outtypes]):
-        common.WARNING("Error: Output type pgen only supported "
-                       "if using option --dosages")
-        return 1
-    if dosage_type not in [trh.TRDosageTypes.beagleap_norm, trh.TRDosageTypes.bestguess_norm] and \
-        OutputFileTypes.pgen in outtypes:
-        common.WARNING("Only normalized dosages are supported for PGEN output.")
-        return 1
-    if args.dosages is None and args.ref_panel is None:
-        common.WARNING("No operation specified")
         return 1
 
     ###### Set up writers #######
@@ -549,7 +553,7 @@ def main(args):
         if ((num_variants_processed_batch == DEFAULT_PGEN_BATCHSIZE) \
             or (num_variants_processed==variant_ct)):
             # Write batch
-            common.MSG("Processed {numvars} variants".format(numvars=num_variants_processed))
+            common.MSG("Processed {numvars} variants".format(numvars=num_variants_processed), debug=True)
             if OutputFileTypes.pgen in outtypes:
                 pgen_writer.append_dosages_batch(dosages_batch[:num_variants_processed_batch])
             # Reset
@@ -558,7 +562,13 @@ def main(args):
 
     ###### Cleanup #######
     if OutputFileTypes.pgen in outtypes:
-        pgen_writer.close()
+        try:
+            pgen_writer.close()
+        except RuntimeError:
+            common.WARNING("Error writing PGEN! The output file is likely invalid. "
+                "Did you run on files merged with bcftools merge? If so try rerunning "
+                "with option --match-refpanel-on trimmedalleles")
+            return 1
         pvar_writer.close()
     if OutputFileTypes.vcf in outtypes:
         vcf_writer.close()
