@@ -200,10 +200,10 @@ def GetLocusKey(record, match_on=RefMatchTypes.locid):
             chrom=record.CHROM,
             pos=record.POS,
             ref=record.REF,
-            alt=",".join(sorted(record.ALT))
+            alt=",".join(record.ALT)
         )
     elif match_on == RefMatchTypes.trimmedalleles:
-        ref, alt = TrimAlleles(record.REF, sorted(record.ALT))
+        ref, alt = TrimAlleles(record.REF, record.ALT)
         return "{chrom}:{pos}:{ref}:{alt}".format(
             chrom=record.CHROM,
             pos=record.POS,
