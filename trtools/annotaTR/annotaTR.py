@@ -368,7 +368,7 @@ def getargs(): # pragma: no cover
              "The reference must be the same VCF used for imputation. ", 
         type=str)
     annot_group.add_argument(
-        "--metch-refpanel-on",
+        "--match-refpanel-on",
         help="What to match loci on between refpanel and target VCF. "
              "Options=%s"%[str(item) for item in RefMatchTypes.__members__],
         type=str
