@@ -21,6 +21,7 @@ def args(tmpdir):
     args.ref_panel = None
     args.match_refpanel_on = "rawalleles"
     args.ignore_duplicates = False
+    args.debug = False
     return args
 
 @pytest.fixture

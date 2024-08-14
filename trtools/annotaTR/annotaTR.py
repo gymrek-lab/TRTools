@@ -378,6 +378,8 @@ def getargs(): # pragma: no cover
         help="Output a warning but do not crash if duplicate loci in refpanel",
         action="store_true"
         )
+    other_group = parser.add_argument_group("Other options")
+    other_group.add_argument("--debug", help="Run in debug mode", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
@@ -525,6 +527,8 @@ def main(args):
                     return 1
                 except:
                     pass
+                if args.debug:
+                    common.WARNING("Detected locus not in refpanel: %s"%locuskey)
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
