@@ -439,6 +439,7 @@ def main(args):
     refpanel_metadata = None
     refreader = None
     if args.ref_panel is not None:
+        common.MSG("Loading reference panel", debug=True)
         refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=[])
         if refreader is None:
             return 1
