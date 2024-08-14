@@ -18,7 +18,9 @@ nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
 def LoadSingleReader(
         vcf_loc: str,
-        checkgz: bool = True) -> Optional[cyvcf2.VCF]:
+        checkgz: bool = True,
+        lazy: bool = False,
+        samples: List[str] = None) -> Optional[cyvcf2.VCF]:
     """
     Return a VCF reader
 
@@ -29,6 +31,11 @@ def LoadSingleReader(
     checkgz:
         Check whether VCF file is gzipped and indexed,
         if not return None
+    lazy:
+        if True, then don’t unpack (parse) the underlying record until needed.
+        Default: False
+    samples:
+        List of samples to include. If None, load all samples
 
     Returns
     -------
@@ -48,7 +55,7 @@ def LoadSingleReader(
             common.WARNING("Could not find VCF index %s.tbi"%vcf_loc)
             return None
     try:
-        return cyvcf2.VCF(vcf_loc)
+        return cyvcf2.VCF(vcf_loc, lazy=lazy, samples=samples)
     except OSError:
         common.WARNING("Could not open VCF file %s. Is it really VCF?"%vcf_loc)
         return None

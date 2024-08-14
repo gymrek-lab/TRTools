@@ -40,6 +40,14 @@ class OutputFileTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
+class RefMatchTypes(enum.Enum):
+    """Different supported output file types."""
+    locid = "locid"
+    rawalleles = "rawalleles"
+    trimmedalleles = "trimmedalleles"
+    def __repr__(self):
+        return '<{}.{}>'.format(self.__class__.__name__, self.name)
+
 def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
     """
     Update the VCF header of the reader to include:
@@ -118,23 +126,126 @@ def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
                 return False
     return True
 
-def LoadMetadataFromRefPanel(refreader, vcftype):
+def TrimAlleles(ref_allele, alt_alleles):
+    """
+    Trim ref and alt alleles to remove common prefixes
+    and suffixes present in all alleles
+
+    Parameters
+    ----------
+    ref_allele : str
+       Reference allele
+    alt_allele : list of str
+       List of alternate alleles
+
+    Returns
+    -------
+    new_ref_allele : str
+       Trimmed reference allele
+    new_alt_allele : list of str
+       List of trimmed alternate alleles
+    """
+    # Remove longest common prefix
+    longest_common_prefix = os.path.commonprefix([ref_allele]+alt_alleles)
+    new_ref_allele = ref_allele[len(longest_common_prefix):]
+    new_alt_alleles = []
+    for a in alt_alleles:
+        new_alt_alleles.append(a[len(longest_common_prefix):])
+    # Now check for longest common suffix
+    alleles_left = [new_ref_allele] + new_alt_alleles
+    longest_common_suffix = os.path.commonprefix([item[::-1] for item in alleles_left])[::-1]
+    if len(longest_common_suffix) > 0:
+        new_ref_allele = new_ref_allele[:-1*len(longest_common_suffix)]
+        for i in range(len(new_alt_alleles)):
+            new_alt_alleles[i] = new_alt_alleles[i][:-1*len(longest_common_suffix)]
+    # Replace empty string with "."
+    if new_ref_allele == "": new_ref_allele = "."
+    for i in range(len(new_alt_alleles)):
+        if new_alt_alleles[i] == "":
+            new_alt_alleles[i] = "."
+    return new_ref_allele, new_alt_alleles
+
+def GetLocusKey(record, match_on=RefMatchTypes.locid):
+    """
+    Get the key used to match refpanel loci to the target VCF
+
+    Options to match on:
+
+    - RefMatchTypes.locid: use the ID from the VCF file
+    - RefMatchTypes.rawalleles: use chrom:pos:ref:alt where ref/alt are
+       exactly those in the reference VCF
+    - RefMatchTypes.trimmedalleles: use chrom:pos:ref:alt where ref/alt are
+       trimmed to discard extra sequence, as is done in bcftools merge :(
+       see: https://github.com/samtools/bcftools/issues/726
+
+    Parameters
+    ----------
+    record : cyvcf2.Variant
+       Record to get the locus key for
+    match_on : RefMatchTypes
+       way to generate the key (Default: locid)
+
+    Returns
+    -------
+    locuskey : str
+       String of the key
+    """
+    if match_on == RefMatchTypes.locid:
+        if record.ID is None or record.ID == ".":
+            raise ValueError("Error: {chrom}:{pos} cannot match on loci ID if ID=.".format(
+                chrom=record.CHROM, pos=record.POS))
+        return record.ID
+    elif match_on == RefMatchTypes.rawalleles:
+        return "{chrom}:{pos}:{ref}:{alt}".format(
+            chrom=record.CHROM,
+            pos=record.POS,
+            ref=record.REF,
+            alt=",".join(sorted(record.ALT))
+        )
+    elif match_on == RefMatchTypes.trimmedalleles:
+        ref, alt = TrimAlleles(record.REF, sorted(record.ALT))
+        return "{chrom}:{pos}:{ref}:{alt}".format(
+            chrom=record.CHROM,
+            pos=record.POS,
+            ref=ref,
+            alt=",".join(alt)
+        )
+    else:
+        raise ValueError("Invalid match_refpanel_on=%s"%match_on)
+
+def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
+        ignore_duplicates=False):
     """
     Load required INFO fields from the ref panel we will use to
     annotate the target VCF. The specific INFO fields loaded
     depends on the vcftype and are specified in INFOFIELDS
 
+    The value of match_on determines what to use as the key in the
+    returned dictionary. Options:
+
+    - RefMatchTypes.locid: use the ID from the VCF file
+    - RefMatchTypes.rawalleles: use chrom:pos:ref:alt where ref/alt are
+       exactly those in the reference VCF
+    - RefMatchTypes.trimmedalleles: use chrom:pos:ref:alt where ref/alt are
+       trimmed to discard extra sequence, as is done in bcftools merge :(
+       see: https://github.com/samtools/bcftools/issues/726
+    
     Parameters
     ----------
     refreader : cyvcf2.VCF
         Reader for the reference panel
     vcftype : trh.VcfTypes
         Based on the TR genotyper used to generate the reference panel
+    match_on : RefMatchTypes (Optional)
+        What to use as the locus key to match target to ref panel loci
+        Default: RefMatchTypes.id
+    ignore_duplicates : bool
+        If True, just output a warning about duplicates rather than giving up
 
     Returns
     -------
     metadata : Dict[str, str]
-        The key is chrom:pos:ref:alt
+        The key depends on the match_on parameter (see above)
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
 
@@ -155,17 +266,15 @@ def LoadMetadataFromRefPanel(refreader, vcftype):
         if len(locdata.keys())!=len(INFOFIELDS[vcftype]):
             continue
         # Add to metadata
-        locuskey = "{chrom}:{pos}:{ref}:{alt}".format(
-            chrom=record.CHROM,
-            pos=record.POS, 
-            ref=record.REF,
-            alt=record.ALT
-        )
+        locuskey = GetLocusKey(record, match_on=match_on)
         # Quit if we found a duplicate TR locus
         if locuskey in metadata.keys():
-            raise ValueError(
-                "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
-                )
+            if ignore_duplicates:
+                common.WARNING("Warning: duplicate locus detected in refpanel: {locus}".format(locus=locuskey))
+            else:
+                raise ValueError(
+                    "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
+                    )
         metadata[locuskey] = locdata
     return metadata
 
@@ -258,6 +367,17 @@ def getargs(): # pragma: no cover
         help="Annotate Beagle-imputed VCF with TR metadata from the reference panel. "
              "The reference must be the same VCF used for imputation. ", 
         type=str)
+    annot_group.add_argument(
+        "--metch-refpanel-on",
+        help="What to match loci on between refpanel and target VCF. "
+             "Options=%s"%[str(item) for item in RefMatchTypes.__members__],
+        type=str
+        )
+    annot_group.add_argument(
+        "--ignore-duplicates",
+        help="Output a warning but do not crash if duplicate loci in refpanel",
+        action="store_true"
+        )
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     args = parser.parse_args()
@@ -299,7 +419,7 @@ def main(args):
     refpanel_metadata = None
     refreader = None
     if args.ref_panel is not None:
-        refreader = utils.LoadSingleReader(args.ref_panel)
+        refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=None)
         if refreader is None:
             return 1
         if args.vcftype != 'auto':
@@ -310,7 +430,13 @@ def main(args):
             common.WARNING("Error: reference panel annotation not "
                            "currently supported for popSTR")
             return 1
-        refpanel_metadata = LoadMetadataFromRefPanel(refreader, refpanel_vcftype)
+        try:
+            match_on = RefMatchTypes[args.match_refpanel_on]
+        except KeyError:
+            common.WARNING("Invalid argument to --match-refpanel-on")
+            return 1
+        refpanel_metadata = LoadMetadataFromRefPanel(refreader, refpanel_vcftype, 
+            match_on=match_on, ignore_duplicates=args.ignore_duplicates)
         if len(refpanel_metadata.keys()) == 0:
             common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
             return 1
@@ -383,12 +509,7 @@ def main(args):
         # In that case, only process records in the refpanel
         # Otherwise, process all records in the input VCF
         if refpanel_metadata is not None:
-            locuskey = "{chrom}:{pos}:{ref}:{alt}".format(
-                chrom=record.CHROM,
-                pos=record.POS,
-                ref=record.REF,
-                alt=record.ALT
-            )
+            locuskey = GetLocusKey(record, match_on=match_on)
             if locuskey not in refpanel_metadata.keys():
                 # If this looks like a TR, but not in our panel
                 # give up since that is suspicous

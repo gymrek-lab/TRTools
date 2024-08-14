@@ -19,6 +19,8 @@ def args(tmpdir):
     args.outtype = ["vcf"]
     args.dosages = None
     args.ref_panel = None
+    args.match_refpanel_on = "rawalleles"
+    args.ignore_duplicates = False
     return args
 
 @pytest.fixture
@@ -144,6 +146,13 @@ def test_LoadRefpanel(args, vcfdir):
     args.vcftype = "auto"
     retcode = main(args)
     assert retcode == 0
+    args.match_refpanel_on = "trimmedalleles"
+    retcode = main(args)
+    assert retcode == 0
+    args.match_refpanel_on = "locid"
+    with pytest.raises(ValueError):
+        main(args)
+    args.match_refpanel_on = "rawalleles" # set back for future tests
     # Bad refpanel
     args.ref_panel = os.path.join(vcfdir, "missing_samples.txt")
     retcode = main(args)
@@ -163,6 +172,9 @@ def test_LoadRefpanel(args, vcfdir):
     args.vcftype = "hipstr"
     with pytest.raises(ValueError):
         main(args)
+    args.ignore_duplicates = True
+    retcode = main(args)
+    assert retcode == 0
     # Fail if missing a required info header
     args.vcf = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
     args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel_missinginfoheader.vcf.gz")
@@ -179,4 +191,21 @@ def test_LoadRefpanel(args, vcfdir):
     args.vcftype = "hipstr"
     retcode = main(args)
     assert retcode == 1
+
+def test_TrimAlleles():
+    ref_allele = "AAAT"
+    alt_alleles = ["AAATA","AAATAA","AAATAAA"]
+    new_ref, new_alt = TrimAlleles(ref_allele, alt_alleles)
+    assert(new_ref == ".")
+    assert(new_alt == ["A","AA","AAA"])
+    ref_allele = "AAATGAC"
+    alt_alleles = ["AAATAGAC","AAATAAGAC","AAATAAAGAC"]
+    new_ref, new_alt = TrimAlleles(ref_allele, alt_alleles)
+    assert(new_ref == ".")
+    assert(new_alt == ["A","AA","AAA"])
+    ref_allele = "GAC"
+    alt_alleles = ["AGAC","AAGAC","AAAGAC"]
+    new_ref, new_alt = TrimAlleles(ref_allele, alt_alleles)
+    assert(new_ref == ".")
+    assert(new_alt == ["A","AA","AAA"])
    

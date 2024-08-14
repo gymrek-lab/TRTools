@@ -1111,7 +1111,6 @@ class TRRecord:
         dosages : np.ndarray
             A numpy array of dosages, of type float
         """
-        print(self.vcfrecord.FORMAT)
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
             (self.vcfrecord.format("AP1") is None or self.vcfrecord.format("AP2") is None):
                 raise ValueError(
