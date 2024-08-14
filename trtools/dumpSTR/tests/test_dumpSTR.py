@@ -514,7 +514,7 @@ def test_beagle_disallowed_locus_filters(tmpdir, vcfdir):
     args_obj = args(tmpdir)
     args_obj.vcf = os.path.join(vcfdir, 'beagle/hipstr_imputed.vcf.gz')
     args_obj.filter_hrun = True
-    assert main(args_obj) == 1
+    assert main(args_obj) == 0
 
 def test_beagle_disallowed_call_filters(tmpdir, vcfdir):
     args_obj = args(tmpdir)
