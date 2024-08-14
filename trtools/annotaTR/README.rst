@@ -91,6 +91,11 @@ where:
 * :code:`--vcf` gives the imputed VCF file, which can be the file directly output by Beagle.
 * :code:`--ref-panel` gives the VCF file of the reference panel used for imputation with Beagle.
 
+Additional relevant options:
+
+* :code:`--match-refpanel-on <string>`: indicates how to match loci between the reference panel and the target VCF. Options: locid, rawalleles, trimmedalleles (Default:locid). locid matches on the ID in the VCF file. If your reference panel does not have informative IDs for TRs (e.g. all are set to "."), this option will not work and annotaTR will output an error. rawalleles means loci are matched on :code:`chrom:pos:ref:alt`. trimmedalleles means loci are matched on :code:`chrom:pos:ref:alt` but ref and alt alleles are trimmed to remove common prefixes/suffixes. The trimmedalleles option must be used if you merged samples in your target VCF file using :code:`bcftools merge`, since that tool will modify alleles to remove common sequence (see `this issue <https://github.com/samtools/bcftools/issues/726>`_)
+* :code:`--ignore-duplicates`: This flag outputs a warning if duplicate loci are detected in the reference. If this flag is not set and a duplicate locus is detected, the program quits.
+
 If generating a VCF output file, this command will output a new file containing only STRs, with the following fields added back depending on the genotyper used to generate the reference panel:
 
 * For HipSTR-based reference panels: INFO fields START, END, PERIOD are added

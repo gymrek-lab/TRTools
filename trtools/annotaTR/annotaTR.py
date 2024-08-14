@@ -3,7 +3,6 @@ Tool for annotating TR VCF files
 """
 
 # TODO:
-# too big: trtools/testsupport/sample_vcfs/associaTR/many_samples_biallelic_dosages.vcf.gz
 # * Add command line tests
 # * Add tensorqtl dosage output
 
@@ -371,7 +370,8 @@ def getargs(): # pragma: no cover
         "--match-refpanel-on",
         help="What to match loci on between refpanel and target VCF. "
              "Options=%s"%[str(item) for item in RefMatchTypes.__members__],
-        type=str
+        type=str,
+        default="locid"
         )
     annot_group.add_argument(
         "--ignore-duplicates",
