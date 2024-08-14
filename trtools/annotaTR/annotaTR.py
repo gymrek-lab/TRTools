@@ -248,13 +248,17 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         The key depends on the match_on parameter (see above)
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
+    variant_ct : int
+        Total number of variants
 
     Raises
     ------
     ValueError
         If a duplicate locus is found in the reference panel
+        and ignore_duplicates=False
     """
     metadata = {} # chr:pos:ref->info
+    variant_ct = 0
     for record in refreader:
         locdata = {}
         for infofield in INFOFIELDS[vcftype]:
@@ -276,7 +280,8 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
                     "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
                     )
         metadata[locuskey] = locdata
-    return metadata
+        variant_ct += 1
+    return metadata, variant_ct
 
 def GetPGenPvarWriter(reader, outprefix, variant_ct):
     """
@@ -459,7 +464,7 @@ def main(args):
         except KeyError:
             common.WARNING("Invalid argument to --match-refpanel-on")
             return 1
-        refpanel_metadata = LoadMetadataFromRefPanel(refreader, refpanel_vcftype, 
+        refpanel_metadata, ref_variant_ct = LoadMetadataFromRefPanel(refreader, refpanel_vcftype, 
             match_on=match_on, ignore_duplicates=args.ignore_duplicates)
         if len(refpanel_metadata.keys()) == 0:
             common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
@@ -502,7 +507,7 @@ def main(args):
     # of TRs as the panel
     # Otherwise, assume our file is all TRs and use record count
     if refpanel_metadata is not None:
-        variant_ct = len(refpanel_metadata.keys())
+        variant_ct = ref_variant_ct
     else:
         variant_ct = reader.num_records
     if OutputFileTypes.pgen in outtypes:
