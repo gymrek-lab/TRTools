@@ -131,4 +131,5 @@ Below are :code:`annotaTR` examples using data files that can be found at https:
 	annotaTR --vcf 1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz --vcftype hipstr --ref-panel 1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz --outtype vcf pgen --dosages bestguess_norm --out test_beagle 
 
 	# Compute dosages based on Beagle AP field
-	annotaTR --vcf beagle/beagle_imputed_withap.vcf.gz --vcftype hipstr --ref-panel beagle_refpanel.vcf.gz --dosages beagleap --out test_beagleap
+	# Require setting --match-refpanel-on since locus IDs are "." in this panel
+	annotaTR --vcf beagle_imputed_withap.vcf.gz --vcftype hipstr --ref-panel beagle_refpanel.vcf.gz --match-refpanel-on trimmedalleles --dosages beagleap --out test_beagleap

@@ -316,7 +316,7 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     with open(outprefix+".psam", "w") as f:
         f.write("#IID\tSEX\n")
         for sample in reader.samples:
-            f.write("{sample}\t0\n")
+            f.write("{sample}\t0\n".format(sample=sample))
     # Get pvar writer
     pvar_writer = open(outprefix+".pvar", "w")
     pvar_writer.write("##INFO=<ID=DSLEN,Number=2,Type=Float,Description=\"Minimum and maximum dosages, used if normalization was applied\">\n")
@@ -450,7 +450,7 @@ def main(args):
         common.MSG("Loading reference panel", debug=True)
         refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=[])
         if refreader is None:
-            return 1
+          return 1
         if args.vcftype != 'auto':
             refpanel_vcftype = trh.VcfTypes[args.vcftype]
         else:
