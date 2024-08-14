@@ -469,7 +469,7 @@ def main(args):
         if len(refpanel_metadata.keys()) == 0:
             common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
             return 1
-        common.MSG("Loaded " + str(len(refpanel_metadata.keys())) + " TR loci from ref panel",
+        common.MSG("Loaded " + str(ref_variant_ct) + " TR loci from ref panel",
             debug=True)
 
     ###### Load reader #######
