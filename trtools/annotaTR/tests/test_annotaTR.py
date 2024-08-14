@@ -209,4 +209,10 @@ def test_TrimAlleles():
     new_ref, new_alt = TrimAlleles(ref_allele, alt_alleles)
     assert(new_ref == ".")
     assert(new_alt == ["A","AA","AAA"])
+    ref_allele = "AATAAGTAAATAAATAAATAA"
+    alt_alleles = ["AATAAGTAAATAAATAA"]
+    new_ref, new_alt = TrimAlleles(ref_allele, alt_alleles)
+    assert(new_ref == "TAAA")
+    assert(new_alt[0] == ".")
+
    

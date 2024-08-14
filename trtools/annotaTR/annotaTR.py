@@ -144,19 +144,20 @@ def TrimAlleles(ref_allele, alt_alleles):
     new_alt_allele : list of str
        List of trimmed alternate alleles
     """
-    # Remove longest common prefix
-    longest_common_prefix = os.path.commonprefix([ref_allele]+alt_alleles)
-    new_ref_allele = ref_allele[len(longest_common_prefix):]
-    new_alt_alleles = []
-    for a in alt_alleles:
-        new_alt_alleles.append(a[len(longest_common_prefix):])
-    # Now check for longest common suffix
-    alleles_left = [new_ref_allele] + new_alt_alleles
+    # First check for longest common suffix
+    alleles_left = [ref_allele] + alt_alleles
     longest_common_suffix = os.path.commonprefix([item[::-1] for item in alleles_left])[::-1]
+    new_alt_alleles = alt_alleles.copy()
+    new_ref_allele = ref_allele
     if len(longest_common_suffix) > 0:
         new_ref_allele = new_ref_allele[:-1*len(longest_common_suffix)]
         for i in range(len(new_alt_alleles)):
             new_alt_alleles[i] = new_alt_alleles[i][:-1*len(longest_common_suffix)]
+    # Now remove longest common prefix
+    longest_common_prefix = os.path.commonprefix([new_ref_allele]+new_alt_alleles)
+    new_ref_allele = new_ref_allele[len(longest_common_prefix):]
+    for i in range(len(new_alt_alleles)):
+        new_alt_alleles[i] = new_alt_alleles[i][len(longest_common_prefix):]
     # Replace empty string with "."
     if new_ref_allele == "": new_ref_allele = "."
     for i in range(len(new_alt_alleles)):
@@ -572,7 +573,7 @@ def main(args):
         except RuntimeError:
             common.WARNING("Error writing PGEN! The output file is likely invalid. "
                 "Did you run on files merged with bcftools merge? If so try rerunning "
-                "with option --match-refpanel-on trimmedalleles")
+                "with option --match-refpanel-on trimmedalleles or --match-refpanel-on locid.")
             return 1
         pvar_writer.close()
     if OutputFileTypes.vcf in outtypes:
