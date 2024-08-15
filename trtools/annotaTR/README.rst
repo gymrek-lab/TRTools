@@ -13,6 +13,8 @@ Current use cases include:
 * Annotating a TR VCF file with Beagle-imputed genotypes to add back TR metadata from a reference panel
 * Computing dosages for each genotype, which can be used for downstream association testing.
 
+AnnotaTR can be used to do one or both of these tasks in a single command.
+
 Usage
 -----
 The following is a basic annotaTR command::
