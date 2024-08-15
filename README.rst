@@ -100,7 +100,7 @@ TRTools includes the following tools.
 * `associaTR <https://trtools.readthedocs.io/en/stable/source/associaTR.html>`_: a tool for testing TR length-phenotype associations (e.g., running a TR GWAS)
 * `prancSTR <https://trtools.readthedocs.io/en/stable/source/prancSTR.html>`_: a tool for identifying somatic mosacisim at TRs. Currently only compatible with HipSTR VCF files. (*beta mode*)
 * `simTR <https://trtools.readthedocs.io/en/stable/source/simTR.html>`_: a tool for simulating next-generation sequencing reads from TR regions. (*beta mode*)
-* `annotaTR <https://trtools.readthedocs.io/en/stable/source/prancSTR.html>`_: a tool for annotating TR VCF files with dosage or other metadata and optionally converting to PGEN output.
+* `annotaTR <https://trtools.readthedocs.io/en/stable/source/annotaTR.html>`_: a tool for annotating TR VCF files with dosage or other metadata and optionally converting to PGEN output.
 
 Type :code:`<command> --help` to see a full set of options.
 
