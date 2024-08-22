@@ -1084,7 +1084,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> npt.NDArray[np.float32]:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> np.ndarray:
         """
         Get an array of genotype dosages for each sample.
 

@@ -534,7 +534,13 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
-        trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+        try:
+            trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+        except:
+            common.WARNING("Error converting {chrom}:{pos} to a TR record. "
+                "If your file is a mix of SNPs/TRs (e.g. from Beagle) you "
+                "must provide a reference panel.".format(chrom=record.CHROM, pos=record.POS))
+            return 1
         minlen = trrecord.min_allele_length
         maxlen = trrecord.max_allele_length
         if dosage_type is not None:

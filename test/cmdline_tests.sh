@@ -57,6 +57,9 @@ runcmd_pass "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype 
 runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
 runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --dosages beagleap --outtype pgen --out ${TMPDIR}/test"
 
+# If file has SNPs+TRs but no refpanel, annotatr should fail
+runcmd_fail "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype hipstr --dosages beagleap --out ${TMPDIR}/test"
+
 # Example command running prancSTR for only one chromosome with hipstr output file
 # --only-passing skips VCF records with non-passing filters
 runcmd_pass "prancSTR --vcf ${EXDATADIR}/CEU_subset.vcf.gz --out ${TMPDIR}/CEU_chr1 --vcftype hipstr --only-passing --region chr1"
