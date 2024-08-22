@@ -93,7 +93,7 @@ Notes and caveats:
   TRTools currently does not take this into
   account and just uses the phased genotypes returned by Beagle. If you would like to add functionality to support this, feel free to submit PRs to help TRTools take this into account
   (see the :ref:`Contributing` docs).
-* For callers which return sequences, not just lengths (e.g. HipSTR), if there are loci with multiple plausible sequences of the same length, then its possible
+* For callers which return sequences, not just lengths (e.g. HipSTR), if there are loci with multiple plausible sequences of the same length, then it's possible
   that the most probable genotype returned by Beagle does not have the most probable length. For example, the following could be true of a single haplotype:
   :code:`Len(S_1) = L_1, Len(S_2) = L_1, Len(S_3) = L_2` and :code:`P(S_1) < P(S_3), P(S_2) < P(S_3)` but :code:`P(S_3) < P(S_1) + P(S_2)`.
 
