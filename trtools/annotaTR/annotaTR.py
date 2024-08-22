@@ -2,10 +2,6 @@
 Tool for annotating TR VCF files
 """
 
-# TODO:
-# * Add command line tests
-# * Add tensorqtl dosage output
-
 import argparse
 import cyvcf2
 import enum
@@ -473,7 +469,7 @@ def main(args):
             debug=True)
 
     ###### Load reader #######
-    reader = utils.LoadSingleReader(args.vcf)
+    reader = utils.LoadSingleReader(args.vcf, checkgz=True)
     if reader is None:
         return 1
     if args.ref_panel is not None:
