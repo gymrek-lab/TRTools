@@ -444,7 +444,7 @@ def main(args):
     refreader = None
     if args.ref_panel is not None:
         common.MSG("Loading reference panel", debug=True)
-        refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=[])
+        refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
         if refreader is None:
           return 1
         if args.vcftype != 'auto':

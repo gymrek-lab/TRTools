@@ -6,7 +6,7 @@ import argparse
 import itertools
 import math
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 import cyvcf2
 import numpy as np
@@ -20,7 +20,7 @@ def LoadSingleReader(
         vcf_loc: str,
         checkgz: bool = True,
         lazy: bool = False,
-        samples: List[str] = None) -> Optional[cyvcf2.VCF]:
+        samples: Set[str] = None) -> Optional[cyvcf2.VCF]:
     """
     Return a VCF reader
 
@@ -54,6 +54,12 @@ def LoadSingleReader(
         if not os.path.isfile(vcf_loc+".tbi"):
             common.WARNING("Could not find VCF index %s.tbi"%vcf_loc)
             return None
+    if samples is not None:
+        if not isinstance(samples, set):
+            common.WARNING(
+                "Samples cannot be loaded in a particular order. Order will be ignored"
+            )
+        samples = list(samples)
     try:
         return cyvcf2.VCF(vcf_loc, lazy=lazy, samples=samples)
     except OSError:
