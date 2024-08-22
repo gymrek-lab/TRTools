@@ -1084,7 +1084,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> np.ndarray:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> npt.NDArray[np.float32]:
         """
         Get an array of genotype dosages for each sample.
 
@@ -1130,7 +1130,7 @@ class TRRecord:
             else:
                 lengts[lengts==-1] = 0
                 lengts[lengts==-2] = 0
-            unnorm_dosages = np.array([sum(item[0:-1]) for item in lengts])
+            unnorm_dosages = lengts[:,:-1].sum(axis=1).astype(np.float32)
         if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
             # Extract allele probabilities
             ap1 = self.vcfrecord.format("AP1")
