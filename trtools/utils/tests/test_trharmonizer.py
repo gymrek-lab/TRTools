@@ -318,7 +318,7 @@ def test_TRRecord_GetGenotypes_Dosages():
     allsamelen_record.FORMAT["AP1"] = np.array([[0], [0], [0], [0]])
     allsamelen_record.FORMAT["AP2"] = np.array([[0], [0], [0], [0]])
     rec = trh.TRRecord(allsamelen_record, allsamelen_record.REF, allsamelen_record.ALT, "CAG", "", None)
-    true_bestguess_norm_dosages = np.array([0, 0, 0, 0])
+    true_bestguess_norm_dosages = np.array([0, 0, 0, 0], dtype=np.float32)
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
         true_bestguess_norm_dosages)
     true_bestguess_dosages = np.array([6, 6, 6, 6])
