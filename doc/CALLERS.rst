@@ -97,7 +97,7 @@ Notes and caveats:
   that the most probable genotype returned by Beagle does not have the most probable length. For example, the following could be true of a single haplotype:
   :code:`Len(S_1) = L_1, Len(S_2) = L_1, Len(S_3) = L_2` and :code:`P(S_1) < P(S_3), P(S_2) < P(S_3)` but :code:`P(S_3) < P(S_1) + P(S_2)`.
 
-See `here <https://github.com/gymrek-lab/ensembleTR>`_ for example commands for running Beagle to impute TRs. Some additional notes:
+See `here <https://github.com/gymrek-lab/ensembleTR?tab=readme-ov-file#usage-1>`_ for example commands for running Beagle to impute TRs. Some additional notes:
 
 * VCF files for the samples being imputed into must include genotyped loci (typically SNPs) that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
 * The reference samples must be phased and also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute the missing genotypes prior to imputing the TRs. The reference panel at the link above has already been phased/imputed and should work directly as input to Beagle.
