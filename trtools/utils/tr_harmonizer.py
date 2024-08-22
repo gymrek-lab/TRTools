@@ -1108,7 +1108,7 @@ class TRRecord:
  
         Returns
         -------
-        dosages : np.ndarray
+        dosages : npt.NDArray[np.float32]
             A numpy array of dosages, of type float
         """
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
@@ -1116,7 +1116,6 @@ class TRRecord:
                 raise ValueError(
                 "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
                 )
-        unnorm_dosages = np.array([0]*self.GetNumSamples())
 
         if dosagetype in [TRDosageTypes.bestguess, TRDosageTypes.bestguess_norm]:
             # Get length gts and replace -1 (missing) and -2 (low ploidy) with 0
@@ -1131,7 +1130,7 @@ class TRRecord:
                 lengts[lengts==-1] = 0
                 lengts[lengts==-2] = 0
             unnorm_dosages = lengts[:,:-1].sum(axis=1).astype(np.float32)
-        if dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
+        elif dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]:
             # Extract allele probabilities
             ap1 = self.vcfrecord.format("AP1")
             ref1 = np.clip(1-np.sum(ap1, axis=1), 0, 1) # If neg due to rounding, cutoff at 0
@@ -1145,25 +1144,21 @@ class TRRecord:
                 raise ValueError("Negative AP1 or AP2 fields detected")
 
             # Get haplotype dosages
-            lens = np.array(self.alt_allele_lengths)
-            lens = lens.reshape((lens.shape[0],1))
-            ref_len = self.ref_allele_length
-            h1_dos = np.clip(np.dot(ap1, lens), 0, max(lens))
-            h2_dos = np.clip(np.dot(ap2, lens), 0, max(lens))
-            ref1_dos = ref1*ref_len
-            ref2_dos = ref2*ref_len
-            ref1_dos = ref1_dos.reshape(ref1_dos.shape[0], 1)
-            ref2_dos = ref2_dos.reshape(ref2_dos.shape[0], 1)
+            max_alt_len = max(self.alt_allele_lengths)
+            h1_dos = np.clip(np.dot(ap1, self.alt_allele_lengths), 0, max_alt_len)
+            h2_dos = np.clip(np.dot(ap2, self.alt_allele_lengths), 0, max_alt_len)
+            ref1_dos = ref1*self.ref_allele_length
+            ref2_dos = ref2*self.ref_allele_length
 
             # Add together for final dosage
-            unnorm_dosages = (h1_dos + h2_dos + ref1_dos + ref2_dos).flatten()
+            unnorm_dosages = (h1_dos + h2_dos + ref1_dos + ref2_dos).astype(np.float32)
         if dosagetype in [TRDosageTypes.bestguess_norm, TRDosageTypes.beagleap_norm]:
             if self.min_allele_length == self.max_allele_length:
                 # Can't normalize, just set all to 0
-                dosages = np.array([0]*self.GetNumSamples())
+                dosages = np.zeros(self.GetNumSamples(), dtype=np.float32)
             else:
                 # Normalize to be between 0 and 2
-                dosages = 2*(unnorm_dosages-2*self.min_allele_length)/(2*self.max_allele_length-2*self.min_allele_length)
+                dosages = (unnorm_dosages-2*self.min_allele_length)/(self.max_allele_length-self.min_allele_length)
                 assert not (np.any(dosages>=2.1) or np.any(dosages<=-0.1))
                 dosages = np.clip(dosages, 0, 2)
         else:
