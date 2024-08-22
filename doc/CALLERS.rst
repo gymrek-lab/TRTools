@@ -103,7 +103,7 @@ See `here <https://github.com/gymrek-lab/ensembleTR?tab=readme-ov-file#usage-1>`
 * The reference samples must be phased and also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute the missing genotypes prior to imputing the TRs. The reference panel at the link above has already been phased/imputed and should work directly as input to Beagle.
 
 The VCFs that Beagle outputs need to be preprocessed before use by TRTools to contain required INFO fields. The :code:`annotaTR` utility provided by TRTools can be used to add this information as well as compute dosages, with the option to output either VCF or PGEN format.
-(we previously provided the script :code:`trtools_prep_beagle_vcf.sh` which is still available and can also be used to add the INFO annotations but does not have support for PGEN output or dosages). After running either of those tools to annotate Beagle VCFs, the files should be usable by any of the tools in TRTools.
+(As of Aug 2024, we had only provided the script :code:`trtools_prep_beagle_vcf.sh` which is still available and can also be used to add the INFO annotations but cannot write to PGEN files or compute dosages). After running either of those tools to annotate Beagle VCFs, the files should be usable by any of the tools in TRTools.
 
 In case of error, it may be useful to know what steps those tools attempt to perform:
 
