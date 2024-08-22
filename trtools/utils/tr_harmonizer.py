@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Generator, Iterator, List, Optional, Set
 
 import cyvcf2
 import numpy as np
+import numpy.typing as npt
 
 import trtools.utils.utils as utils
 
@@ -1084,7 +1085,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> np.ndarray:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> npt.NDArray[np.float32]:
         """
         Get an array of genotype dosages for each sample.
 
