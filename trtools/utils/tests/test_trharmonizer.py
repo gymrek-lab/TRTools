@@ -334,7 +334,7 @@ def test_TRRecord_GetGenotypes_Dosages():
     diploid_record.FORMAT["AP2"] = np.array([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 0]])
     rec = trh.TRRecord(diploid_record, diploid_record.REF, diploid_record.ALT, "CAG", "", None)
     true_bestguess_dosages = np.array([7, 8, 8, 10, 12, 6])
-    true_bestguess_dosages_norm = 2*np.array([1/6, 1/3, 1/3, 2/3, 1, 0])
+    true_bestguess_dosages_norm = 2*np.array([1/6, 1/3, 1/3, 2/3, 1, 0], dtype=np.float32)
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) ==
         true_bestguess_dosages)
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap) ==
