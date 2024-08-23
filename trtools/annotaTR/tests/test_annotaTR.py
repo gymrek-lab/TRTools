@@ -22,6 +22,7 @@ def args(tmpdir):
     args.match_refpanel_on = "rawalleles"
     args.ignore_duplicates = False
     args.debug = False
+    args.chunk_size = 1000
     return args
 
 @pytest.fixture
@@ -54,7 +55,7 @@ def test_WrongOutDir(args, vcfdir):
     args.out = vcfdir + "/"
     retcode = main(args)
     assert retcode==1
-   
+
 def test_OutTypes(args, vcfdir):
     fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
     args.vcf = fname

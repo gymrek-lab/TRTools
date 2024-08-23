@@ -381,6 +381,12 @@ def getargs(): # pragma: no cover
         action="store_true"
         )
     other_group = parser.add_argument_group("Other options")
+    other_group.add_argument(
+        "--chunk-size", "If writing a PGEN file, load dosages "
+                        "in chunks of X variants; reduces memory. ",
+                        "Default: {batchsize}".format(batchsize=DEFAULT_PGEN_BATCHSIZE),
+        type=int,
+        default=DEFAULT_PGEN_BATCHSIZE)
     other_group.add_argument("--debug", help="Run in debug mode", action="store_true")
     ver_group = parser.add_argument_group("Version")
     ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
@@ -512,7 +518,7 @@ def main(args):
     ###### Process each record #######
     num_variants_processed_batch = 0
     num_variants_processed = 0
-    dosages_batch = np.empty((DEFAULT_PGEN_BATCHSIZE, len(reader.samples)), dtype=np.float32)
+    dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
     for record in reader:
         # If using refpanel, first add required fields
         # In that case, only process records in the refpanel
@@ -563,14 +569,14 @@ def main(args):
         num_variants_processed_batch += 1
 
         # Reset batch, and write to pgen if using that
-        if ((num_variants_processed_batch == DEFAULT_PGEN_BATCHSIZE) \
+        if ((num_variants_processed_batch == args.chunk_size) \
             or (num_variants_processed==variant_ct)):
             # Write batch
             common.MSG("Processed {numvars} variants".format(numvars=num_variants_processed), debug=True)
             if OutputFileTypes.pgen in outtypes:
                 pgen_writer.append_dosages_batch(dosages_batch[:num_variants_processed_batch])
             # Reset
-            dosages_batch = np.empty((DEFAULT_PGEN_BATCHSIZE, len(reader.samples)), dtype=np.float32)
+            dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
             num_variants_processed_batch = 0
 
     ###### Cleanup #######
