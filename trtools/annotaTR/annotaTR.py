@@ -419,7 +419,7 @@ def main(args):
             common.WARNING("Invalid output type")
             return 1
     if args.vcftype != 'auto':
-        if args.vcftype not in trh.VcfTypes.keys():
+        if args.vcftype not in trh.VcfTypes.__members__:
             common.WARNING("Invalid vcftype")
             return 1
 
