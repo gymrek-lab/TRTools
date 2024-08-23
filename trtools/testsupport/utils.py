@@ -9,6 +9,10 @@ import pytest
 def _make_info_dict(info):
     d = {}
     for pair in info.split(';'):
+        if '=' not in pair: # happens for INFO fields with Number=0 like IMP
+            k = pair
+            d[k] = None
+            continue
         k, v = pair.split('=')
         vals = np.array(v.split(','))
         try:
@@ -33,19 +37,23 @@ def _make_format_list(fmt):
 # fname2 should be the control file
 # allow reordering of header lines
 def assert_same_vcf(fname1, fname2, info_ignore = set(),
-                     format_ignore = set()):
+                     format_ignore = set(),
+                     max_lines_to_compare = np.inf):
     open_fn = open
     if fname1[-3:] == '.gz':
         open_fn = gzip.open
     print(fname1, fname2)
     headers1 = set()
     headers2 = set()
+    lines_processed = 0
     with open_fn(fname1, mode='rt') as file1, open_fn(fname2, mode='rt') as file2:
         iter1 = iter(file1)
         iter2 = iter(file2)
         failed = False
         while True:
+            if lines_processed >= max_lines_to_compare: return
             line1, line2 = _grab_line_for_assertion(iter1, iter2)
+            lines_processed += 1
             if line1[0] != '#':
                 raise ValueError('Output VCF header truncated abruptly')
             if line1[1] != '#' and line2[1] == '#':
@@ -102,6 +110,7 @@ def assert_same_vcf(fname1, fname2, info_ignore = set(),
         format_ignore_idxs = set()
         while True:
             linenum += 1
+            lines_processed += 1
             lines = _grab_line_for_assertion(iter1, iter2)
             if lines is None:
                 return
@@ -185,6 +194,7 @@ def assert_same_vcf(fname1, fname2, info_ignore = set(),
                                 ' at line ' + str(linenum) + ' at sample #'
                                 + sample_num + ' at field ' + str(count + 1) +
                                 '\nOutput: ' + str(f1) + '\nControl: ' + str(f2))
+            if lines_processed >= max_lines_to_compare: return
 
 
 # fname1 should be the output file
