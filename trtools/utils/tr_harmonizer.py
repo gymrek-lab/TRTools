@@ -1154,6 +1154,8 @@ class TRRecord:
 
             # Add together for final dosage
             unnorm_dosages = (h1_dos + h2_dos + ref1_dos + ref2_dos).astype(np.float32)
+        else:
+            raise ValueError("Unsupported dosagetype")
         if dosagetype in [TRDosageTypes.bestguess_norm, TRDosageTypes.beagleap_norm]:
             if self.min_allele_length == self.max_allele_length:
                 # Can't normalize, just set all to 0
