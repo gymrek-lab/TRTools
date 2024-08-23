@@ -382,9 +382,9 @@ def getargs(): # pragma: no cover
         )
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
-        "--chunk-size", "If writing a PGEN file, load dosages "
-                        "in chunks of X variants; reduces memory. ",
-                        "Default: {batchsize}".format(batchsize=DEFAULT_PGEN_BATCHSIZE),
+        "--chunk-size",
+        help="If writing a PGEN file, load dosages "
+             "in chunks of X variants; reduces memory. ",
         type=int,
         default=DEFAULT_PGEN_BATCHSIZE)
     other_group.add_argument("--debug", help="Run in debug mode", action="store_true")
