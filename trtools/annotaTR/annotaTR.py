@@ -419,9 +419,7 @@ def main(args):
             common.WARNING("Invalid output type")
             return 1
     if args.vcftype != 'auto':
-        try:
-            checktype = trh.VcfTypes[args.vcftype]
-        except KeyError:
+        if args.vcftype not in trh.VcfTypes.keys():
             common.WARNING("Invalid vcftype")
             return 1
 
