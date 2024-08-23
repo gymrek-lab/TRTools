@@ -36,9 +36,10 @@ class DummyCyvcf2Record:
         if gts is not None:
             self.genotype = types.SimpleNamespace()
             self._gts = np.array(gts)
-            self._gts = np.concatenate(
-                (self._gts, np.zeros((self._gts.shape[0], 1))),
-                axis=1
+            if len(self._gts)>0:
+                self._gts = np.concatenate(
+                    (self._gts, np.zeros((self._gts.shape[0], 1))),
+                    axis=1
             ) # add the phasing axis, we're not testing that here
             self.genotype.array = lambda: self._gts
             self.genotype.n_samples = len(gts)
@@ -59,6 +60,13 @@ dummy_record_gts = [
 def get_dummy_record():
     return DummyCyvcf2Record(
         gts=dummy_record_gts, #last sample is haploid
+        ref="CAGCAGCAG",
+        alt=("CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG")
+    )
+
+def get_dummy_record_empty():
+    return DummyCyvcf2Record(
+        gts = [],
         ref="CAGCAGCAG",
         alt=("CAGCAGCAGCAG", "CAGCAGCAGCAGCAGCAG")
     )
@@ -312,6 +320,11 @@ def test_TRRecord_GetGenotypes_Dosages():
     assert np.all(rec.GetDosages() == true_bestguess_dosages)
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess) == 
         true_bestguess_dosages)
+
+    # Test empty
+    empty_record = get_dummy_record_empty()
+    rec = trh.TRRecord(empty_record, empty_record.REF, empty_record.ALT, "CAG", "", None)
+    assert rec.GetDosages() is None
 
     # Test all ref
     allsamelen_record = get_dummy_record_gts_allsamelen()

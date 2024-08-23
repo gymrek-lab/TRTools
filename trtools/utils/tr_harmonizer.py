@@ -1084,7 +1084,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> np.ndarray:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> Optional[np.ndarray]:
         """
         Get an array of genotype dosages for each sample.
 
@@ -1110,13 +1110,15 @@ class TRRecord:
         -------
         dosages : npt.NDArray[np.float32]
             A numpy array of dosages, of type float
+            If no samples are in the array, return None
         """
+        if self.GetNumSamples() == 0:
+            return None
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
             (self.vcfrecord.format("AP1") is None or self.vcfrecord.format("AP2") is None):
                 raise ValueError(
                 "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
                 )
-
         if dosagetype in [TRDosageTypes.bestguess, TRDosageTypes.bestguess_norm]:
             # Get length gts and replace -1 (missing) and -2 (low ploidy) with 0
             # But if normalizing set those to np.nan since unclear
