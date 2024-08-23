@@ -19,6 +19,8 @@ from trtools import __version__
 DEFAULT_PGEN_BATCHSIZE = 1000
 DUMMY_REF = "A"
 DUMMY_ALT = "T"
+DUMMY_QUAL = "."
+DUMMY_FILTER = "."
 
 # Info fields copied from reference panel for each tool
 INFOFIELDS = {
@@ -315,8 +317,9 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
             f.write("{sample}\t0\n".format(sample=sample))
     # Get pvar writer
     pvar_writer = open(outprefix+".pvar", "w")
+    pvar_writer.write("##fileformat=VCFv4.2\n") # Required if we want the pvar to be valid vcf
     pvar_writer.write("##INFO=<ID=DSLEN,Number=2,Type=Float,Description=\"Minimum and maximum dosages, used if normalization was applied\">\n")
-    pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT", "INFO"])+"\n")
+    pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])+"\n")
     # Get pgen writer we will continue writing to
     pgen_writer = PgenWriter(bytes(outprefix+".pgen", "utf8"),
         len(reader.samples), variant_ct=variant_ct, dosage_present=True)
@@ -341,8 +344,12 @@ def WritePvarVariant(pvar_writer, record, minlen, maxlen):
     maxlen : float
         Maximum TR allele length at this locus (in rpt. units)
     """
-    out_items = [record.CHROM, str(record.POS), str(record.ID), DUMMY_REF, DUMMY_ALT,
-        "%.2f,%.2f"%(minlen, maxlen)]
+    record_id = record.ID
+    if record_id is None:
+        record_id = "."
+    out_items = [record.CHROM, str(record.POS), str(record_id), DUMMY_REF, DUMMY_ALT,
+        DUMMY_QUAL, DUMMY_FILTER,
+        "DSLEN=%.2f,%.2f"%(minlen, maxlen)]
     pvar_writer.write("\t".join(out_items)+"\n")
 
 def getargs(): # pragma: no cover

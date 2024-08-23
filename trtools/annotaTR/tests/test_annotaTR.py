@@ -1,4 +1,5 @@
 import argparse
+import cyvcf2
 import gzip
 import os
 
@@ -67,9 +68,6 @@ def test_OutTypes(args, vcfdir):
     args.outtype = ["pgen", "vcf"]
     retcode = main(args)
     assert retcode==0
-    args.outtype = ["pgen"]
-    retcode = main(args)
-    assert retcode==0
     args.outtype = ["vcf"]
     retcode = main(args)
     assert retcode==0
@@ -79,6 +77,12 @@ def test_OutTypes(args, vcfdir):
     args.outtype = ["dummy"]
     retcode = main(args)
     assert retcode==1
+    args.outtype = ["pgen"]
+    retcode = main(args)
+    assert retcode==0
+    # Check the pvar file can be ready by cyvcf2?
+    #pvarfile = args.out + ".pvar"
+    #test_reader = cyvcf2.VCF(pvarfile)
 
 def test_NoOperation(args, vcfdir):
     fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
