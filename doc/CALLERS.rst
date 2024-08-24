@@ -1,3 +1,5 @@
+.. _CALLERS:
+
 Supported TR Genotypers
 =======================
 
@@ -67,7 +69,7 @@ see :ref:`Contributing` for more information.
 ..
     please ensure this list of links remains the same as the one in the main README
 
-.. _AdVNTR: https://advntr.readthedocs.io/en/latest/
+.. _AdVNTR: https://advntr.readthedocs.io
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _GangSTR: https://github.com/gymreklab/gangstr
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
