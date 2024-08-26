@@ -23,7 +23,10 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-			"extensions": ["ms-python.python"],
+			"extensions": [
+				"ms-python.python",
+				"ms-vscode.live-server"
+			],
 			"settings": {
 				"python.condaPath": "/opt/conda/condabin/conda",
 				"python.defaultInterpreterPath": "/opt/conda/envs/trtools/bin/python",
