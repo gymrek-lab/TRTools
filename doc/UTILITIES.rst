@@ -1,3 +1,5 @@
+.. _UTILITIES:
+
 Command-Line Tools
 ===========================
 
@@ -6,6 +8,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
 
 .. toctree::
    :maxdepth: 1
+   :name: source
    :hidden:
 
    source/dumpSTR.rst
@@ -16,6 +19,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    source/associaTR.rst
    source/prancSTR.rst
    source/simTR.rst
+   source/annotaTR.rst
 
 .. Include directives from tool READMEs
 
@@ -51,6 +55,10 @@ TRTools offers a variety of command-line tools for performing manipulations to T
    :start-after: overview_directive
    :end-before: overview_directive_done   
 
+.. include:: ../trtools/annotaTR/README.rst
+   :start-after: overview_directive
+   :end-before: overview_directive_done   
+
 :doc:`source/dumpSTR`
 
 * |dumpSTR overview|
@@ -82,4 +90,8 @@ TRTools offers a variety of command-line tools for performing manipulations to T
 :doc:`source/simTR`
 
 * |simTR overview|
+
+:doc:`source/annotaTR`
+
+* |annotaTR overview|
 

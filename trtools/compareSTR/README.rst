@@ -17,7 +17,7 @@ CompareSTR optionally will stratify results based on a user-specified FORMAT fie
 
 Note: CompareSTR is designed to be used as a QC tool. While it may be able to pick up certain biological differences in some applications (e.g. identifying de novo mutations by comparing parent and child callsets or somatic mutations by comparing callsets from different tissues), use-case specific analyses may be better performed by more specialized tools.
 
-Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use `qcSTR <https://trtools.readthedocs.io/en/stable/source/qcSTR.html>`_ to visualize the distribution of quality scores in each VCF file seprately.
+Note: CompareSTR has the ability to stratify comparisons based on quality scores. However, beware that quality scores output by different genotypers may not be directly comparable. You can use :doc:`qcSTR </source/qcSTR>` to visualize the distribution of quality scores in each VCF file seprately.
 
 Usage
 -----
@@ -83,7 +83,7 @@ compareSTR outputs the following text files and plots:
 * :code:`<outprefix>-samplecompare.tab`: Has columns sample, metric-conc-seq, metric-conc-len, numcalls. One line per sample
 * :code:`<outprefix>-samplecompare.pdf`: Plots the length concordance metric for each sample considered.
 
-See `Example Commands`_ below for example compareSTR commands for different supported TR genotypers based on example data files in this repository. More detailed use cases are also given in the vignettes https://trtools.readthedocs.io/en/stable/VIGNETTES.html
+See `Example Commands`_ below for example compareSTR commands for different supported TR genotypers based on example data files in this repository. More detailed use cases are also given in :doc:`the vignettes </VIGNETTES>`
 
 Instructions on Compressing and Indexing VCF files
 --------------------------------------------------
