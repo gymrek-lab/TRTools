@@ -47,7 +47,7 @@ if os.getenv("CONDA_EXE"):
         """Run the test suite."""
         session.conda_install(
             "art",
-            "bcftools==1.19",
+            "bcftools",
             channel="bioconda",
         )
         session.conda_install(
