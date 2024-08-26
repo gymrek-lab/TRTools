@@ -1,0 +1,1 @@
+.. include:: ../../trtools/annotaTR/README.rst
