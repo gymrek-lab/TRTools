@@ -58,7 +58,7 @@ if os.getenv("CONDA_EXE"):
         )
         install_handle_python(session)
         session.run(
-           "python", "-m", "pytest", *cov_cli_args, *session.posargs
+           "python", "-m", "pytest", "-vv", *cov_cli_args, *session.posargs
         )
         session.run("./test/cmdline_tests.sh", external=True)
 
@@ -70,6 +70,6 @@ else:
         session.install("pytest", "pytest-cov")
         install_handle_python_numpy(session)
         session.run(
-            "python", "-m", "pytest", *cov_cli_args, *session.posargs
+            "python", "-m", "pytest", "-vv", *cov_cli_args, *session.posargs
         )
         session.run("./test/cmdline_tests.sh", external=True)
