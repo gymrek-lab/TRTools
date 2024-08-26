@@ -1,3 +1,5 @@
+.. _LIBRARY_SPEC:
+
 TRHarmonizer Library Details
 ============================
 

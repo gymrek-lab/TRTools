@@ -1,3 +1,5 @@
+.. _UTILITIES:
+
 Command-Line Tools
 ===========================
 
@@ -6,6 +8,7 @@ TRTools offers a variety of command-line tools for performing manipulations to T
 
 .. toctree::
    :maxdepth: 1
+   :name: source
    :hidden:
 
    source/dumpSTR.rst

@@ -81,7 +81,7 @@ Note this functionality replaces the script :code:`trtools_prep_beagle_vcf.sh`.
 
 When TRs cannot be directly genotyped from sequencing data, an alternative is to impute them using `Beagle <https://faculty.washington.edu/browning/beagle/beagle.html>`_ with a phased reference panel of SNPs+TRs (e.g. see our latest `reference panel from EnsembleTR <https://github.com/gymrek-lab/ensembleTR>`_). 
 
-Using Beagle to impute TRs will output a VCF with both SNPs+TRs, and strips the TR-specific fields required by TRTools (see the `callers page <https://trtools.readthedocs.io/en/stable/CALLERS.html>`_ for more details). annotaTR can be used to add back these fields::
+Using Beagle to impute TRs will output a VCF with both SNPs+TRs, and strips the TR-specific fields required by TRTools (see the :doc:`callers page </CALLERS>` for more details). annotaTR can be used to add back these fields::
 
 	annotaTR \
   	  --vcf <imputed vcf file> \
