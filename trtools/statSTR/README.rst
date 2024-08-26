@@ -30,6 +30,7 @@ Optional general parameters:
 * :code:`--sample-prefixes <string>`: The prefixes to name output for each samples group. By default uses 1, 2, 3 etc. Must be sample length as :code:`--samples`.
 * :code:`--region <string>`: Restrict to specific regions (chrom:start-end). Requires the input VCF to be bgzipped and tabix indexed.
 * :code:`--precision <int>`: How much precision to use when writing stats (default = 3)
+* :code:`--only-passing`: Filters out the VCF records with non-passing FILTER column.
 
 For specific statistics available, see below.
 
