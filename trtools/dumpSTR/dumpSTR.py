@@ -89,9 +89,6 @@ def CheckLocusFilters(args, vcftype, is_beagle: bool):
         common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
     if args.filter_hrun and vcftype not in [trh.VcfTypes["hipstr"]]:
         common.WARNING("--filter-hrun only relevant to HipSTR files. This filter will have no effect.")
-    if args.filter_hrun and is_beagle:
-        common.WARNING("--filter-hrun cannot be applied to Beagle imputed files")
-        return False
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
             filter_region_files = args.filter_regions.split(",")

@@ -41,14 +41,29 @@ TMPDIR=$(mktemp -d -t tmp-XXXXXXXXXX)
 echo "Saving tmp files in ${TMPDIR}"
 
 # Check version
-for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR prancSTR simTR
+for tool in mergeSTR dumpSTR qcSTR statSTR compareSTR associaTR prancSTR simTR annotaTR
 do
     runcmd_pass "${tool} --version"
 done
 
 runcmd_pass "python -c 'import trtools; print(trtools.__version__)'"
 
-# Check for valid/invalid output locations
+# AnnotaTR tests
+runcmd_pass "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --dosages bestguess"
+runcmd_pass "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --dosages bestguess_norm"
+runcmd_pass "annotaTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --dosages bestguess_norm --out ${TMPDIR}/test --outtype pgen"
+runcmd_pass "annotaTR --vcf ${BEAGLEDIR}/1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz --vcftype hipstr --ref-panel ${BEAGLEDIR}/1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz --outtype vcf pgen --dosages bestguess_norm --out ${TMPDIR}/test"
+runcmd_pass "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype hipstr --ref-panel ${BEAGLEDIR}/beagle_refpanel.vcf.gz --match-refpanel-on trimmedalleles --dosages beagleap --out ${TMPDIR}/test"
+runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
+runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --dosages beagleap --outtype pgen --out ${TMPDIR}/test"
+runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --dosages beagleap_norm --outtype pgen --out ${TMPDIR}/test"
+
+# If file has SNPs+TRs but no refpanel, annotatr should fail
+runcmd_fail "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype hipstr --dosages beagleap --out ${TMPDIR}/test"
+
+# If VCF not bgzipped/index annotatr should fail
+runcmd_fail "annotaTR --vcf ${EXDATADIR}/CEU_subset_unzipped.vcf --vcftype hipstr --dosages bestguess --out ${TMPDIR}/test"
+runcmd_fail "annotaTR --vcf ${EXDATADIR}/CEU_subset_unindexed.vcf.gz --vcftype hipstr --dosages bestguess --out ${TMPDIR}/test"
 
 # Example command running prancSTR for only one chromosome with hipstr output file
 # --only-passing skips VCF records with non-passing filters
@@ -64,6 +79,7 @@ else
     runcmd_pass "simTR --coords chr11_CBL:5001-5033 --ref ${EXDATADIR}/CBL.fa --outprefix ${TMPDIR}/test-simtr --tmpdir ${TMPDIR}/test-simtr --repeat-unit CGG --art art_illumina --coverage 1000 --read-length 150 --seed 12345 --u 0.02 --d 0.02 --rho 0.9"
 fi
 
+# Check for valid/invalid output locations
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test --mean"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/kittens/xxx --mean"
 runcmd_pass "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR} --mean"

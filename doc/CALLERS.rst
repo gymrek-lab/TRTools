@@ -83,40 +83,34 @@ TRTools supports TR genotypes produced by any of the above genotypers and then i
 in this tool suite, unless it's docs specifically say otherwise, that tool can be used on Beagle VCFs as if those VCFs were produced directly by the underlying TR genotyper,
 with no additional flags or arguments needed, as long as the steps below were followed to make sure the Beagle VCF is properly formatted.
 
-Caveats:
+Notes and caveats:
 
 * Beagle provides phased best-guess genotypes for each imputed sample at each TR locus. When run with the :code:`ap` or :code:`gp` flags Beagle will also output
-  probabilities for each possible haplotype/genotype, respectively. These probabilities are also called dosages. While dosages are often more informative for downstream
-  analyses than the best-guess genotypes located in the :code:`GT` format field (for instance, for association testing), TRTools currently does *not* support dosage
-  based analyses and instead will only look at the :code:`GT` field. Feel free to submit PRs with features that handle dosages (see the :ref:`Contributing` docs).
+  probabilities for each possible allele/genotype, respectively. The allele probabilities can be used to compute genotype dosages that take into account imputation uncertainty. The annotaTR utility described below can be used to compute dosages based on the AP fields. These can also be accessed from the TR Harmonizer :code:`TRRecord.GetDosages` function.
 * At each locus Beagle returns the most probable phased genotype. This will often but not always correspond to the most probable unphased genotype. For instance,
   it is possible that :code:`P(A|A) > P(A|B)` and :code:`P(A|A) > P(B|A)`, but :code:`P(A/A) = P(A|A) < P(A|B) + P(B|A) = P(A/B)`. Similarly, it is possible that
   :code:`P(A|B) > P(C|D)` and :code:`P(A|B) > P(D|C)`, but :code:`P(A/B) = P(A|B) + P(B|A) < P(C|D) + P(D|C) = P(C/D)`.
   TRTools currently does not take this into
-  account and just uses the phased genotypes returned by Beagle. If you deem this to be an issue, feel free to submit PRs to help TRTools take this into account
+  account and just uses the phased genotypes returned by Beagle. If you would like to add functionality to support this, feel free to submit PRs to help TRTools take this into account
   (see the :ref:`Contributing` docs).
-* For callers which return sequences, not just lengths (e.g. HipSTR), if there are loci with multiple plausible sequences of the same length, then its possible
+* For callers which return sequences, not just lengths (e.g. HipSTR), if there are loci with multiple plausible sequences of the same length, then it's possible
   that the most probable genotype returned by Beagle does not have the most probable length. For example, the following could be true of a single haplotype:
   :code:`Len(S_1) = L_1, Len(S_2) = L_1, Len(S_3) = L_2` and :code:`P(S_1) < P(S_3), P(S_2) < P(S_3)` but :code:`P(S_3) < P(S_1) + P(S_2)`.
 
-An overview of steps to perform before Beagle imputation:
+See `here <https://github.com/gymrek-lab/ensembleTR?tab=readme-ov-file#usage-1>`_ for example commands for running Beagle to impute TRs. Some additional notes:
 
-* The samples being imputed into must have directly genotyped loci that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
-* The genotypes of both the reference samples and samples of interest must be phased. That can be done by statistically phasing the genotypes prior to running Beagle imputation.
-* The referece samples must also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute
-  the missing genotypes prior to imputing the TRs.
+* VCF files for the samples being imputed into must include genotyped loci (typically SNPs) that are also genotyped in the reference samples. This allows those samples to be 'matched' with samples in the reference.
+* The reference samples must be phased and also not contain any missing genotypes. Possible methods for dealing with that include removing loci with missing genotypes or using imputation to impute the missing genotypes prior to imputing the TRs. The reference panel at the link above has already been phased/imputed and should work directly as input to Beagle.
 
-The VCFs that Beagle outputs need to be preprocessed before use by TRTools. We have provided a tool :code:`trtools_prep_beagle_vcf.sh` to run on those VCFs.
-After running this script, the files should be usable by any of the tools in TRTools.
+The VCFs that Beagle outputs need to be preprocessed before use by TRTools to contain required INFO fields. The :code:`annotaTR` utility provided by TRTools can be used to add this information as well as compute dosages, with the option to output either VCF or PGEN format.
+(As of Aug 2024, we had only provided the script :code:`trtools_prep_beagle_vcf.sh` which is still available and can also be used to add the INFO annotations but cannot write to PGEN files or compute dosages). After running either of those tools to annotate Beagle VCFs, the files should be usable by any of the tools in TRTools.
 
-In case of error, it may be useful to know what steps the script attempts to perform:
+In case of error, it may be useful to know what steps those tools attempt to perform:
 
-* It copies over source and command meta header lines from the reference panel to the imputed VCF so
-  that it is clear which genotyper's syntax is being used to represent the STRs in the VCF.
-* It copies over contig and ALT lines which is required for downstream tools including mergeSTR and is good practice to include in the VCF header.
-* It annotates each STR with the necessary INFO fields from the reference panel that Beagle dropped from the imputed VCF.
-* The imputed VCF contains both TR loci and the shared loci (commonly SNPs) that were used for the imputation.
-  This script removes the non-STR loci (identified as those loci not having STR-specific INFO fields).
+* Copy over source and command meta header lines from the reference panel to the imputed VCF so that it is clear which genotyper's syntax is being used to represent the STRs in the VCF.
+* Copy over contig and ALT lines which is required for downstream tools including mergeSTR and is good practice to include in the VCF header.
+* Annotate each STR with the necessary INFO fields from the reference panel that Beagle dropped from the imputed VCF.
+* Removes the non-TR loci (identified as those loci not having TR-specific INFO fields) so that the final output file contains only TRs.
 
 .. _Beagle: http://faculty.washington.edu/browning/beagle/beagle.html
 .. _bcftools: https://samtools.github.io/bcftools/bcftools.html
