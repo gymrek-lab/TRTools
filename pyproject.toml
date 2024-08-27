@@ -65,6 +65,7 @@ associaTR = "trtools.associaTR:run"
 prancSTR = "trtools.prancSTR:run"
 simTR = "trtools.simTR:run"
 annotaTR = "trtools.annotaTR:run"
+siSTR = "trtools.siSTR:run"
 
 [tool.pytest.ini_options]
 addopts = """
