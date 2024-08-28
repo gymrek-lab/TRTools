@@ -11,5 +11,9 @@
 	"num_alleles": 25,
 	"gamma_alpha": 0.0881,
 	"gamma_beta": 0.2541,
-	"abc_num_sims": 10000
+	"abc_num_sims": 10000,
+	"min_mu": 1e-8,
+	"max_mu": 1e-3,
+	"use_drift": true,
+	"end_samp_n": 6500
 }

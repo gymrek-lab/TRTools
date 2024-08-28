@@ -2,8 +2,11 @@
 Tool for performing selection inference at STRs
 
 TODO
-* allow separate input for demographic model file
+* allow separate input for demographic model file (sistr_sims.GetEffectivePopSize). maybe end_samp_n should go there
 * organize options based on which of the commands they are needed for
+* Index: where did the TMRCA.txt file come from for variable num generations? and why max 5920?
+  I see that file in the google drive
+* Simplify functions in sistr_sims.py
 """
 
 import argparse
@@ -109,6 +112,29 @@ def getargs(): # pragma: no cover
         "--abc-num-sims",
         help="Number of simulations for ABC lookup tables. "
              "If not set defaults to {numsim}".format(numsim=sutils.DEFAULTS["abc_num_sims"]),
+        type=int
+    )
+    index_group.add_argument(
+        "--min-mu",
+        help="Don't allow mutation rates to go below this value. "
+             "If not set defaults to {minmu}".format(minmu=sutils.DEFAULTS["min_mu"]),
+        type=float
+    )
+    index_group.add_argument(
+        "--max-mu",
+        help="Don't allow mutation rates to go above this value. "
+             "If not set defaults to {maxmu}".format(maxmu=sutils.DEFAULTS["max_mu"]),
+        type=float
+    )
+    index_group.add_argument(
+        "--dont-use-drift",
+        help="Don't apply drift in sampling",
+        action="store_true"
+    )
+    index_group.add_argument(
+        "--end-samp-n",
+        help="Sample size to use for end sampling step. "
+             "If not set defaults to {endsampn}".format(endsampn=sutils.DEFAULTS["end_samp_n"]),
         type=int
     )
     other_group = parser.add_argument_group("Other options")

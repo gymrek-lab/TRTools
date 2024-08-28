@@ -21,7 +21,11 @@ DEFAULTS = {
 	"num_alleles": 25,
 	"gamma_alpha": 0.0881,
 	"gamma_beta": 0.2541,
-	"abc_num_sims": 10000
+	"abc_num_sims": 10000,
+	"min_mu": 10**-8,
+	"max_mu": 10**-3,
+	"use_drift": True,
+	"end_samp_n": 6500
 }
 
 def WriteConfig(config, fname):
@@ -49,6 +53,10 @@ def PrintConfigInfo(config):
 	sys.stderr.write("    num_alleles={numalleles}\n".format(numalleles=config["num_alleles"]))
 	sys.stderr.write("    gamma_params={a},{b}\n".format(a=config["gamma_alpha"], b=config["gamma_beta"]))
 	sys.stderr.write("    abc_num_sims={numsim}\n".format(numsim=config["abc_num_sims"]))
+	sys.stderr.write("    min_mu={min_mu}\n".format(min_mu=config["min_mu"]))
+	sys.stderr.write("    max_mu={max_mu}\n".format(max_mu=config["max_mu"]))
+	sys.stderr.write("    use_drift={drift}\n".format(drift=config["use_drift"]))
+	sys.stderr.write("    end_samp_n={endsampn}\n".format(endsampn=config["end_samp_n"]))
 	sys.stderr.write("************************************\n")
 
 
@@ -113,6 +121,14 @@ def LoadSISTRConfig(args):
 		config["gamma_beta"] = beta
 	if args.abc_num_sims is not None:
 		config["abc_num_sims"] = args.abc_num_sims
+	if args.min_mu is not None:
+		config["min_mu"] = args.min_mu
+	if args.max_mu is not None:
+		config["max_mu"] = args.max_mu
+	if args.dont_use_drift:
+		config["use_drift"] = False
+	if args.end_samp_n is not None:
+		config["end_samp_n"] = args.end_samp_n
 
 	# Checks on values
 	if len(config["periods"]) != len(config["opt_allele_ranges"]):
@@ -208,5 +224,17 @@ def LoadSISTRConfig(args):
 		return None
 	if config["abc_num_sims"] <= 0:
 		common.WARNING("Error: --abc-num-sims must be > 0")
+		return None
+	if config["min_mu"] < 0 or config["min_mu"] > 1:
+		common.WARNING("Error: --min-mu must be between 0 and 1")
+		return None
+	if config["max_mu"] < 0 or config["max_mu"] > 1:
+		common.WARNING("Error: --max-mu must be between 0 and 1")
+		return None
+	if config["max_mu"] < config["min_mu"]:
+		common.WARNING("Error: --min-mu cannot be larger than --max-mu")
+		return None
+	if config["end_samp_n"] <= 0:
+		common.WARNING("Error: --end-samp-n must be > 0")
 		return None
 	return config
