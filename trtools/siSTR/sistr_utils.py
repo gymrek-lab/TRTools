@@ -20,8 +20,13 @@ DEFAULTS = {
 	"num_gens": 55920,
 	"num_alleles": 25,
 	"gamma_alpha": 0.0881,
-	"gamma_beta": 0.2541
+	"gamma_beta": 0.2541,
+	"abc_num_sims": 10000
 }
+
+def WriteConfig(config, fname):
+	with open(fname, "w") as f:
+		json.dump(config, f, indent=4)
 
 def PrintConfigInfo(config):
 	sys.stderr.write("**** Loaded SISTR config info: *****\n")
@@ -43,6 +48,7 @@ def PrintConfigInfo(config):
 	sys.stderr.write("Simulation params:\n")
 	sys.stderr.write("    num_alleles={numalleles}\n".format(numalleles=config["num_alleles"]))
 	sys.stderr.write("    gamma_params={a},{b}\n".format(a=config["gamma_alpha"], b=config["gamma_beta"]))
+	sys.stderr.write("    abc_num_sims={numsim}\n".format(numsim=config["abc_num_sims"]))
 	sys.stderr.write("************************************\n")
 
 
@@ -73,8 +79,12 @@ def LoadSISTRConfig(args):
 	if args.periods is not None:
 		config["periods"] = [int(item) for item in args.periods.strip().split(",")]
 	if args.opt_allele_ranges is not None:
-		config["opt_allele_ranges"] = [(int(item.split("-")[0]), int(item.split("-")[1])) \
-			for item in args.opt_allele_ranges.strip().split(",")]
+		try:
+			config["opt_allele_ranges"] = [(int(item.split("-")[0]), int(item.split("-")[1])) \
+				for item in args.opt_allele_ranges.strip().split(",")]
+		except (IndexError, ValueError) as e:
+			common.WARNING("Error parsing opt-allele-ranges")
+			return None
 	if args.log10_mut_slopes is not None:
 		config["log10_mut_slopes"] = [float(item) for item in args.log10_mut_slopes.strip().split(",")]
 	if args.betas is not None:
@@ -101,8 +111,10 @@ def LoadSISTRConfig(args):
 			return None
 		config["gamma_alpha"] = alpha
 		config["gamma_beta"] = beta
+	if args.abc_num_sims is not None:
+		config["abc_num_sims"] = args.abc_num_sims
 
-	# Checks on inputs
+	# Checks on values
 	if len(config["periods"]) != len(config["opt_allele_ranges"]):
 		common.WARNING("Error: a different number of period and optimal allele "
 					   "ranges specified.")
@@ -128,6 +140,7 @@ def LoadSISTRConfig(args):
 					   "specified.")
 		return None
 
+	# Additional checks on command line arguments
 	if args.periods is not None:
 		if args.opt_allele_ranges is None:
 			common.WARNING("Error: if you change --periods you must also set --opt-allele-ranges")
@@ -155,6 +168,12 @@ def LoadSISTRConfig(args):
 			common.WARNING("Error: only rpt. units of <=6 are supported")
 			return None
 	for ar in config["opt_allele_ranges"]:
+		if len(ar) != 2:
+			common.WARNING("Improperly formatted allele range {ar}.".format(ar=ar))
+			return None
+		if type(ar[0]) != int or type(ar[1]) != int:
+			common.WARNING("Invalid allele range {ar}. Values must be integers".format(ar=ar))
+			return None		
 		minval, maxval = ar
 		if maxval < minval:
 			common.WARNING("Invalid allele range {ar}. Maxval < minval".format(ar=ar))
@@ -187,5 +206,7 @@ def LoadSISTRConfig(args):
 	if config["num_alleles"] <= 0:
 		common.WARNING("Error: --num-alleles must be > 0")
 		return None
-
+	if config["abc_num_sims"] <= 0:
+		common.WARNING("Error: --abc-num-sims must be > 0")
+		return None
 	return config

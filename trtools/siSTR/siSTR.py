@@ -105,7 +105,14 @@ def getargs(): # pragma: no cover
                 b=sutils.DEFAULTS["gamma_beta"]),
         type=str
     )
+    index_group.add_argument(
+        "--abc-num-sims",
+        help="Number of simulations for ABC lookup tables. "
+             "If not set defaults to {numsim}".format(numsim=sutils.DEFAULTS["abc_num_sims"]),
+        type=int
+    )
     other_group = parser.add_argument_group("Other options")
+    other_group.add_argument("--seed", help="Set seed for random number generation", type=int)
     other_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
     other_group.add_argument("--verbose", help="Output helpful status messages", action="store_true")
     args = parser.parse_args()
