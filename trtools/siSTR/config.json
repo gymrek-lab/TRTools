@@ -1,4 +1,14 @@
 {
 	"periods": [2, 3, 4],
-	"opt_allele_ranges": [[11, 20], [5, 13], [7, 10]]
+	"opt_allele_ranges": [[11, 20], [5, 13], [7, 10]],
+	"log10_mut_slopes": [0.15, 0.33, 0.45],
+	"betas": [0.3, 0.3, 0.3],
+	"rhos": [0.6, 0.9, 0.9],
+	"baseline_mus": [1e-05, 3.16e-06, 1e-06],
+	"baseline_mu_alleles": [6, 5, 3],
+	"n_effective": 7310,
+	"num_gens": 55920,
+	"num_alleles": 25,
+	"gamma_alpha": 0.0881,
+	"gamma_beta": 0.2541
 }

@@ -3,14 +3,48 @@ Common utilities for SISTR commands
 """
 
 import json
+import sys
 
 import trtools.utils.common as common
 
 # Default SISTR params
 DEFAULTS = {
 	"periods": [2, 3, 4],
-	"opt_allele_ranges": [(11, 20), (5, 13), (7, 10)]
+	"opt_allele_ranges": [(11, 20), (5, 13), (7, 10)],
+	"log10_mut_slopes": [0.15, 0.33, 0.45],
+	"betas": [0.3, 0.3, 0.3],
+	"rhos": [0.6, 0.9, 0.9],
+	"baseline_mus": [10**-5, 10**-5.5, 10**-6],
+	"baseline_mu_alleles": [6, 5, 3],
+	"n_effective": 7310,
+	"num_gens": 55920,
+	"num_alleles": 25,
+	"gamma_alpha": 0.0881,
+	"gamma_beta": 0.2541
 }
+
+def PrintConfigInfo(config):
+	sys.stderr.write("**** Loaded SISTR config info: *****\n")
+	sys.stderr.write("Mutation models:\n")
+	for i in range(len(config["periods"])):
+		sys.stderr.write("  Period={period}\n".format(period=config["periods"][i]))
+		sys.stderr.write("    Optimal allele range={minval}-{maxval}\n".format(
+				minval=config["opt_allele_ranges"][i][0],
+				maxval=config["opt_allele_ranges"][i][1]
+			))
+		sys.stderr.write("    Log10 mut slope={slope}\n".format(slope=config["log10_mut_slopes"][i]))
+		sys.stderr.write("    Beta={beta}\n".format(beta=config["betas"][i]))
+		sys.stderr.write("    Rho={rho}\n".format(rho=config["rhos"][i]))
+		sys.stderr.write("    Baseline mu={bmu}\n".format(bmu=config["baseline_mus"][i]))
+		sys.stderr.write("    Baseline mu allele={bmua}\n".format(bmua=config["baseline_mu_alleles"][i]))
+	sys.stderr.write("Demographic model:\n")
+	sys.stderr.write("    n_effective={neff}\n".format(neff=config["n_effective"]))
+	sys.stderr.write("    num_gens={numgens}\n".format(numgens=config["num_gens"]))
+	sys.stderr.write("Simulation params:\n")
+	sys.stderr.write("    num_alleles={numalleles}\n".format(numalleles=config["num_alleles"]))
+	sys.stderr.write("    gamma_params={a},{b}\n".format(a=config["gamma_alpha"], b=config["gamma_beta"]))
+	sys.stderr.write("************************************\n")
+
 
 def LoadSISTRConfig(args):
 	"""
@@ -41,23 +75,117 @@ def LoadSISTRConfig(args):
 	if args.opt_allele_ranges is not None:
 		config["opt_allele_ranges"] = [(int(item.split("-")[0]), int(item.split("-")[1])) \
 			for item in args.opt_allele_ranges.strip().split(",")]
+	if args.log10_mut_slopes is not None:
+		config["log10_mut_slopes"] = [float(item) for item in args.log10_mut_slopes.strip().split(",")]
+	if args.betas is not None:
+		config["betas"] = [float(item) for item in args.betas.strip().split(",")]
+	if args.rhos is not None:
+		config["rhos"] = [float(item) for item in args.rhos.strip().split(",")]
+	if args.baseline_mus is not None:
+		config["baseline_mus"] = [float(item) for item in args.rhos.strip().split(",")]
+	if args.baseline_mu_alleles is not None:
+		config["baseline_mu_alleles"] = [int(item) for item in args.periods.strip().split(",")]
+	if args.n_effective is not None:
+		config["n_effective"] = args.n_effective
+	if args.num_gens is not None:
+		config["num_gens"] = args.num_gens
+	if args.num_alleles is not None:
+		config["num_alleles"] = args.num_alleles
+	if args.s_prior_gamma_params is not None:
+		items = args.s_prior_gamma_params.strip().split(",")
+		try:
+			alpha = float(items[0])
+			beta = float(items[1])
+		except (IndexError, TypeError) as e:
+			common.WARNING("Error parsing alpha,gamma from " + args.s_prior_gamma_params)
+			return None
+		config["gamma_alpha"] = alpha
+		config["gamma_beta"] = beta
 
 	# Checks on inputs
 	if len(config["periods"]) != len(config["opt_allele_ranges"]):
 		common.WARNING("Error: a different number of period and optimal allele "
 					   "ranges specified.")
 		return None
+	if len(config["periods"]) != len(config["log10_mut_slopes"]):
+		common.WARNING("Error: a different number of period and log10_mut_slopes "
+					   "specified.")
+		return None
+	if len(config["periods"]) != len(config["betas"]):
+		common.WARNING("Error: a different number of period and betas "
+					   "specified.")
+		return None
+	if len(config["periods"]) != len(config["rhos"]):
+		common.WARNING("Error: a different number of period and rhos "
+					   "specified.")
+		return None
+	if len(config["periods"]) != len(config["baseline_mus"]):
+		common.WARNING("Error: a different number of period and baseline_mus "
+					   "specified.")
+		return None
+	if len(config["periods"]) != len(config["baseline_mu_alleles"]):
+		common.WARNING("Error: a different number of period and baseline_mu_alleles "
+					   "specified.")
+		return None
+
 	if args.periods is not None:
 		if args.opt_allele_ranges is None:
 			common.WARNING("Error: if you change --periods you must also set --opt-allele-ranges")
+			return None
+		if args.log10_mut_slopes is None:
+			common.WARNING("Error: if you change --periods you must also set --log10-mut-slopes")
+			return None
+		if args.betas is None:
+			common.WARNING("Error: if you change --periods you must also set --betas")
+			return None
+		if args.rhos is None:
+			common.WARNING("Error: if you change --periods you must also set --rhos")
+			return None
+		if args.baseline_mus is None:
+			common.WARNING("Error: if you change --periods you must also set --baseline-mus")
+			return None
+		if args.baseline_mus is None:
+			common.WARNING("Error: if you change --periods you must also set --baseline-mu-alleles")
+			return None
+	for period in config["periods"]:
+		if period < 0:
+			common.WARNING("Error: cannot have a period < 0")
+			return None
+		if period > 6:
+			common.WARNING("Error: only rpt. units of <=6 are supported")
 			return None
 	for ar in config["opt_allele_ranges"]:
 		minval, maxval = ar
 		if maxval < minval:
 			common.WARNING("Invalid allele range {ar}. Maxval < minval".format(ar=ar))
 			return None
-		if maxval < 0 or minval < 0:
+		if maxval <= 0 or minval <= 0:
 			common.WARNING("Invalid allele range {ar}. min/max must be > 0".format(ar=ar))
 			return None
+	for beta in config["betas"]:
+		if beta < 0 or beta > 1:
+			common.WARNING("Error: beta values must be between 0 and 1")
+			return None
+	for rho in config["rhos"]:
+		if rho < 0 or rho > 1:
+			common.WARNING("Error: rho values must be between 0 and 1")
+			return None
+	for bmu in config["baseline_mus"]:
+		if bmu < 0 or bmu > 1:
+			common.WARNING("Error: mu values must be between 0 and 1")
+			return None	
+	for bmua in config["baseline_mu_alleles"]:
+		if bmua <= 0 :
+			common.WARNING("Error: baseline mu allele must be >0")
+			return None
+	if config["n_effective"] <= 0:
+		common.WARNING("Error: --n-effective must be > 0")
+		return None
+	if config["num_gens"] <= 0:
+		common.WARNING("Error: --num-gens must be > 0")
+		return None
+	if config["num_alleles"] <= 0:
+		common.WARNING("Error: --num-alleles must be > 0")
+		return None
 
 	return config

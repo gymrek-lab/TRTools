@@ -1,5 +1,9 @@
 """
 Tool for performing selection inference at STRs
+
+TODO
+* allow separate input for demographic model file
+* organize options based on which of the commands they are needed for
 """
 
 import argparse
@@ -46,8 +50,64 @@ def getargs(): # pragma: no cover
              "If not set defaults to {default}".format(default=",".join([str(item[0])+"-"+str(item[1]) for item in sutils.DEFAULTS["opt_allele_ranges"]])),
         type=str
     )
-    ver_group = parser.add_argument_group("Version")
-    ver_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
+    index_group.add_argument(
+        "--log10-mut-slopes",
+        help="Slopes of log10 mutation rate vs. allele length for each rpt. unit length. "
+             "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["log10_mut_slopes"]])),
+        type=str
+    )
+    index_group.add_argument(
+        "--betas",
+        help="Beta values for each rpt. unit length. "
+             "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["betas"]])),
+        type=str
+    )
+    index_group.add_argument(
+        "--rhos",
+        help="Rho values for each rpt. unit length. "
+             "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["rhos"]])),
+        type=str
+    )
+    index_group.add_argument(
+        "--baseline-mus",
+        help="Baseline mut.rate values for each rpt. unit length. "
+             "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["baseline_mus"]])),
+        type=str
+    )
+    index_group.add_argument(
+        "--baseline-mu-alleles",
+        help="Alleles corresponding to baseline mut.rate values for each rpt. unit length. "
+             "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["baseline_mu_alleles"]])),
+        type=str
+    )
+    index_group.add_argument(
+        "--n-effective",
+        help="Effective population size. "
+             "If not set defaults to {default}".format(default=sutils.DEFAULTS["n_effective"]),
+        type=int
+    )
+    index_group.add_argument(
+        "--num-gens",
+        help="Maximum number of generations to simulate. "
+             "If not set defaults to {default}".format(default=sutils.DEFAULTS["num_gens"]),
+        type=int
+    )
+    index_group.add_argument(
+        "--num-alleles",
+        help="Number of possible alleles in simulations. "
+             "If not set defaults to {default}".format(default=sutils.DEFAULTS["num_alleles"]),
+        type=int
+    )
+    index_group.add_argument(
+        "--s-prior-gamma-params",
+        help="Alpha and beta for prior distribution on s. "
+             "If not set defaults to {a},{b}".format(a=sutils.DEFAULTS["gamma_alpha"],
+                b=sutils.DEFAULTS["gamma_beta"]),
+        type=str
+    )
+    other_group = parser.add_argument_group("Other options")
+    other_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))
+    other_group.add_argument("--verbose", help="Output helpful status messages", action="store_true")
     args = parser.parse_args()
     return args
 
