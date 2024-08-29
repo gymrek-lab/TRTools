@@ -25,7 +25,9 @@ DEFAULTS = {
 	"min_mu": 10**-8,
 	"max_mu": 10**-3,
 	"use_drift": True,
-	"end_samp_n": 6500
+	"end_samp_n": 6500,
+	"lrt_svals": [0.0,1e-06,1e-05,2e-05,3e-05,4e-05,5e-05,6e-05,7e-05,8e-05,9e-05,0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.15,0.2,0.4,0.6,0.8,1.0],
+	"lrt_num_sims": 2000
 }
 
 def WriteConfig(config, fname):
@@ -53,10 +55,12 @@ def PrintConfigInfo(config):
 	sys.stderr.write("    num_alleles={numalleles}\n".format(numalleles=config["num_alleles"]))
 	sys.stderr.write("    gamma_params={a},{b}\n".format(a=config["gamma_alpha"], b=config["gamma_beta"]))
 	sys.stderr.write("    abc_num_sims={numsim}\n".format(numsim=config["abc_num_sims"]))
+	sys.stderr.write("    lrt_num_sims={numsim}\n".format(numsim=config["lrt_num_sims"]))
 	sys.stderr.write("    min_mu={min_mu}\n".format(min_mu=config["min_mu"]))
 	sys.stderr.write("    max_mu={max_mu}\n".format(max_mu=config["max_mu"]))
 	sys.stderr.write("    use_drift={drift}\n".format(drift=config["use_drift"]))
 	sys.stderr.write("    end_samp_n={endsampn}\n".format(endsampn=config["end_samp_n"]))
+	sys.stderr.write("    lrt_svals={svals}\n".format(svals=config["lrt_svals"]))
 	sys.stderr.write("************************************\n")
 
 
@@ -129,6 +133,8 @@ def LoadSISTRConfig(args):
 		config["use_drift"] = False
 	if args.end_samp_n is not None:
 		config["end_samp_n"] = args.end_samp_n
+	if args.lrt_num_sims is not None:
+		config["lrt_num_sims"] = args.lrt_num_sims
 
 	# Checks on values
 	if len(config["periods"]) != len(config["opt_allele_ranges"]):
@@ -236,5 +242,8 @@ def LoadSISTRConfig(args):
 		return None
 	if config["end_samp_n"] <= 0:
 		common.WARNING("Error: --end-samp-n must be > 0")
+		return None
+	if config["lrt_num_sims"] <= 0:
+		common.WARNING("Error: --lrt-num-sims must be > 0")
 		return None
 	return config

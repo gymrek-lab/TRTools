@@ -137,6 +137,12 @@ def getargs(): # pragma: no cover
              "If not set defaults to {endsampn}".format(endsampn=sutils.DEFAULTS["end_samp_n"]),
         type=int
     )
+    index_group.add_argument(
+        "--lrt-num-sims",
+        help="Number of simulations to use for LRT lookup tables. "
+             "If not set defaults to {lrtnumsim}".format(lrtnumsim=sutils.DEFAULTS["lrt_num_sims"]),
+        type=int
+    )
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument("--seed", help="Set seed for random number generation", type=int)
     other_group.add_argument("--version", action="version", version = '{version}'.format(version=__version__))

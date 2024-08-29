@@ -24,6 +24,44 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 		config["num_alleles"], mu_prime, beta, rho, L,
 		config["min_mu"], config["max_mu"]).transpose()
 
+	# Function to run sims for a certain s value
+	# since all other params are the same
+	def RunSim(s):
+		return ssims.RunSimulation(
+			sval=s,
+			transition_matrix_transpose=transition_matrix_transpose,
+			max_iter=config["num_gens"],
+			n_effective=config["n_effective"],
+			use_drift=config["use_drift"],
+			end_samp_n=config["end_samp_n"]
+		)
+
+	########### LRT Lookup tables ################
+	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_lrt.txt", "w")
+	outf.write("\t".join(["s","freqs"])+"\n")
+	for s in config["lrt_svals"]:
+		allele_freq_results = []
+		for i in range(config["lrt_num_sims"]):
+			if verbose and i%100==0:
+				sys.stderr.write("- LRT Simulation s=%s %s/%s\n"%(s, i, config["lrt_num_sims"]))
+			simres = RunSim(s)
+			allele_freq_results.append(simres["afreqs_string"])
+		outf.write("\t".join([str(s), ";".join(allele_freq_results)])+"\n")
+	outf.close()
+
+	########### LRT Lookup tables - zero ################
+	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_lrt_zero.txt", "w")
+	outf.write("\t".join(["s","freqs"])+"\n")
+	allele_freq_results = []
+	for i in range(config["lrt_num_sims"]):
+		if verbose and i%100==0:
+			sys.stderr.write("- LRT Simulation ZERO %s/%s\n"%(i, config["lrt_num_sims"]))
+		simres = RunSim(0)
+		allele_freq_results.append(simres["afreqs_string"])
+	outf.write("\t".join([str(s), ";".join(allele_freq_results)])+"\n")
+	outf.close()
+	
+	########### ABC Lookup table ################
 	# Set up output file
 	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_abc.txt", "w")
 	outf.write("\t".join(["s","freqs"])+"\n")
@@ -35,18 +73,10 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 	# Run each simulation
 	for i in range(config["abc_num_sims"]):
 		if verbose and i%100==0:
-			sys.stderr.write("- Simulation %s/%s\n"%(i, config["abc_num_sims"]))
-		simres = ssims.RunSimulation(
-			sval = s_values[i],
-			transition_matrix_transpose = transition_matrix_transpose,
-			max_iter=config["num_gens"],
-			n_effective=config["n_effective"],
-			use_drift=config["use_drift"],
-			end_samp_n=config["end_samp_n"]
-		)
+			sys.stderr.write("- ABC Simulation %s/%s\n"%(i, config["abc_num_sims"]))
+		simres = RunSim(s_values[i])
 		outf.write("\t".join([str(s_values[i]), simres["afreqs_string"]])+"\n")
 		outf.flush()
-	# Done
 	outf.close()
 
 def main(args):
