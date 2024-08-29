@@ -97,6 +97,18 @@ def get_dummy_record_gts_allsamelen():
         alt=["CAGCAACAG"]
     )
 
+dummy_record_gts_monomorphic = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0]]
+def get_dummy_record_gts_monomorphic():
+    return DummyCyvcf2Record(
+        gts=dummy_record_gts_monomorphic,
+        ref="CAGCAGCAG",
+        alt=[]
+    )
+
 triploid_gts = np.array([
     [0, 0, -2],
     [0, 0, -2],
@@ -340,6 +352,17 @@ def test_TRRecord_GetGenotypes_Dosages():
     true_beagle_norm_dosages = np.array([0, 0, 0, 0])
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm) ==
         true_beagle_norm_dosages)
+
+    monomorphic_record = get_dummy_record_gts_monomorphic()
+    monomorphic_record.FORMAT["AP1"] = np.array([[]])
+    monomorphic_record.FORMAT["AP2"] = np.array([[]])
+    rec = trh.TRRecord(monomorphic_record, monomorphic_record.REF, [], "CAG", "", None)
+    true_bestguess_norm_dosages = np.array([0, 0, 0, 0], dtype=np.float32)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
+        true_bestguess_norm_dosages)
+    true_beagleap_dosages = np.array([6, 6, 6, 6], dtype=np.float32)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap) ==
+        true_beagleap_dosages)
 
     # Test regular diploid record - Example with bestguess same as AP-based dosage
     diploid_record = get_dummy_record_diploid()
