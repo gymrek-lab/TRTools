@@ -7,6 +7,8 @@ import pytest
 
 from ..mergeSTR import *
 from trtools.testsupport.utils import assert_same_vcf
+import gzip, shutil
+
 
 
 # Set up base argparser
@@ -115,6 +117,21 @@ def test_hipSTRRightFile(args, mrgvcfdir):
     args.verbose = True
     assert main(args)==0
 
+# Test right files or directory - hipstr with FORMAT AP field and IMP
+def test_hipSTRRightFile_Beagle(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args)==0
+    args.vcftype = "auto"
+    assert main(args)==0
+    args.update_sample_from_file = False
+    assert main(args)==0
+    args.verbose = True
+    assert main(args)==0
+
+
 # Test right files or directory - ExpansionHunter
 def test_ExpansionHunterRightFile(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
@@ -155,6 +172,16 @@ def test_multiple_vcf_types(args, mrgvcfdir, capsys):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 1
     assert 'mixed types' in capsys.readouterr().err
+
+
+
+def test_mixed_beagle_types(args, mrgvcfdir, capsys):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    args.vcftype = "auto"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 1
+    assert 'Mix of Beagle/non-Beagle VCFs identified.' in capsys.readouterr().err
 
 def test_duplicate_ids(args, mrgvcfdir, capsys):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
@@ -251,6 +278,22 @@ def test_ConflictingRefs():
 
     retval = GetRefAllele(dummy_records, [True, True, False], None)
     assert retval == "CAGCAG"
+
+# to check beagle vcf with different number of ALT alllels
+def test_DifferentAltAllele(args, mrgvcfdir,capsys):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_diffALT.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert ("Conflicting alt alleles found at" in capsys.readouterr().err)
+    
+#check if identical allele order
+def test_CheckIdenticalAlleleOrder(args,mrgvcfdir,capsys):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_difforder.vcf.gz")
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert ("Conflicting alt alleles found at" in capsys.readouterr().err)
 
 def test_GetInfoItem(capsys):
     # Set up dummy records
@@ -350,6 +393,18 @@ def test_hipstr_output(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
+
+#test if AP field exist
+def test_hipstr_output_Beagle(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "hipstr_imputed_merge1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "hipstr_imputed_merge2.vcf.gz")
+    args.vcftype = "hipstr"
+    args.vcfs = fname1 + "," + fname2
+    with gzip.open(mrgvcfdir+"/hipstr_imputed_merged.vcf.gz", 'r') as f_in, open("hipstr_imputed_merged.vcf", 'wb') as f_out:
+        shutil.copyfileobj(f_in, f_out)
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', "hipstr_imputed_merged.vcf")
+    os.remove("hipstr_imputed_merged.vcf")
 
 def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")
