@@ -68,7 +68,7 @@ annotaTR = "trtools.annotaTR:run"
 
 [tool.pytest.ini_options]
 addopts = """
---ignore noxfile.py
+--ignore noxfile.py --ignore trtools/testsupport/
 -p trtools.testsupport.dataloader
 --doctest-modules
 """
