@@ -25,6 +25,7 @@ def args(tmpdir):
     args.ignore_duplicates = False
     args.debug = False
     args.chunk_size = 1000
+    args.warn_on_AP_error = False
     return args
 
 @pytest.fixture
@@ -125,6 +126,17 @@ def test_DosageType(args, vcfdir):
     args.dosages = "beagleap_norm"
     retcode = main(args)
     assert retcode==1
+    fname = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "hipstr"
+    args.ref_panel = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz")
+    args.warn_on_AP_error = True # should't fail with missing AP
+    args.outtype = ["pgen","vcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.warn_on_AP_error = False # set back
+    with pytest.raises(ValueError):
+        main(args)
     # Beagle VCF
     fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
     args.vcf = fname
