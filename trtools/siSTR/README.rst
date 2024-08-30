@@ -12,6 +12,6 @@ siSTR
 
 siSTR consists of the following subcommands:
 
-* `sistr index`: build ABC and LRT lookup tables needed to run other siSTR commands
-* `sistr score`: run siSTR to compute selection coefficients at individual STRs based on population allele frequencies
-* `sistr joint`: infer siSTR models jointly across loci (SISTR2 method) ()
+* `siSTR index`: build ABC and LRT lookup tables needed to run other siSTR commands
+* `siSTR score`: run siSTR to compute selection coefficients at individual STRs based on population allele frequencies
+* `siSTR joint`: infer siSTR models jointly across loci (SISTR2 method) ()
