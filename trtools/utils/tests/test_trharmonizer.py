@@ -754,6 +754,19 @@ def test_trh_init_and_type_infer(vcfdir):
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
     assert not hipstr_trh.IsBeagleVCF()
 
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf, vcftype='longtr')
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf,
+                                        vcftype=trh.VcfTypes.longtr)
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    assert (longtr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.longtr))
+    assert not longtr_trh.IsBeagleVCF()
+
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VcfTypes.popstr
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf,

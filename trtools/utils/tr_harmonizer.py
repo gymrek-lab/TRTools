@@ -1709,6 +1709,8 @@ class TRRecordHarmonizer:
             return 'FORMAT=<ID=Q,' in self.vcffile.raw_header
         if self.vcftype == VcfTypes.hipstr:
             return not self.IsBeagleVCF()
+        if self.vcftype == VcfTypes.longtr:
+            return not self.IsBeagleVCF()
         if self.vcftype == VcfTypes.advntr:
             return not self.IsBeagleVCF()
         if self.vcftype == VcfTypes.popstr:

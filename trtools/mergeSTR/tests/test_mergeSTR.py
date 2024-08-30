@@ -332,8 +332,6 @@ def test_eh_mixed_ploidy_no_alt(args, mrgvcfdir):
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/eh_X_no_alt_merged_swap.vcf")
 
-
-
 def test_gangstr_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
@@ -342,7 +340,6 @@ def test_gangstr_output(args, mrgvcfdir):
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/gangstr_merged.vcf")
 
-
 def test_hipstr_output(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_hipstr1.vcf.gz")
     fname2 = os.path.join(mrgvcfdir, "test_file_hipstr2.vcf.gz")
@@ -350,6 +347,14 @@ def test_hipstr_output(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/hipstr_merged.vcf")
+
+def test_hipstr_output(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_longtr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_longtr2.vcf.gz")
+    args.vcftype = "longtr"
+    args.vcfs = fname1 + "," + fname2
+    assert main(args) == 0
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/longtr_merged.vcf")
 
 def test_hipstr_output_flanking_pb_harmonization(args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "hipstr-harmonized-merge-contains-flanking.vcf.gz")

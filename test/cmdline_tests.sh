@@ -194,6 +194,11 @@ FILE2=${EXDATADIR}/NA12891_chr21_popstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_popstr.sorted.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_popstr --vcftype popstr"
 
+# LongTR
+FILE1=${EXDATADIR}/HG002_htt_test.vcf.gz
+FILE2=${EXDATADIR}/HG003_htt_test.vcf.gz
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2} --out ${TMPDIR}/test_merge_longtr --vcftype longtr"
+
 # Test mergeSTR on a file with list of VCFs
 FILE1=${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_hipstr.sorted.vcf.gz
