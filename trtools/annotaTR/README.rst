@@ -31,7 +31,7 @@ Required parameters:
 
 Other general parameters:
 
-* :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`longtr`, :code:`eh`, :code:`popstr`.
 * :code:`--outtype <string>`: Which output format to generate. Supported output types are :code:`vcf` or :code:`pgen`. If multiple types are listed (e.g. :code:`--outtype vcf pgen`), all specified output formats are generated. By default, only VCF output is generated at :code:`$outprefix.vcf`. If PGEN output is specified, the files :code:`$outprefix.pgen`, :code:`$outprefix.pvar`, and :code:`$outprefix.psam` are generated. See more on the `pgen format here <https://www.cog-genomics.org/plink/2.0/formats#pgen>`_
 * :code:`--chunk-size <int>`: If writing PGEN output, load dosages in chunks of this many variants at a type. This can avoid out of memory errors if you are processing very large VCF files.
 
@@ -104,7 +104,7 @@ Additional relevant options:
 
 If generating a VCF output file, this command will output a new file containing only STRs, with the following fields added back depending on the genotyper used to generate the reference panel:
 
-* For HipSTR-based reference panels: INFO fields START, END, PERIOD are added
+* For HipSTR-based or LongTR-based reference panels: INFO fields START, END, PERIOD are added
 * For adVNTR: INFO fields RU, VID are added
 * For GangSTR: INFO field RU is added
 * For ExpansionHunter: INFO fields RU, VARID, RL are added

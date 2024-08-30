@@ -85,10 +85,10 @@ def CheckLocusFilters(args, vcftype, is_beagle: bool):
         if args.max_locus_het < args.min_locus_het:
             common.WARNING("Cannot have --max-locus-het less than --min-locus-het")
             return False
-    if args.use_length and vcftype not in [trh.VcfTypes["hipstr"]]:
-        common.WARNING("--use-length is only meaningful for HipSTR, which reports sequence level differences.")
-    if args.filter_hrun and vcftype not in [trh.VcfTypes["hipstr"]]:
-        common.WARNING("--filter-hrun only relevant to HipSTR files. This filter will have no effect.")
+    if args.use_length and vcftype not in [trh.VcfTypes["hipstr"], trh.VcfTypes["longtr"]]:
+        common.WARNING("--use-length is only meaningful for HipSTR or LongTR, which report sequence level differences.")
+    if args.filter_hrun and vcftype not in [trh.VcfTypes["hipstr"], trh.VcfTypes["longtr"]]:
+        common.WARNING("--filter-hrun only relevant to HipSTR or LongTR files. This filter will have no effect.")
     if args.filter_regions is not None:
         if args.filter_regions_names is not None:
             filter_region_files = args.filter_regions.split(",")
@@ -146,6 +146,53 @@ def CheckHipSTRFilters(format_fields, args):
     if args.hipstr_min_call_Q is not None:
         if args.hipstr_min_call_Q < 0 or args.hipstr_min_call_Q > 1:
             common.WARNING("--hipstr-min-call-Q must be between 0 and 1")
+            return False
+        assert "Q" in format_fields
+    return True
+
+def CheckLongTRFilters(format_fields, args):
+    r"""Check LongTR call-level filters
+
+    Parameters
+    ----------
+    format_fields :
+        The format fields used in this VCF
+    args : argparse namespace
+        Contains user arguments
+
+    Returns
+    -------
+    checks : bool
+        Set to True if all filters look ok.
+        Set to False if filters are invalid
+    """
+    if args.longtr_max_call_flank_indel is not None:
+        if args.longtr_max_call_flank_indel < 0 or args.longtr_max_call_flank_indel > 1:
+            common.WARNING("--longtr-max-call-flank-indel must be between 0 and 1")
+            return False
+        assert "DP" in format_fields and "DFLANKINDEL" in format_fields # should always be true
+    if args.longtr_min_supp_reads is not None:
+        if args.longtr_min_supp_reads < 0:
+            common.WARNING("--longtr-min-supp-reads must be >= 0")
+            return False
+        assert "ALLREADS" in format_fields and "GB" in format_fields
+    if args.longtr_min_call_DP is not None:
+        if args.longtr_min_call_DP < 0:
+            common.WARNING("--longtr-min-call-DP must be >= 0")
+            return False
+        assert "DP" in format_fields
+    if args.longtr_max_call_DP is not None:
+        if args.longtr_max_call_DP < 0:
+            common.WARNING("--longtr-max-call-DP must be >= 0")
+            return False
+        assert "DP" in format_fields
+    if args.longtr_min_call_DP is not None and args.longtr_max_call_DP is not None:
+        if args.longtr_max_call_DP < args.longtr_min_call_DP:
+            common.WARNING("--longtr-max-call-DP must be >= --longtr-min-call-DP")
+            return False
+    if args.longtr_min_call_Q is not None:
+        if args.longtr_min_call_Q < 0 or args.longtr_min_call_Q > 1:
+            common.WARNING("--longtr-min-call-Q must be between 0 and 1")
             return False
         assert "Q" in format_fields
     return True
@@ -389,6 +436,22 @@ def CheckFilters(format_fields: Set[str],
             return False
         else:
             if not CheckHipSTRFilters(format_fields, args):
+                return False
+
+    # Check LongTR specific filters
+    if args.longtr_max_call_flank_indel is not None or \
+       args.longtr_min_supp_reads is not None or \
+       args.longtr_min_call_DP is not None or \
+       args.longtr_max_call_DP is not None or \
+       args.longtr_min_call_Q is not None:
+        if vcftype != trh.VcfTypes["longtr"]:
+            common.WARNING("LongTR options can only be applied to LongTR VCFs")
+            return False
+        elif is_beagle:
+            common.WARNING("LongTR call level filters cannot be applied to Beagle VCFs")
+            return False
+        else:
+            if not CheckLongTRFilters(format_fields, args):
                 return False
 
     # Check GangSTR specific filters
@@ -740,6 +803,18 @@ def BuildCallFilters(args):
     if args.hipstr_min_call_Q is not None:
         filter_list.append(filters.CallFilterMinValue("HipSTRCallMinQ", "Q", args.hipstr_min_call_Q))
 
+    # LongTR call-level filters (reuse HipSTR functions when possible)
+    if args.longtr_max_call_flank_indel is not None:
+        filter_list.append(filters.HipSTRCallFlankIndels(args.longtr_max_call_flank_indel, rename="LongTRCallFlankIndels"))
+    if args.longtr_min_supp_reads is not None:
+        filter_list.append(filters.HipSTRCallMinSuppReads(args.longtr_min_supp_reads, rename="LongTRMinSuppReads"))
+    if args.longtr_min_call_DP is not None:
+        filter_list.append(filters.CallFilterMinValue("LongTRCallMinDepth", "DP", args.longtr_min_call_DP))
+    if args.longtr_max_call_DP is not None:
+        filter_list.append(filters.CallFilterMaxValue("LongTRCallMaxDepth", "DP", args.longtr_max_call_DP))
+    if args.longtr_min_call_Q is not None:
+        filter_list.append(filters.CallFilterMinValue("LongTRCallMinQ", "Q", args.longtr_min_call_Q))
+
     # GangSTR call-level filters
     if args.gangstr_min_call_DP is not None:
         filter_list.append(filters.CallFilterMinValue("GangSTRCallMinDepth", "DP", args.gangstr_min_call_DP))
@@ -930,6 +1005,13 @@ def getargs(): # pragma: no cover
     hipstr_call_group.add_argument("--hipstr-min-call-DP", help="Minimum call coverage", type=int)
     hipstr_call_group.add_argument("--hipstr-max-call-DP", help="Maximum call coverage", type=int)
     hipstr_call_group.add_argument("--hipstr-min-call-Q", help="Minimum call quality score", type=float)
+
+    longtr_call_group = parser.add_argument_group("Call-level filters specific to LongTR output")
+    longtr_call_group.add_argument("--longtr-max-call-flank-indel", help="Maximum call flank indel rate", type=float)
+    longtr_call_group.add_argument("--longtr-min-supp-reads", help="Minimum supporting reads for each allele", type=int)
+    longtr_call_group.add_argument("--longtr-min-call-DP", help="Minimum call coverage", type=int)
+    longtr_call_group.add_argument("--longtr-max-call-DP", help="Maximum call coverage", type=int)
+    longtr_call_group.add_argument("--longtr-min-call-Q", help="Minimum call quality score", type=float)
 
     gangstr_call_group = parser.add_argument_group("Call-level filters specific to GangSTR output")
     gangstr_call_group.add_argument("--gangstr-min-call-DP", help="Minimum call coverage", type=int)
