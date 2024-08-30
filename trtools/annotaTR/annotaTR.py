@@ -372,6 +372,11 @@ def getargs(): # pragma: no cover
              "Optionally specify how. Options=%s"%[str(item) for item in trh.TRDosageTypes.__members__],
         type=str)
     annot_group.add_argument(
+        "--warn-on-AP-error",
+        help="Output a warning but don't crash on error computing on AP field",
+        action="store_true"
+    )
+    annot_group.add_argument(
         "--ref-panel", 
         help="Annotate Beagle-imputed VCF with TR metadata from the reference panel. "
              "The reference must be the same VCF used for imputation. ", 
@@ -556,7 +561,7 @@ def main(args):
         minlen = trrecord.min_allele_length
         maxlen = trrecord.max_allele_length
         if dosage_type is not None:
-            dosages = trrecord.GetDosages(dosage_type)
+            dosages = trrecord.GetDosages(dosage_type, strict=(not args.warn_on_AP_error))
             # Update record
             record.INFO["DSLEN"] = "{minlen},{maxlen}".format(minlen=minlen, maxlen=maxlen)
             record.set_format("TRDS", np.array(dosages))
