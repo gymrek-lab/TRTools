@@ -364,6 +364,7 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
+    inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -461,6 +462,8 @@ def main(args):
     if args.ref_panel is not None:
         common.MSG("Loading reference panel", debug=True)
         refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
+        if args.region is not None:
+            refreader = refreader(args.region)
         if refreader is None:
           return 1
         if args.vcftype != 'auto':
@@ -486,6 +489,8 @@ def main(args):
 
     ###### Load reader #######
     reader = utils.LoadSingleReader(args.vcf, checkgz=True)
+    if args.region:
+        reader = reader(args.region)
     if reader is None:
         return 1
     if args.ref_panel is not None:
