@@ -567,7 +567,7 @@ def main(args):
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
             if args.fix_bcftools_offset:
-                refoffset = len(record.REF)-len(refpanel_metadata[locuskey]["REF"])
+                refoffset = len(refpanel_metadata[locuskey]["REF"])-len(record.REF)
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype, ref_offset=refoffset)
         except:
