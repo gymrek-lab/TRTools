@@ -81,6 +81,11 @@ Now, whenever you'd like to run/import pytest or TRTools, you will first need to
         conda activate trtools
         poetry shell
 
+.. note::
+    There's no need to install TRTools this way if you aren't planning to develop or edit the source code! If you want the latest version from our master branch and just can't wait for us to release it, you only need to run::
+
+        pip install --upgrade --force-reinstall git+https://github.com/gymrek-lab/trtools.git@master
+
 With Docker
 ^^^^^^^^^^^
 
