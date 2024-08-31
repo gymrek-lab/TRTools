@@ -489,10 +489,10 @@ def main(args):
 
     ###### Load reader #######
     reader = utils.LoadSingleReader(args.vcf, checkgz=True)
-    if args.region:
-        reader = reader(args.region)
     if reader is None:
         return 1
+    if args.region:
+        reader = reader(args.region)
     if args.ref_panel is not None:
         vcftype = refpanel_vcftype # should be same as refpanel
     elif args.vcftype != 'auto':
