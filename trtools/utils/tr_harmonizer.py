@@ -747,6 +747,9 @@ class TRRecord:
             ]
 
         # Update min/max length
+        print(self.alt_alleles)
+        print(self.alt_allele_lengths)
+        print(self.ref_allele_length)
         if len(self.alt_alleles) > 0:
             self.min_allele_length = min(self.ref_allele_length, min(self.alt_allele_lengths))
             self.max_allele_length = max(self.ref_allele_length, max(self.alt_allele_lengths))
