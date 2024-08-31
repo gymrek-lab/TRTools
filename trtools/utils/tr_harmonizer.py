@@ -331,6 +331,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     -------
     TRRecord
     """
+    print(vcfrecord.ALT)
     if (vcfrecord.INFO.get('START') is None
             or vcfrecord.INFO.get('END') is None
             or vcfrecord.INFO.get('PERIOD') is None):
@@ -747,9 +748,6 @@ class TRRecord:
             ]
 
         # Update min/max length
-        print(self.alt_alleles)
-        print(self.alt_allele_lengths)
-        print(self.ref_allele_length)
         if len(self.alt_alleles) > 0:
             self.min_allele_length = min(self.ref_allele_length, min(self.alt_allele_lengths))
             self.max_allele_length = max(self.ref_allele_length, max(self.alt_allele_lengths))
