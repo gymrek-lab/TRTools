@@ -537,7 +537,8 @@ def main(args):
     ###### Process each record #######
     num_variants_processed_batch = 0
     num_variants_processed = 0
-    dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
+    num_samples = len(reader.samples)
+    dosages_batch = np.empty((args.chunk_size, num_samples), dtype=np.float32)
     if args.region:
         reader = reader(args.region)
     for record in reader:
@@ -597,7 +598,7 @@ def main(args):
             if OutputFileTypes.pgen in outtypes:
                 pgen_writer.append_dosages_batch(dosages_batch[:num_variants_processed_batch])
             # Reset
-            dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
+            dosages_batch = np.empty((args.chunk_size, num_samples), dtype=np.float32)
             num_variants_processed_batch = 0
 
     ###### Cleanup #######
