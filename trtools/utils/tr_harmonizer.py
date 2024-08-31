@@ -343,7 +343,9 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     start_offset = int(vcfrecord.INFO['START']) - pos
     pos_end_offset = int(vcfrecord.INFO['END']) - pos
     neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
-
+    print(start_offset)
+    print(pos_end_offset)
+    print(neg_end_offset)
     if start_offset == 0 and neg_end_offset == 0:
         full_alleles = None
     else:
@@ -354,7 +356,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
 
         full_alleles = (vcfrecord.REF.upper(),
                         full_alts)
-
+    print(full_alleles)
     # neg_end_offset is the number of flanking non repeat bp to remove
     # from the end of each allele
     # e.g. 'AAAT'[0:-1] == 'AAA'
@@ -380,7 +382,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                 )
         else:
             alt_alleles = []
-
+    print(alt_alleles)
     # Get the motif.
     # Hipstr doesn't tell us this explicitly, so figure it out
     motif = utils.InferRepeatSequence(ref_allele[start_offset:],
