@@ -462,9 +462,6 @@ def main(args):
     if args.ref_panel is not None:
         common.MSG("Loading reference panel", debug=True)
         refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
-        if args.region is not None:
-            refreader = refreader(args.region)
-        if refreader is None:
           return 1
         if args.vcftype != 'auto':
             refpanel_vcftype = trh.VcfTypes[args.vcftype]
@@ -474,6 +471,9 @@ def main(args):
             common.WARNING("Error: reference panel annotation not "
                            "currently supported for popSTR")
             return 1
+        if args.region is not None:
+            refreader = refreader(args.region)
+        if refreader is None:
         try:
             match_on = RefMatchTypes[args.match_refpanel_on]
         except KeyError:
