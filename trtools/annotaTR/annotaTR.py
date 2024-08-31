@@ -246,6 +246,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         The key depends on the match_on parameter (see above)
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
+        Also includes REF to check against REF in imputed VCF
     variant_ct : int
         Total number of variants
 
@@ -277,6 +278,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
                 raise ValueError(
                     "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
                     )
+        locdata["REF"] = record.REF
         metadata[locuskey] = locdata
         variant_ct += 1
     return metadata, variant_ct
@@ -365,6 +367,7 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
     inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
+    inout_group.add_argument("--fix-bcftools-offset", help="Attempt to fix offset in alleles from bcftoolsm erge", action="store_true")
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -542,6 +545,7 @@ def main(args):
     if args.region:
         reader = reader(args.region)
     for record in reader:
+        refoffset = 0 # used to correct bcftools merge issues
         # If using refpanel, first add required fields
         # In that case, only process records in the refpanel
         # Otherwise, process all records in the input VCF
@@ -562,8 +566,10 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
+            if args.fix_bcftools_offset:
+                refoffset = len(record.REF)-len(refpanel_metadata[locuskey]["REF"])
         try:
-            trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
+            trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype, ref_offset=refoffset)
         except:
             common.WARNING("Error converting {chrom}:{pos} to a TR record. "
                 "If your file is a mix of SNPs/TRs (e.g. from Beagle) you "
