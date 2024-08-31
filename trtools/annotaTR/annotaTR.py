@@ -462,6 +462,8 @@ def main(args):
     if args.ref_panel is not None:
         common.MSG("Loading reference panel", debug=True)
         refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
+        if refreader is None:
+          return 1
         if args.vcftype != 'auto':
             refpanel_vcftype = trh.VcfTypes[args.vcftype]
         else:
@@ -472,8 +474,6 @@ def main(args):
             return 1
         if args.region is not None:
             refreader = refreader(args.region)
-        if refreader is None:
-          return 1
         try:
             match_on = RefMatchTypes[args.match_refpanel_on]
         except KeyError:
@@ -510,8 +510,14 @@ def main(args):
     # Update reader header, even if not writing VCF output
     # This is because we might add VCF fields for parsing
     # with TRHarmonizer along the way
+    # Note need to set up new refreader in case we set the region 
+    # above in which case refreader is an iterator
+    tmp_refreader = None
+    if args.ref_panel is not None:
+        tmp_refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
     if not UpdateVCFHeader(reader, " ".join(sys.argv), vcftype,
-                        dosage_type=dosage_type, refreader=refreader):
+                        dosage_type=dosage_type, 
+                        refreader=tmp_refreader):
         common.WARNING("Error: problem initializing vcf header.")
         return 1
     if OutputFileTypes.vcf in outtypes:

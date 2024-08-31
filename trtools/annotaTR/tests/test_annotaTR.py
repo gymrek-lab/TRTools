@@ -17,6 +17,7 @@ def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
     args.vcftype = "auto"
+    args.region = None
     args.out = str(tmpdir / "test")
     args.outtype = ["vcf"]
     args.dosages = None
