@@ -491,8 +491,6 @@ def main(args):
     reader = utils.LoadSingleReader(args.vcf, checkgz=True)
     if reader is None:
         return 1
-    if args.region:
-        reader = reader(args.region)
     if args.ref_panel is not None:
         vcftype = refpanel_vcftype # should be same as refpanel
     elif args.vcftype != 'auto':
@@ -534,6 +532,8 @@ def main(args):
     num_variants_processed_batch = 0
     num_variants_processed = 0
     dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
+    if args.region:
+        reader = reader(args.region)
     for record in reader:
         # If using refpanel, first add required fields
         # In that case, only process records in the refpanel
