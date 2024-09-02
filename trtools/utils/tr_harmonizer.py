@@ -203,8 +203,10 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
     possible_vcf_types = set()
     header = vcffile.raw_header.lower()
     if 'command=' in header and 'gangstr' in header:
+    # if 'command=gangstr' in header:
         possible_vcf_types.add(VcfTypes.gangstr)
     if 'command=' in header and 'hipstr' in header:
+    # if 'command=hipstr' in header:
         possible_vcf_types.add(VcfTypes.hipstr)
     if 'source=advntr' in header:
         possible_vcf_types.add(VcfTypes.advntr)
