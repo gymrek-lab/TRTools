@@ -19,7 +19,8 @@ def args(tmpdir):
     args.vcftype = "auto"
     args.region = None
     args.out = str(tmpdir / "test")
-    args.fix_bcftools_offset = False
+#    args.fix_bcftools_offset = False
+    args.update_ref_alt = False
     args.outtype = ["vcf"]
     args.dosages = None
     args.ref_panel = None

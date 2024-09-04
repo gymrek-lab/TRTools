@@ -252,8 +252,7 @@ def IsBeagleVCF(vcffile: cyvcf2.VCF) -> bool:
 
     return bool(re.search('##source=(\'|")beagle', vcffile.raw_header.lower()))
 
-def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant,
-        ref_offset: Optional[int] = 0):
+def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     """
     Create a standardized TRRecord object out of a cyvcf2.Variant
     object of possibly unknown type.
@@ -264,10 +263,6 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant,
         A cyvcf2.Variant Object
     vcftype : VcfTypes
        Type of the VCF file
-    ref_offset : int
-       Difference in length of REF in ref panel vs. target VCF
-       Used only in special cases after bcftools merge
-       which chops off alleles
 
     Returns
     -------
@@ -278,7 +273,7 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant,
     if vcftype == VcfTypes.gangstr:
         return _HarmonizeGangSTRRecord(vcfrecord)
     if vcftype == VcfTypes.hipstr:
-        return _HarmonizeHipSTRRecord(vcfrecord, ref_offset=ref_offset)
+        return _HarmonizeHipSTRRecord(vcfrecord)
     if vcftype == VcfTypes.advntr:
         return _HarmonizeAdVNTRRecord(vcfrecord)
     if vcftype == VcfTypes.eh:
@@ -325,7 +320,7 @@ def _HarmonizeGangSTRRecord(vcfrecord: cyvcf2.Variant):
     return TRRecord(vcfrecord, ref_allele, alt_alleles, motif, record_id, 'Q' if vcfrecord.INFO.get('IMP') is None else None)
 
 
-def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant, ref_offset: Optional[int] = 0):
+def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     """
     Turn a cyvcf2.Variant with HipSTR content into a TRRecord.
 
@@ -333,10 +328,6 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant, ref_offset: Optional[int] 
     ----------
     vcfrecord :
         A cyvcf2.Variant Object
-    ref_offset : int
-       Difference in length of REF in ref panel vs. target VCF
-       Used only in special cases after bcftools merge
-       which chops off alleles
 
     Returns
     -------
@@ -352,7 +343,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant, ref_offset: Optional[int] 
     pos = int(vcfrecord.POS)
     start_offset = int(vcfrecord.INFO['START']) - pos
     pos_end_offset = int(vcfrecord.INFO['END']) - pos
-    neg_end_offset = pos_end_offset + 1 - (len(vcfrecord.REF)+ref_offset)
+    neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
     if start_offset == 0 and neg_end_offset == 0:
         full_alleles = None
     else:

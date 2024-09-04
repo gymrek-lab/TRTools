@@ -45,6 +45,51 @@ class RefMatchTypes(enum.Enum):
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
+def CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt):
+    """
+    Check if the REF and ALT alleles of the record and
+    reference panel are compatible.
+
+    In the case of running imputation with Beagle followed by
+    bcftools merge, allele order is maintained but sequences
+    themselves may be trimmed by bcftools. This causes problems
+    when harmonizing HipSTR records, since the START/END coords
+    are not updated accordingly. Using annotaTR option --update-ref-alt
+    can restore the original allele sequences from the refpanel.
+    This function provides basic checks to make sure the ref/alts
+    of the panel and target VCF are compatible. In particular:
+    - is the number of ALT alleles the same
+    - are all alleles are offset by the same number of bp
+    - are all the ALTs in the target VCF substrings of the 
+      refpanel ALTS.
+    If any of these fail then the alleles are deemed incompatible.
+
+    Parameters
+    ----------
+    record_ref : str
+       REF allele of the target VCF
+    record_alt : list of str
+       ALT alleles of the target VCF
+    panel_ref : str
+       REF allele of the ref panel
+    panel_alt : list of str
+       ALT alleles of the ref panel
+
+    Returns
+    -------
+    is_compatible : bool
+       True if all checks pass, otherwise False
+    """
+    if len(record_alt) != len(panel_alt):
+        return False
+    len_offset = len(panel_ref)-len(record_ref)
+    for i in range(len(panel_alt)):
+        if (len(panel_alt[i])-len(record_alt[i])) != len_offset:
+            return False
+        if panel_alt[i].upper() not in ref_alt[i].upper():
+            return False
+    return True
+
 def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
     """
     Update the VCF header of the reader to include:
@@ -279,6 +324,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
                     "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
                     )
         locdata["REF"] = record.REF
+        locdata["ALT"] = record.ALT
         metadata[locuskey] = locdata
         variant_ct += 1
     return metadata, variant_ct
@@ -367,7 +413,11 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
     inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
-    inout_group.add_argument("--fix-bcftools-offset", help="Attempt to fix offset in alleles from bcftoolsm erge", action="store_true")
+    inout_group.add_argument("--update-ref-alt", help="Update the REF/ALT allele sequences from the "
+                                                      "reference panel. Fixes issue with alleles being "
+                                                      "chopped after bcftools merge. Use with caution "
+                                                      "as this assumes allele order is exactly the same "
+                                                      "between the refpanel and target VCF", action="store_true")
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -545,7 +595,6 @@ def main(args):
     if args.region:
         reader = reader(args.region)
     for record in reader:
-        refoffset = 0 # used to correct bcftools merge issues
         # If using refpanel, first add required fields
         # In that case, only process records in the refpanel
         # Otherwise, process all records in the input VCF
@@ -566,10 +615,18 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
-            if args.fix_bcftools_offset:
-                refoffset = len(refpanel_metadata[locuskey]["REF"])-len(record.REF)
+            if args.update_ref_alt:
+                # Update allele sequences to be exactly as in the
+                # reference panel. 
+                if not CheckAlleleCompatibility(record.REF, record.ALT,
+                    locuskey["REF"], locuskey["ALT"]):
+                    raise ValueError("--update-ref-alt set but the REF/ALT fields"
+                                     " at {chrom}:{pos} are incompatible between the"
+                                     " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
+                record.REF = locuskey["REF"]
+                record.ALT = locuskey["ALT"]
         try:
-            trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype, ref_offset=refoffset)
+            trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
             common.WARNING("Error converting {chrom}:{pos} to a TR record. "
                 "If your file is a mix of SNPs/TRs (e.g. from Beagle) you "
