@@ -61,7 +61,7 @@ For more information on a genotyper, please see its website linked below.
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
 |    PopSTR_ (v2.0)          | 1-6bp                    | Yes                        | Length                 | 540,1401 (hg38)          | Illumina                | Many                   |
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
-|    LongTR_ (v1.0)          | 1+bp                     | No                         | Length, sequence       | No ref provided          | PacBio, ONT             | Many                   |
+|    LongTR_ (v1.0)          | 1+bp                     | No                         | Length, sequence       | No ref provided          | PacBio HiFi, ONT        | Many                   |
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
 
 Since each of these tools take as input a list of TRs to genotype, they could also be used on custom panels of TR loci.
