@@ -413,11 +413,6 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
     inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
-    inout_group.add_argument("--update-ref-alt", help="Update the REF/ALT allele sequences from the "
-                                                      "reference panel. Fixes issue with alleles being "
-                                                      "chopped after bcftools merge. Use with caution "
-                                                      "as this assumes allele order is exactly the same "
-                                                      "between the refpanel and target VCF", action="store_true")
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
@@ -446,6 +441,11 @@ def getargs(): # pragma: no cover
         help="Output a warning but do not crash if duplicate loci in refpanel",
         action="store_true"
         )
+    annot_group.add_argument("--update-ref-alt", help="Update the REF/ALT allele sequences from the "
+                                                      "reference panel. Fixes issue with alleles being "
+                                                      "chopped after bcftools merge. Use with caution "
+                                                      "as this assumes allele order is exactly the same "
+                                                      "between the refpanel and target VCF", action="store_true")
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "--chunk-size",
