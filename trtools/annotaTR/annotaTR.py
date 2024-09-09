@@ -291,7 +291,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         The key depends on the match_on parameter (see above)
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
-        Also includes REF to check against REF in imputed VCF
+        Also includes REF/ALT to check against alleles in imputed VCF
     variant_ct : int
         Total number of variants
 
