@@ -547,7 +547,9 @@ def main(args):
         refpanel_metadata, ref_variant_ct = LoadMetadataFromRefPanel(refreader, refpanel_vcftype, 
             match_on=match_on, ignore_duplicates=args.ignore_duplicates)
         if len(refpanel_metadata.keys()) == 0:
-            common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
+            common.WARNING("Error: No TRs detected in reference panel. Check: "
+                           "Was the right vcftype specified? "
+                           "Was an invalid region specified? Quitting")
             return 1
         common.MSG("Loaded " + str(ref_variant_ct) + " TR loci from ref panel",
             debug=True)
@@ -629,6 +631,21 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
+            if CheckAlleleCompatibility(record.REF, record.ALT,
+                    refpanel_metadata[locuskey]["REF"], refpanel_metadata[locuskey]["ALT"]):
+                if args.update_ref_alt:
+                    record.REF = refpanel_metadata[locuskey]["REF"]
+                    record.ALT = refpanel_metadata[locuskey]["ALT"]
+            else:
+                if args.update_ref_alt:
+                    raise ValueError("--update-ref-alt set but the REF/ALT fields"
+                                     " at {chrom}:{pos} are incompatible between the"
+                                     " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
+                else:
+                    common.WARNING("Warning: incompatible alleles found between refpanel "
+                                   " and target VCF at {chrom}:{pos}. If you used bcftools "
+                                   " merge and alleles were trimmed, consider using option "
+                                   " --update-ref-alt. Otherwise dosage values may be invalid".format(chrom=record.CHROM, pos=record.POS))
             if args.update_ref_alt:
                 # Update allele sequences to be exactly as in the
                 # reference panel. 
@@ -639,6 +656,8 @@ def main(args):
                                      " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
                 record.REF = refpanel_metadata[locuskey]["REF"]
                 record.ALT = refpanel_metadata[locuskey]["ALT"]
+            # In any case check if ref/alts are the same and output
+            # a warning if not
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
