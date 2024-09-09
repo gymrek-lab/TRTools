@@ -141,6 +141,11 @@ def test_UpdateRefAlt(args, vcfdir):
     args.match_refpanel_on = "rawalleles"
     retcode = main(args)
     assert retcode==1
+    # Won't work with no ref panel
+    args.match_refpanel_on = "locid"
+    args.ref_panel = None
+    retcode = main(args)
+    assert retcode==1
 
     # Try on good file with alleles that do match refpanel
     args.match_refpanel_on = "locid"

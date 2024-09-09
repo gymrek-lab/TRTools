@@ -480,6 +480,10 @@ def main(args):
         common.WARNING("Error: you cannot use --update-ref-alt unless "
                        " --match-refpanel-on is set to locid")
         return 1
+    if args.update_ref_alt and args.ref_panel is None:
+        common.WARNING("Error: --update-ref-alt only works with "
+                       " --ref-panel.")
+        return 1
 
     outtypes = set()
     for outtype in args.outtype:
