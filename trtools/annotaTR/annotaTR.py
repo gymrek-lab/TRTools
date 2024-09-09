@@ -86,7 +86,7 @@ def CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt):
     for i in range(len(panel_alt)):
         if (len(panel_alt[i])-len(record_alt[i])) != len_offset:
             return False
-        if panel_alt[i].upper() not in ref_alt[i].upper():
+        if record_alt[i].upper() not in panel_alt[i].upper():
             return False
     return True
 
@@ -445,7 +445,8 @@ def getargs(): # pragma: no cover
                                                       "reference panel. Fixes issue with alleles being "
                                                       "chopped after bcftools merge. Use with caution "
                                                       "as this assumes allele order is exactly the same "
-                                                      "between the refpanel and target VCF", action="store_true")
+                                                      "between the refpanel and target VCF. Only works when "
+                                                      "matching on locus id", action="store_true")
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "--chunk-size",
@@ -474,6 +475,10 @@ def main(args):
         return 1
     if args.ref_panel is not None and not os.path.exists(args.ref_panel):
         common.WARNING("Error: %s does not exist"%args.ref_panel)
+        return 1
+    if args.match_refpanel_on != "locid" and args.update_ref_alt:
+        common.WARNING("Error: you cannot use --update-ref-alt unless "
+                       " --match-refpanel-on is set to locid")
         return 1
 
     outtypes = set()
@@ -619,12 +624,12 @@ def main(args):
                 # Update allele sequences to be exactly as in the
                 # reference panel. 
                 if not CheckAlleleCompatibility(record.REF, record.ALT,
-                    locuskey["REF"], locuskey["ALT"]):
+                    refpanel_metadata[locuskey]["REF"], refpanel_metadata[locuskey]["ALT"]):
                     raise ValueError("--update-ref-alt set but the REF/ALT fields"
                                      " at {chrom}:{pos} are incompatible between the"
                                      " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
-                record.REF = locuskey["REF"]
-                record.ALT = locuskey["ALT"]
+                record.REF = refpanel_metadata[locuskey]["REF"]
+                record.ALT = refpanel_metadata[locuskey]["ALT"]
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
