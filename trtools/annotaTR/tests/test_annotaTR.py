@@ -88,6 +88,15 @@ def test_OutTypes(args, vcfdir):
     args.outtype = ["pgen"]
     retcode = main(args)
     assert retcode==0
+    args.outtype = ["gzvcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["gzvcf", "pgen"]
+    retcode = main(args)
+    assert retcode==0
+    args.outtype = ["gzvcf", "vcf"]
+    retcode = main(args)
+    assert retcode==1
     # Should get pgen error if input VCF has fewer
     # TRs than ref panel
     args.vcf = os.path.join(vcfdir, "beagle", "beagle_imputed_noTRs.vcf.gz")

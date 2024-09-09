@@ -34,6 +34,7 @@ class OutputFileTypes(enum.Enum):
     """Different supported output file types."""
     vcf = "vcf"
     pgen = "pgen"
+    gzvcf = "gzvcf"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
@@ -489,6 +490,9 @@ def main(args):
         except KeyError:
             common.WARNING("Invalid output type")
             return 1
+    if OutputFileTypes.vcf in outtypes and OutputFileTypes.gzvcf in outtypes:
+        common.WARNING("Please specify only either vcf or gzvcf output, not both")
+        return 1
     if args.vcftype != 'auto':
         if args.vcftype not in trh.VcfTypes.__members__:
             common.WARNING("Invalid vcftype")
@@ -580,6 +584,8 @@ def main(args):
         return 1
     if OutputFileTypes.vcf in outtypes:
         vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
+    if OutputFileTypes.gzvcf in outtypes:
+        vcf_writer = cyvcf2.Writer(args.out+".vcf.gz", reader, mode="wz")
 
     # variant_ct needed for pgen
     # If using a ref panel, assume we have same number
@@ -648,7 +654,7 @@ def main(args):
             dosages_batch[num_variants_processed_batch] = dosages
 
         # Write to VCF if using vcf output
-        if OutputFileTypes.vcf in outtypes:
+        if OutputFileTypes.vcf in outtypes or OutputFileTypes.gzvcf in outtypes:
             vcf_writer.write_record(record)
 
         # Write pvar if using pgen output
@@ -679,7 +685,7 @@ def main(args):
                 "with option --match-refpanel-on trimmedalleles or --match-refpanel-on locid.")
             return 1
         pvar_writer.close()
-    if OutputFileTypes.vcf in outtypes:
+    if OutputFileTypes.vcf in outtypes or OutputFileTypes.gzvcf in outtypes:
         vcf_writer.close()
     return 0
 
