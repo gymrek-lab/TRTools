@@ -631,21 +631,6 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
-            if CheckAlleleCompatibility(record.REF, record.ALT,
-                    refpanel_metadata[locuskey]["REF"], refpanel_metadata[locuskey]["ALT"]):
-                if args.update_ref_alt:
-                    record.REF = refpanel_metadata[locuskey]["REF"]
-                    record.ALT = refpanel_metadata[locuskey]["ALT"]
-            else:
-                if args.update_ref_alt:
-                    raise ValueError("--update-ref-alt set but the REF/ALT fields"
-                                     " at {chrom}:{pos} are incompatible between the"
-                                     " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
-                else:
-                    common.WARNING("Warning: incompatible alleles found between refpanel "
-                                   " and target VCF at {chrom}:{pos}. If you used bcftools "
-                                   " merge and alleles were trimmed, consider using option "
-                                   " --update-ref-alt. Otherwise dosage values may be invalid".format(chrom=record.CHROM, pos=record.POS))
             if args.update_ref_alt:
                 # Update allele sequences to be exactly as in the
                 # reference panel. 
@@ -656,8 +641,6 @@ def main(args):
                                      " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
                 record.REF = refpanel_metadata[locuskey]["REF"]
                 record.ALT = refpanel_metadata[locuskey]["ALT"]
-            # In any case check if ref/alts are the same and output
-            # a warning if not
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
@@ -667,6 +650,12 @@ def main(args):
             return 1
         minlen = trrecord.min_allele_length
         maxlen = trrecord.max_allele_length
+        # Add this check to warn us when bad things happen when parsing alleles
+        if minlen == maxlen and minlen < 5:
+            common.WARNING("Warning: Suspicious allele lengths found at "
+                "{chrom}:{pos}. If you imputed then used bcftools merge "
+                "and alleles were trimmed, consider using option "
+                "--update-ref-alt. Otherwise dosage values may be invalid".format(chrom=record.CHROM, pos=record.POS))
         if dosage_type is not None:
             dosages = trrecord.GetDosages(dosage_type, strict=(not args.warn_on_AP_error))
             # Update record
