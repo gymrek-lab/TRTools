@@ -655,7 +655,9 @@ def main(args):
             common.WARNING("Warning: Suspicious allele lengths found at "
                 "{chrom}:{pos}. If you imputed then used bcftools merge "
                 "and alleles were trimmed, consider using option "
-                "--update-ref-alt. Otherwise dosage values may be invalid".format(chrom=record.CHROM, pos=record.POS))
+                "--update-ref-alt. Otherwise dosage values may be invalid. "
+                "Parsed alleles: ref={ref}, alt={alt}".format(chrom=record.CHROM, pos=record.POS, \
+                    ref=trrecord.ref_allele, alt=",".join(trrecord.alt_alleles)))
         if dosage_type is not None:
             dosages = trrecord.GetDosages(dosage_type, strict=(not args.warn_on_AP_error))
             # Update record
