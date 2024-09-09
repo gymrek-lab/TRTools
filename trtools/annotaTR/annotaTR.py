@@ -61,8 +61,7 @@ def CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt):
     of the panel and target VCF are compatible. In particular:
     - is the number of ALT alleles the same
     - are all alleles are offset by the same number of bp
-    - are all the ALTs in the target VCF substrings of the 
-      refpanel ALTS.
+    - are all the ALTs in the target VCF substrings of the refpanel ALTS.
     If any of these fail then the alleles are deemed incompatible.
 
     Parameters
