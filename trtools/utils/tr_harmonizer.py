@@ -1146,9 +1146,13 @@ class TRRecord:
                 raise ValueError("Negative AP1 or AP2 fields detected")
 
             # Get haplotype dosages
-            max_alt_len = max(self.alt_allele_lengths)
-            h1_dos = np.clip(np.dot(ap1, self.alt_allele_lengths), 0, max_alt_len)
-            h2_dos = np.clip(np.dot(ap2, self.alt_allele_lengths), 0, max_alt_len)
+            if len(self.alt_allele_lengths) > 0:
+                max_alt_len = max(self.alt_allele_lengths)
+                h1_dos = np.clip(np.dot(ap1, self.alt_allele_lengths), 0, max_alt_len)
+                h2_dos = np.clip(np.dot(ap2, self.alt_allele_lengths), 0, max_alt_len)
+            else:
+                h1_dos = 0
+                h2_dos = 0
             ref1_dos = ref1*self.ref_allele_length
             ref2_dos = ref2*self.ref_allele_length
 
