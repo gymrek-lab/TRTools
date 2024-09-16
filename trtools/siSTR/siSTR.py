@@ -7,6 +7,7 @@ TODO
 * Index: where did the TMRCA.txt file come from for variable num generations? and why max 5920?
   I see that file in the google drive
 * Simplify functions in sistr_sims.py
+* score allow to process either freqs file or VCF file
 
 Example:
 sistr index --out testindex/test --verbose
@@ -18,14 +19,17 @@ import sys
 
 import trtools.utils.common as common
 import trtools.utils.utils as utils
+import trtools.utils.tr_harmonizer as trh
 from trtools import __version__
 
 from . import index as index
+from . import score as score
 from . import sistr_utils as sutils
 
 class SISTRCommands(enum.Enum):
     """Possible SISTR commands to run."""
     index = "index"
+    score = "score"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
@@ -37,6 +41,22 @@ def getargs(): # pragma: no cover
     parser.add_argument("command", help="Options=%s"%[str(item) for item in SISTRCommands.__members__])
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
+    score_group = parser.add_argument_group("Scoring options")
+    score_group.add_argument("--vcf", help="Input VCF file to score", type=str)
+    score_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__],
+        type=str, default="auto")
+    score_group.add_argument("--outtype", help="Type of output file. Options=%s"%[str(item) for item in sutils.SISTROutputFileTypes.__members__], \
+        type=str, nargs="+", default=["vcf"])
+    score_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
+    score_group.add_argument("--samples", help="Restrict to comma separated list of samples", type=str)
+    score_group.add_argument("--samples-file", help="Restrict to list of samples in this file", type=str)
+    score_group.add_argument("--vcf-outtype", help="Type of VCF output. z=compressed VCF, v=uncompressed VCF, b=compressed BCF, u=uncompressed BCF, s=stdout", type=str, default="v")
+    score_group.add_argument("--sistr-index", help="Folder of SISTR index. Alternatively specify" 
+                             " both --abc-lookup-folder and --lrt-lookup-folder", type=str)
+    score_group.add_argument("--abc-lookup-folder", help="Folder for ABC lookup tables", type=str)
+    score_group.add_argument("--lrt-lookup-folder", help="Folder for LRT lookup tables", type=str)
+    score_group.add_argument("--minfreq", help="Minimum allele frequency to count an allele as common", type=float, default=0.05)
+    score_group.add_argument("--numbins", help="Number of bins for summarizing allele frequencies", type=int, default=5)
     index_group = parser.add_argument_group("Indexing options")
     index_group.add_argument(
         "--config",
@@ -162,6 +182,8 @@ def main(args):
 
     if command == SISTRCommands.index:
         return index.main(args)
+    if command == SISTRCommands.score:
+        return score.main(args)
 
 def run(): # pragma: no cover
     args = getargs()
