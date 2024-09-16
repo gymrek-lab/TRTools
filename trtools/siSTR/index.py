@@ -37,7 +37,7 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 		)
 
 	########### LRT Lookup tables ################
-	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_lrt.txt", "w")
+	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_freqs.txt", "w")
 	outf.write("\t".join(["s","freqs"])+"\n")
 	for s in config["lrt_svals"]:
 		allele_freq_results = []
@@ -50,7 +50,7 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 	outf.close()
 
 	########### LRT Lookup tables - zero ################
-	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_lrt_zero.txt", "w")
+	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_zero_freqs.txt", "w")
 	outf.write("\t".join(["s","freqs"])+"\n")
 	allele_freq_results = []
 	for i in range(config["lrt_num_sims"]):
@@ -63,7 +63,7 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 	
 	########### ABC Lookup table ################
 	# Set up output file
-	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + "_abc.txt", "w")
+	outf = open(outprefix + "_" + str(period) + "_" + str(opt_allele) + ".txt", "w")
 	outf.write("\t".join(["s","freqs"])+"\n")
 
 	# Draw s values from prior

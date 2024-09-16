@@ -7,6 +7,9 @@ TODO
 * Index: where did the TMRCA.txt file come from for variable num generations? and why max 5920?
   I see that file in the google drive
 * Simplify functions in sistr_sims.py
+
+Example:
+sistr index --out testindex/test --verbose
 """
 
 import argparse
