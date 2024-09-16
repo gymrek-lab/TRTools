@@ -107,6 +107,9 @@ def test_OutTypes(args, vcfdir):
     args.out = "test"
     retcode = main(args)
     assert retcode==1
+    for fname_ext in ("pgen", "pvar", "psam"):
+        if os.path.exists("test."+fname_ext):
+            os.remove("test."+fname_ext)
     # Check the pvar file can be ready by cyvcf2?
     #pvarfile = args.out + ".pvar"
     #test_reader = cyvcf2.VCF(pvarfile)
