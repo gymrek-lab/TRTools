@@ -34,7 +34,7 @@ Other general parameters:
 * :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`. Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
 * :code:`--outtype <string>`: Which output format to generate. Supported output types are :code:`vcf`, :code:`gzvcf`, or :code:`pgen`. If multiple types are listed (e.g. :code:`--outtype vcf pgen`), all specified output formats are generated. By default, only VCF output is generated at :code:`$outprefix.vcf`. You cannot output both VCF and gzipped VCF in the same command. If PGEN output is specified, the files :code:`$outprefix.pgen`, :code:`$outprefix.pvar`, and :code:`$outprefix.psam` are generated. See more on the `pgen format here <https://www.cog-genomics.org/plink/2.0/formats#pgen>`_
 * :code:`--region <str>`: Restrict to processing a specific genomic region. Syntax: chr:start-end.
-* :code:`--chunk-size <int>`: If writing PGEN output, load dosages in chunks of this many variants at a type. This can avoid out of memory errors if you are processing very large VCF files.
+* :code:`--chunk-size <int>`: If writing PGEN output, load dosages in chunks of this many variants at a time. This can avoid out-of-memory errors if you are processing very large VCF files.
 
 In addition to specifying input and output options above, you must specify at least one annotation operation to perform. These are described below.
 
