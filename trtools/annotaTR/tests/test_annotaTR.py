@@ -17,6 +17,7 @@ def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
     args.vcftype = "auto"
+    args.vcf_outtype = "v"
     args.region = None
     args.out = str(tmpdir / "test")
     args.update_ref_alt = False
@@ -88,15 +89,23 @@ def test_OutTypes(args, vcfdir):
     args.outtype = ["pgen"]
     retcode = main(args)
     assert retcode==0
-    args.outtype = ["gzvcf"]
+    args.vcf_outtype = "z"
     retcode = main(args)
     assert retcode==0
-    args.outtype = ["gzvcf", "pgen"]
+    args.vcf_outtype = "s"
     retcode = main(args)
     assert retcode==0
-    args.outtype = ["gzvcf", "vcf"]
+    args.vcf_outtype = "b"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "u"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "l"
     retcode = main(args)
     assert retcode==1
+    # set back
+    args.vcf_outtype = "v"
     # Should get pgen error if input VCF has fewer
     # TRs than ref panel
     args.vcf = os.path.join(vcfdir, "beagle", "beagle_imputed_noTRs.vcf.gz")

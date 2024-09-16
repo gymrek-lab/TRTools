@@ -34,7 +34,6 @@ class OutputFileTypes(enum.Enum):
     """Different supported output file types."""
     vcf = "vcf"
     pgen = "pgen"
-    gzvcf = "gzvcf"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
 
@@ -412,6 +411,9 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
+    inout_group.add_argument("--vcf-outtype", help="Type of VCF output to produce. "
+                             "z=compressed VCF, v=uncompressed VCF, "
+                             "b=compressed BCF, u=uncompressed BCF, s=stdout", type=str, default="v")
     inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
@@ -493,8 +495,8 @@ def main(args):
         except KeyError:
             common.WARNING("Invalid output type")
             return 1
-    if OutputFileTypes.vcf in outtypes and OutputFileTypes.gzvcf in outtypes:
-        common.WARNING("Please specify only either vcf or gzvcf output, not both")
+    if args.vcf_outtype not in ["z","v","u","b","s"]:
+        common.WARNING("Invalid VCF output type specified: {vcf_outtype}".format(vcf_outtype=args.vcf_outtype))
         return 1
     if args.vcftype != 'auto':
         if args.vcftype not in trh.VcfTypes.__members__:
@@ -588,10 +590,18 @@ def main(args):
         common.WARNING("Error: problem initializing vcf header.")
         return 1
     if OutputFileTypes.vcf in outtypes:
-        vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
-    if OutputFileTypes.gzvcf in outtypes:
-        vcf_writer = cyvcf2.Writer(args.out+".vcf.gz", reader, mode="wz")
-
+        if args.vcf_outtype == "v":
+            vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
+        elif args.vcf_outtype == "z":
+            vcf_writer = cyvcf2.Writer(args.out+".vcf.gz", reader, mode="wz")
+        elif args.vcf_outtype == "b":
+            vcf_writer = cyvcf2.Writer(args.out+".bcf", reader, mode="wb")
+        elif args.vcf_outtype == "u":
+            vcf_writer = cyvcf2.Writer(args.out+".bcf", reader, mode="wbu")
+        elif args.vcf_outtype == "s":
+            vcf_writer = cyvcf2.Writer("-", reader)
+        else:
+            raise ValueError("Encountered invalid VCF output type")
     # variant_ct needed for pgen
     # If using a ref panel, assume we have same number
     # of TRs as the panel
@@ -667,7 +677,7 @@ def main(args):
             dosages_batch[num_variants_processed_batch] = dosages
 
         # Write to VCF if using vcf output
-        if OutputFileTypes.vcf in outtypes or OutputFileTypes.gzvcf in outtypes:
+        if OutputFileTypes.vcf in outtypes:
             vcf_writer.write_record(record)
 
         # Write pvar if using pgen output
@@ -698,7 +708,7 @@ def main(args):
                 "with option --match-refpanel-on trimmedalleles or --match-refpanel-on locid.")
             return 1
         pvar_writer.close()
-    if OutputFileTypes.vcf in outtypes or OutputFileTypes.gzvcf in outtypes:
+    if OutputFileTypes.vcf in outtypes:
         vcf_writer.close()
     return 0
 
