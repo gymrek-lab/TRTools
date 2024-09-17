@@ -57,6 +57,8 @@ runcmd_pass "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype 
 runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test"
 runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --dosages beagleap --outtype pgen --out ${TMPDIR}/test"
 runcmd_fail "annotaTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --dosages beagleap_norm --outtype pgen --out ${TMPDIR}/test"
+runcmd_fail "annotaTR --vcf ${BEAGLEDIR}/beagle_badap.vcf.gz --vcftype hipstr --ref-panel ${BEAGLEDIR}/beagle_refpanel.vcf.gz --match-refpanel-on rawalleles --dosages beagleap_norm --outtype pgen --out ${TMPDIR}/test"
+runcmd_pass "annotaTR --vcf ${BEAGLEDIR}/beagle_badap.vcf.gz --vcftype hipstr --ref-panel ${BEAGLEDIR}/beagle_refpanel.vcf.gz --match-refpanel-on rawalleles --dosages beagleap_norm --outtype pgen --out ${TMPDIR}/test --warn-on-AP-error"
 
 # If file has SNPs+TRs but no refpanel, annotatr should fail
 runcmd_fail "annotaTR --vcf ${BEAGLEDIR}/beagle_imputed_withap.vcf.gz --vcftype hipstr --dosages beagleap --out ${TMPDIR}/test"

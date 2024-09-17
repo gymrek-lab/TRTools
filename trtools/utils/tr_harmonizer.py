@@ -12,7 +12,7 @@ import cyvcf2
 import numpy as np
 
 import trtools.utils.utils as utils
-
+import trtools.utils.common as common
 
 # List of supported VCF types
 # TODO: add Beagle
@@ -261,6 +261,8 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
     ----------
     vcfrecord :
         A cyvcf2.Variant Object
+    vcftype : VcfTypes
+       Type of the VCF file
 
     Returns
     -------
@@ -342,7 +344,6 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
     start_offset = int(vcfrecord.INFO['START']) - pos
     pos_end_offset = int(vcfrecord.INFO['END']) - pos
     neg_end_offset = pos_end_offset + 1 - len(vcfrecord.REF)
-
     if start_offset == 0 and neg_end_offset == 0:
         full_alleles = None
     else:
@@ -353,7 +354,6 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
 
         full_alleles = (vcfrecord.REF.upper(),
                         full_alts)
-
     # neg_end_offset is the number of flanking non repeat bp to remove
     # from the end of each allele
     # e.g. 'AAAT'[0:-1] == 'AAA'
@@ -379,7 +379,6 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
                 )
         else:
             alt_alleles = []
-
     # Get the motif.
     # Hipstr doesn't tell us this explicitly, so figure it out
     motif = utils.InferRepeatSequence(ref_allele[start_offset:],
@@ -1084,7 +1083,7 @@ class TRRecord:
         return set(self.UniqueStringGenotypeMapping().values())
 
     def GetDosages(self, 
-            dosagetype: TRDosageTypes = TRDosageTypes.bestguess) -> Optional[np.ndarray]:
+            dosagetype: TRDosageTypes = TRDosageTypes.bestguess, strict: bool = True) -> Optional[np.ndarray]:
         """
         Get an array of genotype dosages for each sample.
 
@@ -1105,6 +1104,9 @@ class TRRecord:
         ----------
         dosagetype : Enum
             Which TRDosageType to compute. Default bestguess
+        strict : bool
+            If False, output a warning but do not die on errors validating AP field
+            If errors are encountered, return nan dosage values
  
         Returns
         -------
@@ -1115,10 +1117,14 @@ class TRRecord:
         if self.GetNumSamples() == 0:
             return None
         if (dosagetype in [TRDosageTypes.beagleap, TRDosageTypes.beagleap_norm]) and \
-            (self.vcfrecord.format("AP1") is None or self.vcfrecord.format("AP2") is None):
-                raise ValueError(
-                "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
-                )
+            (("AP1" not in self.vcfrecord.FORMAT or "AP2" not in self.vcfrecord.FORMAT) or \
+            (self.vcfrecord.format("AP1") is None or self.vcfrecord.format("AP2") is None)):
+                error_msg = "Requested Beagle dosages for record at {}:{} but AP1/AP2 fields not found.".format(self.chrom, self.pos)
+                if strict:
+                    raise ValueError(error_msg)
+                else:
+                    common.WARNING(error_msg)
+                    return np.array([np.nan]*self.GetNumSamples())
         if dosagetype in [TRDosageTypes.bestguess, TRDosageTypes.bestguess_norm]:
             # Get length gts and replace -1 (missing) and -2 (low ploidy) with 0
             # But if normalizing set those to np.nan since unclear
@@ -1141,10 +1147,19 @@ class TRRecord:
 
             # Check AP field. allow wiggle room for rounding
             if np.any(np.sum(ap1, axis=1) > 1.1) or np.any(np.sum(ap2, axis=1) > 1.1):
-                raise ValueError("AP1 or AP2 field summing to more than 1 detected")
+                error_msg = "{}:{} AP1 or AP2 field summing to more than 1 detected".format(self.chrom, self.pos)
+                if strict:
+                    raise ValueError(error_msg)
+                else:
+                    common.WARNING(error_msg)
+                    return np.array([np.nan]*self.GetNumSamples())
             if np.any(ap1 < 0) or np.any(ap2 < 0):
-                raise ValueError("Negative AP1 or AP2 fields detected")
-
+                error_msg = "{}:{} Negative AP1 or AP2 fields detected".format(self.chrom, self.pos)
+                if strict:
+                    raise ValueError("Negative AP1 or AP2 fields detected")
+                else:
+                    common.WARNING(error_msg)
+                    return np.array([np.nan]*self.GetNumSamples())
             # Get haplotype dosages
             if len(self.alt_allele_lengths) > 0:
                 max_alt_len = max(self.alt_allele_lengths)
@@ -1167,12 +1182,18 @@ class TRRecord:
             else:
                 # Normalize to be between 0 and 2
                 dosages = (unnorm_dosages-2*self.min_allele_length)/(self.max_allele_length-self.min_allele_length)
-                assert not (np.any(dosages>=2.1) or np.any(dosages<=-0.1))
+                if (np.any(dosages>=2.1) or np.any(dosages<=-0.1)):
+                    error_msg = "{}:{} Error normalizing dosages: value >=2.1 or <=-0.1 detected".format(self.chrom, self.pos)
+                    if strict:
+                        raise ValueError(error_msg)
+                    else:
+                        common.WARNING(error_msg)
+                        return np.array([np.nan]*self.GetNumSamples())
                 dosages = np.clip(dosages, 0, 2)
         else:
             dosages = unnorm_dosages
         return dosages
-
+        
     def GetLengthGenotypes(self) -> Optional[np.ndarray]:
         """
         Get an array of length genotypes for each sample.
