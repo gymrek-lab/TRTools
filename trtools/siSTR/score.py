@@ -9,6 +9,8 @@ import trtools.utils.utils as utils
 from . import sistr_utils as sutils
 from . import abc as abc
 
+NASTRING = "N/A"
+
 def GetAlleleFreqsList(tr_allele_freqs, opt_allele, numbins):
     # Get list of alleles
     allele_list = [round(allele-opt_allele) for allele in tr_allele_freqs.keys()]
@@ -76,19 +78,33 @@ def main(args):
         sample_index = np.isin(all_samples, samples)
     else: sample_index = None # process all samples
 
-    ###### Setup SISTR ABC object #######
+    ###### Setup SISTR index #######
     if args.sistr_index:
         abc_index_folder = args.sistr_index
-    else: abc_index_folder = args.abc_lookup_folder
+        lrt_index_folder = args.sistr_index
+    else:
+        abc_index_folder = args.abc_lookup_folder
+        lrt_index_folder = args.lrg_lookup_folder
     sistrABC = abc.SistrABC(
-        sistr_index=abc_index_folder,
+        abc_index=abc_index_folder,
+        lrt_index=lrt_index_folder,
         minfreq=args.minfreq,
-        numbins=args.numbins
+        numbins=args.numbins,
+        eps_het_numerator=args.eps_het_numerator,
+        eps_het_denominator=args.eps_het_denominator,
+        eps_bins=args.eps_bins,
+        min_abc_acceptance=args.min_abc_acceptance
     )
 
     ###### Set up writers #######
-    # TODO
-    
+    if sutils.SISTROutputFileTypes.tab in outtypes:
+        tab_writer = open(args.out + ".tab", "w")
+        tab_writer.write("\t".join(["chrom", "start", "end", "total", "period", \
+                "optimal_ru", "motif", "ABC_s_median", "ABC_s_95%_CI", \
+                "Percent_s_accepted", "Likelihood_0", "Likelihood_s", \
+                "LR", "LogLR", "LRT_p_value"])+"\n")
+    # TODO - VCF writer
+
     ###### Process one locus at a time from VCF #######
     for record in reader:
         ##### Step 1: Obtain period, optimal allele and frequency info #####
@@ -100,7 +116,7 @@ def main(args):
         # Opt allele is most common allele (in num. copies of rpt.)
         opt_allele = round(max(tr_allele_freqs, key=tr_allele_freqs.get))
         # Format allele_freqs as needed for ABC
-        # Opt allele is in the middle
+        # Opt allele is in the middle, other indices relative to opt
         allele_freqs_list = GetAlleleFreqsList(tr_allele_freqs, opt_allele, args.numbins)
         if not sistrABC.CheckForModel(period, opt_allele):
             common.WARNING("Skipping {chrom}:{pos}. No model found for "
@@ -115,12 +131,46 @@ def main(args):
         ##### Step 2: Compute summary stats #####
         obs_summ_stats = abc.GetSummStats(allele_freqs_list, args.minfreq, args.numbins)
 
-        ##### Step 3: Perform ABC - TODO #####
+        ##### Step 3: Perform ABC #####
+        abc_results = sistrABC.RunABC(obs_summ_stats, period, opt_allele)
 
-        # Step 4: Perform LRT - TODO
+        ##### Step 4: Perform LRT #####
+        if abc_results["passed"]:
+            ABC_conf_int = "(%.5f,%.5f)"%(abc_results["lower_bound"], abc_results["upper_bound"])
+            lrt_results = sistrABC.LikelihoodRatioTest(abc_results["median_s"], obs_summ_stats, \
+                period, opt_allele)
+        else:
+            lrt_results = {}
+            ABC_conf_int = "N/A"
 
-        # Step 5: Output to file - TODO
+        ##### Step 5: Output to file #####
+        if sutils.SISTROutputFileTypes.tab in outtypes:
+            items = [
+                record.CHROM,
+                str(record.POS),
+                str(record.INFO["END"]),
+                str(record.num_called),
+                str(period),
+                str(opt_allele),
+                trrecord.motif,
+                str(abc_results.get("median_s", NASTRING)),
+                ABC_conf_int,
+                str(abc_results.get("num_accepted", NASTRING)),
+                str(lrt_results.get("likelihood_0", NASTRING)),
+                str(lrt_results.get("likelihood_s_ABC", NASTRING)),
+                str(lrt_results.get("LR", NASTRING)),
+                str(lrt_results.get("LogLR", NASTRING)),
+                str(lrt_results.get("pval", NASTRING))
+            ]
+            tab_writer.write("\t".join(items)+"\n")
+
+        # TODO - VCF
+        # locus-level stats like tab output, but also
+        # score individual alleles
 
     ###### Clean up writers #######
-    # TODO
+    if sutils.SISTROutputFileTypes.tab in outtypes:
+        tab_writer.close()
+
+    # TODO - VCF
     return 0

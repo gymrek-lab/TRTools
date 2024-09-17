@@ -46,7 +46,7 @@ def getargs(): # pragma: no cover
     score_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__],
         type=str, default="auto")
     score_group.add_argument("--outtype", help="Type of output file. Options=%s"%[str(item) for item in sutils.SISTROutputFileTypes.__members__], \
-        type=str, nargs="+", default=["vcf"])
+        type=str, nargs="+", default=["tab"])
     score_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
     score_group.add_argument("--samples", help="Restrict to comma separated list of samples", type=str)
     score_group.add_argument("--samples-file", help="Restrict to list of samples in this file", type=str)
@@ -57,6 +57,10 @@ def getargs(): # pragma: no cover
     score_group.add_argument("--lrt-lookup-folder", help="Folder for LRT lookup tables", type=str)
     score_group.add_argument("--minfreq", help="Minimum allele frequency to count an allele as common", type=float, default=0.05)
     score_group.add_argument("--numbins", help="Number of bins for summarizing allele frequencies", type=int, default=5)
+    score_group.add_argument("--eps-het-numerator", help="Numerator used to tune epsilon for heterozygosity comparisons", type=float, default=0.005)
+    score_group.add_argument("--eps-het-denominator", help="Denominator used to tune epsilon for heterozygosity comparisons", type=float, default=3.0)
+    score_group.add_argument("--eps-bins", help="Used to tune epsilon for bins comparisons", type=float, default=0.3)
+    score_group.add_argument("--min-abc-acceptance", help="Do not report results for loci with fewer than this many ABC acceptances", type=int, default=10)
     index_group = parser.add_argument_group("Indexing options")
     index_group.add_argument(
         "--config",

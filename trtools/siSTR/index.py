@@ -58,7 +58,7 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 			sys.stderr.write("- LRT Simulation ZERO %s/%s\n"%(i, config["lrt_num_sims"]))
 		simres = RunSim(0)
 		allele_freq_results.append(simres["afreqs_string"])
-	outf.write("\t".join([str(s), ";".join(allele_freq_results)])+"\n")
+	outf.write("\t".join(["0", ";".join(allele_freq_results)])+"\n")
 	outf.close()
 	
 	########### ABC Lookup table ################
