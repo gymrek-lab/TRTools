@@ -1,9 +1,9 @@
-import argparse
-import cyvcf2
-import gzip
 import os
+import argparse
 
 import pytest
+import numpy as np
+from pgenlib import PgenReader
 
 from ..annotaTR import *
 from trtools.testsupport.utils import assert_same_vcf
@@ -430,7 +430,7 @@ However, the presence of these tests is important because
 it should prevent any unexpected changes in output.
 If you've reviewed the change in output and find it acceptable,
 use trtools/testsupport/sample_vcfs/annotaTR_vcfs/create_test_files.sh
-to regenerate the test files with the new version of mergeSTR.
+to regenerate the test files with the new version of annotaTR.
 """
 
 def test_OutputFilesSame(args, vcfdir, antrvcfdir):
@@ -464,3 +464,45 @@ def test_OutputFilesSame(args, vcfdir, antrvcfdir):
     args.match_refpanel_on = "trimmedalleles"
     assert main(args) == 0
     assert_same_vcf(args.out + ".vcf", antrvcfdir + "/beagleap_trimmed.vcf", max_lines_to_compare=200)
+
+def test_PGENOutputSame(args, vcfdir):
+    # what are the expected dosages? shape: num_variants x num_samples
+    exp_dosages = np.array([
+        [-9, -9, -9],
+        [1.333313, 1.333313, 1],
+        [0, 0, 0],
+        [1.5, 1.5, 1.5],
+        [1.083313, 1, 0.916687],
+        [1.25, 1.5, 1],
+        [1.5, 1.5, 1.375],
+        [1, 1.333313, 1.333313],
+        [1.2000122, 1.2000122, 1.4000244],
+        [2, 2, 2],
+        [0.75, 1, 1.25],
+        [1, 1, 1],
+        [2, 2, 2],
+        [0.875, 1.15625, 1.2625122],
+        [0.833313, 1.166687, 0.666687],
+        [0.7999878, 0.5999756, 0.7999878],
+        [1, 1, 1],
+        [2, 1, 2],
+    ], dtype=np.float32)
+
+    args.vcf = os.path.join(vcfdir, "beagle", "beagle_badap.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel.vcf.gz")
+    args.vcftype = "hipstr"
+    args.dosages = "beagleap_norm"
+    args.match_refpanel_on = "rawalleles"
+    args.outtype = ["pgen"]
+    args.warn_on_AP_error = True
+    assert main(args) == 0
+    pgen = PgenReader(bytes(args.out + ".pgen", "utf8"))
+    num_vars = pgen.get_variant_ct()
+    dosages = np.empty((num_vars, pgen.get_raw_sample_ct()), dtype=np.float32)
+    pgen.read_dosages_list(np.arange(num_vars, dtype=np.uint32), dosages)
+    np.testing.assert_allclose(dosages, exp_dosages)
+
+    for fname_ext in ("pgen", "pvar", "psam"):
+        if os.path.exists("test."+fname_ext):
+            os.remove("test."+fname_ext)
+    
