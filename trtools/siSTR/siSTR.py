@@ -23,12 +23,13 @@ import trtools.utils.tr_harmonizer as trh
 from trtools import __version__
 
 from . import index as index
-from . import score as score
+from . import infer as infer
 from . import sistr_utils as sutils
 
 class SISTRCommands(enum.Enum):
     """Possible SISTR commands to run."""
     index = "index"
+    infer = "infer"
     score = "score"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
@@ -41,26 +42,23 @@ def getargs(): # pragma: no cover
     parser.add_argument("command", help="Options=%s"%[str(item) for item in SISTRCommands.__members__])
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
-    score_group = parser.add_argument_group("Scoring options")
-    score_group.add_argument("--vcf", help="Input VCF file to score", type=str)
-    score_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__],
+    infer_group = parser.add_argument_group("Inference options")
+    infer_group.add_argument("--vcf", help="Input VCF file to score", type=str)
+    infer_group.add_argument("--vcftype", help="Options=%s"%[str(item) for item in trh.VcfTypes.__members__],
         type=str, default="auto")
-    score_group.add_argument("--outtype", help="Type of output file. Options=%s"%[str(item) for item in sutils.SISTROutputFileTypes.__members__], \
-        type=str, nargs="+", default=["tab"])
-    score_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
-    score_group.add_argument("--samples", help="Restrict to comma separated list of samples", type=str)
-    score_group.add_argument("--samples-file", help="Restrict to list of samples in this file", type=str)
-    score_group.add_argument("--vcf-outtype", help="Type of VCF output. z=compressed VCF, v=uncompressed VCF, b=compressed BCF, u=uncompressed BCF, s=stdout", type=str, default="v")
-    score_group.add_argument("--sistr-index", help="Folder of SISTR index. Alternatively specify" 
+    infer_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
+    infer_group.add_argument("--samples", help="Restrict to comma separated list of samples", type=str)
+    infer_group.add_argument("--samples-file", help="Restrict to list of samples in this file", type=str)
+    infer_group.add_argument("--sistr-index", help="Folder of SISTR index. Alternatively specify" 
                              " both --abc-lookup-folder and --lrt-lookup-folder", type=str)
-    score_group.add_argument("--abc-lookup-folder", help="Folder for ABC lookup tables", type=str)
-    score_group.add_argument("--lrt-lookup-folder", help="Folder for LRT lookup tables", type=str)
-    score_group.add_argument("--minfreq", help="Minimum allele frequency to count an allele as common", type=float, default=0.05)
-    score_group.add_argument("--numbins", help="Number of bins for summarizing allele frequencies", type=int, default=5)
-    score_group.add_argument("--eps-het-numerator", help="Numerator used to tune epsilon for heterozygosity comparisons", type=float, default=0.005)
-    score_group.add_argument("--eps-het-denominator", help="Denominator used to tune epsilon for heterozygosity comparisons", type=float, default=3.0)
-    score_group.add_argument("--eps-bins", help="Used to tune epsilon for bins comparisons", type=float, default=0.3)
-    score_group.add_argument("--min-abc-acceptance", help="Do not report results for loci with fewer than this many ABC acceptances", type=int, default=10)
+    infer_group.add_argument("--abc-lookup-folder", help="Folder for ABC lookup tables", type=str)
+    infer_group.add_argument("--lrt-lookup-folder", help="Folder for LRT lookup tables", type=str)
+    infer_group.add_argument("--minfreq", help="Minimum allele frequency to count an allele as common", type=float, default=0.05)
+    infer_group.add_argument("--numbins", help="Number of bins for summarizing allele frequencies", type=int, default=5)
+    infer_group.add_argument("--eps-het-numerator", help="Numerator used to tune epsilon for heterozygosity comparisons", type=float, default=0.005)
+    infer_group.add_argument("--eps-het-denominator", help="Denominator used to tune epsilon for heterozygosity comparisons", type=float, default=3.0)
+    infer_group.add_argument("--eps-bins", help="Used to tune epsilon for bins comparisons", type=float, default=0.3)
+    infer_group.add_argument("--min-abc-acceptance", help="Do not report results for loci with fewer than this many ABC acceptances", type=int, default=10)
     index_group = parser.add_argument_group("Indexing options")
     index_group.add_argument(
         "--config",
@@ -186,8 +184,8 @@ def main(args):
 
     if command == SISTRCommands.index:
         return index.main(args)
-    if command == SISTRCommands.score:
-        return score.main(args)
+    if command == SISTRCommands.infer:
+        return infer.main(args)
 
 def run(): # pragma: no cover
     args = getargs()

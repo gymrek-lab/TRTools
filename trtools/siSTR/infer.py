@@ -31,6 +31,33 @@ def GetAlleleFreqsList(tr_allele_freqs, opt_allele, numbins):
             [0]*num_zeros_to_add
     return allele_freqs_list
 
+def UpdateVCFHeader(reader, command):
+    reader.add_to_header("##command-SISTR=" + command)
+    reader.add_info_to_header({
+        'ID': 'ABCS',
+        'Description': 'Inferred selection coefficient',
+        'Type': 'Float',
+        'Number': '1'
+    })
+    reader.add_info_to_header({
+        'ID': 'SPVAL',
+        'Description': 'P-value from LRT on inferred selection coefficient',
+        'Type': 'Float',
+        'Number': '1'
+    })
+    reader.add_info_to_header({
+        'ID': 'OPT',
+        'Description': 'Optimal allele used for inferring selection coefficient',
+        'Type': 'Integer',
+        'Number': '1'
+    })
+    reader.add_format_to_header({
+        'ID': 'S',
+        'Description': 'SISTR score of each allele',
+        'Type': 'String',
+        'Number': 1
+    })
+
 def main(args):
     ###### Check input options #######
     if args.vcf is None:
@@ -39,14 +66,6 @@ def main(args):
     if args.vcftype != 'auto':
         if args.vcftype not in trh.VcfTypes.__members__:
             common.WARNING("Invalid vcftype")
-            return 1
-    outtypes = set()
-    for outtype in args.outtype:
-        try:
-            ot = sutils.SISTROutputFileTypes[outtype]
-            outtypes.add(ot)
-        except KeyError:
-            common.WARNING("Invalid output type")
             return 1
     samples = []
     if args.samples_file is not None:
@@ -97,13 +116,11 @@ def main(args):
     )
 
     ###### Set up writers #######
-    if sutils.SISTROutputFileTypes.tab in outtypes:
-        tab_writer = open(args.out + ".tab", "w")
-        tab_writer.write("\t".join(["chrom", "start", "end", "total", "period", \
-                "optimal_ru", "motif", "ABC_s_median", "ABC_s_95%_CI", \
-                "Percent_s_accepted", "Likelihood_0", "Likelihood_s", \
-                "LR", "LogLR", "LRT_p_value"])+"\n")
-    # TODO - VCF writer
+    tab_writer = open(args.out + ".tab", "w")
+    tab_writer.write("\t".join(["chrom", "start", "end", "total", "period", \
+            "optimal_ru", "motif", "ABC_s_median", "ABC_s_95%_CI", \
+            "Percent_s_accepted", "Likelihood_0", "Likelihood_s", \
+            "LR", "LogLR", "LRT_p_value"])+"\n")
 
     ###### Process one locus at a time from VCF #######
     for record in reader:
@@ -144,33 +161,25 @@ def main(args):
             ABC_conf_int = "N/A"
 
         ##### Step 5: Output to file #####
-        if sutils.SISTROutputFileTypes.tab in outtypes:
-            items = [
-                record.CHROM,
-                str(record.POS),
-                str(record.INFO["END"]),
-                str(record.num_called),
-                str(period),
-                str(opt_allele),
-                trrecord.motif,
-                str(abc_results.get("median_s", NASTRING)),
-                ABC_conf_int,
-                str(abc_results.get("num_accepted", NASTRING)),
-                str(lrt_results.get("likelihood_0", NASTRING)),
-                str(lrt_results.get("likelihood_s_ABC", NASTRING)),
-                str(lrt_results.get("LR", NASTRING)),
-                str(lrt_results.get("LogLR", NASTRING)),
-                str(lrt_results.get("pval", NASTRING))
-            ]
-            tab_writer.write("\t".join(items)+"\n")
-
-        # TODO - VCF
-        # locus-level stats like tab output, but also
-        # score individual alleles
+        items = [
+            record.CHROM,
+            str(record.POS),
+            str(record.INFO["END"]),
+            str(record.num_called),
+            str(period),
+            str(opt_allele),
+            trrecord.motif,
+            str(abc_results.get("median_s", NASTRING)),
+            ABC_conf_int,
+            str(abc_results.get("num_accepted", NASTRING)),
+            str(lrt_results.get("likelihood_0", NASTRING)),
+            str(lrt_results.get("likelihood_s_ABC", NASTRING)),
+            str(lrt_results.get("LR", NASTRING)),
+            str(lrt_results.get("LogLR", NASTRING)),
+            str(lrt_results.get("pval", NASTRING))
+        ]
+        tab_writer.write("\t".join(items)+"\n")
 
     ###### Clean up writers #######
-    if sutils.SISTROutputFileTypes.tab in outtypes:
-        tab_writer.close()
-
-    # TODO - VCF
+    tab_writer.close()
     return 0

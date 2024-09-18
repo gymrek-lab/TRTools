@@ -8,13 +8,6 @@ import sys
 
 import trtools.utils.common as common
 
-class SISTROutputFileTypes(enum.Enum):
-    """Different supported output file types."""
-    vcf = "vcf"
-    tab = "tab"
-    def __repr__(self):
-        return '<{}.{}>'.format(self.__class__.__name__, self.name)
-
 # Default SISTR params
 DEFAULTS = {
 	"periods": [2, 3, 4],
