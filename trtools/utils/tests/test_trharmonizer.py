@@ -389,9 +389,13 @@ def test_TRRecord_GetGenotypes_Dosages():
     diploid_record.FORMAT["AP1"] = np.array([[10, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    # If not in strict mode these should be nan
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
     diploid_record.FORMAT["AP1"] = np.array([[-0.5, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    # If not in strict mode these should be nan
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
 
     # Test triploid example where alt=[]
     triploid_record = get_triploid_record()
@@ -421,7 +425,10 @@ def test_TRRecord_GetGenotypes_Dosages():
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm)
-
+    # If not in strict mode, should instead return NA
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm, strict=False)).all()
+    
     # Test example with fewer alt_alleles than the max genotype index
     with pytest.raises(ValueError):
         trh.TRRecord(dummy_record, ref_allele, [], "CAG", "", None)
