@@ -25,6 +25,7 @@ DUMMY_FILTER = "."
 # Info fields copied from reference panel for each tool
 INFOFIELDS = {
     trh.VcfTypes.hipstr: ["START","END","PERIOD"],
+    trh.VcfTypes.longtr: ["START","END","PERIOD"],
     trh.VcfTypes.advntr: ["RU", "VID"],
     trh.VcfTypes.gangstr: ["RU"],
     trh.VcfTypes.eh: ["RU","VARID","RL"]

@@ -34,6 +34,11 @@ def args(tmpdir):
     args.hipstr_max_call_flank_indel = None
     args.hipstr_max_call_stutter = None
     args.hipstr_min_supp_reads = None
+    args.longtr_min_call_DP = None
+    args.longtr_max_call_DP = None
+    args.longtr_min_call_Q = None
+    args.longtr_max_call_flank_indel = None
+    args.longtr_min_supp_reads = None
     args.gangstr_expansion_prob_het = None
     args.gangstr_expansion_prob_hom = None
     args.gangstr_expansion_prob_total = None
@@ -165,6 +170,19 @@ def test_HipSTRFile(args, testDumpSTRdir):
     retcode = main(args)
     assert retcode==0
 
+def test_LongTRFile(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "longtr_testfile.vcf.gz")
+    args.vcf = fname
+    args.num_records = 10
+    args.longtr_min_call_DP = 10
+    args.longtr_max_call_DP = 100
+    args.longtr_min_call_Q = 0.9
+    args.longtr_min_supp_reads = 2
+    args.longtr_max_call_flank_indel = 0.05
+    args.vcftype = 'longtr'
+    retcode = main(args)
+    assert retcode==0
+
 def test_AdVNTRFile(args, testDumpSTRdir):
     fname = os.path.join(testDumpSTRdir, "test_advntr.vcf.gz")
     args.vcf = fname
@@ -253,7 +271,8 @@ def test_LocusLevel(args, testDumpSTRdir):
         "NA12878_chr21_eh.sorted.vcf.gz",
         "NA12878_chr21_popstr.sorted.vcf.gz",
         "NA12878_chr21_popstr.sorted.vcf.gz",
-        "NA12878_chr21_advntr.sorted.vcf.gz"
+        "NA12878_chr21_advntr.sorted.vcf.gz",
+        "longtr_testfile.vcf.gz"
     ]
     for fname in tool_files:
         args.vcf = os.path.join(testDumpSTRdir, fname)
@@ -267,6 +286,8 @@ def test_LocusLevel(args, testDumpSTRdir):
         args.filter_hrun = True
         if 'hipstr' in fname:
             args.vcftype = 'hipstr'
+        elif 'longtr' in fname:
+            args.vcftype = 'longtr'
         else:
             args.vcftype = 'auto'
         assert main(args)==0
@@ -314,7 +335,6 @@ def test_InvalidHipstrOptions(args, testDumpSTRdir):
     args.vcftype = 'hipstr'
     retcode = main(args)
     assert retcode==1
-    args.hipstr_max_call_flank_indel = None
     args.hipstr_max_call_flank_indel = 2
     retcode = main(args)
     assert retcode==1
@@ -343,6 +363,36 @@ def test_InvalidHipstrOptions(args, testDumpSTRdir):
     args.hipstr_min_call_Q = -1
     assert main(args)==1
     args.hipstr_min_call_Q = 2
+    assert main(args)==1
+
+def test_InvalidLongtrOptions(args, testDumpSTRdir):
+    fname = os.path.join(testDumpSTRdir, "longtr_testfile.vcf.gz")
+    args.vcf = fname
+    args.num_records = 10
+    args.longtr_max_call_flank_indel = -1
+    args.vcftype = 'longtr'
+    retcode = main(args)
+    assert retcode==1
+    args.longtr_max_call_flank_indel = 2
+    retcode = main(args)
+    assert retcode==1
+    args.longtr_max_call_flank_indel = -1
+    retcode = main(args)
+    assert retcode==1
+    args.longtr_min_supp_reads = None
+    args.longtr_min_call_DP = -1
+    assert main(args)==1
+    args.longtr_min_call_DP = None
+    args.longtr_max_call_DP = -1
+    assert main(args)==1
+    args.longtr_min_call_DP = 5
+    args.longtr_max_call_DP = 2
+    assert main(args)==1
+    args.longtr_min_call_DP = None
+    args.longtr_max_call_DP = None
+    args.longtr_min_call_Q = -1
+    assert main(args)==1
+    args.longtr_min_call_Q = 2
     assert main(args)==1
 
 def test_InvalidGangSTROptions(args, testDumpSTRdir):
@@ -769,6 +819,36 @@ def test_output_hipstr_filters(args, testDumpSTRdir):
     for ext in '.samplog.tab', '.loclog.tab':
         assert_same_file(args.out + ext,
                           testDumpSTRdir + '/hipstr_filters' + ext,
+                          ext)
+
+# test longtr call and locus level filters
+def test_output_longtr_filters(args, testDumpSTRdir):
+    args.vcf = testDumpSTRdir + '/longtr_testfile.vcf.gz'
+    args.filter_hrun = True
+    args.use_length = True
+    args.max_locus_het = 0.45
+    args.min_locus_het = 0.05
+    args.min_locus_hwep = 0.5
+    args.longtr_max_call_flank_indel = 0.05
+    args.longtr_min_supp_reads = 10
+    args.longtr_min_call_DP = 30
+    args.longtr_max_call_DP = 200
+    args.longtr_min_call_Q = 0.9
+    args.vcftype = 'longtr'
+
+    assert main(args) == 0
+    # expect changes in precision for HET and HWEP
+    # that will make them too much of a pain to compare
+    # there are also rounding errors with HipSTR field GLDIFF
+    # that aren't worth worrying about
+    print(args.out)
+    assert_same_vcf(args.out + '.vcf',
+                     testDumpSTRdir + '/longtr_filters.vcf',
+                     info_ignore = {'AC', 'REFAC', 'HET', 'HWEP'},
+                     format_ignore= {'GLDIFF'})
+    for ext in '.samplog.tab', '.loclog.tab':
+        assert_same_file(args.out + ext,
+                          testDumpSTRdir + '/longtr_filters' + ext,
                           ext)
 
 

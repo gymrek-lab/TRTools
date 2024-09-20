@@ -119,6 +119,7 @@ runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --ou
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype popstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz --out stdout --mean --vcftype longtr"
 
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
@@ -129,16 +130,20 @@ runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out std
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype advntr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype popstr"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out stdout --mean --vcftype longtr"
 
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype advntr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_popstr.sorted.vcf.gz --out stdout --mean --vcftype longtr"
 
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype gangstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype hipstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype popstr"
 runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype eh"
+runcmd_fail "statSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out stdout --mean --vcftype longtr"
+
 
 # Test mergeSTR on all supported tools
 # AdVNTR
@@ -191,6 +196,11 @@ FILE2=${EXDATADIR}/NA12891_chr21_popstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_popstr.sorted.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_popstr --vcftype popstr"
 
+# LongTR
+FILE1=${EXDATADIR}/HG002_htt_test.vcf.gz
+FILE2=${EXDATADIR}/HG003_htt_test.vcf.gz
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2} --out ${TMPDIR}/test_merge_longtr --vcftype longtr"
+
 # Test mergeSTR on a file with list of VCFs
 FILE1=${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_hipstr.sorted.vcf.gz
@@ -211,6 +221,7 @@ runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --adv
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_eh --eh-min-call-LC 50 --num-records 10 --drop-filtered"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_gangstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_gangstr --min-locus-callrate 0.9 --num-records 10"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --vcftype hipstr --out ${TMPDIR}/test_dumpstr_hipstr --filter-hrun --num-records 10"
+runcmd_pass "dumpSTR --vcf ${EXDATADIR}/longtr_testfile.vcf.gz --vcftype longtr --out ${TMPDIR}/test_dumpstr_longtr --use-length --filter-hrun --num-records 10"
 runcmd_pass "dumpSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100"
 
 FILE1=${TMPDIR}/NA12878_advntr_reheader.vcf.gz
@@ -228,6 +239,7 @@ runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_hipstr.sorted.vcf.gz --out ${TM
 runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_eh.sorted.vcf.gz --out ${TMPDIR}/test_qc_eh"
 runcmd_pass "qcSTR --vcf ${EXDATADIR}/NA12878_chr21_advntr.sorted.vcf.gz --out ${TMPDIR}/test_qc_advntr"
 runcmd_pass "qcSTR --vcf ${EXDATADIR}/trio_chr21_popstr.sorted.vcf.gz --out ${TMPDIR}/test_qc_popstr"
+runcmd_pass "qcSTR --vcf ${EXDATADIR}/longtr_testfile.vcf.gz --vcftype longtr --out ${TMPDIR}/test_qc_longtr"
 
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_gangstr.vcf --out ${TMPDIR}/test_qc_gangstr --period 4 --quality per-locus"
 runcmd_pass "qcSTR --vcf ${TMPDIR}/test_merge_hipstr.vcf --out ${TMPDIR}/test_qc_hipstr --vcftype hipstr --samples ${EXDATADIR}/ex-samples.txt"

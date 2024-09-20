@@ -121,17 +121,19 @@ TRTools supports VCFs from the following TR genotyping tools:
 * GangSTR_ version 2.4 or higher
 * HipSTR [`main repo <https://github.com/tfwillems/HipSTR>`_] [`Gymrek Lab repo <https://github.com/gymrek-lab/hipstr>`_]
 * PopSTR_ version 2 or higher
+* LongTR_
 
 See our description of the :doc:`features and example use-cases </CALLERS>` of each of these tools.
 
 ..
-    please ensure this list of links remains the same as the one in the main README
+    please ensure this list of links remains the same as the one in CALLERS.rst
 
 .. _AdVNTR: https://advntr.readthedocs.io
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _GangSTR: https://github.com/gymreklab/gangstr
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
+.. _LongTR: https://github.com/gymrek-lab/longtr
 
 Testing
 -------

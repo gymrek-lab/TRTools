@@ -17,6 +17,7 @@ import statsmodels.stats.weightstats
 from . import load_and_filter_genotypes
 import trtools
 import trtools.utils.utils as utils
+import trtools.utils.tr_harmonizer as trh
 
 pval_precision = 2
 
@@ -491,7 +492,7 @@ def run():
         'Traits and the phenotype will be standardized to mean 0 and std 1 prior to regression, but '
         'coefficients/standard errors are transformed back to the original scale before being written out.'
     )
-    parser.add_argument('--vcftype', choices=['eh', 'hipstr', 'gangstr', 'popstr', 'advntr'],
+    parser.add_argument('--vcftype', choices=[str(item) for item in trh.VcfTypes.__members__],
                        help="Specify which caller produced the TR VCF, useful when the VCF is ambiguous "
                             "and the caller cannot be automatically inferred.")
     parser.add_argument('--same-samples', default=False, action='store_true',

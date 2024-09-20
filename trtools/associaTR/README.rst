@@ -43,7 +43,7 @@ Required positional parameters:
  
 Optional input parameters:   
 
-* :code:`--vcftype` One of :code:`eh, hipstr, gangstr, popstr, advntr`
+* :code:`--vcftype` One of :code:`eh, hipstr, longtr, gangstr, popstr, advntr`
   Specify which caller produced the TR VCF, useful when the VCF is ambiguous 
   and the caller cannot be automatically inferred.
 * :code:`--same-samples` - see the description of traits above

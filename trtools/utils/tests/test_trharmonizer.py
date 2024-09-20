@@ -719,9 +719,10 @@ def test_GetCallRate():
 
 
 def reset_vcfs(vcfdir):
-    global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
+    global gangstr_vcf, hipstr_vcf, longtr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
     gangstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_gangstr.vcf"))
     hipstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_hipstr.vcf"))
+    longtr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_longtr.vcf"))
     popstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_popstr.vcf"))
     advntr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_advntr.vcf"))
     eh_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
@@ -782,6 +783,19 @@ def test_trh_init_and_type_infer(vcfdir):
     assert (not hipstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
     assert not hipstr_trh.IsBeagleVCF()
+
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf, vcftype='longtr')
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf,
+                                        vcftype=trh.VcfTypes.longtr)
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    assert (longtr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.longtr))
+    assert not longtr_trh.IsBeagleVCF()
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VcfTypes.popstr
@@ -895,6 +909,8 @@ def get_vcf(vcftype):
         return eh_vcf
     if vcftype == "snps":
         return snps_vcf
+    if vcftype == trh.VcfTypes.longtr:
+        return longtr_vcf
     raise ValueError("Unexpected vcftype")
         # TODO add Beagle
 
@@ -908,6 +924,11 @@ def test_wrong_vcftype(vcfdir):
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
                 continue
+            # HipSTR and LongTR will not make each other fail
+            # so skip that case
+            if (incorrect_type == trh.VcfTypes.hipstr and correct_type == trh.VcfTypes.longtr) or \
+                (incorrect_type == trh.VcfTypes.longtr and correct_type == trh.VcfTypes.hipstr):
+                continue
 
             invcf = get_vcf(incorrect_type)
             with pytest.raises(TypeError):
@@ -918,7 +939,11 @@ def test_wrong_vcftype(vcfdir):
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
                 continue
-
+            # HipSTR and LongTR will not make each other fail
+            # so skip that case
+            if (incorrect_type == trh.VcfTypes.hipstr and correct_type == trh.VcfTypes.longtr) or \
+                (incorrect_type == trh.VcfTypes.longtr and correct_type == trh.VcfTypes.hipstr):
+                continue
             invcf = get_vcf(incorrect_type)
             record = next(invcf)
             with pytest.raises(TypeError):

@@ -24,7 +24,7 @@ Required Parameters:
 
 General Optional Parameters:
 
-* :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`longtr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
   Samples in the list that are not included in the input vcf or
   are misspelled are silently ignored.

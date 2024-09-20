@@ -30,6 +30,7 @@ class VcfTypes(enum.Enum):
     hipstr = "hipstr"
     eh = "eh"
     popstr = "popstr"
+    longtr = "longtr"
 
     # Don't include the redundant values
     # in how enums are printed out
@@ -88,6 +89,8 @@ def MayHaveImpureRepeats(vcftype: Union[str, VcfTypes]):
         return False
     if vcftype == VcfTypes.hipstr:
         return True
+    if vcftype == VcfTypes.longtr:
+        return True
     if vcftype == VcfTypes.advntr:
         return True
     if vcftype == VcfTypes.popstr:
@@ -121,6 +124,8 @@ def HasLengthRefGenotype(vcftype: Union[str, VcfTypes]):
         return False
     if vcftype == VcfTypes.hipstr:
         return False
+    if vcftype == VcfTypes.longtr:
+        return False
     if vcftype == VcfTypes.advntr:
         return False
     if vcftype == VcfTypes.popstr:
@@ -151,6 +156,8 @@ def HasLengthAltGenotypes(vcftype: Union[str, VcfTypes]):
     if vcftype == VcfTypes.gangstr:
         return False
     if vcftype == VcfTypes.hipstr:
+        return False
+    if vcftype == VcfTypes.longtr:
         return False
     if vcftype == VcfTypes.advntr:
         return False
@@ -206,6 +213,8 @@ def InferVCFType(vcffile: cyvcf2.VCF, vcftype: Union[str, VcfTypes] = "auto") ->
         possible_vcf_types.add(VcfTypes.gangstr)
     if 'command=' in header and 'hipstr' in header:
         possible_vcf_types.add(VcfTypes.hipstr)
+    if 'command=' in header and 'longtr' in header:
+        possible_vcf_types.add(VcfTypes.longtr)
     if 'source=advntr' in header:
         possible_vcf_types.add(VcfTypes.advntr)
     if 'source=popstr' in header:
@@ -274,6 +283,10 @@ def HarmonizeRecord(vcftype: Union[str, VcfTypes], vcfrecord: cyvcf2.Variant):
         return _HarmonizeGangSTRRecord(vcfrecord)
     if vcftype == VcfTypes.hipstr:
         return _HarmonizeHipSTRRecord(vcfrecord)
+    # Note: LongTR is the same format of HipSTR so
+    # we re-use that function here
+    if vcftype == VcfTypes.longtr:
+        return _HarmonizeHipSTRRecord(vcfrecord)
     if vcftype == VcfTypes.advntr:
         return _HarmonizeAdVNTRRecord(vcfrecord)
     if vcftype == VcfTypes.eh:
@@ -337,7 +350,7 @@ def _HarmonizeHipSTRRecord(vcfrecord: cyvcf2.Variant):
             or vcfrecord.INFO.get('END') is None
             or vcfrecord.INFO.get('PERIOD') is None):
         raise TypeError(
-            "Record at {}:{} is missing one of the mandatory HipSTR info fields START, END, PERIOD. ".format(vcfrecord.CHROM, vcfrecord.POS) +  _beagle_error
+            "Record at {}:{} is missing one of the mandatory HipSTR/LongTR info fields START, END, PERIOD. ".format(vcfrecord.CHROM, vcfrecord.POS) +  _beagle_error
         )
     # determine full alleles and trimmed alleles
     pos = int(vcfrecord.POS)
@@ -1720,6 +1733,8 @@ class TRRecordHarmonizer:
         if self.vcftype == VcfTypes.gangstr:
             return 'FORMAT=<ID=Q,' in self.vcffile.raw_header
         if self.vcftype == VcfTypes.hipstr:
+            return not self.IsBeagleVCF()
+        if self.vcftype == VcfTypes.longtr:
             return not self.IsBeagleVCF()
         if self.vcftype == VcfTypes.advntr:
             return not self.IsBeagleVCF()
