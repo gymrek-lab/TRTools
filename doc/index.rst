@@ -62,7 +62,11 @@ Note: if you will run or test :code:`simTR`, you will also need to install `ART 
 From source
 ^^^^^^^^^^^
 
-To install from source (only recommended for development) clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
+If you would like to develop or edit the TRTools source code, you will need to perform a "dev install" directly from the source.
+
+**Note:** Instead of performing the following steps, you can also just open `a GitHub codespace <https://docs.github.com/en/codespaces/overview>`_. Simply type a comma "," when viewing a branch on `our GitHub <https://github.com/gymrek-lab/TRTools>`_ to open an editor with our development setup pre-installed. You can then run :code:`conda activate trtools` and :code:`poetry shell` in the terminal there.
+
+You can clone the TRTools repository from `github <https://github.com/gymrek-lab/TRTools/>`_ and checkout the branch you're interested in::
 
         git clone -b master https://github.com/gymrek-lab/TRTools
         cd TRTools/
@@ -76,6 +80,11 @@ Now, whenever you'd like to run/import pytest or TRTools, you will first need to
 
         conda activate trtools
         poetry shell
+
+.. note::
+    There's no need to install TRTools this way if you aren't planning to develop or edit the source code! If you want the latest version from our master branch and just can't wait for us to release it, you only need to run::
+
+        pip install --upgrade --force-reinstall git+https://github.com/gymrek-lab/trtools.git@master
 
 With Docker
 ^^^^^^^^^^^
@@ -163,8 +172,10 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Make your changes. 
 #. If you need to add a dependency or update the version of a dependency, you can use the :code:`poetry add` command.
 
-    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. Don't worry if you're not sure at first, since you can (and should!) always update it later. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
-    * Afterwards, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`.
+    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`. Note: For most cases, a version constraint operator of :code:`>=` `is better than <https://iscinumpy.dev/post/bound-version-constraints>`_ poetry's default of :code:`^`.
+    * Afterward, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`. The :code:`--no-update` is important because otherwise, poetry will try to update other dependencies in the lock file.
+    * Only PyPI packages can be added to our pyproject.toml file. So if a dependency is only available on conda, then you can add it to our :code:`dev-env.yml` file instead. Please note that anyone who installs TRTools from PyPI will not be guaranteed to have your dependency installed, so you should design your code accordingly. 
+    * Any changes to our dependencies must also added to our bioconda recipe at the time of publication. See `PUBLISHING.rst <https://github.com/gymrek-lab/TRTools/blob/master/PUBLISHING.rst>`_ for more details.
 
 #. Document your changes.
 
