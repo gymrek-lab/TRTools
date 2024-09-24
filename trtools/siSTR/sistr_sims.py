@@ -2,8 +2,10 @@
 Functions for SISTR simulations
 """
 
+import msprime
 import numpy as np
 from scipy.stats import geom
+import stdpopsim
 
 def GetMuPrime(baseline_mu, baseline_mu_allele, L, target_allele, min_mu, max_mu):
     log_mu_prime = np.log10(baseline_mu)+L*(target_allele-baseline_mu_allele)
@@ -24,8 +26,49 @@ def GetStepSizeProb(a1, a2, beta, p):
     step_prob = geom.pmf(abs(step_size), p)
     return dir_prob*step_prob
 
-def GetEffectivePopSize(N_e, t, max_iter, model=None):
-    return N_e # TODO see https://github.com/BonnieCSE/SISTR/blob/master/simulations/Simulation_functions.py#L254
+def GetEffectivePopSizes(n_effective, max_iter, demog_model, popid):
+    """
+    Get list of effective pop sizes to use for each generation
+    starting at t=0...t=max_iter
+    """
+    # If n_effective is set, use constant value
+    if n_effective is not None:
+        return [n_effective]*max_iter
+    # Otherwise, get list of n_effs to use based on demographic model
+    times = np.linspace(0, max_iter, num=max_iter)
+    target_popindex = [item.name for item in demog_model.populations].index(popid)
+    debugger = demog_model.model.debug()
+    popsizes = debugger.population_size_trajectory(np.linspace(0, max_iter, num=max_iter))[:,target_popindex]
+    # Update based on if lineage was present or not
+    pll = debugger.possible_lineage_locations()
+    for epoch, values in pll.items():
+        # If the lineage wasn't present
+        # Figure out time of the epoch and
+        # which population we split from
+        if not values[target_popindex]:
+            start_ind = int(epoch[0])
+            end_ind = epoch[1]
+            if np.isinf(end_ind):
+                end_ind = len(popsizes)
+            else: end_ind = int(end_ind)
+            relevant_events = [item for item in demog_model.model.events \
+                if int(item.time)==start_ind and \
+                type(item)==msprime.demography.MassMigration and \
+                item.source==target_popindex
+            ]
+            if len(relevant_events) != 1:
+                common.WARNING("Error: problem parsing stdpopsim model")
+                return None
+            # Replace with trajectory of the ancestral pop at that time
+            # TODO!!! what if there were additional splits?
+            # Need to further refine and check we only include pops at
+            # times they were active
+            # the check above should catch this for now
+            anc_popind = relevant_events[0].dest
+            anc_popsizes = debugger.population_size_trajectory(times)[:,anc_popind]
+            popsizes[start_ind:end_ind] = anc_popsizes[start_ind:end_ind+1]    
+    popsizes = popsizes[::-1] # since we are doing forward simulations
+    return popsizes
 
 def GetTransitionMatrix(num_alleles, mu, beta, p, L, min_mu, max_mu):
     # Initialize matrix (optimal=0)
@@ -91,6 +134,8 @@ def RunSimulation(
         set_start_equal=False,
         max_iter=1,
         n_effective=10000,
+        demog_model=None,
+        popid=None,
         use_drift=True,
         end_samp_n=0
     ):
@@ -107,11 +152,13 @@ def RunSimulation(
     fitness_matrix = GetFitnessMatrix(num_alleles, sval)
 
     # Simulate the desired number of generations
+    effective_pop_sizes_by_generation = GetEffectivePopSizes(n_effective, max_iter, demog_model, popid)
+    if effective_pop_sizes_by_generation is None:
+        return None
     t = 0
-    N_e = n_effective
     while t < max_iter:
         # Determine N_e based on demographic model
-        N_e = GetEffectivePopSize(N_e, t, max_iter, model=None)
+        N_e = effective_pop_sizes_by_generation[t]
 
         # Calculate marginal fitness w*(a[i]) for each allele
         marginal_fitness_vector = GetMarginalFitnessVector(allele_freqs, fitness_matrix)

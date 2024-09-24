@@ -1,6 +1,9 @@
 {
 	"periods": [2, 3, 4],
 	"opt_allele_ranges": [[11, 20], [5, 13], [7, 10]],
+	"demog_model": "OutOfAfrica_2T12",
+	"species": "HomSap",
+	"popid": "EUR",
 	"log10_mut_slopes": [0.15, 0.33, 0.45],
 	"betas": [0.3, 0.3, 0.3],
 	"rhos": [0.6, 0.9, 0.9],

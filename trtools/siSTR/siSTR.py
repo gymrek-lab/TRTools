@@ -2,12 +2,11 @@
 Tool for performing selection inference at STRs
 
 TODO
-* allow separate input for demographic model file (sistr_sims.GetEffectivePopSize). maybe end_samp_n should go there
+* allow separate input for demographic model file (sistr_sims.GetEffectivePopSize)
 * organize options based on which of the commands they are needed for
 * Index: where did the TMRCA.txt file come from for variable num generations? and why max 5920?
   I see that file in the google drive
 * Simplify functions in sistr_sims.py
-* score allow to process either freqs file or VCF file
 
 Example:
 sistr index --out testindex/test --verbose
@@ -79,6 +78,24 @@ def getargs(): # pragma: no cover
         type=str
     )
     index_group.add_argument(
+        "--species",
+        help="ID of stdpopsim species to use. Default: {default} "
+             "Note if using stdpopsim must specify all of: "
+             "--species, --demographic-model, --popid. In this "
+             "case, --n-effective is ignored.".format(default=sutils.DEFAULTS["species"]),
+        type=str
+    )
+    index_group.add_argument(
+        "--demographic-model",
+        help="ID of a stdpopsim demographic model to use. Default: {default}".format(default=sutils.DEFAULTS["demog_model"]),
+        type=str
+    )
+    index_group.add_argument(
+        "--popid",
+        help="Population ID from stdpopsim model to use. Default: {default}".format(default=sutils.DEFAULTS["popid"]),
+        type=str
+    )
+    index_group.add_argument(
         "--log10-mut-slopes",
         help="Slopes of log10 mutation rate vs. allele length for each rpt. unit length. "
              "If not set defaults to {default}".format(default=",".join([str(item) for item in sutils.DEFAULTS["log10_mut_slopes"]])),
@@ -111,7 +128,9 @@ def getargs(): # pragma: no cover
     index_group.add_argument(
         "--n-effective",
         help="Effective population size. "
-             "If not set defaults to {default}".format(default=sutils.DEFAULTS["n_effective"]),
+             "If not set defaults to {default} "
+             "This sets N_e to be constant. Ignored "
+             "if using stdpopsim models".format(default=sutils.DEFAULTS["n_effective"]),
         type=int
     )
     index_group.add_argument(

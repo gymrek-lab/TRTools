@@ -4,6 +4,7 @@ Common utilities for SISTR commands
 
 import enum
 import json
+import stdpopsim
 import sys
 
 import trtools.utils.common as common
@@ -12,6 +13,9 @@ import trtools.utils.common as common
 DEFAULTS = {
 	"periods": [2, 3, 4],
 	"opt_allele_ranges": [(11, 20), (5, 13), (7, 10)],
+	"species": None,
+	"demog_model": None,
+	"popid": None,
 	"log10_mut_slopes": [0.15, 0.33, 0.45],
 	"betas": [0.3, 0.3, 0.3],
 	"rhos": [0.6, 0.9, 0.9],
@@ -50,6 +54,9 @@ def PrintConfigInfo(config):
 		sys.stderr.write("    Baseline mu={bmu}\n".format(bmu=config["baseline_mus"][i]))
 		sys.stderr.write("    Baseline mu allele={bmua}\n".format(bmua=config["baseline_mu_alleles"][i]))
 	sys.stderr.write("Demographic model:\n")
+	sys.stderr.write("    species={species}".format(species=config["species"]))
+	sys.stderr.write("    demog_model={demogmodel}".format(demogmodel=config["demog_model"]))
+	sys.stderr.write("    popid={popdid}".format(popid=config["popid"]))
 	sys.stderr.write("    n_effective={neff}\n".format(neff=config["n_effective"]))
 	sys.stderr.write("    num_gens={numgens}\n".format(numgens=config["num_gens"]))
 	sys.stderr.write("Simulation params:\n")
@@ -98,6 +105,12 @@ def LoadSISTRConfig(args):
 		except (IndexError, ValueError) as e:
 			common.WARNING("Error parsing opt-allele-ranges")
 			return None
+	if args.species is not None:
+		config["species"] = args.species
+	if args.demographic_model is not None:
+		config["demog_model"] = args.demographic_model
+	if args.popid is not None:
+		config["popid"] = args.popid
 	if args.log10_mut_slopes is not None:
 		config["log10_mut_slopes"] = [float(item) for item in args.log10_mut_slopes.strip().split(",")]
 	if args.betas is not None:
@@ -161,6 +174,27 @@ def LoadSISTRConfig(args):
 	if len(config["periods"]) != len(config["baseline_mu_alleles"]):
 		common.WARNING("Error: a different number of period and baseline_mu_alleles "
 					   "specified.")
+		return None
+	# Check of all or none for species/demog_model/popid specified
+	num_stdpopsim_args = sum([config["species"] is None, config["demog_model"] is None,
+		config["popid"] is None])
+	if num_stdpopsim_args > 0 and num_stdpopsim_args != 3:
+		common.WARNING("Error: if using a stdpopsim model must specify "
+			           "all of --species, --demographic-model, --popid")
+		return None
+	if config["species"] is not None and \
+			config["species"] not in stdpopsim.species.registered_species.keys():
+		common.WARNING("Error: could not find stdpopsim model for "+config["species"])
+		return None
+	if config["demog_model"] is not None and \
+			config["demog_model"] not in \
+			[item.id for item in stdpopsim.species.registered_species[config["species"]].demographic_models]:
+		common.WARNING("Error: could not find stdpopsim model with ID " + config["demog_model"])
+		return None
+	if config["popid"] is not None and \
+			config["popid"] not in \
+			[item.name for item in stdpopsim.species.registered_species[config["species"]].get_demographic_model(config["demog_model"]).populations]:
+		common.WARNING("Error: could not find pop " + config["popid"] + " in the specified model")
 		return None
 
 	# Additional checks on command line arguments

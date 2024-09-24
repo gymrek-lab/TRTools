@@ -3,6 +3,7 @@ Generate the SISTR index
 """
 
 import numpy as np
+import stdpopsim
 import sys
 
 from . import sistr_utils as sutils
@@ -24,6 +25,15 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 		config["num_alleles"], mu_prime, beta, rho, L,
 		config["min_mu"], config["max_mu"]).transpose()
 
+	# Set up demographic model
+	if config["demog_model"] is not None:
+		demog_model = stdpopsim.species.registered_species[config["species"]].get_demographic_model(config["demog_model"])
+		popid = config["popid"]
+		n_eff = None
+	else:
+		demog_model = None
+		popid = None
+		n_eff = config["n_effective"]
 	# Function to run sims for a certain s value
 	# since all other params are the same
 	def RunSim(s):
@@ -31,7 +41,8 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 			sval=s,
 			transition_matrix_transpose=transition_matrix_transpose,
 			max_iter=config["num_gens"],
-			n_effective=config["n_effective"],
+			n_effective=n_eff,
+			demog_model=demog_model, popid=popid,
 			use_drift=config["use_drift"],
 			end_samp_n=config["end_samp_n"]
 		)
@@ -45,6 +56,9 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 			if verbose and i%100==0:
 				sys.stderr.write("- LRT Simulation s=%s %s/%s\n"%(s, i, config["lrt_num_sims"]))
 			simres = RunSim(s)
+			if simres is None:
+				sys.stderr.write("Error running simulation. Quitting")
+				return False
 			allele_freq_results.append(simres["afreqs_string"])
 		outf.write("\t".join([str(s), ";".join(allele_freq_results)])+"\n")
 	outf.close()
@@ -78,6 +92,7 @@ def GenerateIndex(period, opt_allele, config, outprefix, verbose=False):
 		outf.write("\t".join([str(s_values[i]), simres["afreqs_string"]])+"\n")
 		outf.flush()
 	outf.close()
+	return True
 
 def main(args):
 	if args.seed is not None:
@@ -98,6 +113,9 @@ def main(args):
 		for opt_allele in range(min_opt_allele, max_opt_allele+1):
 			if args.verbose:
 				sys.stderr.write("Generating index for period=%s opt=%s\n"%(period, opt_allele))
-			GenerateIndex(period, opt_allele, config, args.out, verbose=args.verbose)
+			check = GenerateIndex(period, opt_allele, config, args.out, verbose=args.verbose)
+			if not check:
+				sys.stderr.write("Error generating tables")
+				return 1
 
 	return 0
