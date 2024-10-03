@@ -453,6 +453,8 @@ def getargs(): # pragma: no cover
     filter_group.add_argument("--region", help="Restrict to the region "
                               "chrom:start-end. Requires file to bgzipped and"
                               " tabix indexed.", type=str)
+    filter_group.add_argument("--only-passing", help="Only process records "
+                              " where FILTER==PASS", action="store_true")
     stat_group_name = "Stats group"
     stat_group = parser.add_argument_group(stat_group_name)
     stat_group.add_argument("--thresh", help="Output threshold field (max allele size, used for GangSTR strinfo).", action="store_true")
@@ -574,6 +576,10 @@ def main(args):
             nrecords += 1
 
             trrecord = trh.HarmonizeRecord(vcftype, record)
+
+            if args.only_passing and record.FILTER is not None:
+                continue
+            
             if args.plot_afreq and num_plotted <= MAXPLOTS:
                 PlotAlleleFreqs(trrecord, args.out, sample_indexes=sample_indexes, sampleprefixes=sample_prefixes)
                 num_plotted += 1

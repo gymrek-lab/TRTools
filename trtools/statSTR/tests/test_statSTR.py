@@ -17,6 +17,7 @@ def args(tmpdir):
     args.sample_prefixes = None
     args.plot_afreq = False
     args.region = None
+    args.only_passing = False
     args.thresh = False
     args.afreq = False
     args.acount = False
@@ -46,6 +47,17 @@ def test_WrongFile(args, vcfdir):
 def test_RightFile(args, vcfdir):
     fname = os.path.join(vcfdir, "test_gangstr.vcf")
     args.vcf = fname
+    retcode = main(args)
+    assert retcode==0
+
+# Test rhe only passing option
+def test_OnlyPassing(args, vcfdir):
+    fname = os.path.join(vcfdir, "CEU_test.vcf.gz")
+    args.vcf = fname
+
+    # With only passing
+    args.only_passing = True
+    args.region = None
     retcode = main(args)
     assert retcode==0
 
