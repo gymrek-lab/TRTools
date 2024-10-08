@@ -667,6 +667,7 @@ def main(args):
         # Add this check to warn us when bad things happen when parsing alleles
         if minlen == maxlen and len(trrecord.ref_allele) < 5:
             print(trrecord.ref_allele)
+            print(record.REF,record.ALT)
             common.WARNING("Warning: Suspicious allele lengths found at "
                 "{chrom}:{pos}. If you imputed then used bcftools merge "
                 "and alleles were trimmed, consider using option "
