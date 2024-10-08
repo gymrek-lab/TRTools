@@ -650,10 +650,11 @@ def main(args):
                     raise ValueError("--update-ref-alt set but the REF/ALT fields"
                                      " at {chrom}:{pos} are incompatible between the"
                                      " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
-                    print("merge_batch doesnt match ref panel, merge ref is {record.REF}, merge alt is {record.ALT}")
+                    print("refpanel ref is {ref}, alt is {alt}".format(ref=refpanel_metadata[locuskey]["REF"], alt=refpanel_metadata[locuskey]["ALT"]))
+                    print("merge record ref is {record_ref}, record alt is {record_alt}".format(record_ref=record.REF,record_alt=record.ALT))
                 record.REF = refpanel_metadata[locuskey]["REF"]
                 record.ALT = refpanel_metadata[locuskey]["ALT"]
-                print("update merge vcf to ref panel, merge ref is {record.REF}, and merge alt is {record.ALT}")
+                
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
