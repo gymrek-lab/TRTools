@@ -132,4 +132,6 @@ Below are :code:`prancSTR` examples using HipSTR VCFs. Data files can be found a
 
 Citations
 ----------------
-If you utilize prancSTR for your work please cite: Aarushi Sehgal, Helyaneh Ziaei Jam, Andrew Shen, Melissa Gymrek, Genome-wide detection of somatic mosaicism at short tandem repeats, Bioinformatics, Volume 40, Issue 8, August 2024, btae485, https://doi.org/10.1093/bioinformatics/btae485
+If you utilize prancSTR for your work please cite:
+
+> Aarushi Sehgal, Helyaneh Ziaei Jam, Andrew Shen, Melissa Gymrek, Genome-wide detection of somatic mosaicism at short tandem repeats, Bioinformatics, Volume 40, Issue 8, August 2024, btae485, https://doi.org/10.1093/bioinformatics/btae485
