@@ -14,7 +14,6 @@ import scipy.stats
 
 import trtools.utils.common as common # pragma: no cover
 
-nucToNumber={"A":0,"C":1,"G":2,"T":3}
 
 def LoadSingleReader(
         vcf_loc: str,

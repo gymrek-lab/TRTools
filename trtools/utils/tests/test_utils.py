@@ -115,6 +115,8 @@ def test_GetCanonicalMotif():
     assert(utils.GetCanonicalMotif("TTGTT")=="AAAAC")
     assert(utils.GetCanonicalMotif("")=="")
     assert(utils.GetCanonicalMotif("cag")=="AGC")
+    assert(utils.GetCanonicalMotif("AARRG")=="AARRG")
+    assert(utils.GetCanonicalMotif("YARRG")=="ARRGY")
 
 # GetCanonicalOneStrand
 def test_GetCanonicalOneStrand():
