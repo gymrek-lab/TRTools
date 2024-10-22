@@ -387,9 +387,9 @@ def GetCanonicalMotif(repseq):
     repseq_r = GetCanonicalOneStrand(ReverseComplement(repseq))
     # choose first seq alphabetically
     for i in range(len(repseq_f)):
-        if nucToNumber[repseq_f[i]] < nucToNumber[repseq_r[i]]:
+        if repseq_f[i] < repseq_r[i]:
             return repseq_f
-        if nucToNumber[repseq_r[i]] < nucToNumber[repseq_f[i]]:
+        if repseq_r[i] < repseq_f[i]:
             return repseq_r
     return repseq_f
 
@@ -420,9 +420,9 @@ def GetCanonicalOneStrand(repseq):
     for i in range(size):
         newseq = repseq[size-i:]+repseq[0:size-i]
         for j in range(size):
-            if nucToNumber[newseq[j]] < nucToNumber[canonical[j]]:
+            if newseq[j] < canonical[j]:
                 canonical = newseq
-            elif nucToNumber[newseq[j]] > nucToNumber[canonical[j]]:
+            elif newseq[j] > canonical[j]:
                 break
     return canonical
 
