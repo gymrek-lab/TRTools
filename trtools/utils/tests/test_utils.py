@@ -128,6 +128,13 @@ def test_GetCanonicalOneStrand():
     assert(utils.GetCanonicalOneStrand("TTGTT")=="GTTTT")
     assert(utils.GetCanonicalOneStrand("")=="")
     assert(utils.GetCanonicalOneStrand("at")=="AT")
+    # Additional tests with IUPAC codes
+    assert(utils.GetCanonicalOneStrand("RY")=="RY")
+    assert(utils.GetCanonicalOneStrand("YR")=="RY")
+    assert(utils.GetCanonicalOneStrand("SW")=="SW")
+    assert(utils.GetCanonicalOneStrand("WS")=="SW")
+    assert(utils.GetCanonicalOneStrand("KM")=="KM")
+    assert(utils.GetCanonicalOneStrand("MK")=="KM")
 
 # ReverseComplement
 def test_ReverseComplement():
@@ -135,6 +142,11 @@ def test_ReverseComplement():
     assert(utils.ReverseComplement("")=="")
     assert(utils.ReverseComplement("CGNT")=="ANCG")
     assert(utils.ReverseComplement("ccga")=="TCGG")
+    # additional tests with IUPAC codes
+    assert(utils.ReverseComplement("RYASWKM")=="KMWSTRY")
+    # also test the characters that don't change
+    assert(utils.ReverseComplement("BDHV")=="BDHV")
+    assert(utils.ReverseComplement("N")=="N")
 
 # InferRepeatSequence
 def test_InferRepeatSequence():

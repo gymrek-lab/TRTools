@@ -428,7 +428,7 @@ def GetCanonicalOneStrand(repseq):
 def ReverseComplement(seq):
     r"""Get reverse complement of a sequence.
 
-    Converts everything to uppsercase.
+    Converts everything to uppercase and handles IUPAC codes.
 
     Parameters
     ----------
@@ -444,21 +444,19 @@ def ReverseComplement(seq):
     --------
     >>> ReverseComplement("AGGCT")
     'AGCCT'
+    >>> ReverseComplement("AGGCTRY")
+    'RAGCCT'
     """
+    iupac_complement = {
+        'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
+        'R': 'Y', 'Y': 'R', 'S': 'S', 'W': 'W',
+        'K': 'M', 'M': 'K', 'B': 'V', 'D': 'H',
+        'H': 'D', 'V': 'B', 'N': 'N'
+    }
     seq = seq.upper()
     newseq = ""
-    size = len(seq)
-    for i in range(len(seq)):
-        char = seq[len(seq)-i-1]
-        if char == "A":
-            newseq += "T"
-        elif char == "G":
-            newseq += "C"
-        elif char == "C":
-            newseq += "G"
-        elif char == "T":
-            newseq += "A"
-        else: newseq += "N"
+    for char in reversed(seq):
+        newseq += iupac_complement.get(char, 'N')
     return newseq
 
 def InferRepeatSequence(seq, period):
