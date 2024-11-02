@@ -445,7 +445,7 @@ def ReverseComplement(seq):
     >>> ReverseComplement("AGGCT")
     'AGCCT'
     >>> ReverseComplement("AGGCTRY")
-    'RAGCCT'
+    'RYAGCCT'
     """
     iupac_complement = {
         'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
