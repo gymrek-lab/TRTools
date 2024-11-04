@@ -272,6 +272,31 @@ def test_GetInfoItem(capsys):
     retval = GetInfoItem(dummy_records, [True, True, False, False], 'END')
     assert retval == "END=120"
 
+def test_mergeSTR_recursion(args, vcfdir, mrgvcfdir, tmpdir):
+    # Test that mergeSTR will accept its own output as input
+    # Create a merged VCF and then merge it again with a different file
+    fname1 = os.path.join(mrgvcfdir, "CEU_test_subset1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "CEU_test_subset2.vcf.gz")
+    args.vcftype = "hipstr"
+
+    # create a single merged file
+    merged = str(tmpdir / "test-CEU-subset1")
+    args.out = merged
+    args.vcfs = fname1 + "," + fname2
+    args.vcfs_list = None
+    assert main(args)==0
+
+    fname1 = merged
+    fname2 = os.path.join(mrgvcfdir, "CEU_test_subset3.vcf.gz")
+    args.vcftype = "hipstr"
+
+    # create a single merged file
+    merged = str(tmpdir / "test-CEU-subset2")
+    args.out = merged
+    args.vcfs = fname1 + "," + fname2
+    args.vcfs_list = None
+    assert_same_vcf(args.out + '.vcf', vcfdir + "/CEU_test.vcf.gz")
+
 # TODO write WriteSampleData tests
 
 """
