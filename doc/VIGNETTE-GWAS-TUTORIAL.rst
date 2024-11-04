@@ -51,7 +51,7 @@ Prerequisites
 
 You will need the following files and tools to run the imputation step:
 
-* **Individual-level SNP/indel genotypes (VCF format)**. You will need SNP/indel genotypes for your GWAS cohort. Either phased or unphased genotypes is fine. Imputation with Beagle will require these to be in VCF format. More on preprocessing genotypes below. 
+* **Individual-level SNP/indel genotypes (VCF format)**. You will need SNP/indel genotypes for your GWAS cohort. These can optionally be phased but that is not required, and if unphased Beagle will phase prior to imputation. Imputation with Beagle will require these to be in VCF format. More on preprocessing genotypes below. 
 
 * **SNP-TR reference panel (VCF or BREF3 format)**. You will need a precomputed referene panel that contains phased SNP and TR genotypes from an orthogonal cohort. The panel needs to be in either VCF or BREF3 format to be compatible with Beagle. We have generated two such panels:
 
@@ -109,7 +109,25 @@ An full workflow for generating these VCF subsets in All of Us is available from
 Step 1.2: Imputing TRs in each batch
 ____________________________________
 
-TODO
+
+The following example command runs TR imputation on a single batch of samples for a single chromosome::
+
+	java -Xmx25g -jar beagle.jar \
+		gt=batch${batch}_chr${chrom} \
+		ref=ensembletr_refpanel_v3_chr${chrom}.bref3 \
+		ap=true \
+		out=batch${batch}_chr${chrom}_imputed \
+		map=beagle_chr${chrom}_b38.map
+	tabix -p vcf batch${batch}_chr${chrom}_imputed.vcf.gz
+
+
+Some important note about the above Beagle command:
+
+* We have had success running Beagle on batches of 1000 samples using 25GB of memory. For larger batch sizes you may need to increase the memory.
+* For the reference panel (:code:`ref` argument): you can provide either a VCF or BREF3 file. The VCF/BREF3 files for the EnsembleTR panel have equivalent information. In accordance with the Beagle recommendations, we have found the BREF3 files result in improved run times (about 10%).
+* The :code:`ap` argument is optional, but is important to include if you want to take imputation uncertainty into account when performing GWAS. This argument tells Beagle to output allele probabilities for each imputed call. Including it does increase the size of the output VCF files.
+
+To run imputation on the full cohort, you will need to run the above command on each of the VCF files generated in step 1.1 (one file per chrom per batch of samples).
 
 .. _step1_3:
 
@@ -117,7 +135,16 @@ TODO
 Step 1.3: Extracting TRs from each batch
 ________________________________________
 
-TODO
+The Beagle output files contain both the original SNP/indel genotypes (which will now be phased) in addition to the phased imputed TR genotypes. In many cases for downstream steps we are just interested in the TR genotypes (e.g. if you already ran GWAS on the SNPs/indels separately). Before the next step you can optionally filter the Beagle VCF files to include just the TRs, which will also make the files way smaller and easier to work with::
+
+	bcftools view -i 'ID~"EnsTR"' batch${batch}_chr${chrom}_imputed.vcf.gz \
+		-Oz -o batch${batch}_chr${chrom}_imputed_TRs.vcf.gz
+    	tabix -p vcf batch${batch}_chr${chrom}_imputed_TRs.vcf.gz
+
+
+This command assumes you are using the EnsembleTR reference panel, which has TR IDs of the form :code:`EnsTR:CHROM:POS`. If you are using a reference panel with different IDs for the TRs you'll need to modify the command above.
+
+On the other hand, if you want to process SNPs+TRs together in the GWAS you can skip this step.
 
 
 .. _step1_4:
