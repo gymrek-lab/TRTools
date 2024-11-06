@@ -29,7 +29,10 @@ To run a GWAS, you will need to have genotypes and phenotype data for your pheno
 
 This tutorial shows how to perform a GWAS using TR genotypes obtained from imputation. Alternatively, genotypes can be obtained directly from WGS data using one of the supported callers_. If you already have quality filtered TR calls available and do not need to perform imputation, you can jump directly to step 2 below.
 
-A WDL workflow performing steps 1 and 2 is available on our `CAST workflows <https://github.com/CAST-genomics/cast-workflows/blob/main/tr-imputation/wdl/batch_imputation.wdl>`_ page.
+A WDL workflow performing steps 1 and 2 is available on our `CAST TR imputation workflow <https://github.com/CAST-genomics/cast-workflows/blob/main/tr-imputation/wdl/batch_imputation.wdl>`_ page.
+
+
+Another note: this is just one way to do a TR-based GWAS! In particular, we rely on finding linear associations between TR length and a trait of interest. Other options include: (1) looking for non-linear associations (e.g. quadratic or threshold effects) or (2) incorporating information about repeat sequence variation, in addition to length, into the association test. These are not covered here since our work on those is still exploratory, but we hope to incorporate those into workflows (and corresponding tutorials) soon.
 
 .. _step1:
 
@@ -101,7 +104,7 @@ In this command:
 
 The :code:`split` command above will result in files :code:`batch1_chr21.vcf.gz` and :code:`batch2_chr21.vcf.gz`.
 
-An full workflow for generating these VCF subsets in All of Us is available from our `CAST workflows <https://github.com/CAST-genomics/cast-workflows/tree/main/subset_vcf>`_ page. (Note in that workflow given the cohort size, we further broke up the split step by genomic region and then concatenate the results for all the regions from each chromosome in a final step).
+An full workflow for generating these VCF subsets in All of Us is available from our `CAST subset VCF workflow <https://github.com/CAST-genomics/cast-workflows/tree/main/subset_vcf>`_ page. (Note in that workflow given the cohort size, we further broke up the split step by genomic region and then concatenate the results for all the regions from each chromosome in a final step).
 
 .. _step1_2:
 
@@ -153,8 +156,11 @@ On the other hand, if you want to process SNPs+TRs together in the GWAS you can 
 Step 1.4: Merging results from each batch
 _________________________________________
 
-TODO
 
+Before downstream steps we would like to merge the VCFs across all batches to have a single VCF file per chromosome. While TRTools does include the :code:`mergeSTR` tool which can be used for this, we recommend using :code:`bcftools merge` for large cohorts when using imputed TRs. This is because: (1) after imputation with Beagle the set of REF/ALT alleles should be identical across each batch and match the reference panel, so there is not a need to use mergeSTR which specifically deals with managing differences in alleles represented across files and (2) bcftools is much faster. To merge batches::
+
+	bcftools merge batch1_chr${chrom}_imputed_TRs.vcf.gz batch2_chr${chrom}_imputed_TRs.vcf.gz ... -Oz -o merged_${chrom}_TRs.vcf.gz
+	tabix -p vcf merged_${chrom}_TRs.vcf.gz
 
 
 .. _step2:
@@ -162,13 +168,58 @@ TODO
 Step 2: Computing dosages with annotaTR
 ---------------------------------------
 
-TODO
+We will perform one more post-processing step on the imputation results to prepare for running GWAS. We will use the :code:`annotaTR` tool included in TRTools to perform the following:
+
+* Add back TR metadata to the VCFs resulting from imputation. Certain required fields (e.g. START, END, PERIOD) that are present in the TR+SNP reference panel get stripped by Beagle and we need to add those back to make the resulting VCF file compatible with other TRTools utilities.
+* Compute TR dosages and store them in a PGEN file which can be used directly as input to plink for GWAS in Step 3.
+
+To run :code:`annotaTR` on each VCF::
+
+	annotaTR --vcf merged_${chrom}_TRs.vcf.gz \
+            --ref-panel ensembletr_refpanel_v3_chr${chrom}.vcf.gz \
+            --update-ref-alt \
+            --vcftype hipstr \
+            --dosages beagleap_norm
+            --out merged_${chrom}_TRs_annotated \
+            --outtype pgen vcf \
+            --vcf-outtype z
+
+Below we describe what each of these options does:
+
+* :code:`--vcf` provides annotaTR with the unannotated VCF resulting from imputation
+* :code:`--ref-panel` provides annotaTR with the reference panel VCF, which is used to add back the required metadata fields
+* :code:`--update-ref-alt` tells annotaTR to add back the exact allele sequences from the REF and ALT fields from the reference panel. This is because bcftools merge in some cases trims extra bases from REF and ALT sequences, which can cause problems for downstream processing with TRTools.
+* :code:`--vcftype hipstr` tells TRTools this is a hipSTR-style VCF file
+* :code:`--dosages beagleap_norm` tells annotaTR to compute dosages that take into account imputation uncertainty based on the Beagle AP field, and normalize dosages to between 0 and 2. Note this option requires that you had set :code:`ap=true` during the Beagle step above.
+* :code:`--out` is a prefix to name the output files
+* :code:`--outtype pgen vcf` tells annotaTR to output both PGEN and VCF files with the dosage information.
+* :code:`--vcf-outtype z` tells it to output the VCF in bgzipped format.
+
+This command will output the following files::
+
+	merged_${chrom}_TRs_annotated.vcf
+	merged_${chrom}_TRs_annotated.psam
+	merged_${chrom}_TRs_annotated.pgen
+	merged_${chrom}_TRs_annotated.pvar
+
+See the `annotaTR documentation page <https://github.com/gymrek-lab/TRTools/tree/master/trtools/annotaTR>`_ for full details for each option.
 
 .. _step3:
 
 Step 3: Running GWAS with TR genotypes
 --------------------------------------
 
-TODO
+Now that we have imputed TRs, we are finally ready to perform GWAS! There are two ways to do this. You can use the VCF file as input to `associaTR <https://trtools.readthedocs.io/en/stable/source/associaTR.html>`_ which is part of TRTools. Alternatively, you can use the PGEN files directly as input to `plink2 <https://www.cog-genomics.org/plink/2.0/>`_. For linear association testing, these tools should give identical results. The advantages of using plink2 over associated are that: (1) plink2 is faster, (2) you have access to a rich set of plink options, including logistic regression, filtering samples, calculating LD, etc. that are not all available in associaTR currently, and (3) you can process SNPs and TRs all in one place. Therefore, our example below performs GWAS using plink2 on the PGEN files::
+
+	plink2 --pfile merged_${chrom}_TRs_annotated \
+       --pheno phenotypes.txt \
+       --glm hide-covar \
+       --covar covars.txt \
+       --covar-variance-standardize \
+       --out merged_${chrom}_TRs_gwas
+
+Where the options to :code:`--pheno` and :code:`--covar` should be formatted according to the plink documentation.
+
+This should output a file with GWAS summary statistics for each TR tested that can be used for downstream analysis.
 
 .. _callers: https://trtools.readthedocs.io/en/stable/CALLERS.html
