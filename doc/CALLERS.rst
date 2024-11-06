@@ -1,7 +1,9 @@
+.. _CALLERS:
+
 Supported TR Genotypers
 =======================
 
-TRTools currently supports 5 tandem repeat genotypers. It also supports the Beagle imputation software (see :ref:`below <Beagle_section>`).
+TRTools currently supports 6 tandem repeat genotypers. It also supports the Beagle imputation software (see :ref:`below <Beagle_section>`).
 We summarize them in the first table and provide some basic parameters of their functionality in the second.
 For more information on a genotyper, please see its website linked below.
 
@@ -37,6 +39,9 @@ For more information on a genotyper, please see its website linked below.
 |    PopSTR_ (v2.0)          | Designed for genome-wide genotyping  |
 |                            | of short or expanded TRs.            |
 +----------------------------+--------------------------------------+
+|    LongTR_ (v1.0)          | Designed for genome-wide genotyping  |
+|                            | of STRs and VNTRs from long reads.   |
++----------------------------+--------------------------------------+
 
 |
 
@@ -56,6 +61,8 @@ For more information on a genotyper, please see its website linked below.
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
 |    PopSTR_ (v2.0)          | 1-6bp                    | Yes                        | Length                 | 540,1401 (hg38)          | Illumina                | Many                   |
 +----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
+|    LongTR_ (v1.0)          | 1+bp                     | No                         | Length, sequence       | No ref provided          | PacBio HiFi, ONT        | Many                   |
++----------------------------+--------------------------+----------------------------+------------------------+--------------------------+-------------------------+------------------------+
 
 Since each of these tools take as input a list of TRs to genotype, they could also be used on custom panels of TR loci.
 Tool information and reference panel numbers shown above are based on downloads from the github repository of each tool as of July 2, 2020.
@@ -67,11 +74,12 @@ see :ref:`Contributing` for more information.
 ..
     please ensure this list of links remains the same as the one in the main README
 
-.. _AdVNTR: https://advntr.readthedocs.io/en/latest/
+.. _AdVNTR: https://advntr.readthedocs.io
 .. _ExpansionHunter: https://github.com/Illumina/ExpansionHunter
 .. _GangSTR: https://github.com/gymreklab/gangstr
 .. _HipSTR: https://hipstr-tool.github.io/HipSTR/
 .. _PopSTR: https://github.com/DecodeGenetics/popSTR
+.. _LongTR: https://github.com/gymrek-lab/longtr
 
 .. _Beagle_section:
 

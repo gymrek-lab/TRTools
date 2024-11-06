@@ -39,10 +39,10 @@ def _make_format_list(fmt):
 def assert_same_vcf(fname1, fname2, info_ignore = set(),
                      format_ignore = set(),
                      max_lines_to_compare = np.inf):
+    print(fname1, fname2)
     open_fn = open
     if fname1[-3:] == '.gz':
         open_fn = gzip.open
-    print(fname1, fname2)
     headers1 = set()
     headers2 = set()
     lines_processed = 0

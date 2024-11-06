@@ -29,7 +29,7 @@ See a description of output files below.
 Other general parameters:
 
 * :code:`--vcftype <string>`: Which genotyping tool generated the input VCF. Default = :code:`auto`.
-  Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+  Necessary if it cannot be automatically inferred. One of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`longtr`, :code:`eh`, :code:`popstr`.
 * :code:`--zip` to output a bgzipped filtered VCF (:code:`$out.vcf.gz`) and tabix index (:code:`$out.vcf.gz.tbi`) instead of :code:`$out.vcf`.
 * :code:`--num-records <int>`: only process this many records from the input VCF file
 
@@ -60,10 +60,10 @@ These filters are not specific to any tool and can be applied to any VCF file:
 where p_i is the frequency of allele i
 
 * :code:`--max-locus-het <float>`: Filters loci with high heterozygosity
-* :code:`--use-length`: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR, which reports sequence level differences in TR alleles)
+* :code:`--use-length`: Use allele lengths, rather than sequences, to compute heterozygosity and HWE (only relevant for HipSTR and LongTR, which report sequence level differences in TR alleles)
 * :code:`--filter-regions <BEDFILE[,BEDFILE12,...]>`: Filter TRs overlapping the specified set of regions. Must be used with :code:`--filter-regions-names`. Can supply a comma-separated list to each to apply multiple region filters. Bed files must be sorted and tabix-indexed. Note that regions are 0-based and inclusive of the start position, but exclusive of the end position.
 * :code:`--filter-regions-names <string[,string2,...]>`: Filter names for each BED file specified in :code:`--filter-regions`.
-* :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR VCF files otherwise ignored. Filters pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
+* :code:`--filter-hrun`: Filter repeats with long homopolymer runs. Only used for HipSTR or LongTR VCF files otherwise ignored. Filters pentanucleotides with homopolymer runs of 5bp or longer, or hexanucleotides with homopolymer runs of 6bp or longer.
 * :code:`--drop-filtered`: Do not output loci that were filtered, or loci with no calls remaining after filtering.
 
 TRs passing all locus-level filters will be marked as "PASS" in the FILTER field.
@@ -133,6 +133,14 @@ HipSTR call-level filters
 * :code:`--hipstr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
 * :code:`--hipstr-min-call-Q <float>`: Minimum call quality score. Based on Q field.
 
+LongTR call-level filters
+**************************
+* :code:`--longtr-max-call-flank-indel <float>`: Maximum call flank indel rate. Computed as DFLANKINDEL/DP
+* :code:`--longtr-min-supp-reads <int>`: Minimum supporting reads for each allele. Based on ALLREADS and GB fields
+* :code:`--longtr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
+* :code:`--longtr-max-call-DP <int>`: Maximum call coverage. Based on DP field.
+* :code:`--longtr-min-call-Q <float>`: Minimum call quality score. Based on Q field.
+
 PopSTR call-level filters
 **************************
 * :code:`--popstr-min-call-DP <int>`: Minimum call coverage. Based on DP field.
@@ -169,4 +177,7 @@ Below are :code:`dumpSTR` examples using VCFs from supported TR genotypers. Data
 
   # PopSTR
   dumpSTR --vcf trio_chr21_popstr.sorted.vcf.gz --out test_dumpstr_popstr --min-locus-callrate 0.9 --popstr-min-call-DP 10 --num-records 100
+
+  # LongTR
+  dumpSTR --vcf longtr_testfile.vcf.gz --vcftype longtr --out test_dumpstr_longtr --min-locus-callrate 0.9 --longtr-min-call-Q 0.9
 

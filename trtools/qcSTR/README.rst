@@ -24,7 +24,7 @@ Required Parameters:
 
 General Optional Parameters:
 
-* :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`eh`, :code:`popstr`.
+* :code:`--vcftype <string>`: Type of the input VCF file. Causes qcSTR to fail out if the file is any other type of VCF. Default = :code:`auto`. Must be one of: :code:`gangstr`, :code:`advntr`, :code:`hipstr`, :code:`longtr`, :code:`eh`, :code:`popstr`.
 * :code:`--samples <string>`: File containing list of samples to include. If not specified, all samples are used.
   Samples in the list that are not included in the input vcf or
   are misspelled are silently ignored.
@@ -68,7 +68,7 @@ metrics. Alternatively, you may specify the type(s) of quality plot(s) you wish 
 the :code:`--quality` option. In that case you will get a file named
 :code:`<outprefix>-quality-<type>.pdf` for each type of plot you requested. Quality plot
 examples are shown below. To learn more about how qcSTR infers quality scores for VCFs from
-different genotypers, see `here <https://trtools.readthedocs.io/en/stable/LIBRARY_SPEC.html>`_
+different genotypers, see :doc:`here </LIBRARY_SPEC>`
 
 Note: quality score plots are useful when considered in the context of a single genotyper run,
 and can also be used to compare different invocations of the same genotyper. However,

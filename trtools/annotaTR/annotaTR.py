@@ -25,6 +25,7 @@ DUMMY_FILTER = "."
 # Info fields copied from reference panel for each tool
 INFOFIELDS = {
     trh.VcfTypes.hipstr: ["START","END","PERIOD"],
+    trh.VcfTypes.longtr: ["START","END","PERIOD"],
     trh.VcfTypes.advntr: ["RU", "VID"],
     trh.VcfTypes.gangstr: ["RU"],
     trh.VcfTypes.eh: ["RU","VARID","RL"]
@@ -44,6 +45,50 @@ class RefMatchTypes(enum.Enum):
     trimmedalleles = "trimmedalleles"
     def __repr__(self):
         return '<{}.{}>'.format(self.__class__.__name__, self.name)
+
+def CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt):
+    """
+    Check if the REF and ALT alleles of the record and
+    reference panel are compatible.
+
+    In the case of running imputation with Beagle followed by
+    bcftools merge, allele order is maintained but sequences
+    themselves may be trimmed by bcftools. This causes problems
+    when harmonizing HipSTR records, since the START/END coords
+    are not updated accordingly. Using annotaTR option --update-ref-alt
+    can restore the original allele sequences from the refpanel.
+    This function provides basic checks to make sure the ref/alts
+    of the panel and target VCF are compatible. In particular:
+    - is the number of ALT alleles the same
+    - are all alleles offset by the same number of bp
+    - are all the ALTs in the target VCF substrings of the refpanel ALTS.
+    If any of these fail then the alleles are deemed incompatible.
+
+    Parameters
+    ----------
+    record_ref : str
+       REF allele of the target VCF
+    record_alt : list of str
+       ALT alleles of the target VCF
+    panel_ref : str
+       REF allele of the ref panel
+    panel_alt : list of str
+       ALT alleles of the ref panel
+
+    Returns
+    -------
+    is_compatible : bool
+       True if all checks pass, otherwise False
+    """
+    if len(record_alt) != len(panel_alt):
+        return False
+    len_offset = len(panel_ref)-len(record_ref)
+    for i in range(len(panel_alt)):
+        if (len(panel_alt[i])-len(record_alt[i])) != len_offset:
+            return False
+        if record_alt[i].upper() not in panel_alt[i].upper():
+            return False
+    return True
 
 def UpdateVCFHeader(reader, command, vcftype, dosage_type=None, refreader=None):
     """
@@ -246,6 +291,7 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         The key depends on the match_on parameter (see above)
         Values is a Dict[str, str] with key=infofield and
         value=value of that info field in the reference panel
+        Also includes REF/ALT to check against alleles in imputed VCF
     variant_ct : int
         Total number of variants
 
@@ -277,6 +323,8 @@ def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
                 raise ValueError(
                     "Error: duplicate locus detected in refpanel: {locus}".format(locus=locuskey)
                     )
+        locdata["REF"] = record.REF
+        locdata["ALT"] = record.ALT
         metadata[locuskey] = locdata
         variant_ct += 1
     return metadata, variant_ct
@@ -364,12 +412,21 @@ def getargs(): # pragma: no cover
     inout_group.add_argument("--out", help="Prefix for output files", type=str, required=True)
     inout_group.add_argument("--outtype", help="Options=%s"%[str(item) for item in OutputFileTypes.__members__],
         type=str, nargs="+", default=["vcf"])
+    inout_group.add_argument("--vcf-outtype", help="Type of VCF output to produce. "
+                             "z=compressed VCF, v=uncompressed VCF, "
+                             "b=compressed BCF, u=uncompressed BCF, s=stdout", type=str, default="v")
+    inout_group.add_argument("--region", help="Restrict analysis to this region. Syntax: chr:start-end", type=str)
     annot_group = parser.add_argument_group("Annotations")
     annot_group.add_argument(
         "--dosages", 
         help="Compute genotype dosages. " 
              "Optionally specify how. Options=%s"%[str(item) for item in trh.TRDosageTypes.__members__],
         type=str)
+    annot_group.add_argument(
+        "--warn-on-AP-error",
+        help="Output a warning but don't crash on error computing on AP field",
+        action="store_true"
+    )
     annot_group.add_argument(
         "--ref-panel", 
         help="Annotate Beagle-imputed VCF with TR metadata from the reference panel. "
@@ -387,6 +444,12 @@ def getargs(): # pragma: no cover
         help="Output a warning but do not crash if duplicate loci in refpanel",
         action="store_true"
         )
+    annot_group.add_argument("--update-ref-alt", help="Update the REF/ALT allele sequences from the "
+                                                      "reference panel. Fixes issue with alleles being "
+                                                      "chopped after bcftools merge. Use with caution "
+                                                      "as this assumes allele order is exactly the same "
+                                                      "between the refpanel and target VCF. Only works when "
+                                                      "matching on locus id", action="store_true")
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "--chunk-size",
@@ -416,6 +479,14 @@ def main(args):
     if args.ref_panel is not None and not os.path.exists(args.ref_panel):
         common.WARNING("Error: %s does not exist"%args.ref_panel)
         return 1
+    if args.match_refpanel_on != "locid" and args.update_ref_alt:
+        common.WARNING("Error: you cannot use --update-ref-alt unless "
+                       " --match-refpanel-on is set to locid")
+        return 1
+    if args.update_ref_alt and args.ref_panel is None:
+        common.WARNING("Error: --update-ref-alt only works with "
+                       " --ref-panel.")
+        return 1
 
     outtypes = set()
     for outtype in args.outtype:
@@ -425,6 +496,9 @@ def main(args):
         except KeyError:
             common.WARNING("Invalid output type")
             return 1
+    if args.vcf_outtype not in ["z","v","u","b","s"]:
+        common.WARNING("Invalid VCF output type specified: {vcf_outtype}".format(vcf_outtype=args.vcf_outtype))
+        return 1
     if args.vcftype != 'auto':
         if args.vcftype not in trh.VcfTypes.__members__:
             common.WARNING("Invalid vcftype")
@@ -466,6 +540,8 @@ def main(args):
             common.WARNING("Error: reference panel annotation not "
                            "currently supported for popSTR")
             return 1
+        if args.region is not None:
+            refreader = refreader(args.region)
         try:
             match_on = RefMatchTypes[args.match_refpanel_on]
         except KeyError:
@@ -474,7 +550,9 @@ def main(args):
         refpanel_metadata, ref_variant_ct = LoadMetadataFromRefPanel(refreader, refpanel_vcftype, 
             match_on=match_on, ignore_duplicates=args.ignore_duplicates)
         if len(refpanel_metadata.keys()) == 0:
-            common.WARNING("Error: No TRs detected in reference panel. Was the right vcftype specified? Quitting")
+            common.WARNING("Error: No TRs detected in reference panel. Check: "
+                           "Was the right vcftype specified? "
+                           "Was an invalid region specified? Quitting")
             return 1
         common.MSG("Loaded " + str(ref_variant_ct) + " TR loci from ref panel",
             debug=True)
@@ -502,13 +580,29 @@ def main(args):
     # Update reader header, even if not writing VCF output
     # This is because we might add VCF fields for parsing
     # with TRHarmonizer along the way
+    # Note need to set up new refreader in case we set the region 
+    # above in which case refreader is an iterator
+    tmp_refreader = None
+    if args.ref_panel is not None:
+        tmp_refreader = utils.LoadSingleReader(args.ref_panel, lazy=True, samples=set())
     if not UpdateVCFHeader(reader, " ".join(sys.argv), vcftype,
-                        dosage_type=dosage_type, refreader=refreader):
+                        dosage_type=dosage_type, 
+                        refreader=tmp_refreader):
         common.WARNING("Error: problem initializing vcf header.")
         return 1
     if OutputFileTypes.vcf in outtypes:
-        vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
-
+        if args.vcf_outtype == "v":
+            vcf_writer = cyvcf2.Writer(args.out+".vcf", reader)
+        elif args.vcf_outtype == "z":
+            vcf_writer = cyvcf2.Writer(args.out+".vcf.gz", reader, mode="wz")
+        elif args.vcf_outtype == "b":
+            vcf_writer = cyvcf2.Writer(args.out+".bcf", reader, mode="wb")
+        elif args.vcf_outtype == "u":
+            vcf_writer = cyvcf2.Writer(args.out+".bcf", reader, mode="wbu")
+        elif args.vcf_outtype == "s":
+            vcf_writer = cyvcf2.Writer("-", reader)
+        else:
+            raise ValueError("Encountered invalid VCF output type")
     # variant_ct needed for pgen
     # If using a ref panel, assume we have same number
     # of TRs as the panel
@@ -523,7 +617,10 @@ def main(args):
     ###### Process each record #######
     num_variants_processed_batch = 0
     num_variants_processed = 0
-    dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
+    num_samples = len(reader.samples)
+    dosages_batch = np.empty((args.chunk_size, num_samples), dtype=np.float32)
+    if args.region:
+        reader = reader(args.region)
     for record in reader:
         # If using refpanel, first add required fields
         # In that case, only process records in the refpanel
@@ -545,6 +642,16 @@ def main(args):
                 continue
             for infofield in INFOFIELDS[vcftype]:
                 record.INFO[infofield] = refpanel_metadata[locuskey][infofield]
+            if args.update_ref_alt:
+                # Update allele sequences to be exactly as in the
+                # reference panel. 
+                if not CheckAlleleCompatibility(record.REF, record.ALT,
+                    refpanel_metadata[locuskey]["REF"], refpanel_metadata[locuskey]["ALT"]):
+                    raise ValueError("--update-ref-alt set but the REF/ALT fields"
+                                     " at {chrom}:{pos} are incompatible between the"
+                                     " refpanel and target VCF".format(chrom=record.CHROM, pos=record.POS))
+                record.REF = refpanel_metadata[locuskey]["REF"]
+                record.ALT = refpanel_metadata[locuskey]["ALT"]
         try:
             trrecord = trh.HarmonizeRecord(vcfrecord=record, vcftype=vcftype)
         except:
@@ -554,8 +661,16 @@ def main(args):
             return 1
         minlen = trrecord.min_allele_length
         maxlen = trrecord.max_allele_length
+        # Add this check to warn us when bad things happen when parsing alleles
+        if minlen == maxlen and len(trrecord.ref_allele) < 5:
+            common.WARNING("Warning: Suspicious allele lengths found at "
+                "{chrom}:{pos}. If you imputed then used bcftools merge "
+                "and alleles were trimmed, consider using option "
+                "--update-ref-alt. Otherwise dosage values may be invalid. "
+                "Parsed alleles: ref={ref}, alt={alt}".format(chrom=record.CHROM, pos=record.POS, \
+                    ref=trrecord.ref_allele, alt=",".join(trrecord.alt_alleles)))
         if dosage_type is not None:
-            dosages = trrecord.GetDosages(dosage_type)
+            dosages = trrecord.GetDosages(dosage_type, strict=(not args.warn_on_AP_error))
             # Update record
             record.INFO["DSLEN"] = "{minlen},{maxlen}".format(minlen=minlen, maxlen=maxlen)
             record.set_format("TRDS", np.array(dosages))
@@ -581,7 +696,7 @@ def main(args):
             if OutputFileTypes.pgen in outtypes:
                 pgen_writer.append_dosages_batch(dosages_batch[:num_variants_processed_batch])
             # Reset
-            dosages_batch = np.empty((args.chunk_size, len(reader.samples)), dtype=np.float32)
+            dosages_batch = np.empty((args.chunk_size, num_samples), dtype=np.float32)
             num_variants_processed_batch = 0
 
     ###### Cleanup #######
