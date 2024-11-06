@@ -33,6 +33,10 @@ INFOFIELDS = {
                           ("AN", False), ("REFAC", False), ("AC", False), ("NSKIP", False), \
                           ("NFILT", False), ("DP", False), ("DSNP", False), ("DSTUTTER", False), \
                           ("DFLANKINDEL", False)],
+    trh.VcfTypes.longtr: [("BPDIFFS", False), ("START", True), ("END", True), ("PERIOD", True), \
+                          ("AN", False), ("REFAC", False), ("AC", False), ("NSKIP", False), \
+                          ("NFILT", False), ("DP", False), ("DSNP", False), \
+                          ("DFLANKINDEL", False)],
     trh.VcfTypes.eh: [("END", True), ("REF", True), ("REPID", True), ("RL", True), \
                       ("RU", True), ("SVTYPE", False), ("VARID", True)],
     trh.VcfTypes.popstr: [("Motif", True)],  # TODO ("RefLen", True) omitted. since it is marked as "A" incorrectly
@@ -45,6 +49,8 @@ INFOFIELDS = {
 FORMATFIELDS = {
     trh.VcfTypes.gangstr: ["DP", "Q", "REPCN", "REPCI", "RC", "ENCLREADS", "FLNKREADS", "ML", "INS", "STDERR", "QEXP"],
     trh.VcfTypes.hipstr: ["GB", "Q", "PQ", "DP", "DSNP", "PSNP", "PDP", "GLDIFF", "DSTUTTER", "DFLANKINDEL", "AB", "FS",
+                          "DAB", "ALLREADS", "MALLREADS"],
+    trh.VcfTypes.longtr: ["GB", "Q", "PQ", "DP", "DSNP", "PSNP", "PDP", "GLDIFF", "DFLANKINDEL", "AB", "FS",
                           "DAB", "ALLREADS", "MALLREADS"],
     trh.VcfTypes.eh: ["ADFL", "ADIR", "ADSP", "LC", "REPCI", "REPCN", "SO"],
     trh.VcfTypes.popstr: ["AD", "DP", "PL"],

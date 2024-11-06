@@ -1,9 +1,9 @@
-import argparse
-import cyvcf2
-import gzip
 import os
+import argparse
 
 import pytest
+import numpy as np
+from pgenlib import PgenReader
 
 from ..annotaTR import *
 from trtools.testsupport.utils import assert_same_vcf
@@ -17,7 +17,10 @@ def args(tmpdir):
     args = argparse.ArgumentParser()
     args.vcf = None
     args.vcftype = "auto"
+    args.vcf_outtype = "v"
+    args.region = None
     args.out = str(tmpdir / "test")
+    args.update_ref_alt = False
     args.outtype = ["vcf"]
     args.dosages = None
     args.ref_panel = None
@@ -25,6 +28,7 @@ def args(tmpdir):
     args.ignore_duplicates = False
     args.debug = False
     args.chunk_size = 1000
+    args.warn_on_AP_error = False
     return args
 
 @pytest.fixture
@@ -85,6 +89,36 @@ def test_OutTypes(args, vcfdir):
     args.outtype = ["pgen"]
     retcode = main(args)
     assert retcode==0
+    args.vcf_outtype = "z"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "s"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "b"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "u"
+    retcode = main(args)
+    assert retcode==0
+    args.vcf_outtype = "l"
+    retcode = main(args)
+    assert retcode==1
+    # set back
+    args.vcf_outtype = "v"
+    # Should get pgen error if input VCF has fewer
+    # TRs than ref panel
+    args.vcf = os.path.join(vcfdir, "beagle", "beagle_imputed_noTRs.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_tinyrefpanel.vcf.gz")
+    args.match_refpanel_on = "locid"
+    args.dosages = "bestguess_norm"
+    args.outtype = ["pgen"]
+    args.out = "test"
+    retcode = main(args)
+    assert retcode==1
+    for fname_ext in ("pgen", "pvar", "psam"):
+        if os.path.exists("test."+fname_ext):
+            os.remove("test."+fname_ext)
     # Check the pvar file can be ready by cyvcf2?
     #pvarfile = args.out + ".pvar"
     #test_reader = cyvcf2.VCF(pvarfile)
@@ -108,6 +142,39 @@ def test_VCFType(args, vcfdir):
     retcode = main(args)
     assert retcode==0
 
+def test_UpdateRefAlt(args, vcfdir):
+    fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "hipstr"
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel.vcf.gz")
+    args.dosages = "beagleap"
+    args.update_ref_alt = True
+    # Won't work if matching on anything besides locid
+    args.match_refpanel_on = "rawalleles"
+    retcode = main(args)
+    assert retcode==1
+    # Won't work with no ref panel
+    args.match_refpanel_on = "locid"
+    args.ref_panel = None
+    retcode = main(args)
+    assert retcode==1
+
+    # Try on good file with alleles that do match refpanel
+    args.match_refpanel_on = "locid"
+    fname = os.path.join(vcfdir, "beagle", "beagle_imputed_goodalleles.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_tinyrefpanel.vcf.gz")
+    args.vcf = fname
+    retcode = main(args)
+    assert retcode==0
+
+    # Try on dummy file with bad alleles that don't match refpanel
+    fname = os.path.join(vcfdir, "beagle", "beagle_imputed_badalleles.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_tinyrefpanel.vcf.gz")
+    args.vcf = fname
+    with pytest.raises(ValueError):
+        main(args)
+
+
 def test_DosageType(args, vcfdir):
     # Non-beagle VCF
     fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
@@ -125,6 +192,17 @@ def test_DosageType(args, vcfdir):
     args.dosages = "beagleap_norm"
     retcode = main(args)
     assert retcode==1
+    fname = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "hipstr"
+    args.ref_panel = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz")
+    args.warn_on_AP_error = True # should't fail with missing AP
+    args.outtype = ["pgen","vcf"]
+    retcode = main(args)
+    assert retcode==0
+    args.warn_on_AP_error = False # set back
+    with pytest.raises(ValueError):
+        main(args)
     # Beagle VCF
     fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
     args.vcf = fname
@@ -146,12 +224,51 @@ def test_DosageType(args, vcfdir):
     args.dosages = "beagleap_norm"
     retcode = main(args)
     assert retcode==0
+
+def test_LoadRegion(args, vcfdir):
+    # Test good region
+    fname = os.path.join(vcfdir, "dumpSTR_vcfs", "trio_chr21_gangstr.sorted.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "gangstr"
+    args.dosages = "bestguess"
+    args.region = "chr21:9489666-9546720"
+    retcode = main(args)
+    assert retcode==0
     
-def test_LoadRefpanel(args, vcfdir):
+    # Test region with refpanel
     fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
     args.vcf = fname
     args.vcftype = "gangstr"
     args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel.vcf.gz")
+    retcode = main(args)
+    args.region = "chr21:14282813-14303433"
+    retcode = main(args)
+    assert retcode==0
+
+    # Region not in ref panel
+    # Fails because we find no TRs
+    args.region = "chr19:14282813-14303433"
+    retcode = main(args)
+    assert retcode==1
+
+    # Malformatted region
+    # Fails because we find no TRs
+    args.region = "XXXXX"
+    retcode = main(args)
+    assert retcode==1
+
+    # Note, cyvcf2 doesn't complain about malformatted regions
+    # and just will not return any intervals
+    # TODO: We might want to check regions here and in other tools
+    # like statstr and prancstr where users can set a region
+
+def test_LoadRefpanel(args, vcfdir):
+    fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "hipstr"
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel.vcf.gz")
+    args.match_refpanel_on = "rawalleles"    
+    args.debug = True
     retcode = main(args)
     assert retcode == 0
     args.vcftype = "auto"
@@ -163,7 +280,29 @@ def test_LoadRefpanel(args, vcfdir):
     args.match_refpanel_on = "locid"
     with pytest.raises(ValueError):
         main(args)
+    # Test on example where locid should work
+    args.vcf = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_second_50_STRs_imputed.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "1kg_snpstr_21_first_100k_first_50_annotated.vcf.gz")
+    args.match_refpanel_on = "locid"
+    args.vcftype = "hipstr"
+    retcode = main(args)
+    assert retcode == 0
+    # Invalid match option
+    args.match_refpanel_on = "badoption"
+    with pytest.raises(ValueError):
+        GetLocusKey(None, match_on="bad match") 
+    retcode = main(args)
+    assert retcode == 1
     args.match_refpanel_on = "rawalleles" # set back for future tests
+    # Load mix of SNPs/TRs but no ref panel
+    fname = os.path.join(vcfdir, "beagle", "beagle_imputed_withap.vcf.gz")
+    args.vcf = fname
+    args.vcftype = "hipstr"
+    args.dosages = "bestguess"
+    args.ref_panel = None
+    args.debug = False
+    retcode = main(args)
+    assert retcode == 1
     # Bad refpanel
     args.ref_panel = os.path.join(vcfdir, "missing_samples.txt")
     retcode = main(args)
@@ -225,6 +364,60 @@ def test_TrimAlleles():
     assert(new_ref == "TAAA")
     assert(new_alt[0] == ".")
 
+def test_CheckAlleleCompatibility():
+    # Alleles identical
+    panel_ref = "AAT"
+    panel_alt = ["AATAAT","AATAATAAT"]
+    record_ref = "AAT"
+    record_alt = ["AATAAT","AATAATAAT"]
+    assert CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    # Alleles in target subset of those in panel
+    panel_ref = "AATAAT"
+    panel_alt = ["AATAATAAT","AATAATAATAAT"]
+    record_ref = "AAT"
+    record_alt = ["AATAAT","AATAATAAT"]
+    assert CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    panel_ref = "AATAAG"
+    panel_alt = ["AATAATAAG","AATAATAATAAG"]
+    record_ref = "AAG"
+    record_alt = ["AATAAG","AATAATAAG"]
+    assert CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    panel_ref = "AAGAAT"
+    panel_alt = ["AAGAATAAT","AATAATAATAAT"]
+    record_ref = "AAG"
+    record_alt = ["AAGAAT","AATAATAAT"]
+    assert CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    # Different numbers of alleles
+    panel_ref = "AAGAAT"
+    panel_alt = ["AAGAATAAT"]
+    record_ref = "AAG"
+    record_alt = ["AAGAAT","AATAATAAT"]
+    assert not CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    panel_ref = "AAGAAT"
+    panel_alt = ["AAGAATAAT","AATAATAATAAT"]
+    record_ref = "AAG"
+    record_alt = ["AAGAAT"]
+    assert not CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    # Alleles in target not a subset of refpanel
+    panel_ref = "AATAAT"
+    panel_alt = ["AATAAGAAT","AATAATAATAAT"]
+    record_ref = "AAT"
+    record_alt = ["AATAAT","AATAATAAT"]
+    assert not CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
+    # Offsets not the same
+    panel_ref = "AATAAT"
+    panel_alt = ["AATAATAAT","AATAATAATAATAAT"]
+    record_ref = "AAT"
+    record_alt = ["AATAAT","AATAATAAT"]
+    assert not CheckAlleleCompatibility(record_ref, record_alt, panel_ref, panel_alt)
+
 """
 These tests run annotaTR and compare its output
 to output that has been generated by a previous version of
@@ -237,7 +430,7 @@ However, the presence of these tests is important because
 it should prevent any unexpected changes in output.
 If you've reviewed the change in output and find it acceptable,
 use trtools/testsupport/sample_vcfs/annotaTR_vcfs/create_test_files.sh
-to regenerate the test files with the new version of mergeSTR.
+to regenerate the test files with the new version of annotaTR.
 """
 
 def test_OutputFilesSame(args, vcfdir, antrvcfdir):
@@ -271,3 +464,45 @@ def test_OutputFilesSame(args, vcfdir, antrvcfdir):
     args.match_refpanel_on = "trimmedalleles"
     assert main(args) == 0
     assert_same_vcf(args.out + ".vcf", antrvcfdir + "/beagleap_trimmed.vcf", max_lines_to_compare=200)
+
+def test_PGENOutputSame(args, vcfdir):
+    # what are the expected dosages? shape: num_variants x num_samples
+    exp_dosages = np.array([
+        [-9, -9, -9],
+        [1.333313, 1.333313, 1],
+        [0, 0, 0],
+        [1.5, 1.5, 1.5],
+        [1.083313, 1, 0.916687],
+        [1.25, 1.5, 1],
+        [1.5, 1.5, 1.375],
+        [1, 1.333313, 1.333313],
+        [1.2000122, 1.2000122, 1.4000244],
+        [2, 2, 2],
+        [0.75, 1, 1.25],
+        [1, 1, 1],
+        [2, 2, 2],
+        [0.875, 1.15625, 1.2625122],
+        [0.833313, 1.166687, 0.666687],
+        [0.7999878, 0.5999756, 0.7999878],
+        [1, 1, 1],
+        [2, 1, 2],
+    ], dtype=np.float32)
+
+    args.vcf = os.path.join(vcfdir, "beagle", "beagle_badap.vcf.gz")
+    args.ref_panel = os.path.join(vcfdir, "beagle", "beagle_refpanel.vcf.gz")
+    args.vcftype = "hipstr"
+    args.dosages = "beagleap_norm"
+    args.match_refpanel_on = "rawalleles"
+    args.outtype = ["pgen"]
+    args.warn_on_AP_error = True
+    assert main(args) == 0
+    pgen = PgenReader(bytes(args.out + ".pgen", "utf8"))
+    num_vars = pgen.get_variant_ct()
+    dosages = np.empty((num_vars, pgen.get_raw_sample_ct()), dtype=np.float32)
+    pgen.read_dosages_list(np.arange(num_vars, dtype=np.uint32), dosages)
+    np.testing.assert_allclose(dosages, exp_dosages)
+
+    for fname_ext in ("pgen", "pvar", "psam"):
+        if os.path.exists("test."+fname_ext):
+            os.remove("test."+fname_ext)
+    

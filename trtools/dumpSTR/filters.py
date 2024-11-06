@@ -191,8 +191,8 @@ class Filter_LocusHrun(FilterBase):
     """
     Class to filter VCF records for penta- or hexanucleotide STRs with long homopolymer runs
 
-    This only works on HipSTR VCFs. STRs with long homopolymer runs have been
-    shown to be difficult for HipSTR to call.
+    This only works on HipSTR or LongTR VCFs. STRs with long homopolymer runs have been
+    shown to be difficult for HipSTR to call and may be challenging with LongTR.
     This filter removes 5-mers with homopolymer runs >= len 5
     and 6-mers with homopolymer runs >= len 6
     """
@@ -414,6 +414,7 @@ class CallFilterMaxValue(Reason):
 
 class HipSTRCallFlankIndels(Reason):
     """Filter HipSTR calls with many indels in flanks
+    This filter may also be used on LongTR which has similar fields.
 
     Extends Reason class.
     Filters on the percentage of reads with indels in flanks.
@@ -423,6 +424,8 @@ class HipSTRCallFlankIndels(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have indels in their flanks
+    rename : str (optional)
+        Use a different name for this filter
 
     Attributes
     ----------
@@ -433,8 +436,10 @@ class HipSTRCallFlankIndels(Reason):
     name = "HipSTRCallFlankIndels"
     """The name of the filter"""
 
-    def __init__(self, threshold):
+    def __init__(self, threshold, rename=None):
         self.threshold = threshold
+        if rename is not None:
+            self.name = rename
         self.name += str(threshold)
     def __call__(self, record: trh.TRRecord):
         sample_filter = np.full((record.GetNumSamples()), np.nan)
@@ -454,6 +459,8 @@ class HipSTRCallStutter(Reason):
     ----------
     threshold : float
         Minimum percent of reads that can have stutter errors
+    rename : str (optional)
+        Use a different name for this filter
 
     Attributes
     ----------
@@ -464,8 +471,10 @@ class HipSTRCallStutter(Reason):
     name = "HipSTRCallStutter"
     """The name of the filter"""
 
-    def __init__(self, threshold):
+    def __init__(self, threshold, rename=None):
         self.threshold = threshold
+        if rename is not None:
+            self.name = rename
         self.name += str(threshold)
     def __call__(self, record: trh.TRRecord):
         sample_filter = np.full((record.GetNumSamples()), np.nan)
@@ -476,6 +485,7 @@ class HipSTRCallStutter(Reason):
 
 class HipSTRCallMinSuppReads(Reason):
     """Filter HipSTR calls for which alleles are supported by too few reads
+    This filter may also be used on LongTR which has similar fields.
 
     Extends Reason class.
     Filters on the number of reads supporting each called allele.
@@ -489,6 +499,8 @@ class HipSTRCallMinSuppReads(Reason):
     ----------
     threshold : int
         Minimum number of reads supporting each allele
+    rename : str (optional)
+        Use a different name for this filter
 
     Attributes
     ----------
@@ -499,8 +511,10 @@ class HipSTRCallMinSuppReads(Reason):
     name = "HipSTRMinSuppReads"
     """The name of the filter"""
 
-    def __init__(self, threshold):
+    def __init__(self, threshold, rename=None):
         self.threshold = threshold
+        if rename is not None:
+            self.name = rename
         self.name += str(threshold)
     def __call__(self, record: trh.TRRecord):
         called_samples = record.GetCalledSamples()

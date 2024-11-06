@@ -25,6 +25,11 @@ def base_argparse(tmpdir):
     args.hipstr_max_call_flank_indel = None
     args.hipstr_max_call_stutter = None
     args.hipstr_min_supp_reads = None
+    args.longtr_min_call_DP = None
+    args.longtr_max_call_DP = None
+    args.longtr_min_call_Q = None
+    args.longtr_max_call_flank_indel = None
+    args.longtr_min_supp_reads = None
     args.gangstr_expansion_prob_het = None
     args.gangstr_expansion_prob_hom = None
     args.gangstr_expansion_prob_total = None
@@ -283,11 +288,20 @@ def test_HipstrMaxCallFlankIndel(tmpdir):
     call_filters = BuildCallFilters(args)
     assert len(call_filters) == 1
     out = call_filters[0](TestRec())
-    print(out)
     assert out[0] == pytest.approx(0.5)
     assert np.isnan(out[1])
     assert np.isnan(out[2]) # don't apply filter to nocalls
+    assert(call_filters[0].name == "HipSTRCallFlankIndels0.4")
 
+    # Make sure this also works for longtr
+    args = base_argparse(tmpdir)
+    args.vcftype = "longtr"
+    args.longtr_max_call_flank_indel = 0.4
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[0] == pytest.approx(0.5)
+    assert(call_filters[0].name == "LongTRCallFlankIndels0.4")
 
 def test_HipstrMaxCallStutter(tmpdir):
     class TestRec(DummyRecBase):
@@ -336,6 +350,15 @@ def test_HipstrMinSuppReads(tmpdir):
     assert out[6] == 0 # If ALLREADS is missing, filter
     assert np.isnan(out[7]) # don't apply filter to nocalls
     assert np.isnan(out[8]) # don't apply filter to nocalls
+    assert call_filters[0].name == "HipSTRMinSuppReads50"
+
+    args = base_argparse(tmpdir)
+    args.longtr_min_supp_reads = 50
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[1] == 23
+    assert call_filters[0].name == "LongTRMinSuppReads50"
 
 def test_HipstrMinSuppReads_no_called_samples_with_reads(tmpdir):
     class TestRec(DummyRecBase):
@@ -362,7 +385,7 @@ def test_HipstrMinSuppReads_no_called_samples_with_reads(tmpdir):
     assert np.all(out[[6,8]] == 0)
     assert np.all(np.isnan(out[[0,1,2,3,4,5,7]]))
 
-def test_HipstrDP(tmpdir):
+def test_HipstrLongtrDP(tmpdir):
     class TestRec(DummyRecBase):
         def __init__(self):
             super().__init__()
@@ -386,8 +409,25 @@ def test_HipstrDP(tmpdir):
     assert np.isnan(out[0])
     assert np.isnan(out[2]) # don't apply filter to nocalls
 
+    args = base_argparse(tmpdir)
+    args.longtr_min_call_DP = 15
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[0] == 10
+    assert np.isnan(out[1])
+    assert np.isnan(out[2]) # don't apply filter to nocalls
 
-def test_HipstrMinCallQ(tmpdir):
+    args = base_argparse(tmpdir)
+    args.longtr_max_call_DP = 15
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[1] == 20
+    assert np.isnan(out[0])
+    assert np.isnan(out[2]) # don't apply filter to nocalls
+
+def test_HipstrLongtrMinCallQ(tmpdir):
     class TestRec(DummyRecBase):
         def __init__(self):
             super().__init__()
@@ -395,6 +435,15 @@ def test_HipstrMinCallQ(tmpdir):
 
     args = base_argparse(tmpdir)
     args.hipstr_min_call_Q = 0.6
+    call_filters = BuildCallFilters(args)
+    assert len(call_filters) == 1
+    out = call_filters[0](TestRec())
+    assert out[0] == pytest.approx(0.5)
+    assert np.isnan(out[1])
+    assert np.isnan(out[2]) # don't apply filter to nocalls
+
+    args = base_argparse(tmpdir)
+    args.longtr_min_call_Q = 0.6
     call_filters = BuildCallFilters(args)
     assert len(call_filters) == 1
     out = call_filters[0](TestRec())

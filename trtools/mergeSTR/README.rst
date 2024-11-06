@@ -126,3 +126,8 @@ Below are :code:`mergeSTR` examples using VCFs from supported TR genotypers. Dat
   FILE2=NA12891_chr21_popstr.sorted.vcf.gz
   FILE3=NA12892_chr21_popstr.sorted.vcf.gz
   mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out test_merge_popstr --vcftype popstr # outputs test_merge_popstr.vcf
+
+  # LongTR
+  FILE1=HG002_htt_test.vcf.gz
+  FILE2=HG003_htt_test.vcf.gz
+  mergeSTR --vcfs ${FILE1},${FILE2} --out test_merge_longtr --vcftype longtr # outputs test_merge_longtr.vcf

@@ -97,6 +97,18 @@ def get_dummy_record_gts_allsamelen():
         alt=["CAGCAACAG"]
     )
 
+dummy_record_gts_monomorphic = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0]]
+def get_dummy_record_gts_monomorphic():
+    return DummyCyvcf2Record(
+        gts=dummy_record_gts_monomorphic,
+        ref="CAGCAGCAG",
+        alt=[]
+    )
+
 triploid_gts = np.array([
     [0, 0, -2],
     [0, 0, -2],
@@ -341,6 +353,17 @@ def test_TRRecord_GetGenotypes_Dosages():
     assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm) ==
         true_beagle_norm_dosages)
 
+    monomorphic_record = get_dummy_record_gts_monomorphic()
+    monomorphic_record.FORMAT["AP1"] = np.array([[]])
+    monomorphic_record.FORMAT["AP2"] = np.array([[]])
+    rec = trh.TRRecord(monomorphic_record, monomorphic_record.REF, [], "CAG", "", None)
+    true_bestguess_norm_dosages = np.array([0, 0, 0, 0], dtype=np.float32)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.bestguess_norm) ==
+        true_bestguess_norm_dosages)
+    true_beagleap_dosages = np.array([6, 6, 6, 6], dtype=np.float32)
+    assert np.all(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap) ==
+        true_beagleap_dosages)
+
     # Test regular diploid record - Example with bestguess same as AP-based dosage
     diploid_record = get_dummy_record_diploid()
     diploid_record.FORMAT["AP1"] = np.array([[0, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
@@ -366,9 +389,13 @@ def test_TRRecord_GetGenotypes_Dosages():
     diploid_record.FORMAT["AP1"] = np.array([[10, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    # If not in strict mode these should be nan
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
     diploid_record.FORMAT["AP1"] = np.array([[-0.5, 0.5], [1, 0], [1, 0], [1, 0], [0, 1], [0, 0]])
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
+    # If not in strict mode these should be nan
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
 
     # Test triploid example where alt=[]
     triploid_record = get_triploid_record()
@@ -398,7 +425,10 @@ def test_TRRecord_GetGenotypes_Dosages():
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap)
     with pytest.raises(ValueError):
         rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm)
-
+    # If not in strict mode, should instead return NA
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap, strict=False)).all()
+    assert np.isnan(rec.GetDosages(dosagetype=trh.TRDosageTypes.beagleap_norm, strict=False)).all()
+    
     # Test example with fewer alt_alleles than the max genotype index
     with pytest.raises(ValueError):
         trh.TRRecord(dummy_record, ref_allele, [], "CAG", "", None)
@@ -689,9 +719,10 @@ def test_GetCallRate():
 
 
 def reset_vcfs(vcfdir):
-    global gangstr_vcf, hipstr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
+    global gangstr_vcf, hipstr_vcf, longtr_vcf, popstr_vcf, advntr_vcf, eh_vcf, snps_vcf
     gangstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_gangstr.vcf"))
     hipstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_hipstr.vcf"))
+    longtr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_longtr.vcf"))
     popstr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_popstr.vcf"))
     advntr_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_advntr.vcf"))
     eh_vcf = cyvcf2.VCF(os.path.join(vcfdir, "test_ExpansionHunter.vcf"))
@@ -752,6 +783,19 @@ def test_trh_init_and_type_infer(vcfdir):
     assert (not hipstr_trh.HasLengthAltGenotypes()
             and not trh.HasLengthAltGenotypes(trh.VcfTypes.hipstr))
     assert not hipstr_trh.IsBeagleVCF()
+
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf, vcftype='longtr')
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    longtr_trh = trh.TRRecordHarmonizer(longtr_vcf,
+                                        vcftype=trh.VcfTypes.longtr)
+    assert longtr_trh.vcftype == trh.VcfTypes.longtr
+    assert (longtr_trh.MayHaveImpureRepeats()
+            and trh.MayHaveImpureRepeats(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthRefGenotype()
+            and not trh.HasLengthRefGenotype(trh.VcfTypes.longtr))
+    assert (not longtr_trh.HasLengthAltGenotypes()
+            and not trh.HasLengthAltGenotypes(trh.VcfTypes.longtr))
+    assert not longtr_trh.IsBeagleVCF()
 
     popstr_trh = trh.TRRecordHarmonizer(popstr_vcf, vcftype='popstr')
     assert popstr_trh.vcftype == trh.VcfTypes.popstr
@@ -865,6 +909,8 @@ def get_vcf(vcftype):
         return eh_vcf
     if vcftype == "snps":
         return snps_vcf
+    if vcftype == trh.VcfTypes.longtr:
+        return longtr_vcf
     raise ValueError("Unexpected vcftype")
         # TODO add Beagle
 
@@ -878,6 +924,11 @@ def test_wrong_vcftype(vcfdir):
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
                 continue
+            # HipSTR and LongTR will not make each other fail
+            # so skip that case
+            if (incorrect_type == trh.VcfTypes.hipstr and correct_type == trh.VcfTypes.longtr) or \
+                (incorrect_type == trh.VcfTypes.longtr and correct_type == trh.VcfTypes.hipstr):
+                continue
 
             invcf = get_vcf(incorrect_type)
             with pytest.raises(TypeError):
@@ -888,7 +939,11 @@ def test_wrong_vcftype(vcfdir):
             if incorrect_type == correct_type:
                 # make sure the incorrect_type is actually incorrect
                 continue
-
+            # HipSTR and LongTR will not make each other fail
+            # so skip that case
+            if (incorrect_type == trh.VcfTypes.hipstr and correct_type == trh.VcfTypes.longtr) or \
+                (incorrect_type == trh.VcfTypes.longtr and correct_type == trh.VcfTypes.hipstr):
+                continue
             invcf = get_vcf(incorrect_type)
             record = next(invcf)
             with pytest.raises(TypeError):
