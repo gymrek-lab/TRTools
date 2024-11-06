@@ -202,6 +202,8 @@ This command will output the following files::
 	merged_${chrom}_TRs_annotated.pgen
 	merged_${chrom}_TRs_annotated.pvar
 
+Note: if your TR genotypes are obtained directly from WGS and wihtout imputation, you can leave out the options :code:`--update-ref-alt` and :code:`--ref-panel` and should use :code:`--dosages bestguess_norm` since you will not have the Beagle AP field.
+
 See the `annotaTR documentation page <https://github.com/gymrek-lab/TRTools/tree/master/trtools/annotaTR>`_ for full details for each option.
 
 .. _step3:
