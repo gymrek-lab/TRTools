@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/gymrek-lab/TRTools/compare/v6.1.0...v6.2.0) (2024-11-08)
+
+
+### Features
+
+* add `--only-passing` option to statSTR ([#229](https://github.com/gymrek-lab/TRTools/issues/229)) ([51c0481](https://github.com/gymrek-lab/TRTools/commit/51c048191684342737edcc08e58f9d29806d563f))
+
 ## [6.1.0](https://github.com/gymrek-lab/TRTools/compare/v6.0.2...v6.1.0) (2024-11-06)
 
 
