@@ -1,5 +1,30 @@
 # Changelog
 
+## [6.1.0](https://github.com/gymrek-lab/TRTools/compare/v6.0.2...v6.1.0) (2024-11-06)
+
+
+### Features
+
+* Add longtr support ([#232](https://github.com/gymrek-lab/TRTools/issues/232)) ([93ff231](https://github.com/gymrek-lab/TRTools/commit/93ff231a74a8b0cd03ee957b8374abfc9451119d))
+* Add options to facilitate debugging annotaTR runs on large files ([#234](https://github.com/gymrek-lab/TRTools/issues/234)) ([0d5d96b](https://github.com/gymrek-lab/TRTools/commit/0d5d96b8699d043aa88dc62866ded0465e0ba713))
+* adding the annotaTR tool ([#226](https://github.com/gymrek-lab/TRTools/issues/226)) ([59dd532](https://github.com/gymrek-lab/TRTools/commit/59dd5323b6d58b38abe36836fbfe13f789ff4048))
+* support for Apple M1 silicon ([#227](https://github.com/gymrek-lab/TRTools/issues/227)) ([dfec9c2](https://github.com/gymrek-lab/TRTools/commit/dfec9c229955f2862fb796d3d3360d1044f9cdc8))
+
+
+### Bug Fixes
+
+* associatr test files overwritten during pytest ([#230](https://github.com/gymrek-lab/TRTools/issues/230)) ([2b955be](https://github.com/gymrek-lab/TRTools/commit/2b955bed4d7d81ad5ba25a392fdd81df90a534d9))
+* bug in beagle dosages with no alt alleles ([#231](https://github.com/gymrek-lab/TRTools/issues/231)) ([ae3ca15](https://github.com/gymrek-lab/TRTools/commit/ae3ca15e64617f8502cb56a71c839ef8a35f524e))
+* enable filter_hrun with beagle file in dumpSTR ([be63e79](https://github.com/gymrek-lab/TRTools/commit/be63e79bb6402276e82cd7aea85bb76942217f75))
+
+
+### Documentation
+
+* generate internal links dynamically ([#228](https://github.com/gymrek-lab/TRTools/issues/228)) ([9402042](https://github.com/gymrek-lab/TRTools/commit/94020423b8667caeb20ea2615008d7441dfe5ac4))
+* mention github codespaces and clarify dependency management ([#223](https://github.com/gymrek-lab/TRTools/issues/223)) ([45ccf28](https://github.com/gymrek-lab/TRTools/commit/45ccf28c306bcd98c6bc2b285d659571bf9afb6d))
+* update biorxiv citation for prancSTR ([#235](https://github.com/gymrek-lab/TRTools/issues/235)) ([1e45d23](https://github.com/gymrek-lab/TRTools/commit/1e45d233afbf23e8d738786546f7c89ab6fe6805))
+* warn about scipy deprecation in dumpSTR ([#221](https://github.com/gymrek-lab/TRTools/issues/221)) ([a1a3a39](https://github.com/gymrek-lab/TRTools/commit/a1a3a39b7b7fd2d2f694d3a41bfe7bcf72ff72c3))
+
 ## [6.0.2](https://github.com/gymrek-lab/TRTools/compare/v6.0.1...v6.0.2) (2024-06-24)
 
 

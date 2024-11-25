@@ -45,12 +45,12 @@ Other general parameters:
 * :code:`--region <string>`: Restrict to the region chr:start-end. VCF file must be bgzipped and indexed to use this option.
 * :code:`--samples <string>`: Restrict to the given list of samples. Samples are comma separated.
 * :code:`--vcftype <string>`: Specify the tool which generated the vcf call file for STRs. Currently this will fail if using anything other than :code:`hipstr` VCFs.
-* :code:`--only-passing`: Filters out the VCF records with non-passing FILTER column
-* :code:`--output-all`: Force tool to output results for all loci. Overrides :code:``--only-passing``.
+* :code:`--only-passing`: Filters out the VCF records with non-passing FILTER column.
+* :code:`--output-all`: Force tool to output results for all loci. Overrides :code:`--only-passing`.
 * :code:`--readfield <string>`: Specify which VCF format field output by HipSTR to utilize for extracting read information. We recommend setting this to "MALLREADS". "ALLREADS" is also accepted but we have found that it produces unreliable results.
 * :code:`--debug`: Print helpful debug messages.
 * :code:`--quiet`: Restrict printing of any messages.
-* :code:`--version`: Print the version of the tool
+* :code:`--version`: Print the version of the tool.
 
 Notes:
 
