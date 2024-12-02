@@ -104,6 +104,21 @@ In this command:
 
 The :code:`split` command above will result in files :code:`batch1_chr21.vcf.gz` and :code:`batch2_chr21.vcf.gz`.
 
+Note, the :code:`bcftools plugin split` function may not be available for some version of bcftools. If that is the case, can use following example command to split the files to batch::
+
+	# split samples by ${batch_size}
+	bcftools query -l full_vcf_chr${chrom}.vcf.gz |  awk -v chrom=chr${chrom} -v group_size=${batch_size} 'BEGIN {FS=OFS="\t"} {print $1,"batch"int(NR / group_size)+1"_"chrom}' > ${output_dir}/chr${chrom}/batch_files/
+	mkdir -p ${output_dir}/chr${chrom}/batch_files/
+	# creat batched sample_list files
+  	awk -v outdir="${output_dir}/chr${chrom}/batch_files/" 'BEGIN {FS=OFS="\t"} {print $1 > outdir$2".txt"}' ${output_dir}/chr${chrom}/chr${chrom}_sample_list.txt
+ 	mkdir -p ${output_dir}/chr${chrom}/split_by_samples
+	# split vcf by sample batches
+  	for batch in ${output_dir}/chr${chrom}/batch_files/*.txt; do
+    		batch_name=$(basename ${batch} | cut -d "." -f 1)
+    		bcftools view -S ${batch} ${output_dir}/chr${chrom}/chr${chrom}_with_af_filtered_hg38.vcf.gz -Oz -o ${output_dir}/chr${chrom}/split_by_samples/${batch_name}.vcf.gz
+  	done
+
+
 An full workflow for generating these VCF subsets in All of Us is available from our `CAST subset VCF workflow <https://github.com/CAST-genomics/cast-workflows/tree/main/subset_vcf>`_ page. (Note in that workflow given the cohort size, we further broke up the split step by genomic region and then concatenate the results for all the regions from each chromosome in a final step).
 
 .. _step1_2:
