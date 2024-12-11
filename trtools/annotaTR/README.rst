@@ -103,6 +103,7 @@ where:
 Additional relevant options:
 
 * :code:`--match-refpanel-on <string>`: indicates how to match loci between the reference panel and the target VCF. Options: locid, rawalleles, trimmedalleles (Default:locid)
+
     * **locid** matches on the ID in the VCF file. If your reference panel does not have informative IDs for TRs (e.g. all are set to "."), this option will not work and annotaTR will output an error
     * **rawalleles** means loci are matched on :code:`chrom:pos:ref:alt`. Note if you merged samples in your target VCF file using :code:`bcftools merge`, you should instead use the **trimmedalleles** option below, since bcftools will modify alleles to remove common sequence (see `this issue <https://github.com/samtools/bcftools/issues/726>`_)
     * **trimmedalleles** means loci are matched on :code:`chrom:pos:ref:alt` but ref and alt alleles are trimmed to remove common prefixes/suffixes.
