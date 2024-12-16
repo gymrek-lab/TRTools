@@ -3,7 +3,7 @@
 TRTools Vignettes
 ==================
 
-The following vignettes show example usecases of TRTools.
+The following vignettes show example use cases of TRTools and related tools.
 
 .. toctree::
    :maxdepth: 1
@@ -13,3 +13,4 @@ The following vignettes show example usecases of TRTools.
    VIGNETTE-COMPARE.rst
    VIGNETTE-COMPARE-CALLERS.rst
    VIGNETTE-FILTER-QC.rst
+   VIGNETTE-GWAS-TUTORIAL.rst
