@@ -4,34 +4,41 @@
 	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/rocker-org/devcontainer-features/miniforge:2": {}
 	},
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "mamba env create -n trtools -f dev-env.yml && conda run -n trtools poetry install",
+	"postCreateCommand": "mamba env create -y -n trtools -f dev-env.yml && conda run -n trtools poetry config virtualenvs.in-project true && conda run -n trtools poetry install",
 
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-python.python",
-				"ms-vscode.live-server"
+				"ms-vscode.live-server",
+				"GitHub.vscode-github-actions"
 			],
 			"settings": {
+				"python.analysis.typeCheckingMode": "off",
 				"python.condaPath": "/opt/conda/condabin/conda",
-				"python.defaultInterpreterPath": "/opt/conda/envs/trtools/bin/python",
 				"python.terminal.activateEnvironment": true,
 				"python.terminal.activateEnvInCurrentTerminal": true,
-				"python.venvFolders": ["/home/vscode/.cache/pypoetry/virtualenvs"],
+				"python.venvPath": "/workspaces/trtools/.venv",
+				"python.defaultInterpreterPath": "/workspaces/trtools/.venv/bin/python",
+				"python.testing.pytestEnabled": true,
+				"python.testing.unittestEnabled": false,
 				"terminal.integrated.environmentChangesRelaunch": true,
-				"terminal.integrated.hideOnStartup": "always"
+				"terminal.integrated.hideOnStartup": "always",
+				"files.eol": "\n",
+				"git.autofetch": true,
+				"git.enableSmartCommit": true,
+				"git.confirmSync": false
 			}
 		}
 	}

@@ -8,7 +8,7 @@ from nox_poetry import session
 
 
 package = "trtools"
-python_versions = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+python_versions = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 nox.needs_version = ">= 2022.11.21"
 nox.options.sessions = (
     "tests",
@@ -29,7 +29,7 @@ def install_handle_python(session):
     # install the latest versions of all dependencies for py3.9+
     # but install the locked versions for < py3.9 to ensure some stability in the CI and
     # help us understand when we need to bump our version constraints
-    if session._session.python in ("3.9", "3.10", "3.11", "3.12"):
+    if session._session.python in ("3.9", "3.10", "3.11", "3.12", "3.13"):
         session._session.install(".")
     else:
         session.install(".")
