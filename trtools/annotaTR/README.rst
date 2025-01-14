@@ -39,6 +39,9 @@ Other general parameters:
 
 In addition to specifying input and output options above, you must specify at least one annotation operation to perform. These are described below.
 
+.. note::
+    annotaTR is designed to operate on VCFs composed only of TRs and it will only output TRs. If SNPs are mixed with TRs in the input VCF, you must provide the ``--ref-panel`` option so that annotaTR can subtract out the SNPs and ignore them.
+
 Annotation options
 ------------------
 
