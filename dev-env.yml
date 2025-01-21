@@ -13,3 +13,4 @@ dependencies:
   - pip:
     - nox-poetry==1.0.3
     - poetry-conda==0.1.4
+    - poetry-plugin-shell==1.0.1
