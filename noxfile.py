@@ -21,7 +21,6 @@ cov_cli_args = [
 ]
 
 
-
 def install_handle_python(session):
     """
     handle incompatibilities between python and other packages
@@ -57,7 +56,7 @@ if os.getenv("CONDA_EXE"):
             "pytest-cov",
             channel="conda-forge",
         )
-        install_handle_python(".")
+        install_handle_python(session)
         session.run(
            "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
@@ -69,7 +68,7 @@ else:
     def tests(session: Session) -> None:
         """Run the test suite."""
         session.install("pytest", "pytest-cov")
-        install_handle_python(".")
+        install_handle_python(session)
         session.run(
             "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
