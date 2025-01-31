@@ -21,6 +21,21 @@ cov_cli_args = [
 ]
 
 
+
+def install_handle_python(session):
+    """
+    handle incompatibilities between python and other packages
+    see https://github.com/cjolowicz/nox-poetry/issues/1116
+    """
+    # install the latest versions of all dependencies for py3.10+
+    # but install the locked versions for <= py3.9 to ensure some stability in the CI and
+    # help us understand when we need to bump our version constraints
+    if session._session.python in ("3.10", "3.11", "3.12"):
+        session._session.install(".")
+    else:
+        session.install(".")
+
+
 # detect whether conda/mamba is installed
 if os.getenv("CONDA_EXE"):
     conda_cmd = "conda"
@@ -42,7 +57,7 @@ if os.getenv("CONDA_EXE"):
             "pytest-cov",
             channel="conda-forge",
         )
-        session.install(".")
+        install_handle_python(".")
         session.run(
            "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
@@ -54,7 +69,7 @@ else:
     def tests(session: Session) -> None:
         """Run the test suite."""
         session.install("pytest", "pytest-cov")
-        session.install(".")
+        install_handle_python(".")
         session.run(
             "python", "-m", "pytest", *cov_cli_args, *session.posargs
         )
