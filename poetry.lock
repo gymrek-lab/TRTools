@@ -274,7 +274,7 @@ description = "Composable style cycles"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
     {file = "cycler-0.11.0.tar.gz", hash = "sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f"},
@@ -287,7 +287,7 @@ description = "Composable style cycles"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30"},
     {file = "cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c"},
@@ -468,7 +468,7 @@ description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "joblib-1.3.2-py3-none-any.whl", hash = "sha256:ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"},
     {file = "joblib-1.3.2.tar.gz", hash = "sha256:92f865e621e17784e7955080b6d042489e3b8e294949cc44c6eac304f59772b1"},
@@ -481,7 +481,7 @@ description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
     {file = "joblib-1.4.2.tar.gz", hash = "sha256:2382c5816b2636fbd20a09e0f4e9dad4736765fdfb7dca582943b9c1366b3f0e"},
@@ -494,7 +494,7 @@ description = "A fast implementation of the Cassowary constraint solver"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "kiwisolver-1.4.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:05703cf211d585109fcd72207a31bb170a0f22144d68298dc5e61b3c946518af"},
     {file = "kiwisolver-1.4.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:146d14bebb7f1dc4d5fbf74f8a6cb15ac42baadee8912eb84ac0b3b2a3dc6ac3"},
@@ -612,7 +612,7 @@ description = "A fast implementation of the Cassowary constraint solver"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "kiwisolver-1.4.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:8a9c83f75223d5e48b0bc9cb1bf2776cf01563e00ade8775ffe13b0b6e1af3a6"},
     {file = "kiwisolver-1.4.7-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:58370b1ffbd35407444d57057b57da5d6549d2d854fa30249771775c63b5fe17"},
@@ -807,7 +807,7 @@ description = "Python plotting package"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "matplotlib-3.1.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:98c2ffeab8b79a4e3a0af5dd9939f92980eb6e3fec10f7f313df5f35a84dacab"},
     {file = "matplotlib-3.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2d6ab54015a7c0d727c33e36f85f5c5e4172059efdd067f7527f6e5d16ad01aa"},
@@ -838,7 +838,7 @@ description = "Python plotting package"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "matplotlib-3.3.3-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b2a5e1f637a92bb6f3526cc54cc8af0401112e81ce5cba6368a1b7908f9e18bc"},
     {file = "matplotlib-3.3.3-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:c586ac1d64432f92857c3cf4478cfb0ece1ae18b740593f8a39f2f0b27c7fda5"},
@@ -882,7 +882,7 @@ description = "NumPy is the fundamental package for array computing with Python.
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "numpy-1.17.3-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:4dd830a11e8724c9c9379feed1d1be43113f8bcce55f47ea7186d3946769ce26"},
     {file = "numpy-1.17.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:30c84e3a62cfcb9e3066f25226e131451312a044f1fe2040e69ce792cb7de418"},
@@ -914,7 +914,7 @@ description = "NumPy is the fundamental package for array computing with Python.
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version >= \"3.9\""
 files = [
     {file = "numpy-1.19.3-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:942d2cdcb362739908c26ce8dd88db6e139d3fa829dd7452dd9ff02cba6b58b2"},
     {file = "numpy-1.19.3-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:efd656893171bbf1331beca4ec9f2e74358fc732a2084f664fd149cc4b3441d2"},
@@ -971,6 +971,7 @@ description = "Powerful data structures for data analysis, time series, and stat
 optional = false
 python-versions = ">=3.7.1"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "pandas-1.2.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:cba93d4fd3b0a42858b2b599495aff793fb5d94587979f45a14177d1217ba446"},
     {file = "pandas-1.2.0-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:9e18631d996fe131de6cb31a8bdae18965cc8f39eb23fdfbbf42808ecc63dabf"},
@@ -1006,6 +1007,7 @@ description = "A Python package for describing statistical models and for buildi
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "patsy-1.0.1-py2.py3-none-any.whl", hash = "sha256:751fb38f9e97e62312e921a1954b81e1bb2bcda4f5eeabaf94db251ee791509c"},
     {file = "patsy-1.0.1.tar.gz", hash = "sha256:e786a9391eec818c054e359b737bbce692f051aee4c661f4141cc88fb459c0c4"},
@@ -1024,6 +1026,7 @@ description = "Python wrapper for pgenlib's basic reader and writer."
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "Pgenlib-0.90.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0c5823a8f3bb558c2d60243eb19ca6220cc2d5c759fc50139e5c09b179353b68"},
     {file = "Pgenlib-0.90.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:758b3927228029bb10758a28a8ded86a71844da973d6196b44913c4765cdf23d"},
@@ -1044,7 +1047,7 @@ description = "Python Imaging Library (Fork)"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "pillow-11.1.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:e1abe69aca89514737465752b4bcaf8016de61b3be1397a8fc260ba33321b3a8"},
     {file = "pillow-11.1.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c640e5a06869c75994624551f45e5506e4256562ead981cce820d5ab39ae2192"},
@@ -1153,6 +1156,7 @@ description = "pyfaidx: efficient pythonic random access to fasta subsequences"
 optional = false
 python-versions = "*"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "pyfaidx-0.5.6.tar.gz", hash = "sha256:2b6ab4212158ccf8f8490ae33f21a162a5c5f7ab2717f227c30013ed7a6c40e8"},
 ]
@@ -1184,7 +1188,7 @@ description = "pyparsing module - Classes and methods to define and execute pars
 optional = false
 python-versions = ">=3.6.8"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "pyparsing-3.1.4-py3-none-any.whl", hash = "sha256:a6a7ee4235a3f944aa1fa2249307708f893fe5717dc603503c6c7969c070fb7c"},
     {file = "pyparsing-3.1.4.tar.gz", hash = "sha256:f86ec8d1a83f11977c9a6ea7598e8c27fc5cddfa5b07ea2241edbbde1d7bc032"},
@@ -1200,7 +1204,7 @@ description = "pyparsing module - Classes and methods to define and execute pars
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
     {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
@@ -1244,7 +1248,7 @@ description = "pysam"
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "pysam-0.15.4-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:0b0f407ad96b3bd492017ee82a317ac0fc68dc858ecba9119e4ae69b1cda9910"},
     {file = "pysam-0.15.4-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:5b6a2258e326204ee94bf4d482d9a137ce8cbb3f3cefada42c7f26802d15b95d"},
@@ -1273,7 +1277,7 @@ description = "pysam"
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "pysam-0.17.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c4a8099cf474067eaf5e270b5e71433a9ea0e97af90262143a655528eb756cd9"},
     {file = "pysam-0.17.0-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:4d0a35dec9194bacbde0647ddf32ebf805a6724b0192758039c031fce849f01f"},
@@ -1340,6 +1344,7 @@ description = "Extensions to the standard Python datetime module"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
     {file = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"},
@@ -1359,7 +1364,7 @@ files = [
     {file = "pytz-2025.1-py2.py3-none-any.whl", hash = "sha256:89dd22dca55b46eac6eda23b2d72721bf1bdfef212645d81513ef5d03038de57"},
     {file = "pytz-2025.1.tar.gz", hash = "sha256:c2db42be2a2518b28e65f9207c4d05e6ff547d1efa4086469ef855e4ab70178e"},
 ]
-markers = {docs = "python_version < \"3.9\""}
+markers = {main = "python_version <= \"3.9\"", docs = "python_version < \"3.9\""}
 
 [[package]]
 name = "requests"
@@ -1390,7 +1395,7 @@ description = "A set of python modules for machine learning and data mining"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "scikit-learn-0.23.1.tar.gz", hash = "sha256:e3fec1c8831f8f93ad85581ca29ca1bb88e2da377fb097cf8322aa89c21bc9b8"},
     {file = "scikit_learn-0.23.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:058d213092de4384710137af1300ed0ff030b8c40459a6c6f73c31ccd274cc39"},
@@ -1426,7 +1431,7 @@ description = "A set of python modules for machine learning and data mining"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "scikit-learn-0.24.0.tar.gz", hash = "sha256:076369634ee72b5a5941440661e2f306ff4ac30903802dc52031c7e9199ac640"},
     {file = "scikit_learn-0.24.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:890d7d588f65acb0c4f6c083347c9076916bda5e6bd8400f06244b1afc1009af"},
@@ -1474,7 +1479,7 @@ description = "SciPy: Scientific Library for Python"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "scipy-1.3.3-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:a70308bb065562afb936c963780deab359966d71ab4f230368b154dde3136ea4"},
     {file = "scipy-1.3.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:7be424ee09bed7ced36c9457f99c826ce199fd0c0f5b272cf3d098ff7b29e3ae"},
@@ -1509,7 +1514,7 @@ description = "SciPy: Scientific Library for Python"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "scipy-1.5.4-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:4f12d13ffbc16e988fa40809cbbd7a8b45bc05ff6ea0ba8e3e41f6f4db3a9e47"},
     {file = "scipy-1.5.4-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:a254b98dbcc744c723a838c03b74a8a34c0558c9ac5c86d5561703362231107d"},
@@ -1552,6 +1557,7 @@ files = [
     {file = "setuptools-68.0.0-py3-none-any.whl", hash = "sha256:11e52c67415a381d10d6b462ced9cfb97066179f0e871399e006c4ab101fc85f"},
     {file = "setuptools-68.0.0.tar.gz", hash = "sha256:baf1fdb41c6da4cd2eae722e135500da913332ab3f2f5c7d33af9b492acb5235"},
 ]
+markers = {main = "python_version <= \"3.9\""}
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
@@ -1565,6 +1571,7 @@ description = "Python 2 and 3 compatibility utilities"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 groups = ["main"]
+markers = "python_version <= \"3.9\""
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
@@ -1774,7 +1781,7 @@ description = "Statistical computations and models for Python"
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "statsmodels-0.10.2-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:e67e244ae4ca988b40783db7e1bac0de5b7f9f91062cdc0c93e219b189700388"},
     {file = "statsmodels-0.10.2-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:65f08024ef9a0bd40b63c455d02da34394658c53c16e3494dd6171e86e639f9b"},
@@ -1820,7 +1827,7 @@ description = "Statistical computations and models for Python"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "statsmodels-0.12.1-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:3b482ab9759b89cc1c4777b71c1ccf272e868a7551fc6b74da300557407d8379"},
     {file = "statsmodels-0.12.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:33c6cbed74f075b8816cec37e5c7853ed31dcacebfdbbc3af898b4907911544e"},
@@ -1862,7 +1869,7 @@ description = "threadpoolctl"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "python_version <= \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "threadpoolctl-3.1.0-py3-none-any.whl", hash = "sha256:8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"},
     {file = "threadpoolctl-3.1.0.tar.gz", hash = "sha256:a335baacfaa4400ae1f0d8e3a58d6674d2f8828e3716bb2802c44955ad391380"},
@@ -1875,7 +1882,7 @@ description = "threadpoolctl"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version > \"3.8\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "threadpoolctl-3.5.0-py3-none-any.whl", hash = "sha256:56c1e26c150397e58c4926da8eeee87533b1e32bef131bd4bf6a2f45f3185467"},
     {file = "threadpoolctl-3.5.0.tar.gz", hash = "sha256:082433502dd922bf738de0d8bcc4fdcbf0979ff44c42bd40f5af8a282f6fa107"},
@@ -1945,4 +1952,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.7.1"
-content-hash = "debba75e8de6735d90f2da978c222fd978bd0aa1514183a035cd5e1fe16ee7cd"
+content-hash = "acad38c84c0c02b3f79a0d44107214804d6c5db6b46e00e16ee48e154f2ad455"
