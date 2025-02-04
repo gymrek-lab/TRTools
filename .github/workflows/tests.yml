@@ -39,6 +39,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: trtools
+          conda-remove-defaults: true
           auto-activate-base: false
           miniforge-version: latest
           use-mamba: true

@@ -27,7 +27,6 @@
 			],
 			"settings": {
 				"python.condaPath": "/opt/conda/condabin/conda",
-				"python.defaultInterpreterPath": "/opt/conda/envs/trtools/bin/python",
 				"python.terminal.activateEnvironment": true,
 				"python.terminal.activateEnvInCurrentTerminal": true,
 				"python.venvPath": "/workspaces/trtools/.venv",
