@@ -37,7 +37,8 @@ importlib-metadata = [
     { version = "3.0.0" , markers = "python_version < '3.8'" },
 ]
 cyvcf2 = [
-    { version = "0.30.27" },
+    { version = "0.30.27" , markers = "python_version <= '3.9'" },
+    { version = "0.31.1" , markers = "python_version > '3.9'" },
 ]
 matplotlib = [
     { version = "3.1.2" , markers = "python_version < '3.9'" },
