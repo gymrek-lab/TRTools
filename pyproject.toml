@@ -58,7 +58,7 @@ pandas = [
 pysam = [
     { version = "0.15.4" , markers = "python_version < '3.9'" },
     { version = "0.17.0" , markers = "python_version == '3.9'" },
-    { version = "0.22.1" , markers = "python_version > '3.9'" },
+    { version = "0.23.0" , markers = "python_version > '3.9'" },
 ]
 scikit-learn = [
     { version = "0.23.1" , markers = "python_version < '3.9'" },
