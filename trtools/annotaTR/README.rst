@@ -39,6 +39,9 @@ Other general parameters:
 
 In addition to specifying input and output options above, you must specify at least one annotation operation to perform. These are described below.
 
+.. note::
+    annotaTR is designed to operate on VCFs composed only of TRs and it will only output TRs. If SNPs are mixed with TRs in the input VCF, you must provide the ``--ref-panel`` option so that annotaTR can subtract out the SNPs and ignore them.
+
 Annotation options
 ------------------
 
@@ -103,11 +106,12 @@ where:
 Additional relevant options:
 
 * :code:`--match-refpanel-on <string>`: indicates how to match loci between the reference panel and the target VCF. Options: locid, rawalleles, trimmedalleles (Default:locid)
+
     * **locid** matches on the ID in the VCF file. If your reference panel does not have informative IDs for TRs (e.g. all are set to "."), this option will not work and annotaTR will output an error
-    * **rawalleles** means loci are matched on :code:`chrom:pos:ref:alt`
-    * **trimmedalleles** means loci are matched on :code:`chrom:pos:ref:alt` but ref and alt alleles are trimmed to remove common prefixes/suffixes. The trimmedalleles option must be used if you merged samples in your target VCF file using :code:`bcftools merge`, since that tool will modify alleles to remove common sequence (see `this issue <https://github.com/samtools/bcftools/issues/726>`_)
+    * **rawalleles** means loci are matched on :code:`chrom:pos:ref:alt`. Note if you merged samples in your target VCF file using :code:`bcftools merge`, you should instead use the **trimmedalleles** option below, since bcftools will modify alleles to remove common sequence (see `this issue <https://github.com/samtools/bcftools/issues/726>`_)
+    * **trimmedalleles** means loci are matched on :code:`chrom:pos:ref:alt` but ref and alt alleles are trimmed to remove common prefixes/suffixes.
 * :code:`--ignore-duplicates`: This flag outputs a warning if duplicate loci are detected in the reference. If this flag is not set and a duplicate locus is detected, the program quits.
-* :code:`--update-ref-alt`: Update the REF/ALT allele sequences from the reference panel. Fixes issue with alleles being chopped after bcftools merge. Use with caution as this assumes allele order is exactly the same between the refpanel and target VCF. Only works when matching on locus id.
+* :code:`--update-ref-alt`: Update the REF/ALT allele sequences from the reference panel. Fixes issue with alleles being chopped after bcftools merge. Use with caution as this assumes allele order is exactly the same between the refpanel and target VCF. Only works when matching on locus id. **Note**: We have tested merging with bcftools v1.20. Previous versions of bcftools might switch allele order (see https://github.com/gymrek-lab/TRTools/issues/244).
 
 If generating a VCF output file, this command will output a new file containing only STRs, with the following fields added back depending on the genotyper used to generate the reference panel:
 
