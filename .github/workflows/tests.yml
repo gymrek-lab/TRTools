@@ -39,6 +39,7 @@ jobs:
       - name: Setup Miniforge
         uses: conda-incubator/setup-miniconda@v3
         with:
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
           activate-environment: trtools
           conda-remove-defaults: true
           auto-activate-base: false
