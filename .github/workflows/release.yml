@@ -37,7 +37,7 @@ jobs:
       - name: Install Poetry
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          pip install 'poetry==2.0.1' # keep version in sync with dev-env.yml
+          pip install 'poetry==2.1.0' # keep version in sync with dev-env.yml
           poetry --version
 
       - name: Build package
