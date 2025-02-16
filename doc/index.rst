@@ -27,7 +27,7 @@ If you use TRTools in your work, please cite: Nima Mousavi, Jonathan Margoliash,
 Install
 -------
 
-Note: TRTools supports Python versions 3.8 and up. We do not officially support python version 3.7 as it is `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with it from previous testing results.
+Note: TRTools supports Python versions 3.9 and up. We do not officially support python version 3.7 or 3.8 as they are `end of life <https://devguide.python.org/versions/#status-of-python-versions>`_, but we believe TRTools likely works with them from previous testing results.
 
 With conda
 ^^^^^^^^^^
@@ -172,8 +172,9 @@ We appreciate contributions to TRTools. If you would like to contribute a fix or
 #. Make your changes. 
 #. If you need to add a dependency or update the version of a dependency, you can use the :code:`poetry add` command.
 
-    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`. Note: For most cases, a version constraint operator of :code:`>=` `is better than <https://iscinumpy.dev/post/bound-version-constraints>`_ poetry's default of :code:`^`.
-    * Afterward, double-check that the :code:`poetry.lock` file contains 1.23.0 in it. **All of our dependencies should be locked to their minimum versions at all times.** To downgrade to a specific version of :code:`numpy` in our lock file, you can explicitly add the version via :code:`poetry add 'numpy==1.23.0'`, manually edit the pyproject.toml file to use a :code:`>=` sign in front of the version number, and then run :code:`poetry lock --no-update`. The :code:`--no-update` is important because otherwise, poetry will try to update other dependencies in the lock file.
+    * You should specify a `version constraint <https://python-poetry.org/docs/master/dependency-specification#version-constraints>`_ when adding a dependency. Use the oldest version compatible with your code. For example, to specify a version of :code:`numpy>=1.23.0`, you can run :code:`poetry add 'numpy>=1.23.0'`.
+    * Afterward, double-check that the :code:`pyproject.toml` file has been changed appropriately. Our minimum version constraints should be listed in the `[project.dependencies]` section and the locked versions should appear in the `[tool.poetry.dependencies]` section. Ideally, the `[tool.poetry.dependencies]` section should contain at least the minimum supported version and the latest version of each dependency at all times. After making any changes to the :code:`pyproject.toml` file, you must run the :code:`poetry lock` command to sync with the :code:`poetry.lock` file.
+    * We try to keep the oldest version of python that is not `end-of-life <https://devguide.python.org/versions>`_ in our development environment (:code:`dev-env.yml` file), so that developers do not inadvertently make any changes that break support for that version of python. If, at any time, the minimum supported version of a dependency does not work with the version of python in our development environment, then you should also add the minimum working version of that dependency to our locked versions in the `[tool.poetry.dependencies]` section. See `this discussion thread <https://github.com/orgs/python-poetry/discussions/10142#discussioncomment-12050625>`_ for an example.
     * Only PyPI packages can be added to our pyproject.toml file. So if a dependency is only available on conda, then you can add it to our :code:`dev-env.yml` file instead. Please note that anyone who installs TRTools from PyPI will not be guaranteed to have your dependency installed, so you should design your code accordingly. 
     * Any changes to our dependencies must also added to our bioconda recipe at the time of publication. See `PUBLISHING.rst <https://github.com/gymrek-lab/TRTools/blob/master/PUBLISHING.rst>`_ for more details.
 
