@@ -52,7 +52,6 @@ numpy = [
 ]
 pandas = [
     { version = "1.2.0" , markers = "python_version <= '3.9'" },
-    { version = "1.2.0" , markers = "python_version == '3.9'" },
     { version = "2.2.3" , markers = "python_version > '3.9'" },
 ]
 pysam = [
