@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "trtools"
-version = "6.1.0"
+version = "6.2.0"
 authors = [
     {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
     {name = "Gymrek Lab"},
