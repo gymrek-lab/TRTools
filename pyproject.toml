@@ -1,25 +1,107 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "trtools"
 version = "6.1.0"
 authors = [
-    "Melissa Gymrek <mgymrek@ucsd.edu>",
-    "Gymrek Lab",
+    {name = "Melissa Gymrek", email = "mgymrek@ucsd.edu"},
+    {name = "Gymrek Lab"},
 ]
 description = "Toolkit for genome-wide analysis of STRs"
 readme = "README.rst"
 license = "MIT"
-repository = "https://github.com/gymrek-lab/trtools"
-homepage = "https://trtools.readthedocs.org"
-documentation = "https://trtools.readthedocs.org"
 classifiers = [
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
+requires-python = ">=3.7.1"
+dependencies = [
+    "importlib-metadata>=3.0.0 ; python_version < '3.8'",
+    "cyvcf2>=0.30.27",
+    "matplotlib>=3.1.2",
+    "numpy>=1.17.3",
+    "pandas>=1.2.0",
+    "pysam>=0.15.4",
+    "scikit-learn>=0.23.1",
+    "scipy>=1.3.3",
+    "statsmodels>=0.10.2",
+    "pyfaidx>=0.5.6",
+    "pgenlib>=0.90.1",
+]
+
+[tool.poetry.dependencies]
+importlib-metadata = [
+    { version = "3.0.0" , markers = "python_version < '3.8'" },
+]
+cyvcf2 = [
+    { version = "0.30.27" , markers = "python_version <= '3.9'" },
+    { version = "0.31.1" , markers = "python_version > '3.9'" },
+]
+matplotlib = [
+    { version = "3.1.2" , markers = "python_version < '3.9'" },
+    { version = "3.3.3" , markers = "python_version == '3.9'" },
+    { version = "3.10.0" , markers = "python_version > '3.9'" },
+]
+numpy = [
+    { version = "1.17.3" , markers = "python_version < '3.9'" },
+    { version = "1.19.3" , markers = "python_version == '3.9'" },
+    { version = "2.2.2" , markers = "python_version > '3.9'" },
+]
+pandas = [
+    { version = "1.2.0" , markers = "python_version <= '3.9'" },
+    { version = "2.2.3" , markers = "python_version > '3.9'" },
+]
+pysam = [
+    { version = "0.15.4" , markers = "python_version < '3.9'" },
+    { version = "0.17.0" , markers = "python_version == '3.9'" },
+    { version = "0.23.0" , markers = "python_version > '3.9'" },
+]
+scikit-learn = [
+    { version = "0.23.1" , markers = "python_version < '3.9'" },
+    { version = "0.24.0" , markers = "python_version == '3.9'" },
+    { version = "1.6.1" , markers = "python_version > '3.9'" },
+]
+scipy = [
+    { version = "1.3.3" , markers = "python_version < '3.9'" },
+    { version = "1.5.4" , markers = "python_version == '3.9'" },
+    { version = "1.15.1" , markers = "python_version > '3.9'" },
+]
+statsmodels = [
+    { version = "0.10.2" , markers = "python_version < '3.9'" },
+    { version = "0.12.1" , markers = "python_version == '3.9'" },
+    { version = "0.14.4" , markers = "python_version > '3.9'" },
+]
+pyfaidx = [
+    { version = "0.5.6" , markers = "python_version <= '3.9'" },
+    { version = "0.8.1.3" , markers = "python_version > '3.9'" },
+]
+pgenlib = [
+    { version = "0.90.1" , markers = "python_version <= '3.9'" },
+    { version = "0.92.0" , markers = "python_version > '3.9'" },
+]
+
+[project.urls]
+repository = "https://github.com/gymrek-lab/trtools"
+homepage = "https://trtools.readthedocs.org"
+documentation = "https://trtools.readthedocs.org"
+changelog = "https://github.com/gymrek-lab/TRTools/blob/master/CHANGELOG.md"
+
+[project.scripts]
+dumpSTR = "trtools.dumpSTR:run"
+mergeSTR = "trtools.mergeSTR:run"
+statSTR = "trtools.statSTR:run"
+compareSTR = "trtools.compareSTR:run"
+qcSTR = "trtools.qcSTR:run"
+associaTR = "trtools.associaTR:run"
+prancSTR = "trtools.prancSTR:run"
+simTR = "trtools.simTR:run"
+annotaTR = "trtools.annotaTR:run"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
 exclude = [
     "trtools/testsupport/*",
     "doc",
@@ -29,20 +111,6 @@ exclude = [
     "trtools/dumpSTR/filter_files",
     "trtools/qcSTR/images",
 ]
-
-[tool.poetry.dependencies]
-python = ">=3.7.1,<4.0"
-importlib-metadata = {version = ">=3.0.0", python = "<3.8"}
-cyvcf2 = ">=0.30.27"
-matplotlib = ">=3.1.2"
-numpy = ">=1.17.3"
-pandas = ">=1.2.0"
-pysam = ">=0.15.4"
-scikit-learn = ">=0.23.1"
-scipy = ">=1.3.3"
-statsmodels = ">=0.10.2"
-pyfaidx = ">=0.5.6"
-pgenlib = ">=0.90.1"
 
 [tool.poetry.group.tests.dependencies]
 pytest = ">=6.2.0"
@@ -56,15 +124,11 @@ sphinx-autodoc-typehints = ">=1.12.0"
 [tool.poetry.scripts]
 "test_trtools.sh" = {reference = "trtools/testsupport/test_trtools.sh", type = "file"}
 "trtools_prep_beagle_vcf.sh" = {reference = "scripts/trtools_prep_beagle_vcf.sh", type = "file"}
-dumpSTR = "trtools.dumpSTR:run"
-mergeSTR = "trtools.mergeSTR:run"
-statSTR = "trtools.statSTR:run"
-compareSTR = "trtools.compareSTR:run"
-qcSTR = "trtools.qcSTR:run"
-associaTR = "trtools.associaTR:run"
-prancSTR = "trtools.prancSTR:run"
-simTR = "trtools.simTR:run"
-annotaTR = "trtools.annotaTR:run"
+
+[tool.poetry.requires-plugins]
+poetry-conda = ">=0.1.4"
+poetry-plugin-export = ">=1.9"
+poetry-plugin-shell = ">=1.0.1"
 
 [tool.pytest.ini_options]
 addopts = """
