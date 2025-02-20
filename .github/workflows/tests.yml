@@ -45,7 +45,6 @@ jobs:
           auto-activate-base: false
           miniforge-version: latest
           use-mamba: true
-          conda-remove-defaults: "true"
 
       - name: Get Date
         id: get-date
