@@ -256,6 +256,40 @@ def GetLocusKey(record, match_on=RefMatchTypes.locid):
     else:
         raise ValueError("Invalid match_refpanel_on=%s"%match_on)
 
+def GetAlleleCount(record):
+    """
+    Count the allele number that identified in samples
+
+    Parameters
+    ----------
+    record : cyvcf2.Variant
+        record to get get genotype and allele information of all samples
+
+    Returns:
+    ----------
+        allele_count_str: str
+            contains non zero count allele length and their counts
+            sperated by a ";", e.g. "1,2,3;200,169,300".
+    """
+    genotypes = record.genotypes
+    all_gt_list = np.array(genotypes)[:,:2]
+    unique_gt, counts = np.unique(all_gt_list.flatten(), return_counts=True)
+    if isinstance(record.ALT, list):
+        alt_list = record.ALT
+    else:
+        alt_list = [record.ALT]
+    all_alleles = np.array([record.REF] + alt_list)
+    repeat_len = record.INFO.get("PERIOD")
+    allele_repeat_n = np.char.str_len(all_alleles)/repeat_len
+    allele_repeat_n = np.round(allele_repeat_n, decimals=1)
+
+    unique_allele_str = ",".join(allele_repeat_n[unique_gt].astype(str))
+    counts_str = ",".join(counts.astype(str))
+
+    allele_count_str = f"{unique_allele_str};{counts_str}"
+
+    return allele_count_str
+
 def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         ignore_duplicates=False):
     """
@@ -335,7 +369,7 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     For PGEN, we return a pgenlib.PgenWriter instance
     For PVAR, we create a file object to which we will write
     info for each variant as we go. When initialized here we 
-    add the DSLEN INFO header and also the header columns:
+    add the DSLEN, DSCOUNT INFO header and also the header columns:
     #CHROM", "POS", "ID", "REF", "ALT", "INFO"
 
     In addition to the PGEN/PVAR writers, this function writes
@@ -367,18 +401,20 @@ def GetPGenPvarWriter(reader, outprefix, variant_ct):
     pvar_writer = open(outprefix+".pvar", "w")
     pvar_writer.write("##fileformat=VCFv4.2\n") # Required if we want the pvar to be valid vcf
     pvar_writer.write("##INFO=<ID=DSLEN,Number=2,Type=Float,Description=\"Minimum and maximum dosages, used if normalization was applied\">\n")
+    pvar_writer.write("##INFO=<ID=DSCOUNT,Number=1,Type=String,Description=\"list of dosage with non-zero count and their counts. use for filtering\">\n")
     pvar_writer.write("\t".join(["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])+"\n")
     # Get pgen writer we will continue writing to
     pgen_writer = PgenWriter(bytes(outprefix+".pgen", "utf8"),
         len(reader.samples), variant_ct=variant_ct, dosage_present=True)
     return pgen_writer, pvar_writer
 
-def WritePvarVariant(pvar_writer, record, minlen, maxlen):
+def WritePvarVariant(pvar_writer, record, minlen, maxlen, allele_count):
     """
     Write variant metadata to a PVAR file
     Outputs CHROM, POS, ID, REF, ALT, INFO
     REF and ALT are set to dummy values (DUMMY_REF and DUMMY_ALT)
-    INFO contains the DSLEN field with the min/max allele lengths
+    INFO contains the DSLEN field with the min/max allele lengths,
+    and the DSCOUNT field with list of alleles following with their counts.
     observed
 
     Parameters
@@ -397,7 +433,7 @@ def WritePvarVariant(pvar_writer, record, minlen, maxlen):
         record_id = "."
     out_items = [record.CHROM, str(record.POS), str(record_id), DUMMY_REF, DUMMY_ALT,
         DUMMY_QUAL, DUMMY_FILTER,
-        "DSLEN=%.2f,%.2f"%(minlen, maxlen)]
+        "DSLEN=%.2f,%.2f"%(minlen, maxlen),"DSCOUNT=%s"%allele_count]
     pvar_writer.write("\t".join(out_items)+"\n")
 
 def getargs(): # pragma: no cover
@@ -683,7 +719,8 @@ def main(args):
 
         # Write pvar if using pgen output
         if OutputFileTypes.pgen in outtypes:
-            WritePvarVariant(pvar_writer, record, minlen, maxlen)
+            allele_counts_str = GetAlleleCount(trrecord)
+            WritePvarVariant(pvar_writer, record, minlen, maxlen, allele_counts_str)
 
         num_variants_processed += 1
         num_variants_processed_batch += 1
