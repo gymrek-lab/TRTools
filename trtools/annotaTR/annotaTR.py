@@ -272,23 +272,27 @@ def GetAlleleCount(record):
             sperated by a ";", e.g. "1,2,3;200,169,300".
     """
     genotypes = record.genotypes
-    all_gt_list = np.array(genotypes)[:,:2]
-    unique_gt, counts = np.unique(all_gt_list.flatten(), return_counts=True)
-    if isinstance(record.ALT, list):
-        alt_list = record.ALT
+    all_gt_list = np.array([gt for gt in genotypes if -1 not in gt])
+    if all_gt_list.size == 0:
+        allele_count_str=".;0"
+        return allele_count_str
     else:
-        alt_list = [record.ALT]
-    all_alleles = np.array([record.REF] + alt_list)
-    repeat_len = record.INFO.get("PERIOD")
-    allele_repeat_n = np.char.str_len(all_alleles)/repeat_len
-    allele_repeat_n = np.round(allele_repeat_n, decimals=1)
+        all_gt_list = all_gt_list[:,:2]
+        unique_gt, counts = np.unique(all_gt_list.flatten(), return_counts=True)
+        if isinstance(record.ALT, list):
+            alt_list = record.ALT
+        else:
+            alt_list = [record.ALT]
+        all_alleles = np.array([record.REF] + alt_list)
+        repeat_len = record.INFO.get("PERIOD")
+        allele_repeat_n = np.char.str_len(all_alleles)/repeat_len
+        allele_repeat_n = np.round(allele_repeat_n, decimals=1)
 
-    unique_allele_str = ",".join(allele_repeat_n[unique_gt].astype(str))
-    counts_str = ",".join(counts.astype(str))
+        unique_allele_str = ",".join(allele_repeat_n[unique_gt].astype(str))
+        counts_str = ",".join(counts.astype(str))
 
-    allele_count_str = f"{unique_allele_str};{counts_str}"
-
-    return allele_count_str
+        allele_count_str = f"{unique_allele_str};{counts_str}"
+        return allele_count_str
 
 def LoadMetadataFromRefPanel(refreader, vcftype, match_on=RefMatchTypes.locid,
         ignore_duplicates=False):
@@ -719,7 +723,7 @@ def main(args):
 
         # Write pvar if using pgen output
         if OutputFileTypes.pgen in outtypes:
-            allele_counts_str = GetAlleleCount(trrecord)
+            allele_counts_str = GetAlleleCount(trrecord.vcfrecord)
             WritePvarVariant(pvar_writer, record, minlen, maxlen, allele_counts_str)
 
         num_variants_processed += 1
