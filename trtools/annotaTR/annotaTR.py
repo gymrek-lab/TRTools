@@ -437,7 +437,7 @@ def WritePvarVariant(pvar_writer, record, minlen, maxlen, allele_count):
         record_id = "."
     out_items = [record.CHROM, str(record.POS), str(record_id), DUMMY_REF, DUMMY_ALT,
         DUMMY_QUAL, DUMMY_FILTER,
-        "DSLEN=%.2f,%.2f"%(minlen, maxlen),"DSCOUNT=%s"%allele_count]
+        "DSLEN=%.2f,%.2f;DSCOUNT=%s"%(minlen, maxlen, allele_count)]
     pvar_writer.write("\t".join(out_items)+"\n")
 
 def getargs(): # pragma: no cover
