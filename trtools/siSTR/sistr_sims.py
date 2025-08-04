@@ -137,7 +137,8 @@ def RunSimulation(
         demog_model=None,
         popid=None,
         use_drift=True,
-        end_samp_n=0
+        end_samp_n=0,
+        ancestral_allele=None
     ):
 
     # Set the starting vector of allele frequencies
@@ -145,8 +146,10 @@ def RunSimulation(
     if set_start_equal:
         allele_freqs = np.full((num_alleles), 1.0/num_alleles)
     else:
+        if ancestral_allele is None:
+            ancestral_allele = 0
         allele_freqs = np.zeros(num_alleles)
-        allele_freqs[int(num_alleles/2)] = 1
+        allele_freqs[int(num_alleles/2)+ancestral_allele] = 1
 
     # Compute fitness matrix
     fitness_matrix = GetFitnessMatrix(num_alleles, sval)
