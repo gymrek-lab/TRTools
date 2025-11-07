@@ -22,7 +22,7 @@ jobs:
           - { python: "3.12", os: "ubuntu-latest", session: "tests" }
           - { python: "3.13", os: "ubuntu-latest", session: "tests" }
           # - { python: "3.13", os: "windows-latest", session: "tests" }
-          - { python: "3.9", os: "macos-13", session: "tests" }
+          - { python: "3.9", os: "macos-15-intel", session: "tests" }
           - { python: "3.13", os: "macos-latest", session: "tests" }
           - { python: "3.9", os: "ubuntu-latest", session: "size" }
           - { python: "3.9", os: "ubuntu-latest", session: "coverage" }
