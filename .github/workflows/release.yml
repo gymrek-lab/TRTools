@@ -17,16 +17,16 @@ jobs:
         with:
           release-type: python
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: ${{ steps.release.outputs.release_created }}
         with:
           fetch-depth: 2
 
       - name: Set up Python
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.9'  # keep in sync with dev-env.yml
+          python-version: '3.10'  # keep in sync with dev-env.yml
 
       - name: Upgrade pip
         if: ${{ steps.release.outputs.release_created }}
@@ -37,8 +37,15 @@ jobs:
       - name: Install Poetry
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          pip install 'poetry==2.1.0' # keep version in sync with dev-env.yml
+          pip install 'poetry==2.3.1' # keep version in sync with dev-env.yml
           poetry --version
+
+      - name: Bump version for developmental release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          version: ${{ steps.release.outputs.tag_name }}
+        run: |
+          poetry version $version
 
       - name: Build package
         if: ${{ steps.release.outputs.release_created }}
@@ -67,4 +74,4 @@ jobs:
           path: dist
 
       - name: Publish package on PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.14
+        uses: pypa/gh-action-pypi-publish@release/v1
