@@ -45,6 +45,10 @@ echo "Location of trtools installation: $loc"
 echo "Running pytest ..."
 cd "$loc" || exit 1
 # run unit tests
-python -m pytest . --datadir "$TMP"/trtools/testsupport
+ln -sf "$TMP"/trtools/testsupport testsupport
+trap 'rm -f testsupport' EXIT INT TERM
+python -m pytest . -o addopts="" --doctest-modules -p trtools.testsupport.dataloader --datadir "$TMP"/trtools/testsupport
+rm -f testsupport
+trap - EXIT INT TERM
 # run command line tests
 $TMP/test/cmdline_tests.sh $TMP/example-files $TMP/trtools/testsupport/sample_vcfs/beagle $TMP/scripts/trtools_prep_beagle_vcf.sh
