@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.2.0](https://github.com/gymrek-lab/TRTools/compare/v6.1.0...v6.2.0) (2026-02-19)
+
+
+### Features
+
+* add `--only-passing` option to statSTR ([#229](https://github.com/gymrek-lab/TRTools/issues/229)) ([51c0481](https://github.com/gymrek-lab/TRTools/commit/51c048191684342737edcc08e58f9d29806d563f))
+
+
+### Documentation
+
+* add note about bcftools version for merging to annotaTR ([#245](https://github.com/gymrek-lab/TRTools/issues/245)) ([6a2d4fb](https://github.com/gymrek-lab/TRTools/commit/6a2d4fb1291a87add573dd43f4e738bc883563ec))
+* **annotaTR:** explain that SNPs aren't supported ([#248](https://github.com/gymrek-lab/TRTools/issues/248)) ([5132f34](https://github.com/gymrek-lab/TRTools/commit/5132f3499de752a880ca8c339b29856a97bc7436))
+* **annotaTR:** fix beagpleap typo ([#260](https://github.com/gymrek-lab/TRTools/issues/260)) ([f8ef1e9](https://github.com/gymrek-lab/TRTools/commit/f8ef1e96d7d4cac187217543aca5562eba126623))
+* drop support for py 3.8 and update to poetry 2 in our CI ([#249](https://github.com/gymrek-lab/TRTools/issues/249)) ([6bdc596](https://github.com/gymrek-lab/TRTools/commit/6bdc596db02dba1e38f7ab11fba8cb20377e0eaf))
+
 ## [6.1.0](https://github.com/gymrek-lab/TRTools/compare/v6.0.2...v6.1.0) (2024-11-06)
 
 
