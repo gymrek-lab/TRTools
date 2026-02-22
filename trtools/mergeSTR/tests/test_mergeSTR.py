@@ -1,9 +1,11 @@
-import argparse
 import os
+import shutil
+import argparse
+import subprocess
 
 import cyvcf2
-import numpy as np
 import pytest
+import numpy as np
 
 from ..mergeSTR import *
 from trtools.testsupport.utils import assert_same_vcf
@@ -371,6 +373,39 @@ def test_popstr_output(args, mrgvcfdir):
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
     assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/popstr_merged.vcf")
+
+def test_mergeSTR_recursion(args, mrgvcfdir, tmpdir):
+    # Test that mergeSTR will accept its own output as input
+    # Create a merged VCF and then merge it again with a different file
+
+    if shutil.which("bgzip") is not None and shutil.which("tabix") is not None:
+        # First, merge two files of 10 and 19 samples, respectively
+        fname1 = os.path.join(mrgvcfdir, "CEU_test_subset10.vcf.gz")
+        fname2 = os.path.join(mrgvcfdir, "CEU_test_subset19.vcf.gz")
+        args.vcftype = "hipstr"
+        merged = str(tmpdir / "test-CEU-subset1")
+        args.out = merged
+        args.vcfs = fname1 + "," + fname2
+        args.vcfs_list = None
+        assert main(args)==0
+        subprocess.run(["bgzip", merged + ".vcf"])
+        subprocess.run(["tabix", "-p", "vcf", merged + ".vcf.gz"])
+    else:
+        merged = str(mrgvcfdir / "test-CEU-subset1")
+
+    # Now, merge the output of mergeSTR with another file of 150 samples
+    fname1 = merged + ".vcf.gz"
+    fname2 = os.path.join(mrgvcfdir, "CEU_test_subset150.vcf.gz")
+    args.vcftype = "hipstr"
+    merged = str(tmpdir / "test-CEU-subset2")
+    args.out = merged
+    args.vcfs = fname1 + "," + fname2
+    args.vcfs_list = None
+    assert main(args)==0
+
+    # The subsetted files were created by subsetting CEU_test.vcf.gz, so they should end up the same
+    # { zcat CEU_test.vcf.gz | head -n-3 && zcat CEU_test.vcf.gz | cut -f -9,10-19; } | bgzip > CEU_test_subset10.vcf.gz
+    assert_same_vcf(args.out + '.vcf', mrgvcfdir + "/CEU_test.vcf")
 
 
 # TODO questions and issues to confirm, test or  address:
