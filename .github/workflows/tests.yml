@@ -21,7 +21,7 @@ jobs:
           - { python: "3.11", os: "ubuntu-latest", session: "tests" }
           - { python: "3.12", os: "ubuntu-latest", session: "tests" }
           - { python: "3.13", os: "ubuntu-latest", session: "tests" }
-          # - { python: "3.14", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.14", os: "ubuntu-latest", session: "tests" }
           - { python: "3.14", os: "macos-latest", session: "tests" }
           # - { python: "3.14", os: "windows-latest", session: "tests" }
           - { python: "3.10", os: "macos-15-intel", session: "tests" }
@@ -35,15 +35,15 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v4
         with:
           # use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
           activate-environment: trtools
           conda-remove-defaults: true
-          auto-activate-base: false
+          auto-activate: false
           miniforge-version: latest
           use-mamba: true
 
@@ -53,7 +53,7 @@ jobs:
         shell: bash
 
       - name: Cache Conda env
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.CONDA }}/envs
           key:
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for large files
         uses: ppremk/lfs-warning@v3.3

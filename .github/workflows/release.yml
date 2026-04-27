@@ -37,7 +37,7 @@ jobs:
       - name: Install Poetry
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          pip install 'poetry==2.3.1' # keep version in sync with dev-env.yml
+          pip install 'poetry==2.3.4' # keep version in sync with dev-env.yml
           poetry --version
 
       - name: Bump version for developmental release
@@ -52,7 +52,7 @@ jobs:
         run: |
           poetry build --ansi -n
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ steps.release.outputs.release_created }}
         with:
           name: dist
@@ -68,7 +68,7 @@ jobs:
       id-token: write
     steps:
       - name: Get artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
