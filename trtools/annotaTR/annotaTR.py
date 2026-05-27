@@ -604,19 +604,8 @@ def main(args):
         else:
             raise ValueError("Encountered invalid VCF output type")
     # variant_ct needed for pgen
-    # If using a ref panel, assume we have same number
-    # of TRs as the panel
-    # Otherwise, assume our file is all TRs and use record count
-    #if refpanel_metadata is not None:
-    #    variant_ct = ref_variant_ct
-    #else:
-    #    variant_ct = reader.num_records
-
-    # Use actual variant count from input VCF
+    # Use actual variant count from input VCF (for imputation only in region instead of whole chrom)
     variant_ct = reader.num_records
-    #if refpanel_metadata is not None:
-        # Use ref panel count as upper bound only
-    #    variant_ct = ref_variant_ct
     if OutputFileTypes.pgen in outtypes:
         pgen_writer, pvar_writer = GetPGenPvarWriter(reader, args.out, variant_ct)
 
