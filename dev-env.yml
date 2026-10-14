@@ -3,14 +3,14 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - conda-forge::python=3.10 # the lowest version of python that we formally support; keep in sync with release.yml, tests.yml, .readthedocs.yaml, and noxfile.py
-  - conda-forge::pip==26.0.1
+  - conda-forge::python=3.11 # the lowest version of python that we formally support; keep in sync with release.yml, tests.yml, .readthedocs.yaml, and noxfile.py
+  - conda-forge::pip==26.2.1
   - bioconda::bcftools==1.23
   - bioconda::art==2016.06.05
-  - conda-forge::poetry==2.3.4 # keep in sync with release.yml
-  - conda-forge::nox==2025.5.1
-  - conda-forge::poetry-plugin-export==1.9.0
+  - conda-forge::poetry==2.5.1 # keep in sync with release.yml
+  - conda-forge::nox==2026.8.17
+  - conda-forge::poetry-plugin-export==1.10.1
   - pip:
     - nox-poetry==1.2.0
-    - poetry-conda==0.1.4
+    - poetry-conda==0.1.7
     - poetry-plugin-shell==1.0.1
