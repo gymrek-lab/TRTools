@@ -12,21 +12,21 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         id: release
         with:
           release-type: python
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: ${{ steps.release.outputs.release_created }}
         with:
           fetch-depth: 2
 
       - name: Set up Python
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.10'  # keep in sync with dev-env.yml
+          python-version: '3.11'  # keep in sync with dev-env.yml
 
       - name: Upgrade pip
         if: ${{ steps.release.outputs.release_created }}
@@ -37,7 +37,7 @@ jobs:
       - name: Install Poetry
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          pip install 'poetry==2.3.1' # keep version in sync with dev-env.yml
+          pip install 'poetry==2.5.1' # keep version in sync with dev-env.yml
           poetry --version
 
       - name: Bump version for developmental release
@@ -52,7 +52,7 @@ jobs:
         run: |
           poetry build --ansi -n
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ steps.release.outputs.release_created }}
         with:
           name: dist
@@ -68,7 +68,7 @@ jobs:
       id-token: write
     steps:
       - name: Get artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
