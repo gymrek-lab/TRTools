@@ -49,7 +49,7 @@ autodoc_default_options = {
         'undoc-members': True,
         'special-member': True,
         'show-inheritance': True,
-        'exclude-members': 'Dict,List,Union,Line2D'
+        'exclude-members': 'Any,Dict,List,Union,Line2D'
 }
 
 autodoc_typehints = 'description'
