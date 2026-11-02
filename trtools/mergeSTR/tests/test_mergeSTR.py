@@ -20,6 +20,7 @@ def args(tmpdir):
     args.quiet = False
     args.verbose = False
     args.vcftype = "auto"
+    args.processes = 1
     return args
 
 
@@ -212,6 +213,68 @@ def test_SameContigsDifferentOrder(args, vcfdir, mrgvcfdir):
     )
     args.vcfs = fname1 + "," + fname2
     assert main(args) == 0
+
+# Test that chromosome-parallel merging produces output identical to the sequential merge
+def test_ParallelMatchesSequential(args, mrgvcfdir, tmpdir):
+    # gangstr1 + gangstr2 span multiple contigs (chr1 has records in both files,
+    # chr2 only in the second one, and several header contigs are empty)
+    fname1 = os.path.join(mrgvcfdir, "test_file_gangstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_gangstr2.vcf.gz")
+    args.vcftype = "gangstr"
+    args.vcfs = fname1 + "," + fname2
+
+    seq_out = str(tmpdir / "seq")
+    args.out = seq_out
+    assert main(args) == 0
+
+    for processes in [2, 4]:
+        par_out = str(tmpdir / ("par%d" % processes))
+        args.out = par_out
+        args.processes = processes
+        assert main(args) == 0
+        assert_same_vcf(par_out + ".vcf", seq_out + ".vcf")
+        # byte-identical except for the ##command header line
+        def body_lines(fname):
+            with open(fname) as f:
+                return [l for l in f if not l.startswith("##command")]
+        assert body_lines(par_out + ".vcf") == body_lines(seq_out + ".vcf")
+
+    # no temp files left behind
+    assert [f for f in os.listdir(tmpdir) if ".tmp.vcf" in f] == []
+    args.processes = 1
+
+# Test that chromosome-parallel merging reproduces the saved golden output
+def test_ParallelGoldenOutput(args, mrgvcfdir):
+    fname1 = os.path.join(mrgvcfdir, "test_file_popstr1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_popstr2.vcf.gz")
+    args.vcftype = "popstr"
+    args.vcfs = fname1 + "," + fname2
+    args.processes = 3
+    assert main(args) == 0
+    assert_same_vcf(args.out + ".vcf", mrgvcfdir + "/popstr_merged.vcf")
+    args.processes = 1
+
+# Test that a stale/broken index is detected instead of silently losing records
+def test_ParallelStaleIndex(args, mrgvcfdir, capsys):
+    # test_file_eh1/2 have indexes that no longer match their contents
+    fname1 = os.path.join(mrgvcfdir, "test_file_eh1.vcf.gz")
+    fname2 = os.path.join(mrgvcfdir, "test_file_eh2.vcf.gz")
+    args.vcftype = "eh"
+    args.vcfs = fname1 + "," + fname2
+    args.processes = 2
+    assert main(args) == 1
+    assert "parallel merge read" in capsys.readouterr().err
+    args.processes = 1
+
+# Test that a failing chromosome worker reports an error instead of raising
+def test_MergeChromTaskError(tmpdir):
+    tmp_file = str(tmpdir / "task.tmp.vcf")
+    task = (0, "chr1", ["does_not_exist.vcf.gz"], ["chr1"], "gangstr", [1],
+            [], [], [], tmp_file, False)
+    (i, chrom, tmp, error, counts) = MergeChromTask(task)
+    assert i == 0
+    assert chrom == "chr1"
+    assert error is not None
 
 def test_MissingFieldWarnings(capsys, args, mrgvcfdir):
     fname1 = os.path.join(mrgvcfdir, "test_file_gangstr_missinginfo1.vcf.gz")
