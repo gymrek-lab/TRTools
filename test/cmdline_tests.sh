@@ -183,6 +183,7 @@ FILE1=${EXDATADIR}/NA12878_chr21_gangstr.sorted.vcf.gz
 FILE2=${EXDATADIR}/NA12891_chr21_gangstr.sorted.vcf.gz
 FILE3=${EXDATADIR}/NA12892_chr21_gangstr.sorted.vcf.gz
 runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_gangstr --vcftype gangstr"
+runcmd_pass "mergeSTR --vcfs ${FILE1},${FILE2},${FILE3} --out ${TMPDIR}/test_merge_gangstr_parallel --vcftype gangstr --processes 2"
 
 # HipSTR
 FILE1=${EXDATADIR}/NA12878_chr21_hipstr.sorted.vcf.gz
