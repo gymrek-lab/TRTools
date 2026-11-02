@@ -37,6 +37,7 @@ Special Merge Options:
 
 Optional Additional Parameters:
 
+* :code:`--processes <int>`: Merge chromosomes in parallel using this many processes (default: 1). When greater than 1, each chromosome is fetched independently from the input files' tabix indexes by a worker process, which can greatly speed up merges of files spanning many chromosomes. Each worker's record count is verified against the total record count reported by each input file's index, so a stale index or records on contigs lacking a :code:`##contig` header line cause an error instead of silently missing records. Output is identical to the sequential merge. Temporary files, one per chromosome, are written next to the output file and deleted on completion.
 * :code:`--verbose`: Prints out extra information
 * :code:`--quiet`: Doesn't print out anything
 
