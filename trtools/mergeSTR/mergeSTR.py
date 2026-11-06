@@ -4,7 +4,9 @@ the same TR genotyper.
 """
 
 import argparse
+import multiprocessing
 import os
+import shutil
 import sys
 from typing import List
 
@@ -556,6 +558,10 @@ def getargs() -> Any:  # pragma: no cover
                             help="Use file names, rather than sample header names, when merging", action="store_true")
     ### Optional arguments ###
     opt_group = parser.add_argument_group("Optional arguments")
+    opt_group.add_argument("--processes", type=int, default=1,
+                           help="Merge chromosomes in parallel using this many processes. Each chromosome is "
+                                "fetched through the tabix index and per-file record counts are verified against "
+                                "the index. 1 runs the standard sequential merge.")
     opt_group.add_argument("--verbose", help="Print out extra info", action="store_true")
     opt_group.add_argument("--quiet", help="Don't print out anything", action="store_true")
     ## Version argument ##
@@ -575,6 +581,208 @@ def HarmonizeIfNotNone(records: List[Optional[trh.TRRecord]], vcf_type: trh.VcfT
             result.append(None)
 
     return result
+
+
+def MergeChromRecords(fetchers: List[Any], chroms: List[str], num_samples: List[int], vcfw: TextIO,
+                      vcftype: Union[str, trh.VcfTypes], useinfo: List[Tuple[str, bool]],
+                      useformat: List[str], format_type: List[str], verbose: bool = False) \
+        -> Tuple[int, List[int]]:
+    r"""Merge records from region-restricted readers covering a single chromosome
+
+    Unlike the sequential merge in main(), the readers here are iterators
+    restricted to one chromosome (e.g. from `cyvcf2.VCF(chrom)`). Such an
+    iterator is simply exhausted when the chromosome has no records in that
+    file, which reads as None instead of stopping the merge.
+
+    Parameters
+    ----------
+    fetchers : list of iterator of cyvcf2.Variant
+       One region-restricted iterator per file being merged
+    chroms : list of str
+       Ordered list of all chromosomes (used for record sort order)
+    num_samples : list of int
+       Number of samples per vcf
+    vcfw : file
+       File to write output to
+    vcftype :
+       Type of the underlying VCF files
+    useinfo : list of (str, bool)
+       List of (info field, required) to use downstream
+    useformat : list of str
+       List of format field strings to use downstream
+    format_type : list of str
+       The type of each format field
+    verbose : bool
+       Print debug info about record locations
+
+    Returns
+    -------
+    (retcode, counts) : (int, list of int)
+       retcode is 0 on success, 1 on error. counts[i] is the number of records
+       read from file i, used to verify that nothing was skipped.
+    """
+    def NextOrNone(reader: Any) -> Optional[Any]:
+        try:
+            return next(reader)
+        except StopIteration:
+            return None
+
+    counts = [0] * len(fetchers)
+    current_records = [NextOrNone(reader) for reader in fetchers]
+    done = mergeutils.DoneReading(current_records)
+    while not done:
+        harmonized_records = HarmonizeIfNotNone(current_records, vcftype)
+        increment, _ = mergeutils.GetIncrementAndComparability(harmonized_records, chroms)
+        if verbose: mergeutils.DebugPrintRecordLocations(current_records, increment)
+        if mergeutils.CheckMin(increment): return (1, counts)
+        for i, inc in enumerate(increment):
+            if inc: counts[i] += 1
+        MergeRecords(fetchers, vcftype, num_samples, harmonized_records, increment, vcfw, useinfo,
+                     useformat, format_type)
+        current_records = mergeutils.GetNextRecords(fetchers, current_records, increment)
+        done = mergeutils.DoneReading(current_records)
+    return (0, counts)
+
+
+def MergeChromTask(task: Tuple) -> Tuple[int, str, str, Optional[str], Optional[List[int]]]:
+    r"""Worker for MergeInParallel: merge all records of a single chromosome
+
+    Runs in a worker process, so it opens its own VCF readers (cyvcf2.VCF
+    objects cannot be pickled across processes). Writes merged body lines
+    (no header) to the given temp file.
+
+    Parameters
+    ----------
+    task : tuple
+       (index, chrom, filenames, chroms, vcftype, num_samples, useinfo,
+       useformat, format_type, tmp_file, verbose)
+
+    Returns
+    -------
+    (index, chrom, tmp_file, error, counts)
+       error is None on success, else an error message string.
+       counts[i] is the number of records this worker read from file i.
+    """
+    (i, chrom, filenames, chroms, vcftype, num_samples, useinfo, useformat,
+     format_type, tmp_file, verbose) = task
+    vcfreaders = None
+    try:
+        vcfreaders = utils.LoadReaders(filenames, checkgz=True)
+        if vcfreaders is None:
+            return (i, chrom, tmp_file, "Could not open VCF files: %s" % ",".join(filenames), None)
+        fetchers = [reader(chrom) for reader in vcfreaders]
+        with open(tmp_file, "w") as vcfw:
+            ret, counts = MergeChromRecords(fetchers, chroms, num_samples, vcfw, vcftype, useinfo,
+                                            useformat, format_type, verbose)
+        error = None if ret == 0 else "Error merging records on chromosome %s" % chrom
+        return (i, chrom, tmp_file, error, counts)
+    except Exception as e:
+        return (i, chrom, tmp_file, str(e), None)
+    finally:
+        if vcfreaders is not None:
+            for reader in vcfreaders:
+                reader.close()
+
+
+def MergeInParallel(args: Any, filenames: List[str], vcfreaders: List[cyvcf2.VCF],
+                    chroms: List[str], vcftype: Union[str, trh.VcfTypes], num_samples: List[int],
+                    vcfw: TextIO, useinfo: List[Tuple[str, bool]], useformat: List[str],
+                    format_type: List[str]) -> int:
+    r"""Merge VCFs chromosome by chromosome using multiple processes
+
+    Each chromosome is merged independently by a worker process that fetches
+    only that chromosome via the tabix index and writes merged body lines to a
+    temp file. After all workers succeed, the temp files are concatenated to
+    the output in header contig order. The merged header must already be
+    written to vcfw.
+
+    Note: because chromosomes are fetched via the tabix index, records living
+    on contigs that have no ##contig header line cannot be merged. Rather than
+    dropping them silently, the total number of records read per file is
+    checked against that file's index record count and an error is raised on
+    mismatch (this also catches stale/inconsistent index files).
+
+    Parameters
+    ----------
+    args : argparse namespace
+       Contains user options (uses .out, .processes, .verbose)
+    filenames : list of str
+       VCF files to merge
+    vcfreaders : list of cyvcf2.VCF
+       Readers already opened by main(), used to get the total record count
+       of each input file from its index
+    chroms : list of str
+       Ordered list of chromosomes to merge
+    vcftype :
+       Type of the VCF files being merged
+    num_samples : list of int
+       Number of samples per vcf
+    vcfw : file
+       Output file that already contains the merged header
+    useinfo : list of (str, bool)
+       List of (info field, required) to use downstream
+    useformat : list of str
+       List of format field strings to use downstream
+    format_type : list of str
+       The type of each format field
+
+    Returns
+    -------
+    int
+       0 on success, 1 on error
+    """
+    tasks = []
+    tmp_files = []
+    for i, chrom in enumerate(chroms):
+        tmp_file = "%s.%d.tmp.vcf" % (args.out, i)
+        tmp_files.append(tmp_file)
+        tasks.append((i, chrom, filenames, chroms, vcftype, num_samples, useinfo,
+                      useformat, format_type, tmp_file, args.verbose))
+
+    num_processes = min(args.processes, len(tasks)) if len(tasks) > 0 else 1
+    try:
+        if num_processes <= 1:
+            results = [MergeChromTask(task) for task in tasks]
+        else:
+            with multiprocessing.Pool(processes=num_processes) as pool:
+                results = pool.map(MergeChromTask, tasks)
+
+        errors = [(chrom, error) for (_, chrom, _, error, _) in results if error is not None]
+        if len(errors) > 0:
+            for chrom, error in errors:
+                common.WARNING("Error merging chromosome %s: %s" % (chrom, error))
+            common.WARNING("Parallel merge failed. No merged records were written.")
+            return 1
+
+        # Verify that no records were skipped. Region-based fetching only sees
+        # records on header contigs and requires the index to be consistent
+        # with the file, so compare per-file record counts against the number
+        # of records each file's index says it contains.
+        total_counts = [0] * len(filenames)
+        for (_, _, _, _, counts) in results:
+            for f in range(len(filenames)):
+                total_counts[f] += counts[f]
+        for f in range(len(filenames)):
+            expected = vcfreaders[f].num_records
+            if total_counts[f] != expected:
+                common.WARNING(
+                    "Error: parallel merge read %d of %d records from file %s."
+                    " Records may live on contigs that lack a ##contig header line,"
+                    " or the index of the file may be out of date."
+                    " Reindex with tabix/bgzip (or bcftools index) or run without"
+                    " --processes." % (total_counts[f], expected, filenames[f]))
+                return 1
+
+        for tmp_file in tmp_files:
+            with open(tmp_file, "r") as vcf_tmp:
+                shutil.copyfileobj(vcf_tmp, vcfw)
+        return 0
+    finally:
+        for tmp_file in tmp_files:
+            try:
+                os.remove(tmp_file)
+            except OSError:
+                pass
 
 
 def main(args: Any) -> int:
@@ -633,6 +841,11 @@ def main(args: Any) -> int:
     format_type = []
     for fmt in useformat:
         format_type.append(vcfreaders[0].get_header_type(fmt)['Type'])
+
+    num_processes = getattr(args, "processes", 1)
+    if num_processes > 1:
+        return MergeInParallel(args, filenames, vcfreaders, chroms, vcftype, num_samples, vcfw,
+                               useinfo, useformat, format_type)
 
     ### Walk through sorted readers, merging records as we go ###
     current_records = mergeutils.InitReaders(vcfreaders)
